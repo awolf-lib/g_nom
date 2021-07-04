@@ -14,6 +14,25 @@ export default class API {
       });
   }
 
+  async addUser(username, password, role) {
+    return fetch("http://localhost:3002/addUser", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        role: role,
+      }),
+    })
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== CREATE DIRECTORY STRUCTURE FOR ONE ASSEMBLY ===== //
   async createDirectoriesForSpecies(assemblyID) {
     return fetch(
@@ -91,9 +110,7 @@ export default class API {
 
   // ===== FETCH IMAGE FOR TAXON ===== //
   async fetchImageByTaxonID(taxonID) {
-    return fetch(
-      "http://localhost:3002/fetchImageByTaxonID?taxonID=" + taxonID
-    )
+    return fetch("http://localhost:3002/fetchImageByTaxonID?taxonID=" + taxonID)
       .then((request) => request.blob())
       .then((data) => {
         return data;
@@ -106,8 +123,7 @@ export default class API {
   // ===== FETCH SCIENTIFIC NAME BY TAXON ID ===== //
   async fetchScientificNameByTaxonID(taxonID) {
     return fetch(
-      "http://localhost:3002/fetchScientificNameByTaxonID?taxonID=" +
-        taxonID
+      "http://localhost:3002/fetchScientificNameByTaxonID?taxonID=" + taxonID
     )
       .then((request) => request.json())
       .then((data) => {
@@ -121,8 +137,7 @@ export default class API {
   // ===== FETCH ALL ASSEMBLIES BY TAXON ID ===== //
   async fetchAssembliesByTaxonID(taxonID) {
     return fetch(
-      "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" +
-        taxonID
+      "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" + taxonID
     )
       .then((request) => request.json())
       .then((data) => {
@@ -136,8 +151,7 @@ export default class API {
   // ===== FETCH ALL GENERAL INFOS BY TAXON ID ===== //
   async fetchGeneralInfosByTaxonID(taxonID) {
     return fetch(
-      "http://localhost:3002/fetchGeneralInfosByTaxonID?taxonID=" +
-        taxonID
+      "http://localhost:3002/fetchGeneralInfosByTaxonID?taxonID=" + taxonID
     )
       .then((request) => request.json())
       .then((data) => {
@@ -151,8 +165,7 @@ export default class API {
   // ===== FETCH ASSEMBLY NAME, ID ===== //
   async fetchAssemblyByAssemblyID(assemblyID) {
     return fetch(
-      "http://localhost:3002/fetchAssemblyByAssemblyID?assemblyID=" +
-        assemblyID
+      "http://localhost:3002/fetchAssemblyByAssemblyID?assemblyID=" + assemblyID
     )
       .then((request) => request.json())
       .then((data) => {
@@ -181,8 +194,7 @@ export default class API {
   // ===== FETCH FCAT DATA ===== //
   async fetchFcatDataByAssemblyID(assemblyID) {
     return fetch(
-      "http://localhost:3002/fetchFcatDataByAssemblyID?assemblyID=" +
-        assemblyID
+      "http://localhost:3002/fetchFcatDataByAssemblyID?assemblyID=" + assemblyID
     )
       .then((request) => request.json())
       .then((data) => {
@@ -312,9 +324,7 @@ export default class API {
 
   // ===== FETCH IMAGE BY PATH ===== //
   async fetchImageByPath(path) {
-    return fetch(
-      "http://localhost:3002/fetchImageByPath?path=" + path
-    )
+    return fetch("http://localhost:3002/fetchImageByPath?path=" + path)
       .then((request) => request.blob())
       .then((data) => {
         return data;
@@ -340,8 +350,7 @@ export default class API {
   // ===== FETCH SUBSCRIPTIONS ===== //
   async fetchSubscriptionsByUserID(userID) {
     return fetch(
-      "http://localhost:3002/fetchSubscriptionsByUserID?userID=" +
-        userID
+      "http://localhost:3002/fetchSubscriptionsByUserID?userID=" + userID
     )
       .then((request) => request.json())
       .then((data) => {

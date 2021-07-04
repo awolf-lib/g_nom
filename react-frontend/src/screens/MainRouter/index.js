@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard";
 import useToken from "./components/useToken";
 import Logout from "./components/Logout";
 import Profile from "./components/Profile";
+import Settings from "./components/Settings";
 
 export default function MainRouter() {
   const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
@@ -53,7 +54,7 @@ export default function MainRouter() {
           <Profile />
         </Route>
         <Route exact path="/g-nom/settings">
-          <div className="p-4">Settings</div>
+          <Settings />
         </Route>
         <Route path="/logout">
           <Logout setToken={setToken} />

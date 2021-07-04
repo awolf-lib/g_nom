@@ -29,8 +29,6 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
     e.preventDefault();
     const response = await api.login(username, password);
 
-    console.log(response);
-
     if (response) {
       if (response.payload?.token) {
         setToken(response.payload.token);

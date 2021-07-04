@@ -1,4 +1,5 @@
 import mysql.connector
+from hashlib import sha512
 
 from .FileManager import FileManager
 from .Parsers import Parsers
@@ -16,14 +17,46 @@ class DatabaseManager:
     def updateConnection(self, database="g-nom_dev"):
         connection = mysql.connector.connect(
             host=self.hostURL,
-            user="root",
-            password="JaghRMI104",
+            user="gnom",
+            password="G-nom_BOT#0",
             database=database,
             auth_plugin='mysql_native_password'
         )
         cursor = connection.cursor()
 
         return connection, cursor
+
+    # ================== USER ================== #
+    # ADD NEW USER
+    def addUser(self, username, password, role):
+        """
+            Add a user to db
+        """
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT * FROM user where username='{username}'")
+            user = cursor.fetchone()
+            if user:
+                return {}, {"label": "Error", "message": f"Name '{username}' already exists!", "type": "error"}
+        except:
+            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+
+        checkpoint = False
+        try:
+            connection, cursor = self.updateConnection()
+            password = sha512(f"{password}$g#n#o#m$".encode('utf-8')).hexdigest()
+            cursor.execute(
+                f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')")
+            connection.commit()
+            checkpoint = True
+        except:
+            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+
+        if checkpoint:
+            return {"username": username, "role": role}, {"label": "Success", "message": f"User '{username}' with role '{role}' added to database!", "type": "success"}
+        else:
+            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
 
     # ================== TAXON ================== #
     # IMPORT ALL FROM TAXDUMP FILE

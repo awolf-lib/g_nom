@@ -10,6 +10,25 @@ db = Blueprint('db', __name__)
 
 api = DatabaseManager()
 
+# ================== USER ================== #
+# ADD NEW USER
+
+
+@db.route('/addUser', methods=["GET", "POST"])
+def addUser():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        data, notification = api.addUser(req.get("username", None),
+                                   req.get("password", None),
+                                   req.get("role", None))
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return {"payload": 0, "notification": {"label": "Error", "message": "Wrong request method. Please contact support!", "type": "error"}}
+
 # ================== TAXON ================== #
 # IMPORT ALL FROM TAXDUMP FILE
 
