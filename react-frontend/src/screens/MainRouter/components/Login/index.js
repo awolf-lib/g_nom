@@ -7,22 +7,45 @@ import Button from "../../../../components/Button";
 import API from "../../../../api/genomes";
 
 import treeOfLife from "../../../../images/loginToL.jpg";
+import { useNotification } from "../../../../components/NotificationProvider";
 
-export default function Login({ setToken, setUserID, setUserRole }) {
+const Login = ({ setToken, setUserID, setUserRole }) => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
+
+  const dispatch = useNotification();
+
+  const handleNewNotification = (notification) => {
+    dispatch({
+      label: notification.label,
+      message: notification.message,
+      type: notification.type,
+    });
+  };
 
   let api = new API();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const response = await api.login(username, password);
-    if (response && response.payload && response.payload.token) {
-      setToken(response.payload.token);
-      setUserID(response.payload.userID);
-      sessionStorage.setItem("userName", JSON.stringify(username));
-      setUserRole(response.payload.role);
+
+    console.log(response);
+
+    if (response) {
+      if (response.payload?.token) {
+        setToken(response.payload.token);
+        setUserID(response.payload.userID);
+        setUserRole(response.payload.role);
+      }
+      if (response.notification) {
+        handleNewNotification(response.notification);
+      }
     } else {
+      handleNewNotification({
+        label: "Error",
+        message: "Something went wrong!",
+        type: "error",
+      });
       setToken("");
     }
   };
@@ -68,8 +91,10 @@ export default function Login({ setToken, setUserID, setUserRole }) {
       </form>
     </div>
   );
-}
+};
 
 Login.propTypes = {
   setToken: PropTypes.func.isRequired,
 };
+
+export default Login;

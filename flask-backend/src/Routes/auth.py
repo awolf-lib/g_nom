@@ -16,12 +16,12 @@ api = Auth()
 def login():
     if request.method == "POST":
         req = request.get_json(force=True)
-        data, error = api.fetchAuth(req.get("username", None),
-                                    req.get("password", None))
+        data, info = api.fetchAuth(req.get("username", None),
+                                   req.get("password", None))
 
-        response = jsonify({"payload": data, "error": error})
+        response = jsonify({"payload": data, "notification": info})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
     else:
-        return {"payload": 0, "error": "Wrong request method."}
+        return {"userID": "", "role": "", "userName": "", "token": ""}, {"label": "Error", "message": "Wrong request method. Please contact support!", "type": "error"}
