@@ -45,7 +45,8 @@ class DatabaseManager:
         checkpoint = False
         try:
             connection, cursor = self.updateConnection()
-            password = sha512(f"{password}$g#n#o#m$".encode('utf-8')).hexdigest()
+            password = sha512(
+                f"{password}$g#n#o#m$".encode('utf-8')).hexdigest()
             cursor.execute(
                 f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')")
             connection.commit()
@@ -57,6 +58,63 @@ class DatabaseManager:
             return {"username": username, "role": role}, {"label": "Success", "message": f"User '{username}' with role '{role}' added to database!", "type": "success"}
         else:
             return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+
+    # FETCH ALL USERS
+    def fetchALLUsers(self):
+        """
+            Gets all users from db
+        """
+
+        user = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT user.id, user.username, user.role from user")
+
+            row_headers = [x[0] for x in cursor.description]
+            user = cursor.fetchall()
+        except:
+            return [], f"Error while fetching users from DB. Check database connection!"
+
+        if len(user):
+            return [dict(zip(row_headers, x)) for x in user], {}
+        else:
+            return [], {"label": "Info", "message": "No users in database!", "type": "info"}
+
+
+    # DELETE USER BY USER ID
+    def deleteUserByUserID(self, userID):
+        """
+            Delete user from db
+        """
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"DELETE FROM user WHERE id={userID}")
+            connection.commit()
+        except:
+            return 0, {"label": "Error", "message": "Something went wrong while deleting user!", "type": "error"}
+
+        return userID, {"label": "Success", "message": f"Successfully deleted user with ID {userID}!", "type": "success"}
+
+
+    # UPDATE USER ROLE BY USER ID
+    def updateUserRoleByUserID(self, userID, role):
+        """
+            Update column user.role to new value
+        """
+        try:
+            if role == "admin" or role == "user":
+                connection, cursor = self.updateConnection()
+                cursor.execute(
+                    f"UPDATE user SET user.role='{role}' WHERE id={userID}")
+                connection.commit()
+            else:
+                return 0, {"label": "Error", "message": "Unknown role!", "type": "error"} 
+        except:
+            return 0, {"label": "Error", "message": "Something went wrong while updating user role!", "type": "error"}
+
+        return userID, {"label": "Success", "message": f"Successfully updated user role of user ID {userID} to '{role}'!", "type": "success"}
 
     # ================== TAXON ================== #
     # IMPORT ALL FROM TAXDUMP FILE

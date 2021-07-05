@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../App.css";
 import classNames from "classnames";
 import PropTypes from "prop-types";
@@ -17,11 +17,11 @@ const Popup = ({ id, label, message, type, dispatch }) => {
   const [exit, setExit] = useState(false);
   const [viewDetails, setViewDetails] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     handleStartTimer();
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (width === 100) {
       handleCloseNotification();
     }
@@ -58,7 +58,7 @@ const Popup = ({ id, label, message, type, dispatch }) => {
 
   const containerClass = (type, exit) =>
     classNames(
-      "lg:w-96 bg-indigo-50 pt-4 px-6 rounded-l-lg shadow-lg border-l-2 overflow-hidden mt-6",
+      "lg:w-96 bg-indigo-50 pt-4 px-6 rounded-l-lg shadow-lg border-l-2 overflow-hidden mt-6 animate-slide-left animate-fade-in",
       {
         "border-red-600": type === "error",
         "border-yellow-600": type === "warning",
@@ -67,8 +67,7 @@ const Popup = ({ id, label, message, type, dispatch }) => {
       },
       { "w-40": !viewDetails, "w-96": viewDetails },
       {
-        /* prettier-ignore */
-        "hidden": exit,
+        "opacity-0 transition duration-700": exit,
       }
     );
 
@@ -88,7 +87,7 @@ const Popup = ({ id, label, message, type, dispatch }) => {
       "bg-blue-600": type === "info",
     });
 
-  const messageClass = classNames("px-4 hover:flex lg:block text-sm", {
+  const messageClass = classNames("px-4 hover:flex lg:block", {
     /* prettier-ignore */
     "hidden": !viewDetails,
   });
@@ -124,8 +123,8 @@ const Popup = ({ id, label, message, type, dispatch }) => {
       <div className="flex">
         <div className="w-full flex justify-around items-center">
           <div className="">{getTypeClass(type)}</div>
-          <div className="flex lg:block w-full items-center">
-            <div className="px-4 font-semibold text-sm">{label}</div>
+          <div className="flex lg:block w-full items-center text-xs lg:text-base lg:truncate">
+            <div className="px-4 font-semibold">{label}</div>
             <div className={messageClass}>{message}</div>
           </div>
           <FormClose className="cursor-pointer" onClick={() => setExit(true)} />

@@ -1,173 +1,54 @@
+import { Down, Up } from "grommet-icons";
 import React, { useState } from "react";
-import classNames from "classnames";
 
-import Button from "../../../../components/Button";
-import API from "../../../../api/genomes";
-import { useNotification } from "../../../../components/NotificationProvider";
+import AddUserForm from "./components/AddUserForm";
+import ManageUserForm from "./components/ManageUserForm";
 
 const Settings = () => {
-  const loggedInRole = sessionStorage.getItem("userRole");
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const dispatch = useNotification();
-
-  const handleNewNotification = (notification) => {
-    dispatch({
-      label: notification.label,
-      message: notification.message,
-      type: notification.type,
-    });
-  };
-
-  const handleSubmitNewUser = async () => {
-    const api = new API();
-    setSubmitted(true);
-    if (
-      username &&
-      password &&
-      confirmPassword &&
-      password === confirmPassword &&
-      (role === "admin" || role === "user")
-    ) {
-      const response = await api.addUser(username, password, role);
-      if (response?.notification) {
-        handleNewNotification(response.notification);
-      }
-    } else {
-      if (!username) {
-        handleNewNotification({
-          label: "Missing username",
-          message: "Add username before submitting!",
-          type: "error",
-        });
-      }
-      if (!password) {
-        handleNewNotification({
-          label: "Missing password",
-          message: "Add password before submitting!",
-          type: "error",
-        });
-      }
-      if (password && password !== confirmPassword) {
-        handleNewNotification({
-          label: "Wrong confirmation",
-          message: "Password confirmation does not match password!",
-          type: "error",
-        });
-      }
-      if (!role) {
-        handleNewNotification({
-          label: "Missing role",
-          message: "Add role before submitting!",
-          type: "error",
-        });
-      }
-    }
-  };
-
-  const fieldClass = classNames(
-    "flex justify-between my-2 border-1 shadow px-4 py-3 items-center rounded-lg bg-gray-100 hover:text-blue-700"
-  );
-  const labelClass = classNames("truncate");
-  const inputClass = (submitted, condition) =>
-    classNames(
-      "border rounded-lg ml-4 px-4 py-1 shadow focus:outline-none w-64",
-      {
-        "border-red-600": submitted && condition,
-        "border-green-600": submitted && !condition,
-      }
-    );
+  const [toggleSection, setToggleSection] = useState(0);
 
   return (
-    <div className="p-4 grid grid-cols-3">
-      {loggedInRole === '"admin"' && (
-        <div className="border p-6 rounded-lg shadow-lg bg-gray-200">
-          <div className="flex justify-between items-center">
-            <h1 className="text-lg font-semibold">Add user:</h1>
-            <div>
-              <Button
-                label="Submit"
-                size="sm"
-                onClick={() =>
-                  handleSubmitNewUser(username, password, confirmPassword, role)
-                }
-              />
-            </div>
-          </div>
-          <hr className="mt-2 mb-8" />
-          <div className="">
-            <div className={fieldClass}>
-              <label for="username" className={labelClass}>
-                Username
-              </label>
-              <input
-                id="username"
-                onChange={(e) => {
-                  setSubmitted(false);
-                  setUsername(e.target.value);
-                }}
-                className={inputClass(submitted, username === "")}
-              />
-            </div>
-            <div className={fieldClass}>
-              <label for="role" className={labelClass}>
-                Role
-              </label>
-              <select
-                id="role"
-                onChange={(e) => {
-                  setSubmitted(false);
-                  setRole(e.target.value);
-                }}
-                className={inputClass(submitted, role === "")}
-              >
-                <option value="">None</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
-              </select>
-            </div>
-            <div className={fieldClass}>
-              <label for="password" className={labelClass}>
-                Password
-              </label>
-              <input
-                id="password"
-                onChange={(e) => {
-                  setSubmitted(false);
-                  setPassword(e.target.value);
-                }}
-                className={inputClass(
-                  submitted,
-                  password === "" || password !== confirmPassword
-                )}
-                type="password"
-              />
-            </div>
-            <div className={fieldClass}>
-              <label for="confirmPassword" className={labelClass}>
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                onChange={(e) => {
-                  setSubmitted(false);
-                  setConfirmPassword(e.target.value);
-                }}
-                className={inputClass(
-                  submitted,
-                  confirmPassword === "" || password !== confirmPassword
-                )}
-                type="password"
-              />
-            </div>
-          </div>
+    <div className="mb-16">
+      <div>
+        <div
+          onClick={() => setToggleSection(toggleSection === 1 ? 0 : 1)}
+          className="m-4 p-4 rounded-lg bg-gray-700 flex justify-between items-center text-white hover:bg-gray-600 hover:text-gray-200 cursor-pointer transition duration-500"
+        >
+          <div className="font-bold text-xl select-none">Manage Users...</div>
+          {toggleSection !== 1 ? (
+            <Down color="blank" className="stroke-current" />
+          ) : (
+            <Up color="blank" className="stroke-current" />
+          )}
         </div>
-      )}
+        {toggleSection === 1 && (
+          <div className="animate-grow-y">
+            <hr className="mx-8 my-4 shadow" />
+            <div className="p-4 grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
+              <AddUserForm />
+              <div className="mt-8 lg:mt-0 lg:col-span-2">
+                <ManageUserForm />
+              </div>
+            </div>
+          </div>
+        )}
+        <hr className="mx-8 my-4 shadow" />
+      </div>
+      <div>
+        <div
+          onClick={() => setToggleSection(toggleSection === 2 ? 0 : 2)}
+          className="m-4 p-4 rounded-lg bg-gray-700 flex justify-between items-center text-white hover:bg-gray-600 hover:text-gray-200 cursor-pointer transition duration-500"
+        >
+          <div className="font-bold text-xl select-none">More settings...</div>
+          {toggleSection !== 2 ? (
+            <Down color="blank" className="stroke-current" />
+          ) : (
+            <Up color="blank" className="stroke-current" />
+          )}
+        </div>
+        {toggleSection === 2 && <div className="animate-grow-y"></div>}
+        <hr className="mx-8 my-4 shadow" />
+      </div>
     </div>
   );
 };

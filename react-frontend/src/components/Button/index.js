@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 function Button(props) {
   let classnames = classNames(
-    "py-2 rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full",
+    "py-2 rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
     {
       "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600":
         props.color === "primary",
@@ -29,18 +29,19 @@ function Button(props) {
   return (
     <button className={classnames} {...props}>
       {props.label}
+      {props.children}
     </button>
   );
 }
 
 Button.defaultProps = {
-  label: "Button",
   color: "primary",
   size: "md",
 };
 
 Button.propTypes = {
-  label: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  children: PropTypes.node,
   primary: PropTypes.string,
   secondary: PropTypes.bool,
   size: PropTypes.string.isRequired,
