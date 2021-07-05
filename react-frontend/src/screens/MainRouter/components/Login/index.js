@@ -13,6 +13,8 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
 
+  const api = new API();
+
   const dispatch = useNotification();
 
   const handleNewNotification = (notification) => {
@@ -22,8 +24,6 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
       type: notification.type,
     });
   };
-
-  let api = new API();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

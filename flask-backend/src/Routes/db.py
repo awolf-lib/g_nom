@@ -32,8 +32,9 @@ def addUser():
     else:
         return REQUESTMETHODERROR
 
-
 # FETCH ALL USERS
+
+
 @db.route('/fetchAllUsers', methods=["GET"])
 def fetchAllUsers():
     if request.method == "GET":
@@ -47,6 +48,8 @@ def fetchAllUsers():
         return REQUESTMETHODERROR
 
 # DELETE USER BY USER ID
+
+
 @db.route('/deleteUserByUserID', methods=["GET"])
 def deleteUserByUserID():
     if request.method == "GET":
@@ -60,8 +63,9 @@ def deleteUserByUserID():
     else:
         return REQUESTMETHODERROR
 
-
 # UPDATE USER ROLE BY USER ID
+
+
 @db.route('/updateUserRoleByUserID', methods=["GET"])
 def updateUserRoleByUserID():
     if request.method == "GET":
@@ -179,20 +183,23 @@ def removeGeneralInfo():
         return {"payload": 0, "error": "Wrong request method."}
 
 # ================== ASSEMBLY ================== #
-# FETCH ALL ASSEMBLIES OF ONE SPECIES BY TAXON ID
+# FETCH ALL ASSEMBLIES
 
 
 @db.route('/fetchAllAssemblies', methods=["GET"])
 def fetchAllAssemblies():
     if request.method == "GET":
-        data, error = api.fetchAllAssemblies()
+        offset = request.args.get('offset')
+        count = request.args.get('count')
+        search = request.args.get('search')
+        data, pagination, notification = api.fetchAllAssemblies(offset, count, search)
 
-        response = jsonify({"payload": data, "error": error})
+        response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
     else:
-        return {"payload": 0, "error": "Wrong request method."}
+        return REQUESTMETHODERROR
 
 # FETCH ALL ASSEMBLIES OF ONE SPECIES BY TAXON ID
 

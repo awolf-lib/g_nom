@@ -81,8 +81,8 @@ class DatabaseManager:
         else:
             return [], {"label": "Info", "message": "No users in database!", "type": "info"}
 
-
     # DELETE USER BY USER ID
+
     def deleteUserByUserID(self, userID):
         """
             Delete user from db
@@ -97,8 +97,8 @@ class DatabaseManager:
 
         return userID, {"label": "Success", "message": f"Successfully deleted user with ID {userID}!", "type": "success"}
 
-
     # UPDATE USER ROLE BY USER ID
+
     def updateUserRoleByUserID(self, userID, role):
         """
             Update column user.role to new value
@@ -110,7 +110,7 @@ class DatabaseManager:
                     f"UPDATE user SET user.role='{role}' WHERE id={userID}")
                 connection.commit()
             else:
-                return 0, {"label": "Error", "message": "Unknown role!", "type": "error"} 
+                return 0, {"label": "Error", "message": "Unknown role!", "type": "error"}
         except:
             return 0, {"label": "Error", "message": "Something went wrong while updating user role!", "type": "error"}
 
@@ -152,21 +152,21 @@ class DatabaseManager:
 
                 if counter == 5000:
                     values = values[:-1]
-                    sql = f"INSERT INTO taxon (id, scientificName) VALUES {values}"
+                    sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName) VALUES {values}"
                     cursor.execute(sql)
                     connection.commit()
                     counter = 0
                     values = ""
 
             values = values[:-1]
-            sql = f"INSERT INTO taxon (id, scientificName) VALUES {values}"
+            sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName) VALUES {values}"
             cursor.execute(sql)
             connection.commit()
         except:
             return 0, "Error: Error while inserting taxa!"
 
         try:
-            cursor.execute(f"SELECT COUNT(id) FROM taxon")
+            cursor.execute(f"SELECT COUNT(ncbiTaxonID) FROM taxon")
             taxaCount = cursor.fetchone()[0]
         except:
             return 0, "Error: Error while receiving taxon count!"
@@ -278,25 +278,60 @@ class DatabaseManager:
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
-    def fetchAllAssemblies(self):
+    def fetchAllAssemblies(self, offset=0, count=0, search=""):
         """
             Gets all assemblies from db
         """
-        connection, cursor = self.updateConnection()
-
         try:
+            connection, cursor = self.updateConnection()
             cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id")
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID")
 
             row_headers = [x[0] for x in cursor.description]
             taxon = cursor.fetchall()
         except:
-            return [], f"Error while fetching from DB. Check database connection!"
+            return [], {}, {
+                "label": "Error", "message": "Something went wrong while fetching assemblies!", "type": "error"}
 
         if len(taxon):
-            return [dict(zip(row_headers, x)) for x in taxon], ""
+            data = [dict(zip(row_headers, x)) for x in taxon]
+            pagination = {"count": len(data)}
+
+            if search != "":
+                try:
+                    search = search.lower()
+                    data = [x for x in data if (search in str(
+                        x["id"]) or search in x["name"].lower() or search in str(x["taxonID"]) or search in x["scientificName"].lower())]
+                except:
+                    return [], pagination, {
+                        "label": "Error", "message": f"Something went wrong while searching for keyword '{search}'!", "type": "error"}
+
+            pagination.update({"filteredCount": len(data)})
+            try:
+                offset = int(offset)
+                count = int(count)
+                if offset >= 0 and count > 0:
+                    data = data[offset:offset+count]
+                    if offset-count < 0:
+                        pagination.update(
+                            {"previous": f"http://localhost:3002/fetchAllAssemblies?offset=0&count={count}&search={search}"})
+                    else:
+                        pagination.update(
+                            {"previous": f"http://localhost:3002/fetchAllAssemblies?offset={offset-count}&count={count}&search={search}"})
+
+                    if offset+count >= len(data):
+                        pagination.update(
+                            {"next": f"http://localhost:3002/fetchAllAssemblies?offset={offset}&count={count}&search={search}"})
+                    else:
+                        pagination.update(
+                            {"next": f"http://localhost:3002/fetchAllAssemblies?offset={offset+count}&count={count}&search={search}"})
+            except:
+                return [], pagination, {
+                    "label": "Error", "message": f"Something went wrong while generating subset!", "type": "error"}
+            return data, pagination, 0
         else:
-            return [], f"No assemblies found! Upload genomes first!"
+            return [], {}, {
+                "label": "Info", "message": "No assemblies in database!", "type": "info"}
 
     # FETCH ALL ASSEMBLIES OF ONE SPECIES BY TAXON ID
     def fetchAssembliesByTaxonID(self, taxonID):

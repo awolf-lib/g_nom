@@ -70,6 +70,23 @@ export default class API {
       });
   }
 
+  // ===== FETCH ALL ASSEMBLIES ===== //
+  async fetchAllAssemblies(offset = 0, count = 10, search = "") {
+    return fetch(
+      "http://localhost:3002/fetchAllAssemblies?offset=" +
+        offset +
+        "&count=" +
+        count +
+        "&search=" +
+        search
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== CREATE DIRECTORY STRUCTURE FOR ONE ASSEMBLY ===== //
   async createDirectoriesForSpecies(assemblyID) {
     return fetch(
@@ -128,16 +145,6 @@ export default class API {
         "&taxonID=" +
         taxonID
     )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
-        console.error(error);
-      });
-  }
-
-  // ===== FETCH ALL ASSEMBLIES ===== //
-  async fetchAllAssemblies() {
-    return fetch("http://localhost:3002/fetchAllAssemblies")
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {

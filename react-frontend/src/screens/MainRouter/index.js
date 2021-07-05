@@ -14,8 +14,9 @@ import useToken from "./components/useToken";
 import Logout from "./components/Logout";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
+import AssembliesRouter from "../AssembliesRouter";
 
-export default function MainRouter() {
+const MainRouter = () => {
   const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
 
   return !token ? (
@@ -39,7 +40,7 @@ export default function MainRouter() {
           <Dashboard />
         </Route>
         <Route path="/g-nom/assemblies">
-          <div className="p-4">Assemblies</div>
+          <AssembliesRouter />
         </Route>
         <Route exact path="/g-nom/imprint">
           <div className="p-4">Imprint</div>
@@ -63,4 +64,6 @@ export default function MainRouter() {
       <Footer />
     </Router>
   );
-}
+};
+
+export default MainRouter;
