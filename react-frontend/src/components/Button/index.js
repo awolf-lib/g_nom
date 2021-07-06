@@ -2,7 +2,7 @@ import classNames from "classnames";
 import "../../App.css";
 import PropTypes from "prop-types";
 
-function Button(props) {
+const Button = (props) => {
   let classnames = classNames(
     "py-2 rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
     {
@@ -32,7 +32,7 @@ function Button(props) {
       {props.children}
     </button>
   );
-}
+};
 
 Button.defaultProps = {
   color: "primary",

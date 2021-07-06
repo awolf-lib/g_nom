@@ -1,26 +1,23 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import "../../App.css";
 import PropTypes from "prop-types";
-import API from "../../api/genomes";
+import API from "../../api";
 import picPlacerholder from "../../images/blankProfilePicture.png";
 
-class SpeciesProfilePictureViewer extends Component {
-  constructor(props) {
-    super();
-    this.state = { url: undefined };
+const SpeciesProfilePictureViewer = ({ taxonID }) => {
+  const [mounted, setMounted] = useState(true);
+  const [url, setUrl] = useState(undefined);
 
-    this.mounted = true;
-  }
+  useEffect(() => {
+    fetchImage(taxonID);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  componentDidMount() {
-    this.fetchImage(this.props.taxonID);
-  }
+  const fetchImage = async (taxonID) => {
+    const api = new API();
+    const blob = await api.fetchImageByTaxonID(taxonID);
 
-  async fetchImage(taxonID) {
-    var api = new API();
-    var blob = await api.fetchImageByTaxonID(taxonID);
-
-    var tmpURL;
+    let tmpURL;
 
     if (blob) {
       if (blob.type && blob.type) {
@@ -43,27 +40,24 @@ class SpeciesProfilePictureViewer extends Component {
             break;
         }
       }
-      if (this.mounted) {
-        this.setState({ url: tmpURL });
+      if (mounted) {
+        setUrl(tmpURL);
       }
     }
-  }
+  };
 
-  componentWillUnmount() {
-    this.mounted = false;
-  }
+  useEffect(() => {
+    return setMounted(false);
+  }, []);
 
-  render() {
-    const { url } = this.state;
-    return (
-      <img
-        className="w-full h-full object-fill"
-        alt="Species profile"
-        src={url || picPlacerholder}
-      />
-    );
-  }
-}
+  return (
+    <img
+      className="w-full h-full object-fill"
+      alt="Species profile"
+      src={url || picPlacerholder}
+    />
+  );
+};
 
 SpeciesProfilePictureViewer.defaultProps = {};
 

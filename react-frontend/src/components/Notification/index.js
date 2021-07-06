@@ -72,7 +72,7 @@ const Popup = ({ id, label, message, type, dispatch }) => {
     );
 
   const svgClass = (type) =>
-    classNames("stroke-current animate-pulse", {
+    classNames("stroke-current animate-wiggle", {
       "text-red-600": type === "error",
       "text-yellow-600": type === "warning",
       "text-green-600": type === "success",
@@ -136,8 +136,8 @@ const Popup = ({ id, label, message, type, dispatch }) => {
 };
 
 Popup.defaultProps = {
-  label: "",
-  message: "",
+  label: "Notification",
+  message: "Something happend",
   type: "info",
 };
 

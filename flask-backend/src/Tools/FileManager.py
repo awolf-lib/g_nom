@@ -29,7 +29,7 @@ class FileManager:
             user="root",
             password="JaghRMI104",
             database=database,
-            auth_plugin='mysql_native_password'
+            auth_plugin="mysql_native_password",
         )
         cursor = connection.cursor()
 
@@ -40,13 +40,16 @@ class FileManager:
     # FETCH FILES FOR IMPORT
     def fetchFilesInImportDirectory(self, path=BASEPATHTOIMPORT):
         """
-            Fetch all files provided in import dirctory
+        Fetch all files provided in import dirctory
         """
 
         if not exists(path):
             if not exists(BASEPATHTOIMPORT):
                 makedirs(BASEPATHTOIMPORT, exist_ok=True)
-            return 0, f"Import directory deleted from file system. You should use '{BASEPATHTOIMPORT}'"
+            return (
+                0,
+                f"Import directory deleted from file system. You should use '{BASEPATHTOIMPORT}'",
+            )
 
         patterns = {
             "fasta": compile(r"^(.+)(\.assembly\.fa)|(\.assembly\.fasta)$"),
@@ -55,71 +58,91 @@ class FileManager:
             "repeatmasker": compile(r"^(.+)\.tbl$"),
             "fcat": compile(r"^report_summary.txt$"),
             "milts": compile(r"^3D_plot.html$"),
-            "mapping": compile(r"^(.+)\.bam$")
+            "mapping": compile(r"^(.+)\.bam$"),
         }
 
         allPaths = []
         for baseFile in listdir(path):
             if isdir(path + baseFile):
                 # look for .fa
-                for filePath in glob(path + baseFile + "/**/*.assembly.fa", recursive=True):
+                for filePath in glob(
+                    path + baseFile + "/**/*.assembly.fa", recursive=True
+                ):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "fasta"})
+                        {"file": pathSplit[1], "path": filePath, "type": "fasta"}
+                    )
 
                 # look for .fasta
-                for filePath in glob(path + baseFile + "/**/*.assembly.fasta", recursive=True):
+                for filePath in glob(
+                    path + baseFile + "/**/*.assembly.fasta", recursive=True
+                ):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "fasta"})
+                        {"file": pathSplit[1], "path": filePath, "type": "fasta"}
+                    )
 
                 # look for .gff3
                 for filePath in glob(path + baseFile + "/**/*.gff3", recursive=True):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "gff3"})
+                        {"file": pathSplit[1], "path": filePath, "type": "gff3"}
+                    )
 
                 # look for .gff
                 for filePath in glob(path + baseFile + "/**/*.gff", recursive=True):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "gff"})
+                        {"file": pathSplit[1], "path": filePath, "type": "gff"}
+                    )
 
                 # look for short_summary.txt (busco)
-                for filePath in glob(path + baseFile + "/**/short_summary.txt", recursive=True):
+                for filePath in glob(
+                    path + baseFile + "/**/short_summary.txt", recursive=True
+                ):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "busco"})
+                        {"file": pathSplit[1], "path": filePath, "type": "busco"}
+                    )
 
                 # look for .tbl (repeatmasker)
                 for filePath in glob(path + baseFile + "/**/*.tbl", recursive=True):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "repeatmasker"})
+                        {"file": pathSplit[1], "path": filePath, "type": "repeatmasker"}
+                    )
 
                 # look for report_summary.txt (fCat)
-                for filePath in glob(path + baseFile + "/**/report_summary.txt", recursive=True):
+                for filePath in glob(
+                    path + baseFile + "/**/report_summary.txt", recursive=True
+                ):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "fcat"})
+                        {"file": pathSplit[1], "path": filePath, "type": "fcat"}
+                    )
 
                 # look for 3D_plot.html (MILTS)
-                for filePath in glob(path + baseFile + "/**/3D_plot.html", recursive=True):
+                for filePath in glob(
+                    path + baseFile + "/**/3D_plot.html", recursive=True
+                ):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "milts"})
+                        {"file": pathSplit[1], "path": filePath, "type": "milts"}
+                    )
 
                 # look for .bam (mappings)
                 for filePath in glob(path + baseFile + "/**/.bam", recursive=True):
                     pathSplit = split(filePath)
                     allPaths.append(
-                        {"file": pathSplit[1], "path": filePath, "type": "mapping"})
+                        {"file": pathSplit[1], "path": filePath, "type": "mapping"}
+                    )
 
             elif isfile(path + baseFile):
                 for key in patterns:
                     if patterns[key].match(baseFile):
                         allPaths.append(
-                            {"file": baseFile, "path": path + baseFile, "type": key})
+                            {"file": baseFile, "path": path + baseFile, "type": key}
+                        )
                         break
 
         allPathsWithPrivatePath = {}
@@ -127,27 +150,33 @@ class FileManager:
             for searchindex, searchPathObject in enumerate(allPaths):
                 if index < searchindex:
                     longestCommonPath = commonpath(
-                        [pathObject["path"], searchPathObject["path"]])
-                    longestCommonPathLevel = len(
-                        longestCommonPath.split("/"))
+                        [pathObject["path"], searchPathObject["path"]]
+                    )
+                    longestCommonPathLevel = len(longestCommonPath.split("/"))
 
-                    privateDirectory1 = "/".join(pathObject["path"].split(
-                        "/")[:longestCommonPathLevel+1])
+                    privateDirectory1 = "/".join(
+                        pathObject["path"].split("/")[: longestCommonPathLevel + 1]
+                    )
 
-                    privateDirectory2 = "/".join(searchPathObject["path"].split(
-                        "/")[:longestCommonPathLevel+1])
+                    privateDirectory2 = "/".join(
+                        searchPathObject["path"].split("/")[
+                            : longestCommonPathLevel + 1
+                        ]
+                    )
 
                     if not "directory" in pathObject:
                         pathObject.update({"directory": privateDirectory1})
-                    elif len(pathObject["directory"].split("/")) < len(privateDirectory1.split("/")):
+                    elif len(pathObject["directory"].split("/")) < len(
+                        privateDirectory1.split("/")
+                    ):
                         pathObject.update({"directory": privateDirectory1})
 
                     if not "directory" in searchPathObject:
-                        searchPathObject.update(
-                            {"directory": privateDirectory2})
-                    elif len(searchPathObject["directory"].split("/")) < len(privateDirectory2.split("/")):
-                        searchPathObject.update(
-                            {"directory": privateDirectory2})
+                        searchPathObject.update({"directory": privateDirectory2})
+                    elif len(searchPathObject["directory"].split("/")) < len(
+                        privateDirectory2.split("/")
+                    ):
+                        searchPathObject.update({"directory": privateDirectory2})
 
                     allPathsWithPrivatePath[index] = pathObject
                     allPathsWithPrivatePath[searchindex] = searchPathObject
@@ -157,7 +186,7 @@ class FileManager:
     # creates directories in storage / jbrowse for one assembly
     def createDirectoriesForSpecies(self, assemblyName):
         """
-            Setups the basic directory structure for one assembly
+        Setups the basic directory structure for one assembly
         """
 
         pathToSpeciesDirectory = BASEPATHTODOWNLOAD + assemblyName
@@ -186,10 +215,8 @@ class FileManager:
             makedirs(f"{pathToSpeciesDirectory}/fcat/conf/", exist_ok=True)
 
             # repeatmasker
-            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/results/",
-                     exist_ok=True)
-            makedirs(
-                f"{pathToSpeciesDirectory}/repeatmasker/conf/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/results/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/conf/", exist_ok=True)
 
             # milts
             makedirs(f"{pathToSpeciesDirectory}/milts/results/", exist_ok=True)
@@ -206,7 +233,7 @@ class FileManager:
 
     def removeDirectoriesForSpecies(self, assemblyID):
         """
-            Removes the basic directory structure for one assembly
+        Removes the basic directory structure for one assembly
         """
 
         pathToSpeciesDirectory = BASEPATHTODOWNLOAD + assemblyID
@@ -226,7 +253,7 @@ class FileManager:
 
     def moveFastaToSpeciesStorage(self, assemblyID, pathToFasta, additionalFilesPath):
         """
-            Moves assembly to storage system and creates symbolic link into jbrowse directory
+        Moves assembly to storage system and creates symbolic link into jbrowse directory
         """
 
         if not exists(pathToFasta):
@@ -240,7 +267,10 @@ class FileManager:
         extensionMatch = filePattern.match(filename)
 
         if not extensionMatch:
-            return 0, "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed."
+            return (
+                0,
+                "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed.",
+            )
 
         renamedFastaPath = f"{filepath}/{assemblyID}.fasta"
         try:
@@ -281,10 +311,14 @@ class FileManager:
         fullPathToJbrowseSpeciesDirectory = f"{BASEPATHTOJBROWSEDATA + assemblyID}/"
         try:
             run(["ln", "-s", newPathToFasta, fullPathToJbrowseSpeciesDirectory])
-            run(["ln", "-s", newPathToFasta + ".fai",
-                fullPathToJbrowseSpeciesDirectory])
+            run(
+                ["ln", "-s", newPathToFasta + ".fai", fullPathToJbrowseSpeciesDirectory]
+            )
         except:
-            return 0, "Error: Error while creating symbolic link of fasta to jbrowse. Set manually!"
+            return (
+                0,
+                "Error: Error while creating symbolic link of fasta to jbrowse. Set manually!",
+            )
 
         try:
             with open(fullPathToJbrowseSpeciesDirectory + "/tracks.conf", "a") as conf:
@@ -295,10 +329,12 @@ class FileManager:
             return 0, "Error: Error while creating jbrowse tracks.conf. Check manually!"
 
         try:
-            run([JBROWSEGENERATENAMESCALL, "-out",
-                fullPathToJbrowseSpeciesDirectory])
+            run([JBROWSEGENERATENAMESCALL, "-out", fullPathToJbrowseSpeciesDirectory])
         except:
-            return 0, "Error: Error while running jbrowse generate-names.pl scipt. Run manually!"
+            return (
+                0,
+                "Error: Error while running jbrowse generate-names.pl scipt. Run manually!",
+            )
 
         try:
             if isdir(additionalFilesPath):
@@ -306,7 +342,10 @@ class FileManager:
             else:
                 remove(renamedFastaPath)
         except:
-            return newPathToFasta, "Warning: Error while removing data from import directory. Remove manually!"
+            return (
+                newPathToFasta,
+                "Warning: Error while removing data from import directory. Remove manually!",
+            )
 
         return newPathToFasta, ""
 
@@ -314,7 +353,7 @@ class FileManager:
 
     def runQuast(self, pathToFasta, assemblyID, overwrite=False):
         """
-            Starts Quast to get assembly statistics
+        Starts Quast to get assembly statistics
         """
 
         if not exists(pathToFasta):
@@ -327,13 +366,25 @@ class FileManager:
         extensionMatch = filePattern.match(filename)
 
         if not extensionMatch:
-            return 0, "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed."
+            return (
+                0,
+                "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed.",
+            )
 
         try:
             fullOutputPath = BASEPATHTODOWNLOAD + assemblyID + "/quast/results/"
             if not len(listdir(fullOutputPath)) or overwrite:
-                run(["python3", QUASTCALL, pathToFasta, "-o",
-                    fullOutputPath, "--plots-format", "png"])
+                run(
+                    [
+                        "python3",
+                        QUASTCALL,
+                        pathToFasta,
+                        "-o",
+                        fullOutputPath,
+                        "--plots-format",
+                        "png",
+                    ]
+                )
                 return fullOutputPath, ""
 
             else:
@@ -343,9 +394,11 @@ class FileManager:
 
     # moves fasta to correct directory and creates symbolic link to jbrowse data directory
 
-    def moveAnalysisToSpeciesStorage(self, assemblyID, pathToAnalysis, additionalFilesPath, type):
+    def moveAnalysisToSpeciesStorage(
+        self, assemblyID, pathToAnalysis, additionalFilesPath, type
+    ):
         """
-            Moves analysis to storage
+        Moves analysis to storage
         """
 
         if not exists(pathToAnalysis):
@@ -357,13 +410,16 @@ class FileManager:
         uniqueDirectoryID = 0
         directoryName = split(additionalFilesPath)[1] + f"_{uniqueDirectoryID}"
 
-        analysisStorage = f"{BASEPATHTODOWNLOAD + assemblyID}/{type}/results/{directoryName}/"
+        analysisStorage = (
+            f"{BASEPATHTODOWNLOAD + assemblyID}/{type}/results/{directoryName}/"
+        )
 
         while isdir(analysisStorage):
             uniqueDirectoryID += 1
-            directoryName = split(additionalFilesPath)[
-                1] + f"_{uniqueDirectoryID}"
-            analysisStorage = f"{BASEPATHTODOWNLOAD + assemblyID}/{type}/results/{directoryName}/"
+            directoryName = split(additionalFilesPath)[1] + f"_{uniqueDirectoryID}"
+            analysisStorage = (
+                f"{BASEPATHTODOWNLOAD + assemblyID}/{type}/results/{directoryName}/"
+            )
 
         makedirs(analysisStorage, exist_ok=True)
         try:
@@ -390,7 +446,10 @@ class FileManager:
             else:
                 remove(pathToAnalysis)
         except:
-            return newPathToAnalysisStorage, "Warning: Error while removing data from import directory. Remove manually!"
+            return (
+                newPathToAnalysisStorage,
+                "Warning: Error while removing data from import directory. Remove manually!",
+            )
 
         return newPathToAnalysisStorage, ""
 
@@ -398,7 +457,7 @@ class FileManager:
 
     def moveGff3ToSpeciesStorage(self, assemblyID, pathToGff3, additionalFilesPath):
         """
-            Moves annotation to storage system and creates symbolic link into jbrowse directory
+        Moves annotation to storage system and creates symbolic link into jbrowse directory
         """
 
         if not exists(pathToGff3):
@@ -412,7 +471,10 @@ class FileManager:
         extensionMatch = filePattern.match(filename)
 
         if not extensionMatch:
-            return 0, "Error: Uncorrect filetype! Only files of type .gff/.gff3 are allowed."
+            return (
+                0,
+                "Error: Uncorrect filetype! Only files of type .gff/.gff3 are allowed.",
+            )
 
         annotationPath = f"{BASEPATHTODOWNLOAD + assemblyID}/gff3/"
         try:
@@ -434,21 +496,35 @@ class FileManager:
 
         pathToSortedGff = annotationPath + filenameSorted
         try:
-            run(f'(grep ^"#" {newPathToGff3}; grep -v ^"#" {newPathToGff3} | grep -v "^$" | grep "\t" | sort -k1,1 -k4,4n) > {pathToSortedGff}', shell=True)
+            run(
+                f'(grep ^"#" {newPathToGff3}; grep -v ^"#" {newPathToGff3} | grep -v "^$" | grep "\t" | sort -k1,1 -k4,4n) > {pathToSortedGff}',
+                shell=True,
+            )
             run(f"bgzip {pathToSortedGff}", shell=True)
             run(f"tabix -p gff {pathToSortedGff}.gz", shell=True)
         except:
             return 0, "Error: Error while sorting/indexing gff. Abborting...!"
 
-        if not isfile(f"{pathToSortedGff}.gz") or not isfile(f"{pathToSortedGff}.gz.tbi"):
+        if not isfile(f"{pathToSortedGff}.gz") or not isfile(
+            f"{pathToSortedGff}.gz.tbi"
+        ):
             return 0, "Error: Error while sorting/indexing gff. Abborting..."
 
         fullPathToJbrowseSpeciesDirectory = f"{BASEPATHTOJBROWSEDATA + assemblyID}/"
         try:
-            run(f"ln -s {pathToSortedGff}.gz {fullPathToJbrowseSpeciesDirectory}", shell=True)
-            run(f"ln -s {pathToSortedGff}.gz.tbi {fullPathToJbrowseSpeciesDirectory}", shell=True)
+            run(
+                f"ln -s {pathToSortedGff}.gz {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
+            run(
+                f"ln -s {pathToSortedGff}.gz.tbi {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
         except:
-            return 0, "Error: Error while creating symbolic link of gff to jbrowse. Abborting...!"
+            return (
+                0,
+                "Error: Error while creating symbolic link of gff to jbrowse. Abborting...!",
+            )
 
         try:
             with open(fullPathToJbrowseSpeciesDirectory + "tracks.conf", "a") as conf:
@@ -460,9 +536,15 @@ class FileManager:
             return 0, "Error: Error while creating jbrowse tracks.conf. Check manually!"
 
         try:
-            run(f"{JBROWSEGENERATENAMESCALL} -out {fullPathToJbrowseSpeciesDirectory}", shell=True)
+            run(
+                f"{JBROWSEGENERATENAMESCALL} -out {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
         except:
-            return 0, "Error: Error while running jbrowse generate-names.pl scipt. Run manually!"
+            return (
+                0,
+                "Error: Error while running jbrowse generate-names.pl scipt. Run manually!",
+            )
 
         try:
             if isdir(additionalFilesPath):
@@ -470,15 +552,20 @@ class FileManager:
             else:
                 remove(pathToGff3)
         except:
-            return newPathToGff3, "Warning: Error while removing data from import directory. Remove manually!"
+            return (
+                newPathToGff3,
+                "Warning: Error while removing data from import directory. Remove manually!",
+            )
 
         return newPathToGff3, ""
 
     # moves mapping to correct directory and creates symbolic link to jbrowse data directory
 
-    def moveMappingToSpeciesStorage(self, assemblyID, pathToMapping, additionalFilesPath):
+    def moveMappingToSpeciesStorage(
+        self, assemblyID, pathToMapping, additionalFilesPath
+    ):
         """
-            Moves mapping to storage system, indexes and creates symbolic link into jbrowse directory
+        Moves mapping to storage system, indexes and creates symbolic link into jbrowse directory
         """
 
         if not exists(pathToMapping):
@@ -508,7 +595,7 @@ class FileManager:
             return 0, "Error: Error while copying data to storage. Check storage!"
 
         try:
-            run(f'samtools index {newPathToMapping}', shell=True)
+            run(f"samtools index {newPathToMapping}", shell=True)
         except:
             return 0, "Error: Error while indexing mapping. Abborting...!"
 
@@ -517,10 +604,19 @@ class FileManager:
 
         fullPathToJbrowseSpeciesDirectory = f"{BASEPATHTOJBROWSEDATA + assemblyID}/"
         try:
-            run(f"ln -s {newPathToMapping} {fullPathToJbrowseSpeciesDirectory}", shell=True)
-            run(f"ln -s {newPathToMapping}.bai {fullPathToJbrowseSpeciesDirectory}", shell=True)
+            run(
+                f"ln -s {newPathToMapping} {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
+            run(
+                f"ln -s {newPathToMapping}.bai {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
         except:
-            return 0, "Error: Error while creating symbolic link of mapping to jbrowse. Abborting...!"
+            return (
+                0,
+                "Error: Error while creating symbolic link of mapping to jbrowse. Abborting...!",
+            )
 
         try:
             with open(fullPathToJbrowseSpeciesDirectory + "tracks.conf", "a") as conf:
@@ -532,9 +628,15 @@ class FileManager:
             return 0, "Error: Error while creating jbrowse tracks.conf. Check manually!"
 
         try:
-            run(f"{JBROWSEGENERATENAMESCALL} -out {fullPathToJbrowseSpeciesDirectory}", shell=True)
+            run(
+                f"{JBROWSEGENERATENAMESCALL} -out {fullPathToJbrowseSpeciesDirectory}",
+                shell=True,
+            )
         except:
-            return 0, "Error: Error while running jbrowse generate-names.pl scipt. Run manually!"
+            return (
+                0,
+                "Error: Error while running jbrowse generate-names.pl scipt. Run manually!",
+            )
 
         try:
             if isdir(additionalFilesPath):
@@ -542,6 +644,9 @@ class FileManager:
             else:
                 remove(pathToMapping)
         except:
-            return newPathToMapping, "Warning: Error while removing data from import directory. Remove manually!"
+            return (
+                newPathToMapping,
+                "Warning: Error while removing data from import directory. Remove manually!",
+            )
 
         return newPathToMapping, ""

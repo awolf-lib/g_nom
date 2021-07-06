@@ -36,6 +36,7 @@ module.exports = {
         "slide-left-slow": "slide-left 1.0s",
         "grow-y": "grow-y 0.5s",
         "grow-y-slow": "grow-y 1.0s",
+        wiggle: "wiggle 1s ease-in-out infinite",
       },
       keyframes: {
         "fade-in": {
@@ -57,9 +58,19 @@ module.exports = {
         "grow-y": {
           "0%": {
             transform: "scaleY(0)",
+            transformOrigin: "top",
           },
           "100%": {
             transform: "scaleY(1)",
+            transformOrigin: "top",
+          },
+        },
+        wiggle: {
+          "0%, 100%": {
+            transform: "rotate(5deg)",
+          },
+          "50%": {
+            transform: "rotate(-5deg)",
           },
         },
       },
@@ -73,6 +84,7 @@ module.exports = {
       width: ["responsive", "hover"],
       display: ["responsive", "hover"],
       ringWidth: ["responsive", "hover", "focus"],
+      animation: ["responsive", "hover", "focus"],
     },
   },
   plugins: [],

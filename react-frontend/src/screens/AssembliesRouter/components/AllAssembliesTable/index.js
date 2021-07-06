@@ -1,24 +1,41 @@
 import React, { useEffect, useState } from "react";
 import "../../../../App.css";
-
-import API from "../../../../api/genomes";
-
+import classNames from "classnames";
 import { Link } from "react-router-dom";
 
+import API from "../../../../api";
+
 import Button from "../../../../components/Button";
-import SpeciesProfilePictureViewer from "../../../../components/SpeciesProfilePictureViewer";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
+import AssemblyInfoCard from "../../../../components/AssemblyInfoCard";
+
 import { useNotification } from "../../../../components/NotificationProvider";
+import { Add, Next, Previous } from "grommet-icons";
+import AssemblyInfoListItem from "../../../../components/AssemblyInfoListItem";
 
 const AllAssembliesTable = () => {
-  const [genomes, setGenomes] = useState([]);
-  const [search, setSearch] = useState("");
+  const [assemblies, setAssemblies] = useState([]);
   const [fetching, setFetching] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(undefined);
+  const [range, setRange] = useState(10);
+  const [changeRangeTimeout, setChangeRangeTimeout] = useState(undefined);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    range: 10,
+    count: 0,
+    pages: 0,
+    next: "",
+    previous: "",
+    currentPage: 1,
+  });
+  const [viewType, setViewType] = useState("grid");
 
   const api = new API();
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const dispatch = useNotification();
@@ -31,12 +48,18 @@ const AllAssembliesTable = () => {
     });
   };
 
-  const loadData = async () => {
+  const loadData = async (page = 1, range = 10, search = "", link = "") => {
     setFetching(true);
-    const response = await api.fetchAllAssemblies();
+
+    const response = await api.fetchAllAssemblies(page, range, search, link);
 
     if (response && response.payload) {
-      setGenomes(response.payload);
+      setAssemblies(response.payload);
+      setPagination(response.pagination);
+    }
+
+    if (response && response.paginaton) {
+      setPagination(response.pagination);
     }
 
     if (response && response.notification) {
@@ -45,23 +68,71 @@ const AllAssembliesTable = () => {
     setFetching(false);
   };
 
+  const handleSearchChange = (input) => {
+    clearTimeout(searchTimeout);
+    setSearch(input);
+    setSearchTimeout(
+      setTimeout(() => {
+        loadData(1, range, input);
+      }, 2000)
+    );
+  };
+
+  const handleRangeChange = (input) => {
+    clearTimeout(changeRangeTimeout);
+    if (input < 1) {
+      input = 1;
+    }
+    if (input > 100) {
+      input = 100;
+    }
+
+    setRange(input);
+    setChangeRangeTimeout(
+      setTimeout(() => {
+        loadData(1, input, search);
+      }, 2000)
+    );
+  };
+
+  const elementsContainerClass = classNames("animate-grow-y", {
+    "lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-8 m-4": viewType === "grid",
+  });
+
   return (
-    <div>
+    <div className="mb-16">
       {/* HEADER */}
       <header className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900 mr-4">
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900 mr-4">
               All assemblies
             </h1>
+            <div className="ml-2 md:ml-8 p-1 bg-gray-600 text-white flex items-center rounded-lg hover:bg-gray-500 cursor-pointer transition duration-300 hover:animate-wiggle">
+              <Link to={"/g-nom/assemblies/import"}>
+                <Add color="blank" className="stroke-current" />
+              </Link>
+            </div>
           </div>
-          <input
-            onChange={(e) => setSearch(e.target.value)}
-            className="border-2 border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none"
-            type="search"
-            name="search"
-            placeholder="Search..."
-          />
+          <div className="w-48 lg:w-1/4 lg:flex justify-end">
+            <select
+              value={viewType}
+              onChange={(e) => setViewType(e.target.value)}
+              className="mb-2 w-full lg:w-3/5 mr-4 cursor-pointer border border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none focus:ring-2 hover:ring-2 ring-offset-1 transition duration-300"
+            >
+              <option value="grid">Grid</option>
+              <option value="list">List</option>
+            </select>
+            <input
+              onChange={(e) => {
+                handleSearchChange(e.target.value);
+              }}
+              className="w-full border border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none focus:ring-2 hover:ring-2 ring-offset-1 transition duration-300"
+              type="search"
+              name="search"
+              placeholder="Search..."
+            />
+          </div>
         </div>
       </header>
 
@@ -69,88 +140,119 @@ const AllAssembliesTable = () => {
       <main className="mb-8">
         <div className="mx-auto py-6 sm:px-6 lg:px-8 mt-4">
           <div className="px-4 sm:px-0">
-            <div className="">
-              {/* HEADERS */}
-              <div className="bg-indigo-100 my-2 flex shadow truncate font-semibold text-lg items-center">
-                <div className="w-1/12 px-4 py-2">Image</div>
-                <div className="w-4/12 px-4 py-2">Scientific name</div>
-                <div className="w-3/12 px-4 py-2">Taxon ID</div>
-                <div className="w-4/12 px-4 py-2">Assembly name</div>
+            {/* HEADERS */}
+            {viewType !== "grid" && (
+              <div className="text-xs md:text-base bg-indigo-200 my-2 py-8 flex shadow font-semibold items-center rounded-lg text-center">
+                <div className="hidden sm:block w-1/12 px-4 truncate">
+                  Image
+                </div>
+                <div className="w-3/12 sm:w-3/12 px-4 truncate">Sc. name</div>
+                <div className="w-3/12 sm:w-2/12 px-4 truncate">Taxon ID</div>
+                <div className="w-3/12 sm:w-3/12 px-4 truncate">
+                  Asmbl. name
+                </div>
+                <div className="w-3/12 sm:w-3/12 px-4 truncate">Analysis</div>
               </div>
+            )}
 
-              <hr className="shadow my-2" />
-
-              {/* ELEMENTS */}
-              {!fetching ? (
-                <div>
-                  {genomes && genomes.length > 0 ? (
-                    genomes.map((genome) => {
-                      if (
-                        genome.scientificName
-                          .toLowerCase()
-                          .includes(search.toLowerCase()) ||
-                        genome.assemblyName
-                          .toLowerCase()
-                          .includes(search.toLowerCase()) ||
-                        genome.taxonID
-                          .toString()
-                          .toLowerCase()
-                          .includes(search.toLowerCase()) ||
-                        search === ""
-                      ) {
-                        return (
-                          <Link
-                            to={"/gnom/genomes/assembly:" + genome.id}
-                            className="even:bg-gray-100 odd:bg-indigo-50 my-2 flex shadow-lg bg-gradient-to-b hover:from-blue-500 hover:to-blue-300 hover:text-white rounded-lg truncate items-center hover:ring-2 ring-offset-2"
-                            key={genome.id}
-                          >
-                            <div className="w-1/12 px-4 py-2">
-                              <div className="w-16 h-16 object-contain">
-                                <SpeciesProfilePictureViewer
-                                  taxonID={genome.taxonID}
-                                />
-                              </div>
-                            </div>
-                            <div className="w-4/12 px-4 py-2">
-                              {genome.scientificName}
-                            </div>
-                            <div className="w-3/12 px-4 py-2">
-                              {genome.taxonID}
-                            </div>
-                            <div className="w-4/12 px-4 py-2">
-                              {genome.name}
-                            </div>
-                          </Link>
-                        );
-                      } else {
-                        return <div />;
-                      }
-                    })
-                  ) : (
-                    <div className="my-2 py-4 px-2 text-center shadow rounded-lg">
+            {/* ELEMENTS */}
+            {!fetching ? (
+              <div className={elementsContainerClass}>
+                {assemblies && assemblies.length > 0 ? (
+                  assemblies.map((assembly) => {
+                    return viewType === "grid" ? (
+                      <AssemblyInfoCard
+                        id={assembly.id}
+                        scientificName={assembly.scientificName}
+                        taxonID={assembly.taxonID}
+                        assemblyName={assembly.name}
+                        types={assembly.types}
+                      />
+                    ) : (
+                      <AssemblyInfoListItem
+                        id={assembly.id}
+                        scientificName={assembly.scientificName}
+                        taxonID={assembly.taxonID}
+                        assemblyName={assembly.name}
+                        types={assembly.types}
+                      />
+                    );
+                  })
+                ) : (
+                  <div className="my-2 py-4 px-2 text-center shadow rounded-lg">
+                    {pagination && pagination.count === 0 && !search ? (
                       <Link
-                        to="/gnom/genomes/manageAssemblies"
+                        to="/g-nom/assemblies/manageAssemblies"
                         className="mx-2 text-blue-600 hover:text-blue-400"
                       >
                         Import new assembly...
                       </Link>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex justify-center h-16">
-                  <LoadingSpinner label="Loading..." />
-                </div>
-              )}
-              <hr className="shadow my-2" />
-
-              {/* Import new button */}
-              <div className="max-w-max">
-                <Link to="/gnom/genomes/manageAssemblies">
-                  <Button label="Manage assemblies..." size="sm" />
-                </Link>
+                    ) : (
+                      <div className="mx-2 text-blue-600 hover:text-blue-400">
+                        No results for given search!
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
+            ) : (
+              <div className="flex justify-center h-16">
+                <LoadingSpinner label="Loading..." />
+              </div>
+            )}
+            <hr className="shadow my-2" />
+
+            {/* Pagination */}
+            {pagination && (
+              <div className="flex justify-center items-center mt-4">
+                <div className="w-12 mx-4">
+                  <Button
+                    color="nav"
+                    onClick={() => {
+                      pagination.currentPage > 1 &&
+                        loadData(
+                          undefined,
+                          undefined,
+                          undefined,
+                          pagination.previous
+                        );
+                    }}
+                  >
+                    <Previous color="blank" className="stroke-current" />
+                  </Button>
+                </div>
+                <div className="">
+                  <div className="flex justify-center">
+                    {pagination.currentPage + " of " + pagination.pages}
+                  </div>
+                  <input
+                    type="number"
+                    max={100}
+                    min={5}
+                    step={5}
+                    onChange={(e) => handleRangeChange(e.target.value)}
+                    value={range || 10}
+                    className="w-24 text-center mt-2 border border-gray-300 bg-white py-1 pl-6 pr-2 rounded-lg text-sm focus:outline-none focus:ring-2"
+                  />
+                </div>
+                <div className="w-12 mx-4">
+                  <Button
+                    color="nav"
+                    onClick={() => {
+                      pagination.currentPage < pagination.pages &&
+                        loadData(
+                          undefined,
+                          undefined,
+                          undefined,
+                          pagination.next
+                        );
+                    }}
+                  >
+                    <Next color="blank" className="stroke-current" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

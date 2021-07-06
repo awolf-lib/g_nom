@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import classNames from "classnames";
 
 import Button from "../../../../../../components/Button";
-import API from "../../../../../../api/genomes";
+import API from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const AddUserForm = () => {

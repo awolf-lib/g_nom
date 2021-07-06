@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request, send_file
 from Tools import FileManager
 
 # setup blueprint name
-tools = Blueprint('tools', __name__)
+tools = Blueprint("tools", __name__)
 
 
 api = FileManager()
@@ -14,10 +14,10 @@ api = FileManager()
 # creates all necessary directories for one species
 
 
-@tools.route('/removeDirectoriesForSpecies', methods=["GET"])
+@tools.route("/removeDirectoriesForSpecies", methods=["GET"])
 def removeDirectoriesForSpecies():
     if request.method == "GET":
-        assemblyID = request.args.get('assemblyID')
+        assemblyID = request.args.get("assemblyID")
         response = ""
 
         status, error = api.removeDirectoriesForSpecies(assemblyID)
@@ -31,7 +31,7 @@ def removeDirectoriesForSpecies():
 
 
 # creates all necessary directories for one species
-@tools.route('/fetchFilesInImportDirectory', methods=["GET"])
+@tools.route("/fetchFilesInImportDirectory", methods=["GET"])
 def fetchFilesInImportDirectory():
     if request.method == "GET":
         response = ""
@@ -45,13 +45,14 @@ def fetchFilesInImportDirectory():
     else:
         return {"payload": 0, "error": "Wrong request method."}
 
+
 # fetch plot by path
 
 
-@tools.route('/fetchImageByPath', methods=["GET"])
+@tools.route("/fetchImageByPath", methods=["GET"])
 def fetchImageByPath():
     if request.method == "GET":
-        path = request.args.get('path')
+        path = request.args.get("path")
 
         if exists(path):
             return send_file(path)

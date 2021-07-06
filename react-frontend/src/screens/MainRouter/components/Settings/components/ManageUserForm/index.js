@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { Save, Trash, Edit, FormClose } from "grommet-icons";
 import React, { useEffect, useState } from "react";
-import API from "../../../../../../api/genomes";
+import API from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
@@ -39,7 +39,7 @@ const ManageUserForm = () => {
     ) {
       handleNewNotification(response.notification);
     }
-    setTimeout(setFetching(false), 2000);
+    setTimeout(() => setFetching(false), 750);
   };
 
   const handleDeleteUser = async (userID) => {
@@ -87,6 +87,7 @@ const ManageUserForm = () => {
   const inputClass = classNames(
     "min-w-min border rounded-lg ml-4 px-4 py-1 shadow focus:outline-none text-center text-xs hover:ring-2 focus:ring-2 transition duration-500"
   );
+
   return (
     <div className="rounded-lg overflow-hidden max-h-50 shadow-lg">
       <table className="w-full text-center table-auto text-xs md:text-base">
@@ -109,7 +110,7 @@ const ManageUserForm = () => {
           </tr>
         </thead>
         <tbody>
-          {users?.length > 0 ? (
+          {!fetching && users?.length > 0 ? (
             users.map((user) => {
               return (
                 <tr key={user.id} className={rowClass}>

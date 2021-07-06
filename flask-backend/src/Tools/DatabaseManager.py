@@ -1,5 +1,6 @@
 import mysql.connector
 from hashlib import sha512
+from math import ceil
 
 from .FileManager import FileManager
 from .Parsers import Parsers
@@ -20,7 +21,7 @@ class DatabaseManager:
             user="gnom",
             password="G-nom_BOT#0",
             database=database,
-            auth_plugin='mysql_native_password'
+            auth_plugin="mysql_native_password",
         )
         cursor = connection.cursor()
 
@@ -30,46 +31,64 @@ class DatabaseManager:
     # ADD NEW USER
     def addUser(self, username, password, role):
         """
-            Add a user to db
+        Add a user to db
         """
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT * FROM user where username='{username}'")
+            cursor.execute(f"SELECT * FROM user where username='{username}'")
             user = cursor.fetchone()
             if user:
-                return {}, {"label": "Error", "message": f"Name '{username}' already exists!", "type": "error"}
+                return {}, {
+                    "label": "Error",
+                    "message": f"Name '{username}' already exists!",
+                    "type": "error",
+                }
         except:
-            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+            return {}, {
+                "label": "Error",
+                "message": "Something went wrong while adding user to db!",
+                "type": "error",
+            }
 
         checkpoint = False
         try:
             connection, cursor = self.updateConnection()
-            password = sha512(
-                f"{password}$g#n#o#m$".encode('utf-8')).hexdigest()
+            password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
             cursor.execute(
-                f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')")
+                f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')"
+            )
             connection.commit()
             checkpoint = True
         except:
-            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+            return {}, {
+                "label": "Error",
+                "message": "Something went wrong while adding user to db!",
+                "type": "error",
+            }
 
         if checkpoint:
-            return {"username": username, "role": role}, {"label": "Success", "message": f"User '{username}' with role '{role}' added to database!", "type": "success"}
+            return {"username": username, "role": role}, {
+                "label": "Success",
+                "message": f"User '{username}' with role '{role}' added to database!",
+                "type": "success",
+            }
         else:
-            return {}, {"label": "Error", "message": "Something went wrong while adding user to db!", "type": "error"}
+            return {}, {
+                "label": "Error",
+                "message": "Something went wrong while adding user to db!",
+                "type": "error",
+            }
 
     # FETCH ALL USERS
     def fetchALLUsers(self):
         """
-            Gets all users from db
+        Gets all users from db
         """
 
         user = []
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT user.id, user.username, user.role from user")
+            cursor.execute(f"SELECT user.id, user.username, user.role from user")
 
             row_headers = [x[0] for x in cursor.description]
             user = cursor.fetchall()
@@ -79,49 +98,71 @@ class DatabaseManager:
         if len(user):
             return [dict(zip(row_headers, x)) for x in user], {}
         else:
-            return [], {"label": "Info", "message": "No users in database!", "type": "info"}
+            return [], {
+                "label": "Info",
+                "message": "No users in database!",
+                "type": "info",
+            }
 
     # DELETE USER BY USER ID
 
     def deleteUserByUserID(self, userID):
         """
-            Delete user from db
+        Delete user from db
         """
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"DELETE FROM user WHERE id={userID}")
+            cursor.execute(f"DELETE FROM user WHERE id={userID}")
             connection.commit()
         except:
-            return 0, {"label": "Error", "message": "Something went wrong while deleting user!", "type": "error"}
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while deleting user!",
+                "type": "error",
+            }
 
-        return userID, {"label": "Success", "message": f"Successfully deleted user with ID {userID}!", "type": "success"}
+        return userID, {
+            "label": "Success",
+            "message": f"Successfully deleted user with ID {userID}!",
+            "type": "success",
+        }
 
     # UPDATE USER ROLE BY USER ID
 
     def updateUserRoleByUserID(self, userID, role):
         """
-            Update column user.role to new value
+        Update column user.role to new value
         """
         try:
             if role == "admin" or role == "user":
                 connection, cursor = self.updateConnection()
-                cursor.execute(
-                    f"UPDATE user SET user.role='{role}' WHERE id={userID}")
+                cursor.execute(f"UPDATE user SET user.role='{role}' WHERE id={userID}")
                 connection.commit()
             else:
-                return 0, {"label": "Error", "message": "Unknown role!", "type": "error"}
+                return 0, {
+                    "label": "Error",
+                    "message": "Unknown role!",
+                    "type": "error",
+                }
         except:
-            return 0, {"label": "Error", "message": "Something went wrong while updating user role!", "type": "error"}
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while updating user role!",
+                "type": "error",
+            }
 
-        return userID, {"label": "Success", "message": f"Successfully updated user role of user ID {userID} to '{role}'!", "type": "success"}
+        return userID, {
+            "label": "Success",
+            "message": f"Successfully updated user role of user ID {userID} to '{role}'!",
+            "type": "success",
+        }
 
     # ================== TAXON ================== #
     # IMPORT ALL FROM TAXDUMP FILE
     def reloadTaxonIDsFromFile(self):
         """
-            Takes names.dmp from /src directory and fills db with
-            all tax IDs
+        Takes names.dmp from /src directory and fills db with
+        all tax IDs
         """
 
         connection, cursor = self.updateConnection()
@@ -132,7 +173,10 @@ class DatabaseManager:
                 taxonData = taxonFile.readlines()
                 taxonFile.close()
         except:
-            return 0, "Error: Error while reading names.dmp. Check if file is provided at src/Tools/dependencies/ directory!"
+            return (
+                0,
+                "Error: Error while reading names.dmp. Check if file is provided at src/Tools/dependencies/ directory!",
+            )
 
         try:
             taxonID = None
@@ -145,7 +189,10 @@ class DatabaseManager:
                 if "scientific name" in line:
                     scientificName = split[2].replace("'", "")
 
-                if index < len(taxonData) - 1 and int(taxonData[index+1].split("\t")[0]) != taxonID:
+                if (
+                    index < len(taxonData) - 1
+                    and int(taxonData[index + 1].split("\t")[0]) != taxonID
+                ):
                     values += f"({taxonID}, '{scientificName}'),"
                     counter += 1
                     taxonID = None
@@ -179,7 +226,7 @@ class DatabaseManager:
     # FETCH ONE TAXON BY TAXON ID
     def fetchTaxonByTaxonID(self, taxonID):
         """
-            Gets taxon by taxon id from taxon table
+        Gets taxon by taxon id from taxon table
         """
         connection, cursor = self.updateConnection()
 
@@ -199,13 +246,12 @@ class DatabaseManager:
     # FETCH PROFILE IMAGE
     def fetchImageByTaxonID(self, taxonID):
         """
-            Gets image path by taxon id from taxon table
+        Gets image path by taxon id from taxon table
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"SELECT taxon.imagePath FROM taxon WHERE id = {taxonID}")
+            cursor.execute(f"SELECT taxon.imagePath FROM taxon WHERE id = {taxonID}")
             imagePath = cursor.fetchone()[0]
         except:
             return "", f"Error while fetching from DB. Check database connection!"
@@ -213,19 +259,21 @@ class DatabaseManager:
         if imagePath:
             return imagePath, ""
         else:
-            return "", f"No image to taxonomy ID {taxonID} found! Upload image to database!"
+            return (
+                "",
+                f"No image to taxonomy ID {taxonID} found! Upload image to database!",
+            )
 
     # ================== TAXON - GENERAL INFO ================== #
     # FETCH ALL GENERAL INFOS FOR ONE SPECIES BY TAXON ID
     def fetchTaxonGeneralInfosByTaxonID(self, taxonID):
         """
-            Get general infos for each taxon id
+        Get general infos for each taxon id
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"SELECT * FROM generalInfo WHERE taxonID = {taxonID}")
+            cursor.execute(f"SELECT * FROM generalInfo WHERE taxonID = {taxonID}")
 
             row_headers = [x[0] for x in cursor.description]
             generalInfos = cursor.fetchall()
@@ -240,35 +288,41 @@ class DatabaseManager:
     # ADD NEW GENERAL INFO
     def addTaxonGeneralInfo(self, taxonID, keyword, info, category=None):
         """
-            Add a general info to db
+        Add a general info to db
         """
         connection, cursor = self.updateConnection()
 
         taxon = ""
         try:
             cursor.execute(
-                f"INSERT INTO generalInfo (taxonID, category, keyword, info) VALUES ({taxonID}, '{category}', '{keyword}', '{info}')")
+                f"INSERT INTO generalInfo (taxonID, category, keyword, info) VALUES ({taxonID}, '{category}', '{keyword}', '{info}')"
+            )
 
             taxon = cursor.fetchone()
             connection.commit()
         except:
-            return {}, f"Error while inserting ('{category}', '{keyword}', {info}) into db."
+            return (
+                {},
+                f"Error while inserting ('{category}', '{keyword}', {info}) into db.",
+            )
 
         if taxon:
             return {"category": category, "keyword": keyword, "info": info}, ""
         else:
-            return {}, f"Error while inserting ('{category}', '{keyword}', {info}) into db."
+            return (
+                {},
+                f"Error while inserting ('{category}', '{keyword}', {info}) into db.",
+            )
 
     # REMOVE ONE TAXON GENERAL INFO BY ID
     def removeTaxonGeneralInfo(self, generalInfoID):
         """
-            Remove a taxon general info from db
+        Remove a taxon general info from db
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"DELETE FROM generalInfo WHERE id={generalInfoID}")
+            cursor.execute(f"DELETE FROM generalInfo WHERE id={generalInfoID}")
 
             connection.commit()
         except:
@@ -278,71 +332,163 @@ class DatabaseManager:
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
-    def fetchAllAssemblies(self, offset=0, count=0, search=""):
+    def fetchAllAssemblies(self, page=1, range=0, search=""):
         """
-            Gets all assemblies from db
+        Gets all assemblies from db
         """
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID")
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID"
+            )
 
             row_headers = [x[0] for x in cursor.description]
-            taxon = cursor.fetchall()
+            assemblies = cursor.fetchall()
+            assemblies = [dict(zip(row_headers, x)) for x in assemblies]
+
+            for i in assemblies:
+                assemblyID = i["id"]
+                cursor.execute(
+                    f"SELECT analysis.type FROM analysis WHERE analysis.assemblyID={assemblyID} GROUP BY analysis.type")
+                analyses = cursor.fetchall()
+                i.update({"types": [x[0] for x in analyses]}) 
         except:
-            return [], {}, {
-                "label": "Error", "message": "Something went wrong while fetching assemblies!", "type": "error"}
+            return (
+                [],
+                {},
+                {
+                    "label": "Error",
+                    "message": "Something went wrong while fetching assemblies!",
+                    "type": "error",
+                },
+            )
 
-        if len(taxon):
-            data = [dict(zip(row_headers, x)) for x in taxon]
-            pagination = {"count": len(data)}
+        if len(assemblies):
+            pagination = {"count": len(assemblies)}
 
-            if search != "":
-                try:
-                    search = search.lower()
-                    data = [x for x in data if (search in str(
-                        x["id"]) or search in x["name"].lower() or search in str(x["taxonID"]) or search in x["scientificName"].lower())]
-                except:
-                    return [], pagination, {
-                        "label": "Error", "message": f"Something went wrong while searching for keyword '{search}'!", "type": "error"}
-
-            pagination.update({"filteredCount": len(data)})
             try:
-                offset = int(offset)
-                count = int(count)
-                if offset >= 0 and count > 0:
-                    data = data[offset:offset+count]
-                    if offset-count < 0:
-                        pagination.update(
-                            {"previous": f"http://localhost:3002/fetchAllAssemblies?offset=0&count={count}&search={search}"})
-                    else:
-                        pagination.update(
-                            {"previous": f"http://localhost:3002/fetchAllAssemblies?offset={offset-count}&count={count}&search={search}"})
-
-                    if offset+count >= len(data):
-                        pagination.update(
-                            {"next": f"http://localhost:3002/fetchAllAssemblies?offset={offset}&count={count}&search={search}"})
-                    else:
-                        pagination.update(
-                            {"next": f"http://localhost:3002/fetchAllAssemblies?offset={offset+count}&count={count}&search={search}"})
+                if search != "":
+                    pagination.update({"search": search})
+                    search = search.lower()
+                    assemblies = [
+                        x
+                        for x in assemblies
+                        if (
+                            search in str(x["id"])
+                            or search in x["name"].lower()
+                            or search in str(x["taxonID"])
+                            or search in x["scientificName"].lower()
+                        )
+                    ]
             except:
-                return [], pagination, {
-                    "label": "Error", "message": f"Something went wrong while generating subset!", "type": "error"}
-            return data, pagination, 0
+                return (
+                    [],
+                    pagination,
+                    {
+                        "label": "Error",
+                        "message": f"Something went wrong while searching for keyword '{search}'!",
+                        "type": "error",
+                    },
+                )
+
+            try:
+                page = int(page)
+                range = int(range)
+                offset = (page - 1) * range
+                pages = ceil(len(assemblies) / range)
+                pagination.update(
+                    {
+                        "currentPage": page,
+                        "range": range,
+                        "pages": pages,
+                        "view": f"{offset+1}-{offset+range}",
+                    }
+                )
+                if page >= 0 and range > 0:
+                    assemblies = assemblies[offset : offset + range]
+
+                    if page - 1 < 1:
+                        pagination.update(
+                            {
+                                "previous": f"http://localhost:3002/fetchAllAssemblies?page=1&range={range}&search={search}"
+                            }
+                        )
+                    else:
+                        pagination.update(
+                            {
+                                "previous": f"http://localhost:3002/fetchAllAssemblies?page={page-1}&range={range}&search={search}"
+                            }
+                        )
+
+                    if page + 1 == pages:
+                        lastRange = len(assemblies) % range
+                        if lastRange == 0:
+                            lastRange = range
+                        pagination.update(
+                            {
+                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={lastRange}&search={search}"
+                            }
+                        )
+                    elif page + 1 > pages:
+                        lastRange = len(assemblies) % range
+                        if lastRange == 0:
+                            lastRange = range
+                        pagination.update(
+                            {
+                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page}&range={lastRange}&search={search}"
+                            }
+                        )
+                    else:
+                        pagination.update(
+                            {
+                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={range}&search={search}"
+                            }
+                        )
+
+            except:
+                return (
+                    [],
+                    pagination,
+                    {
+                        "label": "Error",
+                        "message": f"Something went wrong while generating subset!",
+                        "type": "error",
+                    },
+                )
+
+            if not len(assemblies) and search:
+                return (
+                    [],
+                    pagination,
+                    {
+                        "label": "Info",
+                        "message": "No assemblies for given search!",
+                        "type": "info",
+                    },
+                )
+            return assemblies, pagination, 0
         else:
-            return [], {}, {
-                "label": "Info", "message": "No assemblies in database!", "type": "info"}
+            return (
+                [],
+                {},
+                {
+                    "label": "Info",
+                    "message": "No assemblies in database!",
+                    "type": "info",
+                },
+            )
 
     # FETCH ALL ASSEMBLIES OF ONE SPECIES BY TAXON ID
     def fetchAssembliesByTaxonID(self, taxonID):
         """
-            Gets all assemblies with given taxon id
+        Gets all assemblies with given taxon id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = {taxonID} AND assembly.taxonID = taxon.id")
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = {taxonID} AND assembly.taxonID = taxon.id"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             assemblies = cursor.fetchall()
@@ -357,28 +503,32 @@ class DatabaseManager:
     # FETCH ONE ASSEMBLY BY ASSEMBLY ID
     def fetchAssemblyByAssemblyID(self, assemblyID):
         """
-            Get assembly with given assembly id
+        Get assembly with given assembly id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.assemblyID = {assemblyID} AND assembly.taxonID = taxon.id")
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, assembly.taxonID FROM assembly, taxon WHERE assembly.assemblyID = {assemblyID} AND assembly.taxonID = taxon.id"
+            )
 
             row_headers = [x[0] for x in cursor.description]
-            taxon = cursor.fetchone()
+            assembly = cursor.fetchone()
         except:
             return [], f"Error while fetching from DB. Check database connection!"
 
-        if taxon:
-            return dict(zip(row_headers, taxon)), ""
+        if assembly:
+            return dict(zip(row_headers, assembly)), ""
         else:
-            return {}, f"No assembly with assemblyID {assemblyID} found! Upload assembly first!"
+            return (
+                {},
+                f"No assembly with assemblyID {assemblyID} found! Upload assembly first!",
+            )
 
     # ADD NEW ASSEMBLY
     def addAssembly(self, name, taxonID, path, additionalFilesPath=None):
         """
-            Add an assembly to db
+        Add an assembly to db
         """
         connection, cursor = self.updateConnection()
 
@@ -386,10 +536,12 @@ class DatabaseManager:
         try:
             if not additionalFilesPath:
                 cursor.execute(
-                    f"INSERT INTO assembly (name, taxonID, path) VALUES ('{name}', {taxonID}, '{path}')")
+                    f"INSERT INTO assembly (name, taxonID, path) VALUES ('{name}', {taxonID}, '{path}')"
+                )
             else:
                 cursor.execute(
-                    f"INSERT INTO assembly (name, taxonID, path. additionalFilesPath) VALUES ('{name}', {taxonID}, '{path}', '{additionalFilesPath}')")
+                    f"INSERT INTO assembly (name, taxonID, path. additionalFilesPath) VALUES ('{name}', {taxonID}, '{path}', '{additionalFilesPath}')"
+                )
 
             taxon = cursor.fetchone()
             connection.commit()
@@ -397,20 +549,24 @@ class DatabaseManager:
             return {}, f"Error while importing new assembly!"
 
         if taxon:
-            return {"name": name, "taxonID": taxonID, "path": path, "additionalFilesPath": additionalFilesPath}, ""
+            return {
+                "name": name,
+                "taxonID": taxonID,
+                "path": path,
+                "additionalFilesPath": additionalFilesPath,
+            }, ""
         else:
             return {}, f"Error while inserting assembly into db."
 
     # REMOVE ASSEMBLY BY ASSEMBLY ID
     def removeAssembly(self, assemblyID):
         """
-            Remove an assembly from db
+        Remove an assembly from db
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"DELETE FROM assembly WHERE id = {assemblyID}")
+            cursor.execute(f"DELETE FROM assembly WHERE id = {assemblyID}")
 
             connection.commit()
         except:
@@ -422,13 +578,14 @@ class DatabaseManager:
     # FETCH ALL ASSEMBLY INFOS BY ASSEMBLY ID
     def fetchAssemblyGeneralInfosByAssemblyID(self, assemblyID):
         """
-            Get all assembly infos for assembly
+        Get all assembly infos for assembly
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT * FROM assemblyGeneralInfo WHERE assemblyID = {assemblyID}")
+                f"SELECT * FROM assemblyGeneralInfo WHERE assemblyID = {assemblyID}"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             assemblyInfos = cursor.fetchall()
@@ -443,14 +600,15 @@ class DatabaseManager:
     # ADD NEW GENERAL INFO
     def addAssemblyGeneralInfo(self, taxonID, key, value):
         """
-            Add a general info to assembly level
+        Add a general info to assembly level
         """
         connection, cursor = self.updateConnection()
 
         taxon = ""
         try:
             cursor.execute(
-                f"INSERT INTO assemblyGeneralInfo (taxonID, key, value) VALUES ({taxonID}, '{key}', '{value}')")
+                f"INSERT INTO assemblyGeneralInfo (taxonID, key, value) VALUES ({taxonID}, '{key}', '{value}')"
+            )
 
             taxon = cursor.fetchone()
             connection.commit()
@@ -465,13 +623,12 @@ class DatabaseManager:
     # REMOVE ONE ASSEMBLY GENERAL INFO BY ID
     def removeAssemblyGeneralInfo(self, generalInfoID):
         """
-            Remove an assembly general info from db
+        Remove an assembly general info from db
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"DELETE FROM assemblyGeneralInfo WHERE id={generalInfoID}")
+            cursor.execute(f"DELETE FROM assemblyGeneralInfo WHERE id={generalInfoID}")
 
             connection.commit()
         except:
@@ -483,13 +640,14 @@ class DatabaseManager:
     # FETCH ALL ASSEMBLY STATISTICS INFOS BY ASSEMBLY ID
     def fetchAssemblyStatisticGeneralInfosByAssemblyID(self, assemblyID):
         """
-            Get all assembly infos for assembly
+        Get all assembly infos for assembly
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT assemblyStatisticGeneralInfo.key, assemblyStatisticGeneralInfo.value FROM assemblyStatisticGeneralInfo, assemblyStatistic WHERE assemblyStatisticGeneralInfo.assemblyStatisticID = assemblyStatistic.id AND assemblyStatistic.assemblyID = {assemblyID}")
+                f"SELECT assemblyStatisticGeneralInfo.key, assemblyStatisticGeneralInfo.value FROM assemblyStatisticGeneralInfo, assemblyStatistic WHERE assemblyStatisticGeneralInfo.assemblyStatisticID = assemblyStatistic.id AND assemblyStatistic.assemblyID = {assemblyID}"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             assemblyInfos = cursor.fetchall()
@@ -505,13 +663,14 @@ class DatabaseManager:
     # FETCH ALL ASSEMBLY STATISTIC PLOTS BY ASSEMBLY ID
     def fetchAssemblyStatisticPlotsByAssemblyID(self, assemblyID):
         """
-            Gets assembly stat plot by assemblyID
+        Gets assembly stat plot by assemblyID
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT assemblyPlot.path FROM assemblyPlot, assemblyStatistic WHERE assemblyPlot.assemblyStatisticID = assemblyStatistic.id AND assemblyStatistic.assemblyID = {assemblyID}")
+                f"SELECT assemblyPlot.path FROM assemblyPlot, assemblyStatistic WHERE assemblyPlot.assemblyStatisticID = assemblyStatistic.id AND assemblyStatistic.assemblyID = {assemblyID}"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             plotPaths = cursor.fetchall()
@@ -527,13 +686,12 @@ class DatabaseManager:
     # FETCH ALL BOOKMARKS BY USER ID
     def fetchBookmarkByUserID(self, userID):
         """
-            Fetch all bookmark by userID
+        Fetch all bookmark by userID
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"SELECT * FROM bookmark WHERE userID = {userID}")
+            cursor.execute(f"SELECT * FROM bookmark WHERE userID = {userID}")
 
             row_headers = [x[0] for x in cursor.description]
             bookmarks = cursor.fetchall()
@@ -548,13 +706,14 @@ class DatabaseManager:
     # FETCH DASHBOARD INFO (bookmarked assemblies, taxon info, analyses status) BY USER ID
     def fetchBookmarksWithDashboardInfoByUserID(self, userID):
         """
-            Fetch all bookmarked assembly by userID with additional information for dashboard
+        Fetch all bookmarked assembly by userID with additional information for dashboard
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT bookmark.assemblyID, assembly.assemblyName, taxon.scientificName, taxon.taxonID FROM assembly, taxon, bookmark WHERE bookmark.userID={userID} AND bookmark.assemblyID=assembly.assemblyID AND assembly.taxonID=taxon.taxonID")
+                f"SELECT bookmark.assemblyID, assembly.assemblyName, taxon.scientificName, taxon.taxonID FROM assembly, taxon, bookmark WHERE bookmark.userID={userID} AND bookmark.assemblyID=assembly.assemblyID AND assembly.taxonID=taxon.taxonID"
+            )
 
             row_headers1 = [x[0] for x in cursor.description]
             assemblies = cursor.fetchall()
@@ -563,7 +722,8 @@ class DatabaseManager:
             for i in assemblies:
                 assemblyID = i["assemblyID"]
                 cursor.execute(
-                    f"SELECT analysis.type FROM analysis WHERE analysis.assemblyID={assemblyID} GROUP BY analysis.type")
+                    f"SELECT analysis.type FROM analysis WHERE analysis.assemblyID={assemblyID} GROUP BY analysis.type"
+                )
                 analyses = cursor.fetchall()
                 i.update({"types": [x[0] for x in analyses]})
         except:
@@ -577,14 +737,15 @@ class DatabaseManager:
     # ADD NEW BOOKMARK
     def addBookmarkByAssemblyID(self, userID, assemblyID):
         """
-            Add new assembly bookmark to user
+        Add new assembly bookmark to user
         """
         connection, cursor = self.updateConnection()
 
         bookmark = ""
         try:
             cursor.execute(
-                f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})")
+                f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})"
+            )
 
             bookmark = cursor.fetchone()
             connection.commit()
@@ -599,13 +760,12 @@ class DatabaseManager:
     # REMOVE BOOKMARK BY BOOKMARK ID
     def removeBookmarkByBookmarkID(self, id):
         """
-            remove assembly bookmark from user
+        remove assembly bookmark from user
         """
         connection, cursor = self.updateConnection()
 
         try:
-            cursor.execute(
-                f"DELETE FROM bookmark WHERE id = {id}")
+            cursor.execute(f"DELETE FROM bookmark WHERE id = {id}")
 
             connection.commit()
         except:
@@ -617,13 +777,14 @@ class DatabaseManager:
     # FETCH ALL BUSCO RESULTS BY ASSEMBLY ID
     def fetchBuscoDataByAssemblyID(self, assemblyID):
         """
-            Get busco results for each assembly id
+        Get busco results for each assembly id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT * FROM analysis, busco WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = busco.analysisID")
+                f"SELECT * FROM analysis, busco WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = busco.analysisID"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             analyses = cursor.fetchall()
@@ -639,13 +800,14 @@ class DatabaseManager:
     # FETCH ALL FCAT RESULTS BY ASSEMBLY ID
     def fetchFcatDataByAssemblyID(self, assemblyID):
         """
-            Get fCat results for each assembly id
+        Get fCat results for each assembly id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT * from analysis, fcat WHERE analysis.assemblyID = '{assemblyID}' AND analysis.analysisID = fcat.analysisID")
+                f"SELECT * from analysis, fcat WHERE analysis.assemblyID = '{assemblyID}' AND analysis.analysisID = fcat.analysisID"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             analyses = cursor.fetchall()
@@ -661,13 +823,14 @@ class DatabaseManager:
     # FETCH ALL REPEATMASKER RESULTS BY ASSEMBLY ID
     def fetchRepeatmaskerDataByAssemblyID(self, assemblyID):
         """
-            Get Repeatmasker results for each assembly id
+        Get Repeatmasker results for each assembly id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT * from analysis, repeatmasker WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = repeatmasker.analysisID")
+                f"SELECT * from analysis, repeatmasker WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = repeatmasker.analysisID"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             analyses = cursor.fetchall()
@@ -683,13 +846,14 @@ class DatabaseManager:
     # FETCH ALL MILTS PLOT PATHS BY ASSEMBLY ID
     def fetchMiltsDataByAssemblyID(self, assemblyID):
         """
-            Get milts results for each assembly id
+        Get milts results for each assembly id
         """
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"SELECT miltsPlot.path FROM analysis, miltsPlot WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = miltsPlot.analysisID")
+                f"SELECT miltsPlot.path FROM analysis, miltsPlot WHERE analysis.assemblyID = {assemblyID} AND analysis.analysisID = miltsPlot.analysisID"
+            )
 
             row_headers = [x[0] for x in cursor.description]
             analyses = cursor.fetchall()
@@ -704,46 +868,60 @@ class DatabaseManager:
     #####################################################################################################
     # ========================================== FILE IMPORT ========================================== #
     # DISTRIBUTE FILES BY TYPE
-    def importFromFile(self, assemblyID, assemblyName, taxonID, path, additionalFilesPath, type):
+    def importFromFile(
+        self, assemblyID, assemblyName, taxonID, path, additionalFilesPath, type
+    ):
         """
-            Imports different files by type
+        Imports different files by type
         """
         connection, cursor = self.updateConnection()
 
         try:
             if type == "assembly":
                 status, error = self.newAssemblyImport(
-                    assemblyID, assemblyName, taxonID, path, additionalFilesPath)
+                    assemblyID, assemblyName, taxonID, path, additionalFilesPath
+                )
             elif type == "proteins":
                 pass
-            elif type == "milts" or type == "busco" or type == "fcat" or type == "repeatmasker":
+            elif (
+                type == "milts"
+                or type == "busco"
+                or type == "fcat"
+                or type == "repeatmasker"
+            ):
                 status, error = self.combinedAnalysisImport(
-                    assemblyID, path, additionalFilesPath, type)
+                    assemblyID, path, additionalFilesPath, type
+                )
             elif type == "gff3" or type == "gff":
                 status, error = self.combinedGff3Import(
-                    assemblyID, path, additionalFilesPath)
+                    assemblyID, path, additionalFilesPath
+                )
             elif type == "mapping":
                 status, error = self.combinedMappingImport(
-                    assemblyID, path, additionalFilesPath)
+                    assemblyID, path, additionalFilesPath
+                )
         except:
             return 0, f"Error while importing new file!"
 
         return status, error
 
     # move fasta to storage, import assembly, run Quast, parse Quast, import Quast
-    def newAssemblyImport(self, assemblyID, assemblyName, taxonID, path, additionalFilesPath):
+    def newAssemblyImport(
+        self, assemblyID, assemblyName, taxonID, path, additionalFilesPath
+    ):
         status, error = fileManager.createDirectoriesForSpecies(assemblyName)
 
         if not status:
             return 0, error
 
         fastaPath, error = fileManager.moveFastaToSpeciesStorage(
-            assemblyID, path, additionalFilesPath)
+            assemblyID, path, additionalFilesPath
+        )
         if isfile(fastaPath):
             fastaImportObject, fastaImportError = self.addAssembly(
-                assemblyName, taxonID, path, additionalFilesPath=None)
-            output, error = fileManager.runQuast(
-                fastaPath, assemblyID, overwrite=True)
+                assemblyName, taxonID, path, additionalFilesPath=None
+            )
+            output, error = fileManager.runQuast(fastaPath, assemblyID, overwrite=True)
         else:
             return 0, error
 
@@ -763,7 +941,7 @@ class DatabaseManager:
     # import Quast
     def importQuast(self, assemblyID, assemblyInfos):
         """
-            Imports Quast assembly stats
+        Imports Quast assembly stats
         """
 
         connection, cursor = self.updateConnection()
@@ -774,7 +952,8 @@ class DatabaseManager:
 
                 fullReportPath = assemblyInfos["fullReportHTML"]
                 cursor.execute(
-                    f"INSERT INTO assemblyStatistic (assemblyID, path) VALUES ({assemblyID}, '{fullReportPath}')")
+                    f"INSERT INTO assemblyStatistic (assemblyID, path) VALUES ({assemblyID}, '{fullReportPath}')"
+                )
 
                 report = cursor.fetchone()
                 statisticID = cursor.lastrowid
@@ -788,7 +967,8 @@ class DatabaseManager:
                 try:
 
                     cursor.execute(
-                        f"INSERT INTO assemblyStatisticGeneralInfo (assemblyStatisticID, key, value) VALUES ({statisticID}, '{key}', '{info}')")
+                        f"INSERT INTO assemblyStatisticGeneralInfo (assemblyStatisticID, key, value) VALUES ({statisticID}, '{key}', '{info}')"
+                    )
 
                     lastGeneralInfo = cursor.fetchone()
                     connection.commit()
@@ -801,7 +981,8 @@ class DatabaseManager:
                 try:
 
                     cursor.execute(
-                        f"INSERT INTO assemblyStatisticPlot (assemblyStatisticID, type, path) VALUES ({statisticID}, '{plot}', '{path}')")
+                        f"INSERT INTO assemblyStatisticPlot (assemblyStatisticID, type, path) VALUES ({statisticID}, '{plot}', '{path}')"
+                    )
 
                     lastPlot = cursor.fetchone()
                     connection.commit()
@@ -816,7 +997,8 @@ class DatabaseManager:
     # move milts files to storage and import milts plot
     def combinedAnalysisImport(self, assemblyID, filepath, additionalFilesPath, type):
         newPath, error = fileManager.moveAnalysisToSpeciesStorage(
-            assemblyID, filepath, additionalFilesPath, type)
+            assemblyID, filepath, additionalFilesPath, type
+        )
 
         if newPath:
             if type == "milts":
@@ -835,20 +1017,22 @@ class DatabaseManager:
 
     def importMilts(self, assemblyID, path):
         """
-            Imports milts path to 3D_plot.html
+        Imports milts path to 3D_plot.html
         """
 
         connection, cursor = self.updateConnection()
 
         try:
             cursor.execute(
-                f"INSERT INTO analysis (assemblyID, type) VALUES ({assemblyID}, 'milts')")
+                f"INSERT INTO analysis (assemblyID, type) VALUES ({assemblyID}, 'milts')"
+            )
             connection.commit()
 
             analysisID = cursor.lastrowid
 
             cursor.execute(
-                f"INSERT INTO miltsPlot (analysisID, path) VALUES ({analysisID}, '{path}')")
+                f"INSERT INTO miltsPlot (analysisID, path) VALUES ({analysisID}, '{path}')"
+            )
             connection.commit()
             return 1, ""
 
@@ -859,7 +1043,7 @@ class DatabaseManager:
 
     def importBusco(self, assemblyID, path):
         """
-            Imports busco analysis results
+        Imports busco analysis results
         """
 
         data, error = parsers.parseBusco(path)
@@ -901,13 +1085,15 @@ class DatabaseManager:
 
         try:
             cursor.execute(
-                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'busco')")
+                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'busco')"
+            )
             connection.commit()
 
             analysisID = cursor.lastrowid
 
             cursor.execute(
-                f"INSERT INTO busco (analysisID, path, completeSingle, completeDuplicated, fragmented, missing, total) VALUES ({analysisID}, '{path}', '{completeSingle}', '{completeDuplicated}', '{fragmented}', '{missing}', '{total}')")
+                f"INSERT INTO busco (analysisID, path, completeSingle, completeDuplicated, fragmented, missing, total) VALUES ({analysisID}, '{path}', '{completeSingle}', '{completeDuplicated}', '{fragmented}', '{missing}', '{total}')"
+            )
             connection.commit()
             return 1, ""
 
@@ -918,7 +1104,7 @@ class DatabaseManager:
 
     def importFcat(self, assemblyID, path):
         """
-            Imports fCat analysis results
+        Imports fCat analysis results
         """
 
         data, error = parsers.parseFcat(path)
@@ -986,13 +1172,15 @@ class DatabaseManager:
 
         try:
             cursor.execute(
-                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'fcat')")
+                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'fcat')"
+            )
             connection.commit()
 
             analysisID = cursor.lastrowid
 
             cursor.execute(
-                f"INSERT INTO fcat (analysisID, path, m1_similar, m1_dissimilar, m1_duplicated, m1_missing, m1_ignored, m2_similar, m2_dissimilar, m2_duplicated, m2_missing, m2_ignored, m3_similar, m3_dissimilar, m3_duplicated, m3_missing, m3_ignored, m4_similar, m4_dissimilar, m4_duplicated, m4_missing, m4_ignored, total) VALUES ({analysisID}, '{path}', {m1_similar}, {m1_dissimilar}, {m1_duplicated}, {m1_missing}, {m1_ignored}, {m2_similar}, {m2_dissimilar}, {m2_duplicated}, {m2_missing}, {m2_ignored}, {m3_similar}, {m3_dissimilar}, {m3_duplicated}, {m3_missing}, {m3_ignored}, {m4_similar}, {m4_dissimilar}, {m4_duplicated}, {m4_missing}, {m4_ignored}, {m1_total})")
+                f"INSERT INTO fcat (analysisID, path, m1_similar, m1_dissimilar, m1_duplicated, m1_missing, m1_ignored, m2_similar, m2_dissimilar, m2_duplicated, m2_missing, m2_ignored, m3_similar, m3_dissimilar, m3_duplicated, m3_missing, m3_ignored, m4_similar, m4_dissimilar, m4_duplicated, m4_missing, m4_ignored, total) VALUES ({analysisID}, '{path}', {m1_similar}, {m1_dissimilar}, {m1_duplicated}, {m1_missing}, {m1_ignored}, {m2_similar}, {m2_dissimilar}, {m2_duplicated}, {m2_missing}, {m2_ignored}, {m3_similar}, {m3_dissimilar}, {m3_duplicated}, {m3_missing}, {m3_ignored}, {m4_similar}, {m4_dissimilar}, {m4_duplicated}, {m4_missing}, {m4_ignored}, {m1_total})"
+            )
             connection.commit()
             return 1, ""
 
@@ -1003,7 +1191,7 @@ class DatabaseManager:
 
     def importRepeatmasker(self, assemblyID, path):
         """
-            Imports Repeatmasker analysis results
+        Imports Repeatmasker analysis results
         """
 
         data, error = parsers.parseRepeatmasker(path)
@@ -1058,13 +1246,15 @@ class DatabaseManager:
 
         try:
             cursor.execute(
-                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'repeatmasker')")
+                f"INSERT INTO analysis (assemblyID, type) VALUES ('{assemblyID}', 'repeatmasker')"
+            )
             connection.commit()
 
             analysisID = cursor.lastrowid
 
             cursor.execute(
-                f"INSERT INTO repeatmasker (analysisID, path, retroelements, retroelements_length, dna_transposons, dna_transposons_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, '{path}', {retroelements}, {retroelements_length}, {dna_transposons}, {dna_transposons_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})")
+                f"INSERT INTO repeatmasker (analysisID, path, retroelements, retroelements_length, dna_transposons, dna_transposons_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, '{path}', {retroelements}, {retroelements_length}, {dna_transposons}, {dna_transposons_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
+            )
             connection.commit()
             return 1, ""
 
@@ -1075,10 +1265,10 @@ class DatabaseManager:
 
     def combinedGff3Import(self, assemblyID, filepath, directoryPath):
         Gff3Path, error = fileManager.moveGff3ToSpeciesStorage(
-            assemblyID, filepath, directoryPath)
+            assemblyID, filepath, directoryPath
+        )
         if Gff3Path:
-            gff3ImportStatus, gff3ImportError = self.importGff3(
-                Gff3Path, assemblyID)
+            gff3ImportStatus, gff3ImportError = self.importGff3(Gff3Path, assemblyID)
         else:
             return 0, error
 
@@ -1090,7 +1280,7 @@ class DatabaseManager:
     # import gff3
     def importGff3(self, path, assemblyID, additionalFilesPath=None):
         """
-            Imports gff3 file path into annotation table
+        Imports gff3 file path into annotation table
         """
 
         connection, cursor = self.updateConnection()
@@ -1098,10 +1288,12 @@ class DatabaseManager:
         try:
             if not additionalFilesPath:
                 cursor.execute(
-                    f"INSERT INTO annotation (assemblyID, path) VALUES ({assemblyID}, '{path}')")
+                    f"INSERT INTO annotation (assemblyID, path) VALUES ({assemblyID}, '{path}')"
+                )
             else:
                 cursor.execute(
-                    f"INSERT INTO annotation (assemblyID, path, additionalFilesPath) VALUES ({assemblyID}, '{path}', '{additionalFilesPath}')")
+                    f"INSERT INTO annotation (assemblyID, path, additionalFilesPath) VALUES ({assemblyID}, '{path}', '{additionalFilesPath}')"
+                )
             connection.commit()
 
             return 1, ""
@@ -1111,10 +1303,12 @@ class DatabaseManager:
     # move protein set to storage, import protein path
     def combinedProteinsImport(self, annotationID, filepath, additionalFilesPath):
         proteinsPath, error = fileManager.moveProteinsToSpeciesStorage(
-            annotationID, filepath, additionalFilesPath)
+            annotationID, filepath, additionalFilesPath
+        )
         if proteinsPath:
             proteinsImportStatus, proteinsImportError = self.importProteins(
-                proteinsPath, annotationID, additionalFilesPath)
+                proteinsPath, annotationID, additionalFilesPath
+            )
         else:
             return 0, error
 
@@ -1127,7 +1321,7 @@ class DatabaseManager:
 
     def importProteins(self, path, annotationID, additionalFilesPath=None):
         """
-            Imports proteins fasta file path into proteins table
+        Imports proteins fasta file path into proteins table
         """
 
         connection, cursor = self.updateConnection()
@@ -1135,10 +1329,12 @@ class DatabaseManager:
         try:
             if not additionalFilesPath:
                 cursor.execute(
-                    f"INSERT INTO proteins (annotationID, path) VALUES ({annotationID}, '{path}')")
+                    f"INSERT INTO proteins (annotationID, path) VALUES ({annotationID}, '{path}')"
+                )
             else:
                 cursor.execute(
-                    f"INSERT INTO proteins (annotationID, path, additionalFilesPath) VALUES ({annotationID}, '{path}', '{additionalFilesPath}')")
+                    f"INSERT INTO proteins (annotationID, path, additionalFilesPath) VALUES ({annotationID}, '{path}', '{additionalFilesPath}')"
+                )
             connection.commit()
 
             return 1, ""
@@ -1149,10 +1345,12 @@ class DatabaseManager:
 
     def combinedMappingImport(self, assemblyID, filepath, additionalFilesPath):
         mappingPath, error = fileManager.moveMappingToSpeciesStorage(
-            assemblyID, filepath, additionalFilesPath)
+            assemblyID, filepath, additionalFilesPath
+        )
         if mappingPath:
             mappingImportStatus, mappingImportError = self.importMapping(
-                assemblyID, filepath, additionalFilesPath)
+                assemblyID, filepath, additionalFilesPath
+            )
         else:
             return 0, error
 
@@ -1165,7 +1363,7 @@ class DatabaseManager:
 
     def importMapping(self, assemblyID, path, additionalFilesPath=None):
         """
-            Imports mapping file path into mapping table
+        Imports mapping file path into mapping table
         """
 
         connection, cursor = self.updateConnection()
@@ -1173,10 +1371,12 @@ class DatabaseManager:
         try:
             if not additionalFilesPath:
                 cursor.execute(
-                    f"INSERT INTO mapping (assemblyID, path) VALUES ({assemblyID}, '{path}')")
+                    f"INSERT INTO mapping (assemblyID, path) VALUES ({assemblyID}, '{path}')"
+                )
             else:
                 cursor.execute(
-                    f"INSERT INTO proteins (annotationID, path, additionalFilesPath) VALUES ({assemblyID}, '{path}', '{additionalFilesPath}')")
+                    f"INSERT INTO proteins (annotationID, path, additionalFilesPath) VALUES ({assemblyID}, '{path}', '{additionalFilesPath}')"
+                )
             connection.commit()
 
             return 1, ""

@@ -15,7 +15,7 @@ class Auth:
             user="gnom",
             password="G-nom_BOT#0",
             database=database,
-            auth_plugin='mysql_native_password'
+            auth_plugin="mysql_native_password",
         )
         cursor = connection.cursor()
 
@@ -26,17 +26,52 @@ class Auth:
     def fetchAuth(self, username, password):
         try:
             connection, cursor = self.updateConnection()
-            password = sha512(f"{password}$g#n#o#m$".encode('utf-8')).hexdigest()
+            password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
             cursor.execute(
-                'SELECT * FROM user WHERE username = %s AND password = %s', (username, password,))
+                "SELECT * FROM user WHERE username = %s AND password = %s",
+                (
+                    username,
+                    password,
+                ),
+            )
             row_headers = [x[0] for x in cursor.description]
             user = cursor.fetchone()
         except:
-            return {"userID": "", "role": "", "userName": "", "passwordHash": "", "token": ""}, {"label": "Error", "message": "Something went wrong while fetching from db!", "type": "error"}
+            return {
+                "userID": "",
+                "role": "",
+                "userName": "",
+                "passwordHash": "",
+                "token": "",
+            }, {
+                "label": "Error",
+                "message": "Something went wrong while fetching from db!",
+                "type": "error",
+            }
 
         if user:
             user = dict(zip(row_headers, user))
             username = user["username"]
-            return {"userID": user["id"], "role": user["role"], "userName": username, "passwordHash": user["password"], "token": token_hex(16)}, {"label": f"Welcome {username}!", "message": "You successfully logged in!", "type": "success"}
+            return {
+                "userID": user["id"],
+                "role": user["role"],
+                "userName": username,
+                "passwordHash": user["password"],
+                "token": token_hex(16),
+            }, {
+                "label": f"Welcome {username}!",
+                "message": "You successfully logged in!",
+                "type": "success",
+            }
         else:
-            return {"userID": "", "role": "", "userName": "", "passwordHash": "", "token": ""}, {"label": "Error", "message": "Incorrect username/password!", "type": "error"}
+            return {
+                "userID": "",
+                "role": "",
+                "userName": "",
+                "passwordHash": "",
+                "token": "",
+            }, {
+                "label": "Error",
+                "message": "Incorrect username/password!",
+                "type": "error",
+            }

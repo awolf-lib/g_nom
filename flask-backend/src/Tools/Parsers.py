@@ -8,8 +8,8 @@ class Parsers:
     # .fa / .fasta
     def parseFasta(self, pathToFasta):
         """
-            Reads content of .fa/.fasta
-            Output: [(header, sequence, length)]
+        Reads content of .fa/.fasta
+        Output: [(header, sequence, length)]
         """
 
         if not exists(pathToFasta):
@@ -22,7 +22,10 @@ class Parsers:
         extensionMatch = filePattern.match(filename)
 
         if not extensionMatch:
-            return 0, "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed."
+            return (
+                0,
+                "Error: Uncorrect filetype! Only files of type .fa/.fasta are allowed.",
+            )
 
         try:
             with open(pathToFasta, "r") as fa:
@@ -119,7 +122,10 @@ class Parsers:
                         return 0, "Error: One sequence contains multiple types."
                     sequence += line
                 else:
-                    return 0, "Error: At least one sequence did not match any sequence type. Abborting..."
+                    return (
+                        0,
+                        "Error: At least one sequence did not match any sequence type. Abborting...",
+                    )
 
             if index + 1 == len(lines) or headerPattern.match(lines[index + 1]):
                 sequences.append(sequence)
@@ -140,8 +146,8 @@ class Parsers:
 
     def parseQuast(self, pathToQuast):
         """
-            Takes an ID of an assembly and converts the results of quast (if in database) from the
-            summary file into a JSON object.
+        Takes an ID of an assembly and converts the results of quast (if in database) from the
+        summary file into a JSON object.
         """
         # go through all fcat runs
         try:
@@ -168,8 +174,7 @@ class Parsers:
             elif "cumulative_plot.png" == file:
                 data["plots"]["cumulative"] = pathToImgs + file
 
-        data["fullReportHTML"] = pathToQuast + \
-            "icarus_viewers/contig_size_viewer.html"
+        data["fullReportHTML"] = pathToQuast + "icarus_viewers/contig_size_viewer.html"
 
         return data, ""
 
@@ -177,7 +182,7 @@ class Parsers:
 
     def parseBusco(self, pathToBusco):
         """
-            Extract data of busco analysis (short_summary.txt)
+        Extract data of busco analysis (short_summary.txt)
         """
 
         summary_data = []
@@ -216,7 +221,7 @@ class Parsers:
 
     def parseFcat(self, pathToFcat):
         """
-            Extract data of fCat analysis (report_summary.txt)
+        Extract data of fCat analysis (report_summary.txt)
         """
         summaryData = []
         try:
@@ -228,15 +233,14 @@ class Parsers:
 
         try:
             data = {}
-            columns = [x.strip().replace("\n", "")
-                       for x in summaryData[0].split("\t")]
+            columns = [x.strip().replace("\n", "") for x in summaryData[0].split("\t")]
 
             for line in summaryData[1:]:
                 values = line.split("\t")
                 data[values[0]] = {}
 
                 for index, value in enumerate(values[2:]):
-                    data[values[0]][columns[index+2]] = int(value)
+                    data[values[0]][columns[index + 2]] = int(value)
         except:
             return 0, "Error: Error while parsing fCat results."
 
@@ -249,7 +253,7 @@ class Parsers:
 
     def parseRepeatmasker(self, pathToRepeatmasker):
         """
-            Extract data of Repeatmasker analysis
+        Extract data of Repeatmasker analysis
         """
         summaryData = []
         try:
@@ -340,8 +344,7 @@ class Parsers:
                     sequence_length -= length_occupied
 
             data["total_non_repetitive_length"] = sequence_length
-            data["total_repetitive_length"] = total_sequence_length - \
-                sequence_length
+            data["total_repetitive_length"] = total_sequence_length - sequence_length
         except:
             return 0, "Error: Error while parsing fCat results."
 

@@ -5,14 +5,14 @@ from flask import Blueprint, jsonify, request
 from Tools import Parsers
 
 # setup blueprint name
-parsers = Blueprint('parsers', __name__)
+parsers = Blueprint("parsers", __name__)
 
 
 api = Parsers()
 
 
 # TODO
-@parsers.route('/parseFasta', methods=["GET", "POST"])
+@parsers.route("/parseFasta", methods=["GET", "POST"])
 def parseFasta():
     if request.method == "POST":
         req = request.get_json(force=True)

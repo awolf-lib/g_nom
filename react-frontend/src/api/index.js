@@ -71,12 +71,20 @@ export default class API {
   }
 
   // ===== FETCH ALL ASSEMBLIES ===== //
-  async fetchAllAssemblies(offset = 0, count = 10, search = "") {
+  async fetchAllAssemblies(page = 1, range = 10, search = "", link = "") {
+    if (link) {
+      return fetch(link)
+        .then((request) => request.json())
+        .then((data) => data)
+        .catch((error) => {
+          console.error(error);
+        });
+    }
     return fetch(
-      "http://localhost:3002/fetchAllAssemblies?offset=" +
-        offset +
-        "&count=" +
-        count +
+      "http://localhost:3002/fetchAllAssemblies?page=" +
+        page +
+        "&range=" +
+        range +
         "&search=" +
         search
     )

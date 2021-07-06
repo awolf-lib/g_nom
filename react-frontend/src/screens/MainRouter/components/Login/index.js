@@ -4,7 +4,7 @@ import "../../../../App.css";
 
 import Button from "../../../../components/Button";
 
-import API from "../../../../api/genomes";
+import API from "../../../../api";
 
 import treeOfLife from "../../../../images/loginToL.jpg";
 import { useNotification } from "../../../../components/NotificationProvider";
