@@ -36,7 +36,7 @@ const AssemblyInfoListItem = ({
       <div className="w-3/12 sm:w-3/12 px-4 py-2">{assemblyName}</div>
       <div className="w-3/12 sm:w-3/12 px-4 py-2 flex items-center justify-center">
         {types && (
-          <div className="text-xs grid grid-cols-2 md:flex bg-gray-100 border border-gray-300 border-dotted shadow p-1 sm:px-2 rounded-lg">
+          <div className="transform scale-75 md:scale-100 text-xs grid grid-cols-2 md:flex bg-gray-100 border border-gray-300 border-dotted shadow p-1 sm:px-2 rounded-lg transition transition duration-500">
             <div className={analysisClass(types.includes("busco"))}>B</div>
             <div className={analysisClass(types.includes("fcat"))}>F</div>
             <div className={analysisClass(types.includes("repeatmasker"))}>

@@ -20,6 +20,8 @@ const AllAssembliesTable = () => {
   const [searchTimeout, setSearchTimeout] = useState(undefined);
   const [range, setRange] = useState(10);
   const [changeRangeTimeout, setChangeRangeTimeout] = useState(undefined);
+  const [page, setPage] = useState(1);
+  const [changePageTimeout, setChangePageTimeout] = useState(undefined);
   const [pagination, setPagination] = useState({
     page: 1,
     range: 10,
@@ -91,6 +93,22 @@ const AllAssembliesTable = () => {
     setChangeRangeTimeout(
       setTimeout(() => {
         loadData(1, input, search);
+      }, 2000)
+    );
+  };
+
+  const handlePageChange = (input) => {
+    clearTimeout(changePageTimeout);
+    if (input < 1) {
+      input = 1;
+    }
+    if (input > pagination.pages) {
+      input = pagination.pages;
+    }
+    setPage(input);
+    setChangePageTimeout(
+      setTimeout(() => {
+        loadData(input, range, search);
       }, 2000)
     );
   };
@@ -221,19 +239,33 @@ const AllAssembliesTable = () => {
                     <Previous color="blank" className="stroke-current" />
                   </Button>
                 </div>
-                <div className="">
-                  <div className="flex justify-center">
-                    {pagination.currentPage + " of " + pagination.pages}
+                <div className="mx-2">
+                  <div className="flex justify-center items-center">
+                    <span className="mr-2 text-sm">Page</span>
+                    <input
+                      type="number"
+                      max={pagination.pages}
+                      min={1}
+                      onChange={(e) => handlePageChange(e.target.value)}
+                      value={page || 1}
+                      className="transform scale-75 text-center border border-gray-300 bg-white pl-6 pr-2 rounded-lg text-sm font-bold focus:outline-none focus:ring-2"
+                    />
+                    <span className="mr-2 text-sm">of</span>
+                    <span className="mr-2 text-sm">{pagination.pages}</span>
                   </div>
-                  <input
-                    type="number"
-                    max={100}
-                    min={5}
-                    step={5}
-                    onChange={(e) => handleRangeChange(e.target.value)}
-                    value={range || 10}
-                    className="w-24 text-center mt-2 border border-gray-300 bg-white py-1 pl-6 pr-2 rounded-lg text-sm focus:outline-none focus:ring-2"
-                  />
+                  <hr className="shadow -mx-4 my-1" />
+                  <label>
+                    <span className="mr-2 text-sm">Assemblies/page:</span>
+                    <input
+                      type="number"
+                      max={100}
+                      min={5}
+                      step={5}
+                      onChange={(e) => handleRangeChange(e.target.value)}
+                      value={range || 10}
+                      className="transform scale-75 w-24 text-center border border-gray-300 bg-white pl-6 pr-2 rounded-lg text-sm font-bold focus:outline-none focus:ring-2"
+                    />
+                  </label>
                 </div>
                 <div className="w-12 mx-4">
                   <Button
