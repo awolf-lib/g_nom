@@ -37,8 +37,16 @@ const AllAssembliesTable = () => {
 
   useEffect(() => {
     loadData();
+
+    return clearTimeouts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const clearTimeouts = () => {
+    clearTimeout(searchTimeout);
+    clearTimeout(changeRangeTimeout);
+    clearTimeout(changePageTimeout);
+  };
 
   const dispatch = useNotification();
 
@@ -185,6 +193,7 @@ const AllAssembliesTable = () => {
                         taxonID={assembly.taxonID}
                         assemblyName={assembly.name}
                         types={assembly.types}
+                        imageStored={assembly.imageStored}
                       />
                     ) : (
                       <AssemblyInfoListItem
@@ -193,6 +202,7 @@ const AllAssembliesTable = () => {
                         taxonID={assembly.taxonID}
                         assemblyName={assembly.name}
                         types={assembly.types}
+                        imageStored={assembly.imageStored}
                       />
                     );
                   })

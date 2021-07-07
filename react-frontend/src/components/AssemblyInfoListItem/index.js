@@ -11,6 +11,7 @@ const AssemblyInfoListItem = ({
   scientificName,
   assemblyName,
   types,
+  imageStored,
 }) => {
   const analysisClass = (analysisDone) =>
     classNames(
@@ -28,7 +29,10 @@ const AssemblyInfoListItem = ({
     >
       <div className="sm:w-1/12 px-4 py-2 hidden sm:block">
         <div className="w-16 h-16 object-contain min-w-min">
-          <SpeciesProfilePictureViewer taxonID={taxonID} />
+          <SpeciesProfilePictureViewer
+            taxonID={taxonID}
+            imageStatus={imageStored}
+          />
         </div>
       </div>
       <div className="w-3/12 sm:w-3/12 px-4 py-2">{scientificName}</div>
@@ -58,6 +62,7 @@ AssemblyInfoListItem.propTypes = {
   taxonID: PropTypes.number,
   assemblyName: PropTypes.string,
   types: PropTypes.array,
+  imageStored: PropTypes.number,
 };
 
 AssemblyInfoListItem.defaultProps = {
@@ -65,4 +70,5 @@ AssemblyInfoListItem.defaultProps = {
   taxonID: 0,
   assemblyName: "",
   types: [],
+  imageStored: 0,
 };

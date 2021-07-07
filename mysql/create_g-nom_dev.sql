@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `g-nom_dev`.`taxon` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `ncbiTaxonID` INT NOT NULL,
   `scientificName` VARCHAR(400) NOT NULL,
-  `imagePath` VARCHAR(400) NULL,
+  `image` TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
