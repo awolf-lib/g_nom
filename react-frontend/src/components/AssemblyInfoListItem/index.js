@@ -28,7 +28,7 @@ const AssemblyInfoListItem = ({
       key={id}
     >
       <div className="sm:w-1/12 px-4 py-2 hidden sm:block">
-        <div className="w-16 h-16 object-contain min-w-min">
+        <div className="w-16 h-16 object-contain min-w-min rounded-lg overflow-hidden">
           <SpeciesProfilePictureViewer
             taxonID={taxonID}
             imageStatus={imageStored}

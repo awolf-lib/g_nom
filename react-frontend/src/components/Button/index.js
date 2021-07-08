@@ -1,9 +1,12 @@
+import React, { useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
 import PropTypes from "prop-types";
 
 const Button = (props) => {
-  let classnames = classNames(
+  const [showChildren, setShowChildren] = useState(false);
+
+  const buttonContainerClass = classNames(
     "py-2 rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
     {
       "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600":
@@ -26,10 +29,31 @@ const Button = (props) => {
       "text-xl": props.size === "xl",
     }
   );
+
+  const getContent = () => {
+    if (props.label && props.children) {
+      return showChildren ? (
+        <div className="animate-grow-y">{props.children}</div>
+      ) : (
+        <div>{props.label}</div>
+      );
+    }
+    if (!props.children && props.label) {
+      return props.label;
+    }
+    if (!props.label && props.children) {
+      return props.children;
+    }
+  };
+
   return (
-    <button className={classnames} {...props}>
-      {props.label}
-      {props.children}
+    <button
+      className={buttonContainerClass}
+      onMouseEnter={() => setShowChildren(true)}
+      onMouseLeave={() => setShowChildren(false)}
+      {...props}
+    >
+      {getContent()}
     </button>
   );
 };

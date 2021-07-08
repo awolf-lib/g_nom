@@ -1,6 +1,7 @@
 import mysql.connector
 from os import makedirs
 from os.path import exists
+from glob import glob
 
 # defaults
 BASE_PATH_TO_IMPORT = "src/Import/"
@@ -27,23 +28,34 @@ class FileManager:
 
     #####################################################################################################
     # ========================================== FILE IMPORT ========================================== #
-    def fetchPossibleImports(self, types=["fasta"], import_directory=BASE_PATH_TO_IMPORT):
+    def fetchPossibleImports(
+        self, types=["image", "fasta"], import_directory=BASE_PATH_TO_IMPORT
+    ):
         """
         Fetch all files provided in import dirctory
         """
 
+        if not isinstance(types, list):
+            types = ["image", "fasta"]
+
         FILE_TYPE_EXTENSION_PATTERNS = {
+            "image": {
+                ".jpg": "**/*.jpg",
+                ".jpeg": "**/*.jpeg",
+                ".png": "**/*.png",
+                ".jfif": "**/*.jfif",
+            },
             "fasta": {
-                ".fasta": r"^(.+)\.fasta$",
-                ".fa": r"^(.+)\.fa$",
-                ".faa": r"^(.+)\.faa$",
-                ".fna": r"^(.+)\.fna$",
-            }
+                ".fasta": "**/*.fasta",
+                ".fa": "**/*.fa",
+                ".faa": "**/*.faa",
+                ".fna": "**/*.fna",
+            },
         }
 
         # check if import directory exist or create
         if not exists(import_directory):
-            if not exists(import_directory):
+            if not exists(BASE_PATH_TO_IMPORT):
                 makedirs(BASE_PATH_TO_IMPORT, exist_ok=True)
             return 0, {
                 "label": "Info",
@@ -51,14 +63,34 @@ class FileManager:
                 "type": "info",
             }
 
+        # search for all files that are supported
+        possibleImports = {}
+        possibleImportsCount = 0
         for type in types:
+            type = type.lower()
             if type in FILE_TYPE_EXTENSION_PATTERNS:
+                possibleImports.update({type: {}})
                 for extension in FILE_TYPE_EXTENSION_PATTERNS[type]:
-                    print(FILE_TYPE_EXTENSION_PATTERNS[type][extension])
+                    regex = FILE_TYPE_EXTENSION_PATTERNS[type][extension]
+                    fileListPerTypePerExtension = []
+                    for filePath in glob(import_directory + regex, recursive=True):
+                        pathSplit = filePath.split("/")
+                        basePathLength = len([x for x in import_directory.split("/") if x != ""])
+                        fileListPerTypePerExtension.append(pathSplit[basePathLength:])
+                        possibleImportsCount += 1
 
+                    possibleImports[type].update(
+                        {extension: fileListPerTypePerExtension}
+                    )
             else:
                 return 0, {
-                "label": "Error",
-                "message": f"File type {type} unknown!",
-                "type": "error",
-            }
+                    "label": "Error",
+                    "message": f"File type {type} unknown!",
+                    "type": "error",
+                }
+
+        return possibleImports, {
+                    "label": "Info",
+                    "message": f"{possibleImportsCount} possible files were detected!",
+                    "type": "info",
+                }

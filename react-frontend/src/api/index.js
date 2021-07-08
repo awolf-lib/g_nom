@@ -71,7 +71,13 @@ export default class API {
   }
 
   // ===== FETCH ALL ASSEMBLIES ===== //
-  async fetchAllAssemblies(page = 1, range = 10, search = "", link = "") {
+  async fetchAllAssemblies(
+    page = 1,
+    range = 10,
+    search = "",
+    link = "",
+    userID = 0
+  ) {
     if (link) {
       return fetch(link)
         .then((request) => request.json())
@@ -86,8 +92,26 @@ export default class API {
         "&range=" +
         range +
         "&search=" +
-        search
+        search +
+        "&userID=" +
+        userID
     )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH ALL ASSEMBLIES ===== //
+  async fetchPossibleImports(types = undefined) {
+    return fetch("http://localhost:3002/fetchPossibleImports", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ types: types }),
+    })
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {

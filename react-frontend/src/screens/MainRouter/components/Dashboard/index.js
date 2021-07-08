@@ -1,14 +1,11 @@
 import React from "react";
 import "../../../../App.css";
 
+import AssembliesTable from "../../../../components/AssembliesTable";
+
 const Dashboard = () => {
-  return (
-    <div>
-      <main>
-        <div className="md:mx-8 lg:mx-16 py-6 sm:px-6 lg:px-8"></div>
-      </main>
-    </div>
-  );
+  const userID = sessionStorage.getItem("userID");
+  return <AssembliesTable label="Dashboard" userID={userID} />;
 };
 
 export default Dashboard;

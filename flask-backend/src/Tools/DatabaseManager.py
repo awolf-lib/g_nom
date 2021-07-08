@@ -225,15 +225,22 @@ class DatabaseManager:
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
-    def fetchAllAssemblies(self, page=1, range=0, search=""):
+    def fetchAllAssemblies(self, page=1, range=0, search="", userID=0):
         """
         Gets all assemblies from db
         """
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStored, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID"
-            )
+            userID = int(userID)
+            if not userID:
+                print("hi")
+                cursor.execute(
+                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStored, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID"
+                )
+            else:
+                cursor.execute(
+                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStored, assembly.taxonID FROM assembly, taxon, bookmark WHERE bookmark.userID={userID} AND bookmark.assemblyID=assembly.id AND assembly.taxonID = taxon.ncbiTaxonID"
+                )
 
             row_headers = [x[0] for x in cursor.description]
             assemblies = cursor.fetchall()

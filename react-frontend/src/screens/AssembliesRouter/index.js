@@ -5,8 +5,8 @@ import {
   Route,
   Redirect,
 } from "react-router-dom";
-import AllAssembliesTable from "./components/AllAssembliesTable";
-import ImportManager from "./components/ImportManager";
+import AssembliesTable from "../../components/AssembliesTable";
+import AssemblyManager from "./components/AssemblyManager";
 
 const AssembliesRouter = () => {
   return (
@@ -16,10 +16,10 @@ const AssembliesRouter = () => {
           <Redirect to="/g-nom/assemblies/list" />
         </Route>
         <Route exact path={"/g-nom/assemblies/list"}>
-          <AllAssembliesTable />
+          <AssembliesTable />
         </Route>
-        <Route exact path={"/g-nom/assemblies/import"}>
-          <ImportManager />
+        <Route exact path={"/g-nom/assemblies/manage"}>
+          <AssemblyManager />
         </Route>
         <Route exact path={"/g-nom/assemblies/manageAssemblies"}></Route>
       </Switch>

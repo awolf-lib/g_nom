@@ -98,6 +98,7 @@ def reloadTaxonIDsFromFile():
     else:
         return REQUESTMETHODERROR
 
+
 # ================== ASSEMBLY ================== #
 # FETCH ALL ASSEMBLIES
 @db.route("/fetchAllAssemblies", methods=["GET"])
@@ -106,7 +107,8 @@ def fetchAllAssemblies():
         page = request.args.get("page")
         range = request.args.get("range")
         search = request.args.get("search")
-        data, pagination, notification = api.fetchAllAssemblies(page, range, search)
+        userID = request.args.get("userID")
+        data, pagination, notification = api.fetchAllAssemblies(page, range, search, userID)
 
         response = jsonify(
             {"payload": data, "pagination": pagination, "notification": notification}
