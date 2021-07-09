@@ -56,7 +56,6 @@ class Auth:
                 "userID": user["id"],
                 "role": user["role"],
                 "userName": username,
-                "passwordHash": user["password"],
                 "token": token_hex(16),
             }, {
                 "label": f"Welcome {username}!",
@@ -64,13 +63,7 @@ class Auth:
                 "type": "success",
             }
         else:
-            return {
-                "userID": "",
-                "role": "",
-                "userName": "",
-                "passwordHash": "",
-                "token": "",
-            }, {
+            return {"userID": "", "role": "", "userName": "", "token": "",}, {
                 "label": "Error",
                 "message": "Incorrect username/password!",
                 "type": "error",

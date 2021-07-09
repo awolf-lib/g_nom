@@ -1,8 +1,8 @@
 # FLASK
 **/__pycache__
 **/venv
-**/FileStorage
-**/Import
+**/FileStorage/*
+**/Import/*
 
 # REACT
 # dependencies

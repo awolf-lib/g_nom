@@ -118,4 +118,16 @@ export default class API {
         console.error(error);
       });
   }
+
+  // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
+  async fetchTaxonByNCBITaxonID(taxonID) {
+    return fetch(
+      "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 }

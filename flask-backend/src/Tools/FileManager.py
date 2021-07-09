@@ -75,7 +75,9 @@ class FileManager:
                     fileListPerTypePerExtension = []
                     for filePath in glob(import_directory + regex, recursive=True):
                         pathSplit = filePath.split("/")
-                        basePathLength = len([x for x in import_directory.split("/") if x != ""])
+                        basePathLength = len(
+                            [x for x in import_directory.split("/") if x != ""]
+                        )
                         fileListPerTypePerExtension.append(pathSplit[basePathLength:])
                         possibleImportsCount += 1
 
@@ -90,7 +92,7 @@ class FileManager:
                 }
 
         return possibleImports, {
-                    "label": "Info",
-                    "message": f"{possibleImportsCount} possible files were detected!",
-                    "type": "info",
-                }
+            "label": "Info",
+            "message": f"{possibleImportsCount} possible files were detected!",
+            "type": "info",
+        }

@@ -4,7 +4,7 @@ import "../../App.css";
 
 import { v4 } from "uuid";
 
-import Popup from "../Notification";
+import Notification from "../Notification";
 
 const NotificationContext = createContext();
 
@@ -33,7 +33,7 @@ const NotificationProvider = (props) => {
       <div className="fixed right-0 bottom-0 mt-8 mb-16 z-50">
         {state.map((notification) => (
           <div key={notification.id} className="flex justify-end">
-            <Popup dispatch={dispatch} {...notification} />
+            <Notification dispatch={dispatch} {...notification} />
           </div>
         ))}
       </div>

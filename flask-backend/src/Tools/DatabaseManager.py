@@ -223,6 +223,34 @@ class DatabaseManager:
         else:
             return 0, "No taxa imported"
 
+    # FETCH ONE TAXON BY NCBI TAXON ID
+    def fetchTaxonByNCBITaxonID(self, taxonID):
+        """
+        Gets taxon by taxon id from taxon table
+        """
+        connection, cursor = self.updateConnection()
+
+        try:
+            cursor.execute(f"SELECT * FROM taxon WHERE ncbiTaxonID = {taxonID}")
+            row_headers = [x[0] for x in cursor.description]
+            taxa = cursor.fetchall()
+
+        except:
+            return {}, {
+                "label": "Error",
+                "message": f"Error while fetching taxon information from database!",
+                "type": "error",
+            }
+
+        if len(taxa):
+            return [dict(zip(row_headers, x)) for x in taxa], {}
+        else:
+            return {}, {
+                "label": "Info",
+                "message": f"No taxon for NCBI taxonomy ID {taxonID} found!",
+                "type": "info",
+            }
+
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
     def fetchAllAssemblies(self, page=1, range=0, search="", userID=0):
@@ -233,7 +261,6 @@ class DatabaseManager:
             connection, cursor = self.updateConnection()
             userID = int(userID)
             if not userID:
-                print("hi")
                 cursor.execute(
                     f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStored, assembly.taxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.ncbiTaxonID"
                 )

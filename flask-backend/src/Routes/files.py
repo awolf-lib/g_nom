@@ -27,9 +27,7 @@ REQUESTMETHODERROR = {
 def fetchPossibleImports():
     if request.method == "POST":
         req = request.get_json(force=True)
-        data, notification = api.fetchPossibleImports(
-            req.get("types", None)
-        )
+        data, notification = api.fetchPossibleImports(req.get("types", None))
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

@@ -1,11 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../../../../App.css";
 
 import AssembliesTable from "../../../../components/AssembliesTable";
 
 const Dashboard = () => {
-  const userID = sessionStorage.getItem("userID");
-  return <AssembliesTable label="Dashboard" userID={userID} />;
+  const [userID, setUserID] = useState(undefined);
+
+  useEffect(() => {
+    setUserID(parseInt(sessionStorage.getItem("userID")));
+  });
+
+  return userID ? (
+    <AssembliesTable label="Dashboard" userID={userID} />
+  ) : (
+    <div />
+  );
 };
 
 export default Dashboard;

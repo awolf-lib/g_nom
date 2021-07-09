@@ -12,10 +12,12 @@ import LoadingSpinner from "../LoadingSpinner";
 import AssemblyInfoCard from "../AssemblyInfoCard";
 import { useNotification } from "../NotificationProvider";
 import AssemblyInfoListItem from "../AssemblyInfoListItem";
+import Input from "../Input";
 
 const AssembliesTable = ({ label, userID }) => {
   const [assemblies, setAssemblies] = useState([]);
   const [fetching, setFetching] = useState(false);
+  const [mounted, setMounted] = useState(true);
   const [search, setSearch] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(undefined);
   const [range, setRange] = useState(10);
@@ -38,11 +40,12 @@ const AssembliesTable = ({ label, userID }) => {
   useEffect(() => {
     loadData();
 
-    return clearTimeouts();
+    return cleanUp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const clearTimeouts = () => {
+  const cleanUp = () => {
+    setMounted(false);
     clearTimeout(searchTimeout);
     clearTimeout(changeRangeTimeout);
     clearTimeout(changePageTimeout);
@@ -61,7 +64,6 @@ const AssembliesTable = ({ label, userID }) => {
   const loadData = async (page = 1, range = 10, search = "", link = "") => {
     setFetching(true);
 
-    console.log(userID);
     const response = await api.fetchAllAssemblies(
       page,
       range,
@@ -69,6 +71,10 @@ const AssembliesTable = ({ label, userID }) => {
       link,
       userID
     );
+
+    if (!mounted) {
+      return 0;
+    }
 
     if (response && response.payload) {
       setAssemblies(response.payload);
@@ -159,11 +165,10 @@ const AssembliesTable = ({ label, userID }) => {
               <option value="grid">Grid</option>
               <option value="list">List</option>
             </select>
-            <input
+            <Input
               onChange={(e) => {
                 handleSearchChange(e.target.value);
               }}
-              className="w-full border border-gray-300 bg-white h-10 px-5 rounded-lg text-sm focus:outline-none focus:ring-2 hover:ring-2 ring-offset-1 transition duration-300"
               type="search"
               name="search"
               placeholder="Search..."
@@ -264,15 +269,15 @@ const AssembliesTable = ({ label, userID }) => {
                 <div className="mx-2">
                   <div className="flex justify-center items-center">
                     <span className="mr-2 text-sm">Page</span>
-                    <input
+                    <Input
                       type="number"
+                      size="sm"
                       max={pagination.pages || 0}
                       min={1}
                       onChange={(e) => handlePageChange(e.target.value)}
                       value={page || 0}
-                      className="transform scale-75 text-center border border-gray-300 bg-white pl-6 pr-2 rounded-lg text-sm font-bold focus:outline-none focus:ring-2"
                     />
-                    <span className="mr-2 text-sm">of</span>
+                    <span className="mx-2 text-sm">of</span>
                     <span className="mr-2 text-sm">
                       {pagination.pages || 0}
                     </span>
@@ -280,14 +285,14 @@ const AssembliesTable = ({ label, userID }) => {
                   <hr className="shadow -mx-4 my-1" />
                   <label>
                     <span className="mr-2 text-sm">Assemblies/page:</span>
-                    <input
+                    <Input
                       type="number"
+                      size="sm"
                       max={100}
                       min={5}
                       step={5}
                       onChange={(e) => handleRangeChange(e.target.value)}
                       value={range}
-                      className="transform scale-75 w-24 text-center border border-gray-300 bg-white pl-6 pr-2 rounded-lg text-sm font-bold focus:outline-none focus:ring-2"
                     />
                   </label>
                 </div>

@@ -7,7 +7,7 @@ const Button = (props) => {
   const [showChildren, setShowChildren] = useState(false);
 
   const buttonContainerClass = classNames(
-    "py-2 rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
+    "py-2 h-full rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
     {
       "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600":
         props.color === "primary",

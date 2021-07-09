@@ -89,9 +89,24 @@ def updateUserRoleByUserID():
 @db.route("/reloadTaxonIDsFromFile", methods=["GET"])
 def reloadTaxonIDsFromFile():
     if request.method == "GET":
-        data, error = api.reloadTaxonIDsFromFile()
+        data, notification = api.reloadTaxonIDsFromFile()
 
-        response = jsonify({"payload": data, "error": error})
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ONE TAXON BY TAXON ID
+@db.route("/fetchTaxonByNCBITaxonID", methods=["GET"])
+def fetchTaxonByNCBITaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        data, notification = api.fetchTaxonByNCBITaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
@@ -108,7 +123,9 @@ def fetchAllAssemblies():
         range = request.args.get("range")
         search = request.args.get("search")
         userID = request.args.get("userID")
-        data, pagination, notification = api.fetchAllAssemblies(page, range, search, userID)
+        data, pagination, notification = api.fetchAllAssemblies(
+            page, range, search, userID
+        )
 
         response = jsonify(
             {"payload": data, "pagination": pagination, "notification": notification}

@@ -8,6 +8,7 @@ import API from "../../../../api";
 
 import treeOfLife from "../../../../images/loginToL.jpg";
 import { useNotification } from "../../../../components/NotificationProvider";
+import Input from "../../../../components/Input";
 
 const Login = ({ setToken, setUserID, setUserRole }) => {
   const [username, setUserName] = useState();
@@ -63,8 +64,7 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
           <div className="mr-8 font-semibold text-center lg:text-left py-2 lg:py-0 w-32">
             Username:
           </div>
-          <input
-            className="w-full border rounded-lg px-4 py-2 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <Input
             placeholder="Username..."
             onChange={(e) => setUserName(e.target.value)}
           />
@@ -73,8 +73,7 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
           <div className="mr-8 font-semibold text-center lg:text-left py-2 lg:py-0 w-32">
             Password:
           </div>
-          <input
-            className=" w-full border rounded-lg px-4 py-2 shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <Input
             placeholder="Password..."
             type="password"
             onChange={(e) => setPassword(e.target.value)}
