@@ -11,7 +11,7 @@ import {
   FormClose,
 } from "grommet-icons";
 
-const Popup = ({ id, label, message, type, dispatch }) => {
+const Notification = ({ id, label, message, type, dispatch }) => {
   const [width, setWidth] = useState(0);
   const [intervalID, setIntervalID] = useState(null);
   const [exit, setExit] = useState(false);
@@ -135,13 +135,13 @@ const Popup = ({ id, label, message, type, dispatch }) => {
   );
 };
 
-Popup.defaultProps = {
+Notification.defaultProps = {
   label: "Notification",
   message: "Something happend",
   type: "info",
 };
 
-Popup.propTypes = {
+Notification.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string,
   message: PropTypes.string,
@@ -149,4 +149,4 @@ Popup.propTypes = {
   dispatch: PropTypes.func.isRequired,
 };
 
-export default Popup;
+export default Notification;
