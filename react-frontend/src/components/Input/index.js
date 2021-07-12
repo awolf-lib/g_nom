@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 
 const Input = (props) => {
   const inputClass = classNames(
-    "text-center px-2 border border-gray-300 bg-white text-black rounded-lg focus:outline-none transition duration-300",
+    "px-2 py-1 border border-gray-300 bg-white text-black rounded-lg focus:outline-none transition duration-300",
     {
       "max-w-min text-xs h-5": props.size === "sm",
       "w-full text-base h-10": props.size === "md",
@@ -14,9 +14,15 @@ const Input = (props) => {
     {
       "pl-6": props.type === "number",
       "focus:ring-2 hover:ring-2 ring-offset-1": props.type !== "radio",
+      "text-center": props.type !== "textarea",
+      "h-32 text-justify": props.type === "textarea",
     }
   );
-  return <input {...props} className={inputClass} />;
+  if (props.type !== "textarea") {
+    return <input {...props} className={inputClass} />;
+  } else {
+    return <textarea {...props} className={inputClass} />;
+  }
 };
 
 Input.defaultProps = {

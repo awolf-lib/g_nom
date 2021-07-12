@@ -251,6 +251,60 @@ class DatabaseManager:
                 "type": "info",
             }
 
+    # UPDATE TAXON IMAGE
+    def updateImageByTaxonID(self, taxonID, path):
+        """
+        DELETE PROFILE
+        """
+        status, notification = fileManager.moveFileToStorage("image", path, taxonID)
+
+        if not status:
+            return 0, notification
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"UPDATE taxon SET taxon.imageStored={1} WHERE taxon.ncbiTaxonID={taxonID}")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while updating taxon image!",
+                "type": "error",
+            }
+
+        return taxonID, {
+            "label": "Success",
+            "message": f"Successfully updated image of taxon with NCBI taxon ID {taxonID}!",
+            "type": "success",
+        }
+
+    # DELETE TAXON IMAGE
+    def removeImageByTaxonID(self, taxonID):
+        """
+        remove PROFILE IMAGE
+        """
+
+        status, notification = fileManager.deleteFile("src/FileStorage/taxa/images/" + taxonID + ".thumbnail.jpg")
+        if not status:
+            return 0, notification
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"UPDATE taxon SET taxon.imageStored={0} WHERE taxon.ncbiTaxonID={taxonID}")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while updating taxon image!",
+                "type": "error",
+            }
+
+        return taxonID, {
+            "label": "Success",
+            "message": f"Successfully removed image of taxon with NCBI taxon ID {taxonID}!",
+            "type": "success",
+        }
+
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
     def fetchAllAssemblies(self, page=1, range=0, search="", userID=0):
@@ -405,3 +459,137 @@ class DatabaseManager:
                     "type": "info",
                 },
             )
+
+    # ================== GENERAL INFO ANY LEVEL ================== #
+    # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
+    def fetchGeneralInfosByID(self, level, id):
+        """
+        Gets all general information by level
+        """
+
+        if level == "taxon":
+            table = "taxonGeneralInfo"
+            idLabel = "taxonID"
+        else:
+            return 0, {
+                "label": "Error",
+                "message": "Unknown level of general info!",
+                "type": "error",
+            }
+
+        generalInfos = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT * from {table} WHERE {idLabel}={id}")
+
+            row_headers = [x[0] for x in cursor.description]
+            generalInfos = cursor.fetchall()
+        except:
+            return [], f"Error while fetching users from DB. Check database connection!"
+
+        if len(generalInfos):
+            return [dict(zip(row_headers, x)) for x in generalInfos], {}
+        else:
+            return [], {
+                "label": "Info",
+                "message": "No general infos in database!",
+                "type": "info",
+            }
+
+    # ADD GENERAL INFO
+    def addGeneralInfo(self, level, id, key, value):
+        """
+        add general info by level and id 
+        """
+
+        if level == "taxon":
+            table = "taxonGeneralInfo"
+            idLabel = "taxonID"
+        else:
+            return 0, {
+                "label": "Error",
+                "message": "Unknown level of general info!",
+                "type": "error",
+            }
+
+        try:
+            print(level, id, key, value)
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"INSERT INTO {table} ({idLabel}, `key`, value) VALUES ({id}, '{key}', '{value}')")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while inserting general info into database!",
+                "type": "error",
+            }
+
+        return {"id": id, "key": key, "value": value}, {
+            "label": "Success",
+            "message": f"Successfully added general info!",
+            "type": "success",
+        }
+
+    # UPDATE GENERAL INFO
+    def updateGeneralInfoByID(self, level, id, key, value):
+        """
+        update general info by level and id 
+        """
+
+        if level == "taxon":
+            table = "taxonGeneralInfo"
+        else:
+            return 0, {
+                "label": "Error",
+                "message": "Unknown level of general info!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"UPDATE {table} SET `key`='{key}', value='{value}' WHERE id={id}")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while updating general info!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully updated general info!",
+            "type": "success",
+        }
+
+    # REMOVE GENERAL INFO
+    def removeGeneralInfoByID(self, level, id):
+        """
+        remove general info by level and id 
+        """
+
+        if level == "taxon":
+            table = "taxonGeneralInfo"
+        else:
+            return 0, {
+                "label": "Error",
+                "message": "Unknown level of general info!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"DELETE FROM {table} WHERE id={id}")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing general info from database!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed general info!",
+            "type": "success",
+        }

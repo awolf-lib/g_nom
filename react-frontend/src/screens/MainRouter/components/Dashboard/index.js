@@ -8,7 +8,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     setUserID(parseInt(sessionStorage.getItem("userID")));
-  });
+  }, []);
 
   return userID ? (
     <AssembliesTable label="Dashboard" userID={userID} />

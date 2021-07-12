@@ -6,7 +6,7 @@ import {
   Redirect,
 } from "react-router-dom";
 import AssembliesTable from "../../components/AssembliesTable";
-import AssemblyManager from "./components/AssemblyManager";
+import DataAssistant from "./components/DataAssistant";
 
 const AssembliesRouter = () => {
   return (
@@ -19,7 +19,7 @@ const AssembliesRouter = () => {
           <AssembliesTable />
         </Route>
         <Route exact path={"/g-nom/assemblies/manage"}>
-          <AssemblyManager />
+          <DataAssistant />
         </Route>
         <Route exact path={"/g-nom/assemblies/manageAssemblies"}></Route>
       </Switch>

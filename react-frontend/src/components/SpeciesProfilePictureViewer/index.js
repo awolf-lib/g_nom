@@ -18,7 +18,7 @@ const SpeciesProfilePictureViewer = ({ taxonID, imageStatus }) => {
       url =
         "http://localhost:5003/g-nom/storage/api/v1/fs/taxa/images/" +
         taxonID +
-        ".jpg";
+        ".thumbnail.jpg";
     }
 
     if (mounted) {

@@ -140,7 +140,7 @@ const AssembliesTable = ({ label, userID }) => {
   });
 
   return (
-    <div className="mb-8 animate-grow-y">
+    <div className="mb-8">
       {/* HEADER */}
       <header className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
@@ -178,7 +178,7 @@ const AssembliesTable = ({ label, userID }) => {
       </header>
 
       {/* LIST */}
-      <main className="mb-8">
+      <main className="mb-8 animate-grow-y">
         <div className="mx-auto py-6 sm:px-6 lg:px-8 mt-4">
           <div className="px-4 sm:px-0">
             {/* HEADERS */}

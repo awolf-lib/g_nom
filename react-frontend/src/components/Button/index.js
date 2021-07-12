@@ -23,7 +23,7 @@ const Button = (props) => {
         props.color === "link",
     },
     {
-      "text-sm": props.size === "sm",
+      "text-sm transform scale-75 md:scale-100": props.size === "sm",
       "text-base": props.size === "md" || !props.size,
       "text-lg": props.size === "lg",
       "text-xl": props.size === "xl",

@@ -113,6 +113,35 @@ def fetchTaxonByNCBITaxonID():
     else:
         return REQUESTMETHODERROR
 
+# FETCH ONE TAXON BY TAXON ID
+@db.route("/updateImageByTaxonID", methods=["GET"])
+def updateImageByTaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        path = request.args.get("path")
+        data, notification = api.updateImageByTaxonID(taxonID, path)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+# FETCH ONE TAXON BY TAXON ID
+@db.route("/removeImageByTaxonID", methods=["GET"])
+def removeImageByTaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        data, notification = api.removeImageByTaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
 
 # ================== ASSEMBLY ================== #
 # FETCH ALL ASSEMBLIES
@@ -130,6 +159,72 @@ def fetchAllAssemblies():
         response = jsonify(
             {"payload": data, "pagination": pagination, "notification": notification}
         )
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# ================== GENERAL INFO ANY LEVEL ================== #
+# FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
+@db.route("/fetchGeneralInfosByID", methods=["GET"])
+def fetchGeneralInfos():
+    if request.method == "GET":
+        level = request.args.get("level")
+        id = request.args.get("id")
+        data, notification = api.fetchGeneralInfosByID(level, id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+# ADD GENERAL INFO
+@db.route("/addGeneralInfo", methods=["GET"])
+def addGeneralInfo():
+    if request.method == "GET":
+        level = request.args.get("level")
+        id = request.args.get("id")
+        key = request.args.get("key")
+        value = request.args.get("value")
+        data, notification = api.addGeneralInfo(level, id, key, value)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+# UPDATE GENERAL INFO
+@db.route("/updateGeneralInfoByID", methods=["GET"])
+def updateGeneralInfoByID():
+    if request.method == "GET":
+        level = request.args.get("level")
+        id = request.args.get("id")
+        key = request.args.get("key")
+        value = request.args.get("value")
+        data, notification = api.updateGeneralInfoByID(level, id, key, value)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+# REMOVE GENERAL INFO
+@db.route("/removeGeneralInfoByID", methods=["GET"])
+def removeGeneralInfoByID():
+    if request.method == "GET":
+        level = request.args.get("level")
+        id = request.args.get("id")
+        data, notification = api.removeGeneralInfoByID(level, id)
+
+        response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response

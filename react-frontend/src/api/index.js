@@ -103,7 +103,7 @@ export default class API {
       });
   }
 
-  // ===== FETCH ALL ASSEMBLIES ===== //
+  // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
   async fetchPossibleImports(types = undefined) {
     return fetch("http://localhost:3002/fetchPossibleImports", {
       method: "POST",
@@ -123,6 +123,95 @@ export default class API {
   async fetchTaxonByNCBITaxonID(taxonID) {
     return fetch(
       "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== UPDATE TAXON IMAGE ===== //
+  async updateImageByTaxonID(taxonID, path) {
+    return fetch(
+      "http://localhost:3002/updateImageByTaxonID?taxonID=" +
+        taxonID +
+        "&path=" +
+        path
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== DELETE TAXON IMAGE ===== //
+  async removeImageByTaxonID(taxonID) {
+    return fetch(
+      "http://localhost:3002/removeImageByTaxonID?taxonID=" + taxonID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
+  async fetchGeneralInfosByID(level, id) {
+    return fetch(
+      "http://localhost:3002/fetchGeneralInfosByID?level=" + level + "&id=" + id
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== ADD GENERAL INFO ===== //
+  async addGeneralInfo(level, id, key, value) {
+    return fetch(
+      "http://localhost:3002/addGeneralInfo?level=" +
+        level +
+        "&id=" +
+        id +
+        "&key=" +
+        key +
+        "&value=" +
+        value
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // =====  UPDATE GENERAL INFO ===== //
+  async updateGeneralInfoByID(level, id, key, value) {
+    return fetch(
+      "http://localhost:3002/updateGeneralInfoByID?level=" +
+        level +
+        "&id=" +
+        id +
+        "&key=" +
+        key +
+        "&value=" +
+        value
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== DELETE GENERAL INFO ===== //
+  async removeGeneralInfoByID(level, id) {
+    return fetch(
+      "http://localhost:3002/removeGeneralInfoByID?level=" + level + "&id=" + id
     )
       .then((request) => request.json())
       .then((data) => data)

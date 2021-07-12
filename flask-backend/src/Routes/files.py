@@ -22,7 +22,7 @@ REQUESTMETHODERROR = {
 }
 
 
-# testing
+# FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY
 @files.route("/fetchPossibleImports", methods=["GET", "POST"])
 def fetchPossibleImports():
     if request.method == "POST":

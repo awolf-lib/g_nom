@@ -1,11 +1,16 @@
+from math import exp
 import mysql.connector
-from os import makedirs
-from os.path import exists
+from os import makedirs, remove
+from os.path import exists, split
 from glob import glob
+from PIL import Image
 
 # defaults
 BASE_PATH_TO_IMPORT = "src/Import/"
 BASE_PATH_TO_STORAGE = "src/FileStorage/"
+
+# images
+SIZE = 128, 128
 
 
 class FileManager:
@@ -28,6 +33,7 @@ class FileManager:
 
     #####################################################################################################
     # ========================================== FILE IMPORT ========================================== #
+    # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
         self, types=["image", "fasta"], import_directory=BASE_PATH_TO_IMPORT
     ):
@@ -96,3 +102,70 @@ class FileManager:
             "message": f"{possibleImportsCount} possible files were detected!",
             "type": "info",
         }
+
+    # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
+    def moveFileToStorage(self, type, path, name="", deleteAfterMoving=False):
+        """
+        Moves selected file to proper storage location
+        """
+
+        path = "src/Import/" + path
+
+        print(path)
+        
+        if not exists(path):
+            return 0, {
+                "label": "Error",
+                "message": "Path to file not found!",
+                "type": "error",
+            }
+
+        if type == "image":
+            try:
+                with Image.open(path) as image:
+                    image.thumbnail(SIZE)
+                    if not name:
+                        return 0, {
+                            "label": "Error",
+                            "message": "No NCBI taxonID for renaming thumbnail was provided!",
+                            "type": "error",
+                        }
+                    image.save("src/FileStorage/taxa/images/" + name + ".thumbnail.jpg", "JPEG")
+
+            except:
+                return 0, {
+                    "label": "Error",
+                    "message": "Something went wrong while formatting image or moving it to storage!",
+                    "type": "error",
+                }
+        else:
+            return 0, {
+                    "label": "Error",
+                    "message": "Unsupported type!",
+                    "type": "error",
+                }
+
+        if deleteAfterMoving:
+            status, notification = remove(path)
+            if not status:
+                return 0, notification
+
+
+        return 1, {}
+
+
+    def deleteFile(self, path):
+        """
+        Deletes files
+        """
+
+        try:
+            remove(path)
+        except:
+            return 0, {
+                    "label": "Error",
+                    "message": "File could not be deleted. Check yourself!",
+                    "type": "error",
+                }
+
+        return 1, {}
