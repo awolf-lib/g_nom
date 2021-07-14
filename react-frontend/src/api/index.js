@@ -103,6 +103,18 @@ export default class API {
       });
   }
 
+  // ===== FETCH ONE ASSEMBLY ===== //
+  async fetchAssemblyInformationByAssemblyID(id) {
+    return fetch(
+      "http://localhost:3002/fetchAssemblyInformationByAssemblyID?id=" + id
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
   async fetchPossibleImports(types = undefined) {
     return fetch("http://localhost:3002/fetchPossibleImports", {
@@ -212,6 +224,25 @@ export default class API {
   async removeGeneralInfoByID(level, id) {
     return fetch(
       "http://localhost:3002/removeGeneralInfoByID?level=" + level + "&id=" + id
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== IMPORT NEW ASSEMBLY ===== //
+  async addNewAssembly(taxonID, name, path, additionalFilesPath = "") {
+    return fetch(
+      "http://localhost:3002/addNewAssembly?taxonID=" +
+        taxonID +
+        "&name=" +
+        name +
+        "&path=" +
+        path +
+        "&additionalFilesPath=" +
+        additionalFilesPath
     )
       .then((request) => request.json())
       .then((data) => data)

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Gallery, Trash } from "grommet-icons";
+import { CircleInformation, Gallery, New, Trash } from "grommet-icons";
 
 import Button from "../../../../../../components/Button";
 
@@ -24,7 +24,7 @@ const AssistantSelector = (props) => {
           {view && (
             <div>
               <hr className="mt-4 mb-8 shadow" />
-              <div className="flex grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="p-4 shadow rounded-lg">
                   <div className="font-bold">Update taxon</div>
                   <hr className="shadow my-4" />
@@ -35,14 +35,14 @@ const AssistantSelector = (props) => {
                       <div className="w-1/3 pr-4">
                         <Button
                           label={
-                            selectedTaxon.imageStored
+                            selectedTaxon.imageStatus
                               ? "Change image"
                               : "Add image"
                           }
                           size="sm"
                           onClick={() =>
                             handleModeChange(
-                              selectedTaxon.imageStored
+                              selectedTaxon.imageStatus
                                 ? "Change image"
                                 : "Add image"
                             )
@@ -52,7 +52,7 @@ const AssistantSelector = (props) => {
                         </Button>
                       </div>
                       <div className="w-1/3 pl-4">
-                        {selectedTaxon.imageStored === 1 && (
+                        {selectedTaxon.imageStatus === 1 && (
                           <Button
                             label="Remove image"
                             size="sm"
@@ -64,6 +64,7 @@ const AssistantSelector = (props) => {
                       </div>
                     </div>
                     <hr className="shadow my-4" />
+
                     {/** TAXON GENERAL INFOS */}
                     <div className="flex items-center h-12">
                       <div className="w-1/3 font-semibold">General infos:</div>
@@ -75,7 +76,27 @@ const AssistantSelector = (props) => {
                             handleModeChange("Add/update/remove info")
                           }
                         >
-                          <Gallery color="blank" className="stroke-current" />
+                          <CircleInformation
+                            color="blank"
+                            className="stroke-current"
+                          />
+                        </Button>
+                      </div>
+                    </div>
+                    <hr className="shadow my-4" />
+
+                    {/** CREATE NEW ASSEMBLY */}
+                    <div className="flex items-center h-12">
+                      <div className="w-1/3 font-semibold">New Assembly:</div>
+                      <div className="w-2/3">
+                        <Button
+                          label="Create new assembly"
+                          size="sm"
+                          onClick={() =>
+                            handleModeChange("Create new assembly")
+                          }
+                        >
+                          <New color="blank" className="stroke-current" />
                         </Button>
                       </div>
                     </div>

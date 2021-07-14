@@ -27,11 +27,11 @@ const TaxonomyInputForm = (props) => {
                 " (" +
                 selectedTaxon.scientificName +
                 ")"}
-              {selectedTaxon.imageStored === 1 && (
+              {selectedTaxon.imageStatus === 1 && (
                 <div className="hidden sm:block h-8 w-8 ml-4 animate-fade-in rounded overflow-hidden">
                   <SpeciesProfilePictureViewer
                     taxonID={selectedTaxon.ncbiTaxonID}
-                    imageStatus={selectedTaxon.imageStored}
+                    imageStatus={selectedTaxon.imageStatus}
                   />
                 </div>
               )}
@@ -57,7 +57,10 @@ const TaxonomyInputForm = (props) => {
                 {taxa && taxa.length > 0 ? (
                   taxa.map((taxon) => {
                     return (
-                      <div className="flex items-center justify-center ">
+                      <div
+                        key={taxon.id}
+                        className="flex items-center justify-center "
+                      >
                         <Input
                           id={taxon.id}
                           value={taxon}
@@ -66,7 +69,7 @@ const TaxonomyInputForm = (props) => {
                           onChange={() => handleChangeSelectedTaxon(taxon)}
                           checked={selectedTaxon.id === taxon.id}
                         />
-                        <label for={taxon.id} className="ml-4">
+                        <label htmlFor={taxon.id} className="ml-4">
                           {taxon.scientificName}
                         </label>
                       </div>

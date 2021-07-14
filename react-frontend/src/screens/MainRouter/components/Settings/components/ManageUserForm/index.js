@@ -42,9 +42,9 @@ const ManageUserForm = () => {
     setTimeout(() => setFetching(false), 750);
   };
 
-  const handleDeleteUser = async (userID) => {
+  const handleDeleteUser = async (userID, confirmation) => {
     if (userID !== loggedInUserID) {
-      if (deleteUserConfirmation === "REMOVE") {
+      if (confirmation === "REMOVE") {
         const response = await api.deleteUserByUserID(userID);
 
         if (response && response.notification) {
@@ -192,7 +192,7 @@ const ManageUserForm = () => {
                           className={inputClass}
                           onChange={(e) => {
                             setDeleteUserConfirmation(e.target.value);
-                            handleDeleteUser(user.id);
+                            handleDeleteUser(user.id, e.target.value);
                           }}
                         />
                         <FormClose

@@ -3,6 +3,7 @@ import React from "react";
 import UpdateImageForm from "./components/UpdateImageForm";
 import RemoveImageForm from "./components/RemoveImageForm";
 import UpdateGeneralInfosForm from "./components/UpdateGeneralInfosForm";
+import CreateAssemblyForm from "./components/CreateAssemblyForm";
 
 const AssistantProvider = (props) => {
   const { view } = props;
@@ -15,6 +16,8 @@ const AssistantProvider = (props) => {
         return "3. Confirm or Cancel!";
       case "Add/update/remove info":
         return "3. Add, change or remove general infos!";
+      case "Create new assembly":
+        return "3. Enter assembly name and select .fasta!";
 
       default:
         break;
@@ -30,6 +33,8 @@ const AssistantProvider = (props) => {
         return <RemoveImageForm {...props} />;
       case "Add/update/remove info":
         return <UpdateGeneralInfosForm {...props} level="taxon" />;
+      case "Create new assembly":
+        return <CreateAssemblyForm {...props} />;
 
       default:
         break;
@@ -38,7 +43,7 @@ const AssistantProvider = (props) => {
   return (
     <div>
       {props.mode && (
-        <div className="mt-16 lg:mx-32 animate-grow-y shadow p-4 rounded-lg">
+        <div className="mt-16 lg:mx-32 animate-grow-y shadow p-4 rounded-lg animate-grow-y">
           <div
             onClick={() => props.setView((prevState) => !prevState)}
             className="flex justify-between font-bold text-lg cursor-pointer select-none"

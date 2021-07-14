@@ -113,6 +113,7 @@ def fetchTaxonByNCBITaxonID():
     else:
         return REQUESTMETHODERROR
 
+
 # FETCH ONE TAXON BY TAXON ID
 @db.route("/updateImageByTaxonID", methods=["GET"])
 def updateImageByTaxonID():
@@ -127,6 +128,7 @@ def updateImageByTaxonID():
         return response
     else:
         return REQUESTMETHODERROR
+
 
 # FETCH ONE TAXON BY TAXON ID
 @db.route("/removeImageByTaxonID", methods=["GET"])
@@ -166,6 +168,39 @@ def fetchAllAssemblies():
         return REQUESTMETHODERROR
 
 
+# FETCH ONE ASSEMBLY
+@db.route("/fetchAssemblyInformationByAssemblyID", methods=["GET"])
+def fetchAssemblyInformationByAssemblyID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = api.fetchAssemblyInformationByAssemblyID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# CREATE NEW ASSEMBLY
+@db.route("/addNewAssembly", methods=["GET"])
+def addNewAssembly():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        name = request.args.get("name")
+        path = request.args.get("path")
+        additionalFiles = request.args.get("additionalFilesPath")
+        data, notification = api.addNewAssembly(taxonID, name, path, additionalFiles)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== GENERAL INFO ANY LEVEL ================== #
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
 @db.route("/fetchGeneralInfosByID", methods=["GET"])
@@ -181,6 +216,7 @@ def fetchGeneralInfos():
         return response
     else:
         return REQUESTMETHODERROR
+
 
 # ADD GENERAL INFO
 @db.route("/addGeneralInfo", methods=["GET"])
@@ -199,6 +235,7 @@ def addGeneralInfo():
     else:
         return REQUESTMETHODERROR
 
+
 # UPDATE GENERAL INFO
 @db.route("/updateGeneralInfoByID", methods=["GET"])
 def updateGeneralInfoByID():
@@ -215,6 +252,7 @@ def updateGeneralInfoByID():
         return response
     else:
         return REQUESTMETHODERROR
+
 
 # REMOVE GENERAL INFO
 @db.route("/removeGeneralInfoByID", methods=["GET"])

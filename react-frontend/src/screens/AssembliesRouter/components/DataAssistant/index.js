@@ -84,7 +84,7 @@ const DataAssistant = () => {
   };
 
   return (
-    <div className="mb-16">
+    <div className="mb-64">
       <header className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">

@@ -10,14 +10,16 @@ import Button from "../../../../../../../../components/Button";
 const UpdateImageForm = (props) => {
   const { selectedTaxon, setSelectedTaxon, handleModeChange } = props;
 
+  const [mounted, setMounted] = useState(true);
   const [possibleImports, setPossibleImports] = useState([]);
   const [fetchingAll, setFetchingAll] = useState(false);
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [selectedPath, setSelectedPath] = useState([]);
-  const [additionalFiles, setAdditionalFiles] = useState([]);
 
   useEffect(() => {
     loadFiles(["image"]);
+
+    return setMounted(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -37,7 +39,7 @@ const UpdateImageForm = (props) => {
   const loadFiles = async (types = undefined) => {
     setFetchingAll(true);
     const response = await api.fetchPossibleImports(types);
-    if (response && response.payload) {
+    if (response && response.payload && mounted) {
       setPossibleImports(response.payload);
     }
 
@@ -54,7 +56,7 @@ const UpdateImageForm = (props) => {
     );
 
     if (response && response.payload) {
-      setSelectedTaxon({ ...selectedTaxon, imageStored: 1 });
+      setSelectedTaxon({ ...selectedTaxon, imageStatus: 1 });
       handleModeChange("");
       setShowConfirmationForm(false);
     }
@@ -67,31 +69,12 @@ const UpdateImageForm = (props) => {
   const handleChangeSelectedPath = (inputPathArray) => {
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
-    setAdditionalFiles([]);
-  };
-
-  const handleAdditionalFiles = (
-    inputPathArray,
-    inputPathArrayAddtionalFiles
-  ) => {
-    setShowConfirmationForm(true);
-    setSelectedPath(inputPathArray);
-    if (inputPathArrayAddtionalFiles.length !== selectedPath.length) {
-      setAdditionalFiles(inputPathArrayAddtionalFiles);
-    } else {
-      setAdditionalFiles([]);
-    }
   };
 
   const getDirectoryClass = (index, pathArray) =>
     classNames("hover:text-blue-600 cursor-pointer", {
       "text-blue-600 font-bold":
         index === pathArray.length - 1 && pathArray === selectedPath,
-      "text-green-600 font-semibold":
-        index < pathArray.length - 1 &&
-        pathArray === selectedPath &&
-        index >= additionalFiles.length - 1 &&
-        additionalFiles.length > 0,
     });
   return (
     <div>
@@ -101,40 +84,25 @@ const UpdateImageForm = (props) => {
         Object.keys(possibleImports.image).length > 0 ? (
           Object.keys(possibleImports.image).map((extension) => {
             return (
-              <div>
+              <div key={extension}>
                 <div>{extension}</div>
                 <hr className="shadow my-2" />
                 <ul>
-                  {possibleImports.image[extension].map((pathArray) => {
+                  {possibleImports.image[extension].map((pathArray, index) => {
                     return (
-                      <li className="flex items-center ml-4">
+                      <li
+                        className="flex items-center ml-4"
+                        key={extension + index}
+                        onClick={() => handleChangeSelectedPath(pathArray)}
+                      >
                         <Input
                           type="radio"
                           value={pathArray}
                           size="sm"
-                          onChange={() => handleChangeSelectedPath(pathArray)}
                           checked={pathArray === selectedPath}
+                          onChange={() => handleChangeSelectedPath(pathArray)}
                         />
-                        <div className="ml-4">
-                          {pathArray.map((dir, dirIndex) => {
-                            return (
-                              <span
-                                onClick={() =>
-                                  handleAdditionalFiles(
-                                    pathArray,
-                                    pathArray.slice(0, dirIndex + 1)
-                                  )
-                                }
-                                className={getDirectoryClass(
-                                  dirIndex,
-                                  pathArray
-                                )}
-                              >
-                                {"/" + dir}
-                              </span>
-                            );
-                          })}
-                        </div>
+                        <div className="ml-4">{pathArray.join("/")}</div>
                       </li>
                     );
                   })}
@@ -162,21 +130,13 @@ const UpdateImageForm = (props) => {
             <div className="animate-grow-y">
               <div>
                 <hr className="mt-4 mb-8 shadow" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="shadow rounded-lg p-4">
-                    <div className="flex justify-between">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                  <div className="shadow rounded-lg p-4 h-full">
+                    <div className="flex justify-between items-center h-full">
                       <span>Main import:</span>
                       <span className="font-semibold">
                         {selectedPath[selectedPath.length - 1]}
                       </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Additional files:</span>
-                      {additionalFiles.length ? (
-                        <span>{"./" + additionalFiles.join("/") + "/*"}</span>
-                      ) : (
-                        <span>None</span>
-                      )}
                     </div>
                   </div>
                   <div className="flex justify-center items-center shadow rounded-lg p-4">
@@ -191,7 +151,7 @@ const UpdateImageForm = (props) => {
                       <Button
                         label="Cancel"
                         color="cancel"
-                        onClick={() => {}}
+                        onClick={() => handleModeChange("")}
                       />
                     </div>
                   </div>

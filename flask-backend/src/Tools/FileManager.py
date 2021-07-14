@@ -1,16 +1,18 @@
 from math import exp
 import mysql.connector
 from os import makedirs, remove
-from os.path import exists, split
+from os.path import exists
+from shutil import copy, rmtree
 from glob import glob
 from PIL import Image
 
 # defaults
 BASE_PATH_TO_IMPORT = "src/Import/"
 BASE_PATH_TO_STORAGE = "src/FileStorage/"
+BASE_PATH_TO_JBROWSE = "src/externalTools/jbrowse/data/"
 
 # images
-SIZE = 128, 128
+SIZE = 256, 256
 
 
 class FileManager:
@@ -104,15 +106,21 @@ class FileManager:
         }
 
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
-    def moveFileToStorage(self, type, path, name="", deleteAfterMoving=False):
+    def moveFileToStorage(
+        self, type, path, name="", additionalFiles="", deleteAfterMoving=False
+    ):
         """
         Moves selected file to proper storage location
         """
 
+        STORAGEERROR = {
+            "label": "Error",
+            "message": "Something went wrong while formatting image or moving it to storage!",
+            "type": "error",
+        }
+
         path = "src/Import/" + path
 
-        print(path)
-        
         if not exists(path):
             return 0, {
                 "label": "Error",
@@ -120,6 +128,7 @@ class FileManager:
                 "type": "error",
             }
 
+        newPath = ""
         if type == "image":
             try:
                 with Image.open(path) as image:
@@ -130,42 +139,125 @@ class FileManager:
                             "message": "No NCBI taxonID for renaming thumbnail was provided!",
                             "type": "error",
                         }
-                    image.save("src/FileStorage/taxa/images/" + name + ".thumbnail.jpg", "JPEG")
-
+                    newPath = "src/FileStorage/taxa/images/" + name + ".thumbnail.jpg"
+                    image.save(newPath, "JPEG")
             except:
-                return 0, {
-                    "label": "Error",
-                    "message": "Something went wrong while formatting image or moving it to storage!",
-                    "type": "error",
-                }
+                return 0, STORAGEERROR
+
+        elif type == "assembly":
+            status, notification = self.createDirectoriesForSpecies(name)
+
+            if not status:
+                return 0, notification
+
+            try:
+                newPath = f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/{name}_assembly.fasta"
+                copy(path, newPath)
+            except:
+                return 0, STORAGEERROR
+
         else:
             return 0, {
-                    "label": "Error",
-                    "message": "Unsupported type!",
-                    "type": "error",
-                }
+                "label": "Error",
+                "message": "Unsupported type!",
+                "type": "error",
+            }
 
         if deleteAfterMoving:
             status, notification = remove(path)
             if not status:
                 return 0, notification
 
+        return newPath, {}
 
-        return 1, {}
-
-
+    # delete file from file system
     def deleteFile(self, path):
         """
         Deletes files
         """
 
+        if not exists(path):
+            return 1, {}
+
         try:
             remove(path)
         except:
             return 0, {
-                    "label": "Error",
-                    "message": "File could not be deleted. Check yourself!",
-                    "type": "error",
-                }
+                "label": "Error",
+                "message": "File could not be deleted. Check yourself!",
+                "type": "error",
+            }
+
+        return 1, {}
+
+    # delete directories recursively
+    def deleteDirectories(self, path):
+        """
+        Deletes directories
+        """
+
+        if not exists(path):
+            return 1, {}
+
+        try:
+            rmtree(path)
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Directory could not be deleted. Check yourself!",
+                "type": "error",
+            }
+
+        return 1, {}
+
+    # creates directories in storage / jbrowse for one assembly
+    def createDirectoriesForSpecies(self, assemblyDirName):
+        """
+        Setups the basic directory structure for one assembly
+        """
+
+        pathToSpeciesDirectory = f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyDirName}"
+
+        try:
+            # fasta
+            makedirs(f"{pathToSpeciesDirectory}/fasta/pep/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/fasta/dna/", exist_ok=True)
+
+            # gff3
+            makedirs(f"{pathToSpeciesDirectory}/gff3/", exist_ok=True)
+
+            # mappings
+            makedirs(f"{pathToSpeciesDirectory}/mappings/", exist_ok=True)
+
+            # quast
+            makedirs(f"{pathToSpeciesDirectory}/quast/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/quast/additionalFiles/", exist_ok=True)
+
+            # busco
+            makedirs(f"{pathToSpeciesDirectory}/busco/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/busco/additionalFiles/", exist_ok=True)
+
+            # fCat
+            makedirs(f"{pathToSpeciesDirectory}/fcat/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/fcat/additionalFiles/", exist_ok=True)
+
+            # repeatmasker
+            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/", exist_ok=True)
+            makedirs(
+                f"{pathToSpeciesDirectory}/repeatmasker/additionalFiles/", exist_ok=True
+            )
+
+            # milts
+            makedirs(f"{pathToSpeciesDirectory}/milts/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/milts/additionalFiles/", exist_ok=True)
+
+            # jbrowse
+            makedirs(f"{BASE_PATH_TO_JBROWSE}/{assemblyDirName}", exist_ok=True)
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while setting up directory structure. Check file system!",
+                "type": "error",
+            }
 
         return 1, {}

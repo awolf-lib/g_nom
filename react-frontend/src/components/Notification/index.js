@@ -87,7 +87,7 @@ const Notification = ({ id, label, message, type, dispatch }) => {
       "bg-blue-600": type === "info",
     });
 
-  const messageClass = classNames("px-4 hover:flex lg:block", {
+  const messageClass = classNames("px-4 hover:flex lg:block text-xs", {
     /* prettier-ignore */
     "hidden": !viewDetails,
   });

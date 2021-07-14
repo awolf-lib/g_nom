@@ -9,12 +9,10 @@ def create_app():
     from .auth import auth
     from .db import db
     from .files import files
-    from .parsers import parsers
 
     app.register_blueprint(auth, url_prefix="/")
     app.register_blueprint(db, url_prefix="/")
     app.register_blueprint(files, url_prefix="/")
-    app.register_blueprint(parsers, url_prefix="/")
 
     CORS(app)
     return app

@@ -29,7 +29,7 @@ const RemoveImageForm = (props) => {
 
     if (response && response.payload) {
       handleModeChange("");
-      setSelectedTaxon({ ...selectedTaxon, imageStored: 0 });
+      setSelectedTaxon({ ...selectedTaxon, imageStatus: 0 });
     }
   };
 

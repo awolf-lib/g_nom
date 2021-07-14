@@ -14,6 +14,12 @@ module.exports = {
         75: "75vh",
         "100px": "100px",
       },
+      minHeight: {
+        12: "12px",
+        24: "24px",
+        48: "48px",
+        "1/4": "25vh",
+      },
       height: {
         50: "50vh",
         25: "25vh",

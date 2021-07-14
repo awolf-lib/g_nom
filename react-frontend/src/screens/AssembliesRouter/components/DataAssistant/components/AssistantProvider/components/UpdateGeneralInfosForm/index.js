@@ -7,7 +7,7 @@ import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
 const UpdateGeneralInfosForm = (props) => {
-  const { selectedTaxon } = props;
+  const { selectedTaxon, level } = props;
 
   const [generalInfos, setGeneralInfos] = useState([]);
   const [editing, setEditing] = useState(undefined);
@@ -22,7 +22,7 @@ const UpdateGeneralInfosForm = (props) => {
   const [fetchingOnDelete, setFetchingOnDelete] = useState(false);
 
   useEffect(() => {
-    loadGeneralInfos("taxon", selectedTaxon.ncbiTaxonID);
+    loadGeneralInfos(level, selectedTaxon.ncbiTaxonID);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -43,8 +43,8 @@ const UpdateGeneralInfosForm = (props) => {
     setNewKey("");
     setNewValue("");
     if (info && updatedKey === undefined && updatedValue === undefined) {
-      setUpdatedKey(info.key);
-      setUpdatedValue(info.value);
+      setUpdatedKey(info.generalInfoLabel);
+      setUpdatedValue(info.generalInfoDescription);
     }
     setEditing(index);
   };
@@ -63,7 +63,7 @@ const UpdateGeneralInfosForm = (props) => {
     if (newKey && newValue) {
       if (newKey.length <= 400 || newValue.length <= 2000) {
         const response = await api.addGeneralInfo(
-          "taxon",
+          level,
           selectedTaxon.ncbiTaxonID,
           newKey,
           newValue
@@ -90,7 +90,7 @@ const UpdateGeneralInfosForm = (props) => {
     setNewKey("");
     setNewValue("");
     setEditing(undefined);
-    loadGeneralInfos("taxon", selectedTaxon.ncbiTaxonID);
+    loadGeneralInfos(level, selectedTaxon.ncbiTaxonID);
     setFetchingOnNew(false);
   };
 
@@ -99,7 +99,7 @@ const UpdateGeneralInfosForm = (props) => {
     if (updatedKey && updatedValue) {
       if (updatedKey.length <= 400 || updatedValue.length <= 2000) {
         const response = await api.updateGeneralInfoByID(
-          "taxon",
+          level,
           id,
           updatedKey,
           updatedValue
@@ -125,19 +125,19 @@ const UpdateGeneralInfosForm = (props) => {
 
     setUpdatedKey(undefined);
     setUpdatedValue(undefined);
-    loadGeneralInfos("taxon", selectedTaxon.ncbiTaxonID);
+    loadGeneralInfos(level, selectedTaxon.ncbiTaxonID);
     setEditing(undefined);
     setFetchingOnUpdate(false);
   };
 
   const deleteGeneralInfo = async (id) => {
     setFetchingOnDelete(true);
-    const response = await api.removeGeneralInfoByID("taxon", id);
+    const response = await api.removeGeneralInfoByID(level, id);
     if (response && response.notification) {
       handleNewNotification(response.notification);
     }
 
-    loadGeneralInfos("taxon", selectedTaxon.ncbiTaxonID);
+    loadGeneralInfos(level, selectedTaxon.ncbiTaxonID);
     setEditing(undefined);
     setFetchingOnDelete(false);
   };
@@ -157,6 +157,7 @@ const UpdateGeneralInfosForm = (props) => {
               onClick={() => {
                 handleSetEditing(index, info);
               }}
+              key={info.id}
             >
               <div className="w-1/3 px-4">
                 {editing === index ? (
@@ -164,7 +165,11 @@ const UpdateGeneralInfosForm = (props) => {
                     <div>
                       <Input
                         placeholder="max. 400 characters"
-                        value={updatedKey !== undefined ? updatedKey : info.key}
+                        value={
+                          updatedKey !== undefined
+                            ? updatedKey
+                            : info.generalInfoLabel
+                        }
                         onChange={(e) => setUpdatedKey(e.target.value)}
                       />
                     </div>
@@ -203,7 +208,7 @@ const UpdateGeneralInfosForm = (props) => {
                     </div>
                   </div>
                 ) : (
-                  <div className="px-4">{info.key}</div>
+                  <div className="px-4">{info.generalInfoLabel}</div>
                 )}
               </div>
               <div className="w-2/3 px-4">
@@ -213,13 +218,15 @@ const UpdateGeneralInfosForm = (props) => {
                       placeholder="max. 2000 characters"
                       type="textarea"
                       value={
-                        updatedValue !== undefined ? updatedValue : info.value
+                        updatedValue !== undefined
+                          ? updatedValue
+                          : info.generalInfoDescription
                       }
                       onChange={(e) => setUpdatedValue(e.target.value)}
                     />
                   </div>
                 ) : (
-                  <div className="px-4">{info.value}</div>
+                  <div className="px-4">{info.generalInfoDescription}</div>
                 )}
               </div>
             </div>

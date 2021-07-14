@@ -72,10 +72,6 @@ const AssembliesTable = ({ label, userID }) => {
       userID
     );
 
-    if (!mounted) {
-      return 0;
-    }
-
     if (response && response.payload) {
       setAssemblies(response.payload);
     }
@@ -140,7 +136,7 @@ const AssembliesTable = ({ label, userID }) => {
   });
 
   return (
-    <div className="mb-8">
+    <div className="mb-16">
       {/* HEADER */}
       <header className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
@@ -205,20 +201,20 @@ const AssembliesTable = ({ label, userID }) => {
                       <AssemblyInfoCard
                         id={assembly.id}
                         scientificName={assembly.scientificName}
-                        taxonID={assembly.taxonID}
+                        taxonID={assembly.ncbiTaxonID}
                         assemblyName={assembly.name}
                         types={assembly.types}
-                        imageStored={assembly.imageStored}
+                        imageStatus={assembly.imageStatus}
                         key={assembly.id}
                       />
                     ) : (
                       <AssemblyInfoListItem
                         id={assembly.id}
                         scientificName={assembly.scientificName}
-                        taxonID={assembly.taxonID}
+                        taxonID={assembly.ncbiTaxonID}
                         assemblyName={assembly.name}
                         types={assembly.types}
-                        imageStored={assembly.imageStored}
+                        imageStatus={assembly.imageStatus}
                         key={assembly.id}
                       />
                     );
