@@ -1,15 +1,18 @@
 from math import exp
 import mysql.connector
-from os import makedirs, remove
+from os import makedirs, remove, symlink
 from os.path import exists
 from shutil import copy, rmtree
 from glob import glob
 from PIL import Image
+from subprocess import run
 
 # defaults
-BASE_PATH_TO_IMPORT = "src/Import/"
-BASE_PATH_TO_STORAGE = "src/FileStorage/"
+BASE_PATH_TO_UPLOAD = "src/files/upload/"
+BASE_PATH_TO_STORAGE = "src/files/download/"
+
 BASE_PATH_TO_JBROWSE = "src/externalTools/jbrowse/data/"
+JBROWSEGENERATENAMESCALL = "src/externalTools/jbrowse/bin/generate-names.pl"
 
 # images
 SIZE = 256, 256
@@ -17,7 +20,7 @@ SIZE = 256, 256
 
 class FileManager:
     def __init__(self):
-        self.hostURL = "ghubs.izn-ffm.intern"
+        self.hostURL = "0.0.0.0"
 
     # ====== GENERAL ====== #
     # reconnect to get updates
@@ -37,7 +40,7 @@ class FileManager:
     # ========================================== FILE IMPORT ========================================== #
     # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
-        self, types=["image", "fasta"], import_directory=BASE_PATH_TO_IMPORT
+        self, types=["image", "fasta"], import_directory=BASE_PATH_TO_UPLOAD
     ):
         """
         Fetch all files provided in import dirctory
@@ -63,11 +66,11 @@ class FileManager:
 
         # check if import directory exist or create
         if not exists(import_directory):
-            if not exists(BASE_PATH_TO_IMPORT):
-                makedirs(BASE_PATH_TO_IMPORT, exist_ok=True)
+            if not exists(BASE_PATH_TO_UPLOAD):
+                makedirs(BASE_PATH_TO_UPLOAD, exist_ok=True)
             return 0, {
                 "label": "Info",
-                "message": f"Import directory deleted from file system. Created directory: '{BASE_PATH_TO_IMPORT}'",
+                "message": f"Import directory deleted from file system. Created directory: '{BASE_PATH_TO_UPLOAD}'",
                 "type": "info",
             }
 
@@ -119,7 +122,7 @@ class FileManager:
             "type": "error",
         }
 
-        path = "src/Import/" + path
+        path = BASE_PATH_TO_UPLOAD + path
 
         if not exists(path):
             return 0, {
@@ -155,6 +158,46 @@ class FileManager:
                 copy(path, newPath)
             except:
                 return 0, STORAGEERROR
+
+            try:
+                run(["samtools", "faidx", newPath])
+                run(["ln", "-rs", newPath, f"{BASE_PATH_TO_JBROWSE}{name}/"])
+                run(["ln", "-rs", f"{newPath}.fai", f"{BASE_PATH_TO_JBROWSE}{name}/"])
+            except:
+                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+                return 0, {
+                    "label": "Error",
+                    "message": "Error creating symlink to jbrowse data!",
+                    "type": "error",
+                }
+
+            try:
+                with open(f"{BASE_PATH_TO_JBROWSE}{name}/tracks.conf", "a") as conf:
+                    template = f"[GENERAL]\nrefSeqs={name}_assembly.fasta.fai\n[tracks.Reference]\nurlTemplate={name}.fasta\nstoreClass=JBrowse/Store/SeqFeature/IndexedFasta\ntype=Sequence\n"
+                    conf.write(template)
+                    conf.close()
+            except:
+                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+                return 0, {
+                    "label": "Error",
+                    "message": "Error while creating jbrowse tracks.conf.",
+                    "type": "error",
+                }
+
+            try:
+                run(
+                    [JBROWSEGENERATENAMESCALL, "-out", f"{BASE_PATH_TO_JBROWSE}{name}/"]
+                )
+            except:
+                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+                return 0, {
+                    "label": "Error",
+                    "message": "Error while running jbrowse generate-names.pl scipt. Run manually!",
+                    "type": "error",
+                }
 
         else:
             return 0, {
@@ -220,39 +263,40 @@ class FileManager:
 
         try:
             # fasta
-            makedirs(f"{pathToSpeciesDirectory}/fasta/pep/", exist_ok=True)
-            makedirs(f"{pathToSpeciesDirectory}/fasta/dna/", exist_ok=True)
+            makedirs(
+                f"{pathToSpeciesDirectory}/fasta/pep/additionalFiles/", exist_ok=True
+            )
+            makedirs(
+                f"{pathToSpeciesDirectory}/fasta/dna/additionalFiles/", exist_ok=True
+            )
 
             # gff3
-            makedirs(f"{pathToSpeciesDirectory}/gff3/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/gff3/additionalFiles/", exist_ok=True)
 
             # mappings
-            makedirs(f"{pathToSpeciesDirectory}/mappings/", exist_ok=True)
+            makedirs(
+                f"{pathToSpeciesDirectory}/mappings/additionalFiles/", exist_ok=True
+            )
 
             # quast
-            makedirs(f"{pathToSpeciesDirectory}/quast/", exist_ok=True)
             makedirs(f"{pathToSpeciesDirectory}/quast/additionalFiles/", exist_ok=True)
 
             # busco
-            makedirs(f"{pathToSpeciesDirectory}/busco/", exist_ok=True)
             makedirs(f"{pathToSpeciesDirectory}/busco/additionalFiles/", exist_ok=True)
 
             # fCat
-            makedirs(f"{pathToSpeciesDirectory}/fcat/", exist_ok=True)
             makedirs(f"{pathToSpeciesDirectory}/fcat/additionalFiles/", exist_ok=True)
 
             # repeatmasker
-            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/", exist_ok=True)
             makedirs(
                 f"{pathToSpeciesDirectory}/repeatmasker/additionalFiles/", exist_ok=True
             )
 
             # milts
-            makedirs(f"{pathToSpeciesDirectory}/milts/", exist_ok=True)
             makedirs(f"{pathToSpeciesDirectory}/milts/additionalFiles/", exist_ok=True)
 
             # jbrowse
-            makedirs(f"{BASE_PATH_TO_JBROWSE}/{assemblyDirName}", exist_ok=True)
+            makedirs(f"{BASE_PATH_TO_JBROWSE}{assemblyDirName}", exist_ok=True)
         except:
             return 0, {
                 "label": "Error",

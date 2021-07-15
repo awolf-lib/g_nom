@@ -13,10 +13,35 @@
 
 Install:
 npm i cloudcmd -g
+
 Run:
 cloudcmd --username admin --password admin --save --port 5003 --one-file-panel --no-contact --root /g-nom/download/ --prefix /g-nom/storage
+
+# React App
+
+Install:
+cd react-frontend
+npm install
+
+Run:
+cd react-frontend
+npm start
 
 # MySQL
 
 Run:
 sudo /etc/init.d/mysql start
+
+# jbrowse
+
+Install:
+Clone master into flask-backend/src/externalTools/jbrowse
+cd jbrowse
+./setup.sh
+
+Run:
+cd jbrowse
+npm start
+
+Prerequisites:
+sudo apt-get install samtools

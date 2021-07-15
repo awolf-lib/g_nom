@@ -8,8 +8,11 @@ from .Parsers import Parsers
 fileManager = FileManager()
 parsers = Parsers()
 
-BASE_PATH_TO_STORAGE = "src/FileStorage/"
+BASE_PATH_TO_UPLOAD = "src/files/upload/"
+BASE_PATH_TO_STORAGE = "src/files/download/"
+
 BASE_PATH_TO_JBROWSE = "src/externalTools/jbrowse/data/"
+
 
 class DatabaseManager:
     def __init__(self):
@@ -175,7 +178,7 @@ class DatabaseManager:
         except:
             return (
                 0,
-                "Error: Error while reading names.dmp. Check if file is provided at 'src/Import/taxa/names.dmp' directory!",
+                "Error: Error while reading names.dmp. Check if file is provided at 'src/files/download/taxa/names.dmp' directory!",
             )
 
         try:
@@ -210,18 +213,30 @@ class DatabaseManager:
             cursor.execute(sql)
             connection.commit()
         except:
-            return 0, "Error: Error while inserting taxa!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while inserting taxa!",
+                "type": "error",
+            }
 
         try:
             cursor.execute(f"SELECT COUNT(ncbiTaxonID) FROM taxon")
             taxaCount = cursor.fetchone()[0]
         except:
-            return 0, "Error: Error while receiving taxon count!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while receiving taxon count!",
+                "type": "error",
+            }
 
         if taxaCount:
             return taxaCount, ""
         else:
-            return 0, "No taxa imported"
+            return 0, {
+                "label": "Error",
+                "message": "No taxa imported!",
+                "type": "error",
+            }
 
     # FETCH ONE TAXON BY NCBI TAXON ID
     def fetchTaxonByNCBITaxonID(self, taxonID):
@@ -483,7 +498,11 @@ class DatabaseManager:
             assembly = cursor.fetchone()
             assemblyInformation = dict(zip(row_headers, assembly))
         except:
-            return {}, f"Error while fetching assembly information!"
+            return {}, {
+                "label": "Error",
+                "message": "Error while fetching assembly information!",
+                "type": "error",
+            }
 
         taxonGeneralInfos = []
         try:
@@ -498,20 +517,28 @@ class DatabaseManager:
             taxonGeneralInfos = [dict(zip(row_headers, x)) for x in taxonGeneralInfos]
             assemblyInformation.update({"taxonGeneralInfos": taxonGeneralInfos})
         except:
-            return [], f"Error while fetching taxon general information!"
+            return {}, {
+                "label": "Error",
+                "message": "Error while fetching taxon general information!",
+                "type": "error",
+            }
 
         assemblyStatistics = {}
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT * FROM assemblyStatistics WHERE assemblyID={id}"
-            )
+            cursor.execute(f"SELECT * FROM assemblyStatistics WHERE assemblyID={id}")
 
             row_headers = [x[0] for x in cursor.description]
             assemblyStatistics = cursor.fetchone()
-            assemblyInformation.update({"assemblyStatistics": dict(zip(row_headers, assemblyStatistics))})
+            assemblyInformation.update(
+                {"assemblyStatistics": dict(zip(row_headers, assemblyStatistics))}
+            )
         except:
-            return [], f"Error while fetching taxon general information!"
+            return [], {
+                "label": "Error",
+                "message": "Error while fetching assembly statistics!",
+                "type": "error",
+            }
 
         if assembly:
             return assemblyInformation, {}
@@ -534,6 +561,24 @@ class DatabaseManager:
                 "message": "Missing path to fasta or assembly name!",
                 "type": "error",
             }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from assembly where name='{name}'")
+            nameAlreadyInDatabase = cursor.fetchone()
+            if nameAlreadyInDatabase:
+                return 0, {
+                    "label": "Error",
+                    "message": "Name already in database!",
+                    "type": "error",
+                }
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking if name is already assigned!",
+                "type": "error",
+            }
+
         path, notification = fileManager.moveFileToStorage("assembly", path, name)
 
         if not path:
@@ -591,6 +636,7 @@ class DatabaseManager:
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
             fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            self.removeAssemblyByAssemblyID(lastID)
             return 0, {
                 "label": "Error",
                 "message": "Something went wrong while inserting assembly into database!",
@@ -605,6 +651,36 @@ class DatabaseManager:
         }, {
             "label": "Success",
             "message": f"Successfully imported assembly!",
+            "type": "success",
+        }
+
+    # REMOVE GENERAL INFO
+    def removeAssemblyByAssemblyID(self, id):
+        """
+        remove assembly by id
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from assembly where id={id}")
+            name = cursor.fetchone()[0]
+            cursor.execute(f"DELETE FROM assembly WHERE id={id}")
+            connection.commit()
+
+            print(name)
+
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing assembly from database!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed assembly '{name}'!",
             "type": "success",
         }
 
@@ -680,7 +756,9 @@ class DatabaseManager:
         }
 
     # UPDATE GENERAL INFO
-    def updateGeneralInfoByID(self, level, id, generalInfoLabel, generalInfoDescription):
+    def updateGeneralInfoByID(
+        self, level, id, generalInfoLabel, generalInfoDescription
+    ):
         """
         update general info by level and id
         """

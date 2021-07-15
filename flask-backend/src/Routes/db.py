@@ -201,6 +201,21 @@ def addNewAssembly():
         return REQUESTMETHODERROR
 
 
+# REMOVE ASSEMBLY
+@db.route("/removeAssemblyByAssemblyID", methods=["GET"])
+def removeAssemblyByAssemblyID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = api.removeAssemblyByAssemblyID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== GENERAL INFO ANY LEVEL ================== #
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
 @db.route("/fetchGeneralInfosByID", methods=["GET"])

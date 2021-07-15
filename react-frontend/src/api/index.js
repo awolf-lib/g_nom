@@ -250,4 +250,14 @@ export default class API {
         console.error(error);
       });
   }
+
+  // ===== REMOVE ASSEMBLY ===== //
+  async removeAssemblyByAssemblyID(id) {
+    return fetch("http://localhost:3002/removeAssemblyByAssemblyID?id=" + id)
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 }
