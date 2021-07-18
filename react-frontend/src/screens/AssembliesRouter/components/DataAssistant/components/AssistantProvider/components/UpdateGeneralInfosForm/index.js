@@ -143,7 +143,7 @@ const UpdateGeneralInfosForm = (props) => {
   };
 
   return (
-    <div>
+    <div className="animate-grow-y">
       <div className="flex justify-between">
         <div className="w-1/3 px-4 font-bold">General info label</div>
         <div className="w-2/3 px-4 font-bold">General info description</div>
@@ -233,7 +233,7 @@ const UpdateGeneralInfosForm = (props) => {
           );
         })
       ) : (
-        <div className="text-center font-semibold">
+        <div className="flex justify-center text-center font-semibold">
           {!fetchingAll ? (
             "No general infos!"
           ) : (

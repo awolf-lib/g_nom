@@ -118,7 +118,7 @@ class FileManager:
 
         STORAGEERROR = {
             "label": "Error",
-            "message": "Something went wrong while formatting image or moving it to storage!",
+            "message": "Something went wrong while formatting or moving it to storage!",
             "type": "error",
         }
 
@@ -142,7 +142,9 @@ class FileManager:
                             "message": "No NCBI taxonID for renaming thumbnail was provided!",
                             "type": "error",
                         }
-                    newPath = "src/FileStorage/taxa/images/" + name + ".thumbnail.jpg"
+                    newPath = (
+                        "src/files/download/taxa/images/" + name + ".thumbnail.jpg"
+                    )
                     image.save(newPath, "JPEG")
             except:
                 return 0, STORAGEERROR

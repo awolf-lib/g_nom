@@ -89,7 +89,8 @@ def updateUserRoleByUserID():
 @db.route("/reloadTaxonIDsFromFile", methods=["GET"])
 def reloadTaxonIDsFromFile():
     if request.method == "GET":
-        data, notification = api.reloadTaxonIDsFromFile()
+        userID = request.args.get("userID")
+        data, notification = api.reloadTaxonIDsFromFile(userID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -120,7 +121,8 @@ def updateImageByTaxonID():
     if request.method == "GET":
         taxonID = request.args.get("taxonID")
         path = request.args.get("path")
-        data, notification = api.updateImageByTaxonID(taxonID, path)
+        userID = request.args.get("userID")
+        data, notification = api.updateImageByTaxonID(taxonID, path, userID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -135,7 +137,8 @@ def updateImageByTaxonID():
 def removeImageByTaxonID():
     if request.method == "GET":
         taxonID = request.args.get("taxonID")
-        data, notification = api.removeImageByTaxonID(taxonID)
+        userID = request.args.get("userID")
+        data, notification = api.removeImageByTaxonID(taxonID, userID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -168,6 +171,21 @@ def fetchAllAssemblies():
         return REQUESTMETHODERROR
 
 
+# FETCH ASSEMBLY BY NCBI TAXON ID
+@db.route("/fetchAssembliesByTaxonID", methods=["GET"])
+def fetchAssembliesByTaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        data, notification = api.fetchAssembliesByTaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # FETCH ONE ASSEMBLY
 @db.route("/fetchAssemblyInformationByAssemblyID", methods=["GET"])
 def fetchAssemblyInformationByAssemblyID():
@@ -190,8 +208,11 @@ def addNewAssembly():
         taxonID = request.args.get("taxonID")
         name = request.args.get("name")
         path = request.args.get("path")
+        userID = request.args.get("userID")
         additionalFiles = request.args.get("additionalFilesPath")
-        data, notification = api.addNewAssembly(taxonID, name, path, additionalFiles)
+        data, notification = api.addNewAssembly(
+            taxonID, name, path, userID, additionalFiles
+        )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

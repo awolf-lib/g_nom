@@ -144,12 +144,14 @@ export default class API {
   }
 
   // ===== UPDATE TAXON IMAGE ===== //
-  async updateImageByTaxonID(taxonID, path) {
+  async updateImageByTaxonID(taxonID, path, userID) {
     return fetch(
       "http://localhost:3002/updateImageByTaxonID?taxonID=" +
         taxonID +
         "&path=" +
-        path
+        path +
+        "&userID=" +
+        userID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -159,9 +161,12 @@ export default class API {
   }
 
   // ===== DELETE TAXON IMAGE ===== //
-  async removeImageByTaxonID(taxonID) {
+  async removeImageByTaxonID(taxonID, userID) {
     return fetch(
-      "http://localhost:3002/removeImageByTaxonID?taxonID=" + taxonID
+      "http://localhost:3002/removeImageByTaxonID?taxonID=" +
+        taxonID +
+        "&userID=" +
+        userID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -233,7 +238,7 @@ export default class API {
   }
 
   // ===== IMPORT NEW ASSEMBLY ===== //
-  async addNewAssembly(taxonID, name, path, additionalFilesPath = "") {
+  async addNewAssembly(taxonID, name, path, userID, additionalFilesPath = "") {
     return fetch(
       "http://localhost:3002/addNewAssembly?taxonID=" +
         taxonID +
@@ -241,6 +246,8 @@ export default class API {
         name +
         "&path=" +
         path +
+        "&userID=" +
+        userID +
         "&additionalFilesPath=" +
         additionalFilesPath
     )
@@ -254,6 +261,18 @@ export default class API {
   // ===== REMOVE ASSEMBLY ===== //
   async removeAssemblyByAssemblyID(id) {
     return fetch("http://localhost:3002/removeAssemblyByAssemblyID?id=" + id)
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
+  async fetchAssembliesByTaxonID(taxonID) {
+    return fetch(
+      "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" + taxonID
+    )
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {

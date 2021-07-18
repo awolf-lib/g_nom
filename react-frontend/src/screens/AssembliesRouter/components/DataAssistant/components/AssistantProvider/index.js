@@ -1,7 +1,7 @@
 import React from "react";
 
 import UpdateImageForm from "./components/UpdateImageForm";
-import RemoveImageForm from "./components/RemoveImageForm";
+import RemoveConfirmationForm from "./components/RemoveConfirmationForm";
 import UpdateGeneralInfosForm from "./components/UpdateGeneralInfosForm";
 import CreateAssemblyForm from "./components/CreateAssemblyForm";
 
@@ -13,7 +13,8 @@ const AssistantProvider = (props) => {
       case "Change image":
         return "3. Select image!";
       case "Remove image":
-        return "3. Confirm or Cancel!";
+      case "Remove assembly":
+        return "3. Confirm or cancel!";
       case "Add/update/remove info":
         return "3. Add, change or remove general infos!";
       case "Create new assembly":
@@ -30,11 +31,15 @@ const AssistantProvider = (props) => {
       case "Change image":
         return <UpdateImageForm {...props} />;
       case "Remove image":
-        return <RemoveImageForm {...props} />;
+        return <RemoveConfirmationForm {...props} confirmationType="image" />;
       case "Add/update/remove info":
         return <UpdateGeneralInfosForm {...props} level="taxon" />;
       case "Create new assembly":
         return <CreateAssemblyForm {...props} />;
+      case "Remove assembly":
+        return (
+          <RemoveConfirmationForm {...props} confirmationType="assembly" />
+        );
 
       default:
         break;

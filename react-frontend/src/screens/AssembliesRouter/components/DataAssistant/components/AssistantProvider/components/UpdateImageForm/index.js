@@ -50,9 +50,18 @@ const UpdateImageForm = (props) => {
   };
 
   const handleSubmitImport = async () => {
+    const userID = sessionStorage.getItem("userID");
+    if (!userID) {
+      handleNewNotification({
+        label: "Error",
+        message: "Missing user ID information",
+        type: "error",
+      });
+    }
     const response = await api.updateImageByTaxonID(
       selectedTaxon.ncbiTaxonID,
-      selectedPath.join("/")
+      selectedPath.join("/"),
+      userID
     );
 
     if (response && response.payload) {
@@ -77,8 +86,8 @@ const UpdateImageForm = (props) => {
         index === pathArray.length - 1 && pathArray === selectedPath,
     });
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="animate-grow-y">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-grow-y">
         {possibleImports &&
         possibleImports.image &&
         Object.keys(possibleImports.image).length > 0 ? (

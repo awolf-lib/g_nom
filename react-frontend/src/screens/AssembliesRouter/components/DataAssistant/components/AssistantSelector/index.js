@@ -1,11 +1,54 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { CircleInformation, Gallery, New, Trash } from "grommet-icons";
+import {
+  CircleInformation,
+  Gallery,
+  New,
+  Trash,
+  Edit,
+  CaretDownFill,
+  CaretUpFill,
+} from "grommet-icons";
 
 import Button from "../../../../../../components/Button";
+import API from "../../../../../../api";
+import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const AssistantSelector = (props) => {
   const { mode, view, setView, selectedTaxon, handleModeChange } = props;
+
+  const [assemblies, setAssemblies] = useState([]);
+  const [showInfo, setShowInfo] = useState(undefined);
+
+  const api = new API();
+
+  useEffect(() => {
+    loadAssemblies();
+  }, [props.mode]);
+
+  // notifications
+  const dispatch = useNotification();
+
+  const handleNewNotification = (notification) => {
+    dispatch({
+      label: notification.label,
+      message: notification.message,
+      type: notification.type,
+    });
+  };
+
+  const loadAssemblies = async () => {
+    const response = await api.fetchAssembliesByTaxonID(selectedTaxon.id);
+
+    if (response && response.payload) {
+      setAssemblies(response.payload);
+    }
+
+    if (response && response.notification && response.notification.message) {
+      handleNewNotification(response.notification);
+    }
+  };
+
   return (
     <div>
       {selectedTaxon && selectedTaxon.id && (
@@ -40,13 +83,14 @@ const AssistantSelector = (props) => {
                               : "Add image"
                           }
                           size="sm"
-                          onClick={() =>
+                          onClick={() => {
                             handleModeChange(
                               selectedTaxon.imageStatus
                                 ? "Change image"
                                 : "Add image"
-                            )
-                          }
+                            );
+                            setView(false);
+                          }}
                         >
                           <Gallery color="blank" className="stroke-current" />
                         </Button>
@@ -56,7 +100,10 @@ const AssistantSelector = (props) => {
                           <Button
                             label="Remove image"
                             size="sm"
-                            onClick={() => handleModeChange("Remove image")}
+                            onClick={() => {
+                              handleModeChange("Remove image");
+                              setView(false);
+                            }}
                           >
                             <Trash color="blank" className="stroke-current" />
                           </Button>
@@ -72,9 +119,10 @@ const AssistantSelector = (props) => {
                         <Button
                           label="Add/update/remove info"
                           size="sm"
-                          onClick={() =>
-                            handleModeChange("Add/update/remove info")
-                          }
+                          onClick={() => {
+                            handleModeChange("Add/update/remove info");
+                            setView(false);
+                          }}
                         >
                           <CircleInformation
                             color="blank"
@@ -92,9 +140,10 @@ const AssistantSelector = (props) => {
                         <Button
                           label="Create new assembly"
                           size="sm"
-                          onClick={() =>
-                            handleModeChange("Create new assembly")
-                          }
+                          onClick={() => {
+                            handleModeChange("Create new assembly");
+                            setView(false);
+                          }}
                         >
                           <New color="blank" className="stroke-current" />
                         </Button>
@@ -103,8 +152,118 @@ const AssistantSelector = (props) => {
                   </div>
                 </div>
                 <div className="shadow rounded-lg p-4">
+                  {/** LIST ASSEMBLIES */}
                   <div className="font-bold">Update assembly</div>
                   <hr className="shadow my-4" />
+                  {assemblies.length > 0 ? (
+                    assemblies.map((assembly, index) => {
+                      return (
+                        <div
+                          key={assembly.id}
+                          className="grid grid-cols-3 gap-2 border px-4 py-2 rounded-lg shadow my-2 animate-grow-y"
+                        >
+                          <div className="text-sm font-semibold flex items-center col-span-2">
+                            {assembly.name}
+                          </div>
+                          <div className="flex justify-around">
+                            <div
+                              onClick={() =>
+                                setShowInfo((prevState) =>
+                                  prevState === index ? undefined : index
+                                )
+                              }
+                              className="select-none rounded-full flex justify-center items-center text-blue-700 hover:text-white hover:bg-blue-700 transition duration-300 p-2 cursor-pointer"
+                            >
+                              {showInfo === index ? (
+                                <CaretDownFill
+                                  size="small"
+                                  color="blank"
+                                  className="stroke-current mr-1"
+                                />
+                              ) : (
+                                <CaretUpFill
+                                  size="small"
+                                  color="blank"
+                                  className="stroke-current mr-1"
+                                />
+                              )}
+                              <CircleInformation
+                                size="small"
+                                color="blank"
+                                className="stroke-current"
+                              />
+                            </div>
+                            <div
+                              onClick={() => {
+                                handleModeChange("Edit assembly", assembly);
+                                setView(false);
+                              }}
+                              className="rounded-full flex justify-center items-center text-gray-600 hover:text-white hover:bg-gray-600 transition duration-300 p-2 cursor-pointer"
+                            >
+                              <Edit
+                                size="small"
+                                color="blank"
+                                className="stroke-current"
+                              />
+                            </div>
+                            <div
+                              onClick={() => {
+                                handleModeChange("Remove assembly", assembly);
+                                setView(false);
+                              }}
+                              className="rounded-full flex justify-center items-center text-red-600 hover:text-white hover:bg-red-600 transition duration-300 p-2 cursor-pointer"
+                            >
+                              <Trash
+                                size="small"
+                                color="blank"
+                                className="stroke-current"
+                              />
+                            </div>
+                          </div>
+
+                          {showInfo === index && (
+                            <div className="col-span-3">
+                              <hr className="shadow- mb-4" />
+                              <div className="grid grid-cols-3 gap-2 animate-grow-y mb-2">
+                                <div className="text-sm font-semibold">
+                                  <div className="text-xs">Added by:</div>
+                                  <div className="text-sm font-semibold">
+                                    {assembly.addedByUsername}
+                                  </div>
+                                </div>
+                                <div className="text-sm font-semibold col-span-2">
+                                  <div className="text-xs">Added on:</div>
+                                  <div className="text-sm font-semibold">
+                                    {assembly.addedOn}
+                                  </div>
+                                </div>
+                                <div className="text-sm font-semibold">
+                                  <div className="text-xs">
+                                    Last updated by:
+                                  </div>
+                                  <div className="text-sm font-semibold">
+                                    {assembly.lastUpdatedByUsername}
+                                  </div>
+                                </div>
+                                <div className="text-sm font-semibold col-span-2">
+                                  <div className="text-xs">
+                                    Last updated on:
+                                  </div>
+                                  <div className="text-sm font-semibold">
+                                    {assembly.lastUpdatedOn}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="flex justify-center items-center">
+                      No assemblies for selected ID!
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

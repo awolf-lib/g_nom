@@ -59,7 +59,6 @@ const CreateAssemblyForm = (props) => {
       });
       return;
     }
-    setImporting(true);
     if (!selectedTaxon.id) {
       handleNewNotification({
         label: "Error",
@@ -84,10 +83,21 @@ const CreateAssemblyForm = (props) => {
       });
       return;
     }
+    const userID = sessionStorage.getItem("userID");
+    if (!userID) {
+      handleNewNotification({
+        label: "Error",
+        message: "Missing user ID information!",
+        type: "error",
+      });
+      return;
+    }
+    setImporting(true);
     const response = await api.addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
       selectedPath.join("/"),
+      userID,
       additionalFiles.join("/")
     );
     if (response && response.payload) {
@@ -96,8 +106,8 @@ const CreateAssemblyForm = (props) => {
     if (response && response.notification) {
       handleNewNotification(response.notification);
     }
-
     setImporting(false);
+    handleModeChange("");
   };
 
   const handleChangeSelectedPath = (inputPathArray) => {
@@ -130,7 +140,7 @@ const CreateAssemblyForm = (props) => {
         additionalFiles.length > 0,
     });
   return (
-    <div>
+    <div className="animate-grow-y">
       <div className="flex items-center">
         <div className="w-64 font-semibold">New assembly name:</div>
         <Input

@@ -17,6 +17,7 @@ const DataAssistant = () => {
   // view 2 - states
   const [view2, setView2] = useState(true);
   const [mode, setMode] = useState("");
+  const [object, setObject] = useState({});
 
   // view 3 - states
   const [view3, setView3] = useState(true);
@@ -77,10 +78,11 @@ const DataAssistant = () => {
   };
 
   // view 2
-  const handleModeChange = (inputMode) => {
+  const handleModeChange = (inputMode, object = {}) => {
     setView2(true);
     setView3(true);
     setMode(inputMode);
+    setObject(object);
   };
 
   return (
@@ -107,23 +109,28 @@ const DataAssistant = () => {
       />
 
       {/** View 2 */}
-      <AssistantSelector
-        mode={mode}
-        selectedTaxon={selectedTaxon}
-        handleModeChange={handleModeChange}
-        view={view2}
-        setView={setView2}
-      />
+      {selectedTaxon && selectedTaxon.id && (
+        <AssistantSelector
+          mode={mode}
+          selectedTaxon={selectedTaxon}
+          handleModeChange={handleModeChange}
+          view={view2}
+          setView={setView2}
+        />
+      )}
 
       {/** View 3 */}
-      <AssistantProvider
-        selectedTaxon={selectedTaxon}
-        setSelectedTaxon={setSelectedTaxon}
-        mode={mode}
-        handleModeChange={handleModeChange}
-        view={view3}
-        setView={setView3}
-      />
+      {mode && (
+        <AssistantProvider
+          selectedTaxon={selectedTaxon}
+          setSelectedTaxon={setSelectedTaxon}
+          mode={mode}
+          handleModeChange={handleModeChange}
+          view={view3}
+          setView={setView3}
+          object={object}
+        />
+      )}
     </div>
   );
 };

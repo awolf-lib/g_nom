@@ -162,9 +162,9 @@ class DatabaseManager:
 
     # ================== TAXON ================== #
     # IMPORT ALL FROM TAXDUMP FILE
-    def reloadTaxonIDsFromFile(self):
+    def reloadTaxonIDsFromFile(self, userID):
         """
-        Takes names.dmp from src/Import/taxa/names.dmp directory and fills db with
+        Takes names.dmp from src/files/download/taxa/names.dmp directory and fills db with
         all tax IDs
         """
 
@@ -172,7 +172,7 @@ class DatabaseManager:
 
         taxonData = []
         try:
-            with open("src/FileStorage/taxa/names.dmp", "r") as taxonFile:
+            with open("src/files/download/taxa/names.dmp", "r") as taxonFile:
                 taxonData = taxonFile.readlines()
                 taxonFile.close()
         except:
@@ -196,20 +196,20 @@ class DatabaseManager:
                     index < len(taxonData) - 1
                     and int(taxonData[index + 1].split("\t")[0]) != taxonID
                 ):
-                    values += f"({taxonID}, '{scientificName}'),"
+                    values += f"({taxonID}, '{scientificName}', {userID}, NOW()),"
                     counter += 1
                     taxonID = None
 
                 if counter == 5000:
                     values = values[:-1]
-                    sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName) VALUES {values}"
+                    sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName, lastUpdatedBy, lastUpdatedOn) VALUES {values}"
                     cursor.execute(sql)
                     connection.commit()
                     counter = 0
                     values = ""
 
             values = values[:-1]
-            sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName) VALUES {values}"
+            sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName, lastUpdatedBy, lastUpdatedOn) VALUES {values}"
             cursor.execute(sql)
             connection.commit()
         except:
@@ -267,9 +267,9 @@ class DatabaseManager:
             }
 
     # UPDATE TAXON IMAGE
-    def updateImageByTaxonID(self, taxonID, path):
+    def updateImageByTaxonID(self, taxonID, path, userID):
         """
-        DELETE PROFILE
+        ADD PROFILE IMAGE
         """
         status, notification = fileManager.moveFileToStorage("image", path, taxonID)
 
@@ -279,7 +279,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"UPDATE taxon SET taxon.imageStatus={1} WHERE taxon.ncbiTaxonID={taxonID}"
+                f"UPDATE taxon SET imageStatus={1}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE ncbiTaxonID={taxonID}"
             )
             connection.commit()
         except:
@@ -296,9 +296,9 @@ class DatabaseManager:
         }
 
     # DELETE TAXON IMAGE
-    def removeImageByTaxonID(self, taxonID):
+    def removeImageByTaxonID(self, taxonID, userID):
         """
-        remove PROFILE IMAGE
+        REMOVE PROFILE IMAGE
         """
 
         status, notification = fileManager.deleteFile(
@@ -310,7 +310,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"UPDATE taxon SET taxon.imageStatus={0} WHERE taxon.ncbiTaxonID={taxonID}"
+                f"UPDATE taxon SET taxon.imageStatus={0}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxon.ncbiTaxonID={taxonID}"
             )
             connection.commit()
         except:
@@ -481,6 +481,48 @@ class DatabaseManager:
                 },
             )
 
+    # FETCH ASSEMBLY BY NCBI TAXON ID
+    def fetchAssembliesByTaxonID(self, taxonID):
+        """
+        Gets all assembly with given NCBI taxon ID from db
+        """
+
+        assemblies = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT * from assembly where taxonID={taxonID}")
+
+            row_headers = [x[0] for x in cursor.description]
+            assemblies = cursor.fetchall()
+            assemblies = [dict(zip(row_headers, x)) for x in assemblies]
+        except:
+            return [], f"Error while fetching assemblies from DB."
+
+        try:
+            connection, cursor = self.updateConnection()
+            for assembly in assemblies:
+                addedByID = assembly["addedBy"]
+                lastUpdatedByID = assembly["lastUpdatedBy"]
+                cursor.execute(f"SELECT username from user where id={addedByID}")
+                addedBy = cursor.fetchone()[0]
+                cursor.execute(f"SELECT username from user where id={lastUpdatedByID}")
+                lastUpdatedBy = cursor.fetchone()[0]
+
+                assembly.update(
+                    {"addedByUsername": addedBy, "lastUpdatedByUsername": lastUpdatedBy}
+                )
+        except:
+            return [], f"Error while fetching user information from DB."
+
+        if len(assemblies):
+            return assemblies, {}
+        else:
+            return [], {
+                "label": "Info",
+                "message": "No assemblies with given ID in database!",
+                "type": "info",
+            }
+
     # FETCH ONE ASSEMBLY
     def fetchAssemblyInformationByAssemblyID(self, id):
         """
@@ -550,7 +592,7 @@ class DatabaseManager:
             }
 
     # ADD NEW ASSEMBLY
-    def addNewAssembly(self, taxonID, name, path, additionalFilesPath=""):
+    def addNewAssembly(self, taxonID, name, path, userID, additionalFilesPath=""):
         """
         add new assembly
         """
@@ -590,11 +632,11 @@ class DatabaseManager:
             connection, cursor = self.updateConnection()
             if not additionalFilesPath:
                 cursor.execute(
-                    f"INSERT INTO assembly (taxonID, name, path) VALUES ({taxonID}, '{name}', '{path}')"
+                    f"INSERT INTO assembly (taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn) VALUES ({taxonID}, '{name}', '{path}', {userID}, NOW(), {userID}, NOW())"
                 )
             else:
                 cursor.execute(
-                    f"INSERT INTO assembly (taxonID, name, path, additionalFilesPath) VALUES ({taxonID}, '{name}', '{path}', '{additionalFilesPath}')"
+                    f"INSERT INTO assembly (taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, additionalFilesPath) VALUES ({taxonID}, '{name}', '{path}', {userID}, NOW(), {userID}, NOW(), '{additionalFilesPath}')"
                 )
             lastID = cursor.lastrowid
             connection.commit()
