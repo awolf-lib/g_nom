@@ -27,7 +27,8 @@ const GeneralInformationCarousel = ({
       }, 10000)
     );
     return clearInterval(taxonGeneralInfoInterval);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generalInfos.length]);
 
   const handlePauseTaxonGeneralInfoInterval = () => {
     if (taxonGeneralInfoInterval) {
@@ -80,7 +81,7 @@ const GeneralInformationCarousel = ({
             if (
               index === taxonGeneralInfoCarouselIndex ||
               taxonGeneralInfoCarouselIndex === -1
-            )
+            ) {
               return (
                 <div
                   key={generalInfo.generalInfoLabel + index}
@@ -98,6 +99,9 @@ const GeneralInformationCarousel = ({
                   </div>
                 </div>
               );
+            } else {
+              return <div key={generalInfo.generalInfoLabel + index} />;
+            }
           })}
         <div className="z-10 absolute right-0 top-0 flex justify-between shadow rounded-full my-4 mx-8  bg-white h-8 flex items-center">
           <div className="px-2">

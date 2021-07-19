@@ -17,7 +17,6 @@ import Input from "../Input";
 const AssembliesTable = ({ label, userID }) => {
   const [assemblies, setAssemblies] = useState([]);
   const [fetching, setFetching] = useState(false);
-  const [mounted, setMounted] = useState(true);
   const [search, setSearch] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(undefined);
   const [range, setRange] = useState(10);
@@ -45,7 +44,6 @@ const AssembliesTable = ({ label, userID }) => {
   }, []);
 
   const cleanUp = () => {
-    setMounted(false);
     clearTimeout(searchTimeout);
     clearTimeout(changeRangeTimeout);
     clearTimeout(changePageTimeout);

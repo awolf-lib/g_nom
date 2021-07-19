@@ -279,4 +279,16 @@ export default class API {
         console.error(error);
       });
   }
+
+  // ===== RENAME ASSEMBLY ===== //
+  async renameAssembly(id, name) {
+    return fetch(
+      "http://localhost:3002/renameAssembly?id=" + id + "&name=" + name
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
 }

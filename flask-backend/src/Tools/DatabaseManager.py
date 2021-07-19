@@ -621,7 +621,9 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage("assembly", path, name)
+        path, notification = fileManager.moveFileToStorage(
+            "assembly", path, name, additionalFilesPath
+        )
 
         if not path:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
@@ -696,7 +698,7 @@ class DatabaseManager:
             "type": "success",
         }
 
-    # REMOVE GENERAL INFO
+    # REMOVE ASSEMBLY
     def removeAssemblyByAssemblyID(self, id):
         """
         remove assembly by id
@@ -708,8 +710,6 @@ class DatabaseManager:
             name = cursor.fetchone()[0]
             cursor.execute(f"DELETE FROM assembly WHERE id={id}")
             connection.commit()
-
-            print(name)
 
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
             fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
@@ -723,6 +723,29 @@ class DatabaseManager:
         return 1, {
             "label": "Success",
             "message": f"Successfully removed assembly '{name}'!",
+            "type": "success",
+        }
+
+    # RENAME ASSEMBLY
+    def renameAssembly(self, id, name):
+        """
+        update assembly name
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"UPDATE assembly SET name='{name}' WHERE id={id}")
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while updating assembly name",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully updated assembly name to {name}!",
             "type": "success",
         }
 

@@ -19,6 +19,7 @@ const AssistantSelector = (props) => {
 
   const [assemblies, setAssemblies] = useState([]);
   const [showInfo, setShowInfo] = useState(undefined);
+  const [showOptions, setShowOptions] = useState(undefined);
 
   const api = new API();
 
@@ -195,8 +196,9 @@ const AssistantSelector = (props) => {
                             </div>
                             <div
                               onClick={() => {
-                                handleModeChange("Edit assembly", assembly);
-                                setView(false);
+                                setShowOptions((prevState) =>
+                                  prevState === index ? undefined : index
+                                );
                               }}
                               className="rounded-full flex justify-center items-center text-gray-600 hover:text-white hover:bg-gray-600 transition duration-300 p-2 cursor-pointer"
                             >
@@ -221,9 +223,65 @@ const AssistantSelector = (props) => {
                             </div>
                           </div>
 
+                          {showOptions === index && (
+                            <div className="col-span-3 animate-grow-y">
+                              <hr className="shadow mb-4" />
+                              <div className="grid grid-cols-3 gap-4 mb-2 animate-grow-y">
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Rename",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Rename"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Add annotation",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Add annotation"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Add mapping",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Add mapping"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Add analysis",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Add analysis"
+                                />
+                              </div>
+                            </div>
+                          )}
+
                           {showInfo === index && (
-                            <div className="col-span-3">
-                              <hr className="shadow- mb-4" />
+                            <div className="col-span-3 animate-grow-y">
+                              <hr className="shadow mb-4" />
                               <div className="grid grid-cols-3 gap-2 animate-grow-y mb-2">
                                 <div className="text-sm font-semibold">
                                   <div className="text-xs">Added by:</div>

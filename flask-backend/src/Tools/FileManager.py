@@ -1,8 +1,8 @@
 from math import exp
 import mysql.connector
-from os import makedirs, remove, symlink
+from os import makedirs, remove
 from os.path import exists
-from shutil import copy, rmtree
+from shutil import copy, rmtree, copytree
 from glob import glob
 from PIL import Image
 from subprocess import run
@@ -110,7 +110,7 @@ class FileManager:
 
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
-        self, type, path, name="", additionalFiles="", deleteAfterMoving=False
+        self, type, mainFile, name="", additionalFiles="", deleteAfterMoving=False
     ):
         """
         Moves selected file to proper storage location
@@ -122,14 +122,30 @@ class FileManager:
             "type": "error",
         }
 
-        path = BASE_PATH_TO_UPLOAD + path
-
+        path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
         if not exists(path):
             return 0, {
                 "label": "Error",
                 "message": "Path to file not found!",
                 "type": "error",
             }
+
+        if additionalFiles:
+            additionalFilesPath = f"{BASE_PATH_TO_UPLOAD}{additionalFiles}/"
+
+            if additionalFilesPath != BASE_PATH_TO_UPLOAD:
+                if not exists(additionalFilesPath):
+                    return 0, {
+                        "label": "Error",
+                        "message": "Path to additional files not found!",
+                        "type": "error",
+                    }
+            else:
+                return 0, {
+                    "label": "Error",
+                    "message": "Import of complete Upload directory is not allowed!",
+                    "type": "error",
+                }
 
         newPath = ""
         if type == "image":
@@ -160,6 +176,25 @@ class FileManager:
                 copy(path, newPath)
             except:
                 return 0, STORAGEERROR
+
+            if additionalFiles:
+                try:
+                    additionalFilesDir = additionalFiles.split("/")[-1]
+                    newAdditionalFilesPath = f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{additionalFilesDir}"
+                    copytree(
+                        additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
+                    )
+                    self.deleteFile(
+                        f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{mainFile}"
+                    )
+                except:
+                    self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+                    self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+                    return 0, {
+                        "label": "Error",
+                        "message": "Error copying additional files!",
+                        "type": "error",
+                    }
 
             try:
                 run(["samtools", "faidx", newPath])

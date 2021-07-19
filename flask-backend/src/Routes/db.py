@@ -237,6 +237,22 @@ def removeAssemblyByAssemblyID():
         return REQUESTMETHODERROR
 
 
+# RENAME ASSEMBLY
+@db.route("/renameAssembly", methods=["GET"])
+def renameAssembly():
+    if request.method == "GET":
+        id = request.args.get("id")
+        name = request.args.get("name")
+        data, notification = api.renameAssembly(id, name)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== GENERAL INFO ANY LEVEL ================== #
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
 @db.route("/fetchGeneralInfosByID", methods=["GET"])

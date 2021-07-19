@@ -122,7 +122,7 @@ const CreateAssemblyForm = (props) => {
   ) => {
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
-    if (inputPathArrayAddtionalFiles.length !== selectedPath.length) {
+    if (inputPathArrayAddtionalFiles.length < inputPathArray.length) {
       setAdditionalFiles(inputPathArrayAddtionalFiles);
     } else {
       setAdditionalFiles([]);
@@ -139,6 +139,7 @@ const CreateAssemblyForm = (props) => {
         index >= additionalFiles.length - 1 &&
         additionalFiles.length > 0,
     });
+
   return (
     <div className="animate-grow-y">
       <div className="flex items-center">
@@ -161,14 +162,16 @@ const CreateAssemblyForm = (props) => {
                 <ul>
                   {possibleImports.fasta[extension].map((pathArray, index) => {
                     return (
-                      <li className="flex items-center ml-4">
+                      <li
+                        key={extension + index}
+                        className="flex items-center ml-4"
+                      >
                         <Input
                           type="radio"
                           value={pathArray}
                           size="sm"
                           onChange={() => handleChangeSelectedPath(pathArray)}
                           checked={pathArray === selectedPath}
-                          key={extension + index}
                         />
                         <div className="ml-4">
                           {pathArray.map((dir, dirIndex) => {
