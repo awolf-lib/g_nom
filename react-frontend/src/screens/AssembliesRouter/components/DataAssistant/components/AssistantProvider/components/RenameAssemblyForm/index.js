@@ -21,10 +21,12 @@ const RenameAssemblyForm = ({ object, handleModeChange }) => {
   };
 
   const handleSubmit = async () => {
-    if (object && object.id && newAssemblyName) {
+    const userID = sessionStorage.getItem("userID");
+    if (object && object.id && newAssemblyName && userID) {
       const response = await api.renameAssembly(
         object.id,
-        newAssemblyName.replace(/ /g, "_")
+        newAssemblyName.replace(/ /g, "_"),
+        userID
       );
 
       if (response && response.notification && response.notification.message) {

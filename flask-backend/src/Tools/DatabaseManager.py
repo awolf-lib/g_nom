@@ -1,5 +1,5 @@
 import mysql.connector
-from hashlib import sha512
+from hashlib import new, sha512
 from math import ceil
 
 from .FileManager import FileManager
@@ -597,6 +597,7 @@ class DatabaseManager:
         add new assembly
         """
 
+        name = name.replace("/", "_")
         if not path or not name:
             return 0, {
                 "label": "Error",
@@ -727,14 +728,36 @@ class DatabaseManager:
         }
 
     # RENAME ASSEMBLY
-    def renameAssembly(self, id, name):
+    def renameAssembly(self, id, name, userID):
         """
         update assembly name
         """
+        name = name.replace("/", "_")
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT path from assembly where id={id}")
+            path = cursor.fetchone()[0]
+            pathSplit = path.split("/")
+            oldPath = "/".join(pathSplit[:5])
+            pathSplit[4] = name
+            newPath = "/".join(pathSplit[:5])
+            pathSplit[-1] = f"{name}_assembly.fasta"
+            fullNewPath = "/".join(pathSplit)
+            newPath, notification = fileManager.renameDirectory(oldPath, newPath)
+            if not newPath:
+                return 0, notification
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while renaming directory/file name",
+                "type": "error",
+            }
 
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(f"UPDATE assembly SET name='{name}' WHERE id={id}")
+            cursor.execute(
+                f"UPDATE assembly SET name='{name}', path='{fullNewPath}', lastUpdatedBy='{userID}', lastUpdatedOn=NOW()  WHERE id={id}"
+            )
             connection.commit()
         except:
             return 0, {
@@ -885,5 +908,195 @@ class DatabaseManager:
         return 1, {
             "label": "Success",
             "message": f"Successfully removed general info!",
+            "type": "success",
+        }
+
+    # ================== ANNOTATION ================== #
+    # ADD NEW ANNOTATION
+    def addNewAnnotation(self, assemblyID, name, path, userID, additionalFilesPath=""):
+        """
+        add new annotation
+        """
+
+        if not path or not name:
+            return 0, {
+                "label": "Error",
+                "message": "Missing path to gff or annotation name!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from annotation where name='{name}'")
+            nameAlreadyInDatabase = cursor.fetchone()
+            if nameAlreadyInDatabase:
+                return 0, {
+                    "label": "Error",
+                    "message": "Name already in database!",
+                    "type": "error",
+                }
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking if name is already assigned!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name FROM assembly where id={assemblyID}")
+            assemblyName = cursor.fetchone()[0]
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking for assembly name!",
+                "type": "error",
+            }
+
+        path, notification = fileManager.moveFileToStorage(
+            "annotation", path, name, additionalFilesPath, assemblyName
+        )
+
+        if not path:
+            return 0, notification
+
+        try:
+            connection, cursor = self.updateConnection()
+            if not additionalFilesPath:
+                cursor.execute(
+                    f"INSERT INTO annotation (assemblyID, name, path, addedBy, addedOn) VALUES ({assemblyID}, '{name}', '{path}', {userID}, NOW())"
+                )
+            else:
+                cursor.execute(
+                    f"INSERT INTO annotation (assemblyID, name, path, addedBy, addedOn, additionalFilesPath) VALUES ({assemblyID}, '{name}', '{path}', {userID}, NOW(), '{additionalFilesPath}')"
+                )
+            lastID = cursor.lastrowid
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while inserting annotation into database!",
+                "type": "error",
+            }
+
+        # TODO: ADD TABLE TO MYSQL DATABASE
+        # data, notification = parsers.parseGff(path)
+
+        # if not data:
+        #     cursor.execute(f"DELETE FROM annotation WHERE id={lastID}")
+        #     connection.commit()
+        #     return 0, notification
+
+        # try:
+        #     connection, cursor = self.updateConnection()
+        #     fields = "assemblyID, "
+        #     values = f"{lastID}, "
+        #     for key in data:
+        #         fields += f"{key}, "
+        #         value = data[key]
+        #         if not isinstance(value, str):
+        #             values += f"{value}, "
+        #         else:
+        #             values += f"'{value}', "
+        #     fields = fields[:-2]
+        #     values = values[:-2]
+        #     cursor.execute(
+        #         f"INSERT INTO annotationStatistics ({fields}) VALUES ({values})"
+        #     )
+        #     connection.commit()
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Something went wrong while inserting assembly into database!",
+        #         "type": "error",
+        #     }
+
+        return {
+            "assemblyID": assemblyID,
+            "name": name,
+            "path": path,
+            "additionalFilesPath": additionalFilesPath,
+        }, {
+            "label": "Success",
+            "message": f"Successfully imported annotation!",
+            "type": "success",
+        }
+
+    # ================== MAPPING ================== #
+    # ADD NEW MAPPING
+    def addNewMapping(self, assemblyID, name, path, userID, additionalFilesPath=""):
+        """
+        add new mapping
+        """
+
+        if not path or not name:
+            return 0, {
+                "label": "Error",
+                "message": "Missing path to .bam or mapping name!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from mapping where name='{name}'")
+            nameAlreadyInDatabase = cursor.fetchone()
+            if nameAlreadyInDatabase:
+                return 0, {
+                    "label": "Error",
+                    "message": "Name already in database!",
+                    "type": "error",
+                }
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking if name is already assigned!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name FROM assembly where id={assemblyID}")
+            assemblyName = cursor.fetchone()[0]
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking for assembly name!",
+                "type": "error",
+            }
+
+        path, notification = fileManager.moveFileToStorage(
+            "mapping", path, name, additionalFilesPath, assemblyName
+        )
+
+        if not path:
+            return 0, notification
+
+        try:
+            connection, cursor = self.updateConnection()
+            if not additionalFilesPath:
+                cursor.execute(
+                    f"INSERT INTO mapping (assemblyID, name, path, addedBy, addedOn) VALUES ({assemblyID}, '{name}', '{path}', {userID}, NOW())"
+                )
+            else:
+                cursor.execute(
+                    f"INSERT INTO mapping (assemblyID, name, path, addedBy, addedOn, additionalFilesPath) VALUES ({assemblyID}, '{name}', '{path}', {userID}, NOW(), '{additionalFilesPath}')"
+                )
+            lastID = cursor.lastrowid
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while inserting mapping into database!",
+                "type": "error",
+            }
+
+        return {
+            "assemblyID": assemblyID,
+            "name": name,
+            "path": path,
+            "additionalFilesPath": additionalFilesPath,
+        }, {
+            "label": "Success",
+            "message": f"Successfully imported mapping!",
             "type": "success",
         }

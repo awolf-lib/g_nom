@@ -1,4 +1,3 @@
-from math import exp
 import mysql.connector
 from os import makedirs, remove
 from os.path import exists
@@ -40,7 +39,7 @@ class FileManager:
     # ========================================== FILE IMPORT ========================================== #
     # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
-        self, types=["image", "fasta"], import_directory=BASE_PATH_TO_UPLOAD
+        self, types=["image", "fasta", "gff", "bam"], import_directory=BASE_PATH_TO_UPLOAD
     ):
         """
         Fetch all files provided in import dirctory
@@ -61,6 +60,13 @@ class FileManager:
                 ".fa": "**/*.fa",
                 ".faa": "**/*.faa",
                 ".fna": "**/*.fna",
+            },
+            "gff": {
+                ".gff": "**/*.gff",
+                ".gff3": "**/*.gff3",
+            },
+            "bam": {
+                ".bam": "**/*.bam",
             },
         }
 
@@ -110,7 +116,12 @@ class FileManager:
 
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
-        self, type, mainFile, name="", additionalFiles="", deleteAfterMoving=False
+        self,
+        type,
+        mainFile,
+        name="",
+        additionalFiles="",
+        assemblyName="",
     ):
         """
         Moves selected file to proper storage location
@@ -159,7 +170,7 @@ class FileManager:
                             "type": "error",
                         }
                     newPath = (
-                        "src/files/download/taxa/images/" + name + ".thumbnail.jpg"
+                        "{BASE_PATH_TO_STORAGE}taxa/images/" + name + ".thumbnail.jpg"
                     )
                     image.save(newPath, "JPEG")
             except:
@@ -211,7 +222,7 @@ class FileManager:
 
             try:
                 with open(f"{BASE_PATH_TO_JBROWSE}{name}/tracks.conf", "a") as conf:
-                    template = f"[GENERAL]\nrefSeqs={name}_assembly.fasta.fai\n[tracks.Reference]\nurlTemplate={name}.fasta\nstoreClass=JBrowse/Store/SeqFeature/IndexedFasta\ntype=Sequence\n"
+                    template = f"[GENERAL]\nrefSeqs={name}_assembly.fasta.fai\n[tracks.Reference]\nurlTemplate={name}_assembly.fasta\nstoreClass=JBrowse/Store/SeqFeature/IndexedFasta\ntype=Sequence\n"
                     conf.write(template)
                     conf.close()
             except:
@@ -236,17 +247,205 @@ class FileManager:
                     "type": "error",
                 }
 
+        elif type == "annotation":
+            try:
+                fullPathToAnnoation = (
+                    f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{name}/"
+                )
+
+                makedirs(
+                    fullPathToAnnoation,
+                    exist_ok=True,
+                )
+                newPath = f"{fullPathToAnnoation}{name}_genomic_annotation.gff3"
+                copy(path, newPath)
+            except:
+                self.deleteDirectories(fullPathToAnnoation)
+                return 0, STORAGEERROR
+
+            if additionalFiles:
+                try:
+                    additionalFilesDir = additionalFiles.split("/")[-1]
+                    newAdditionalFilesPath = (
+                        f"{fullPathToAnnoation}additionalFiles/{additionalFilesDir}"
+                    )
+                    copytree(
+                        additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
+                    )
+                    self.deleteFile(f"{fullPathToAnnoation}/additionalFiles/{mainFile}")
+                except:
+                    self.deleteDirectories(fullPathToAnnoation)
+                    return 0, {
+                        "label": "Error",
+                        "message": "Error copying additional files!",
+                        "type": "error",
+                    }
+
+            try:
+                newPathSorted = newPath.replace(".gff3", ".sorted.gff3")
+                run(
+                    f'(grep ^"#" {newPath}; grep -v ^"#" {newPath} | grep -v "^$" | grep "\t" | sort -k1,1 -k4,4n) > {newPathSorted}',
+                    shell=True,
+                )
+                # TODO: Check why no track data is visible on low coverage annotation tracks when using gt
+                # run(
+                #     [
+                #         "gt",
+                #         "gff3",
+                #         "-sortlines",
+                #         "-tidy",
+                #         "-retainids",
+                #         "-o",
+                #         newPathSorted,
+                #         newPath,
+                #     ]
+                # )
+                self.deleteFile(newPath)
+                run(["bgzip", newPathSorted])
+                run(["tabix", "-p", "gff", f"{newPathSorted}.gz"])
+                run(
+                    [
+                        "ln",
+                        "-rs",
+                        f"{newPathSorted}.gz",
+                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+                    ]
+                )
+                run(
+                    [
+                        "ln",
+                        "-rs",
+                        f"{newPathSorted}.gz.tbi",
+                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+                    ]
+                )
+            except:
+                self.deleteDirectories(fullPathToAnnoation)
+                return 0, {
+                    "label": "Error",
+                    "message": "Error formatting gff3 for jbrowse!",
+                    "type": "error",
+                }
+
+            try:
+                fileNameSorted = newPathSorted.split("/")[-1]
+                name = name.replace(".", "_")
+                with open(
+                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
+                ) as conf:
+                    template = f"[tracks.Annotation_{name}]\nurlTemplate={fileNameSorted}.gz\nstoreClass=JBrowse/Store/SeqFeature/GFF3Tabix\ntype=CanvasFeatures\n"
+                    conf.write(template)
+                    conf.close()
+            except:
+                self.deleteDirectories(fullPathToAnnoation)
+                return 0, {
+                    "label": "Error",
+                    "message": "Error while creating jbrowse tracks.conf.",
+                    "type": "error",
+                }
+
+            try:
+                run(
+                    [
+                        JBROWSEGENERATENAMESCALL,
+                        "-out",
+                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+                    ]
+                )
+            except:
+                self.deleteDirectories(fullPathToAnnoation)
+                return 0, {
+                    "label": "Error",
+                    "message": "Error while running jbrowse generate-names.pl script. Run manually!",
+                    "type": "error",
+                }
+
+            newPath = newPathSorted
+
+        elif type == "mapping":
+            try:
+                fullPathToMapping = (
+                    f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{name}/"
+                )
+
+                makedirs(
+                    fullPathToMapping,
+                    exist_ok=True,
+                )
+                newPath = f"{fullPathToMapping}{name}_mapping.bam"
+                copy(path, newPath)
+            except:
+                self.deleteDirectories(fullPathToMapping)
+                return 0, STORAGEERROR
+
+            if additionalFiles:
+                try:
+                    additionalFilesDir = additionalFiles.split("/")[-1]
+                    newAdditionalFilesPath = (
+                        f"{fullPathToMapping}additionalFiles/{additionalFilesDir}"
+                    )
+                    copytree(
+                        additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
+                    )
+                    self.deleteFile(f"{fullPathToMapping}/additionalFiles/{mainFile}")
+                except:
+                    self.deleteDirectories(fullPathToMapping)
+                    return 0, {
+                        "label": "Error",
+                        "message": "Error copying additional files!",
+                        "type": "error",
+                    }
+
+            try:
+                run(["samtools", "index", newPath])
+                run(
+                    [
+                        "ln",
+                        "-rs",
+                        newPath,
+                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+                    ]
+                )
+                run(
+                    [
+                        "ln",
+                        "-rs",
+                        f"{newPath}.bai",
+                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+                    ]
+                )
+
+            except:
+                self.deleteDirectories(fullPathToMapping)
+                return 0, {
+                    "label": "Error",
+                    "message": "Error indexing .bam for jbrowse!",
+                    "type": "error",
+                }
+
+            try:
+                fileName = newPath.split("/")[-1]
+                name = name.replace(".", "_")
+                with open(
+                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
+                ) as conf:
+                    template = f"[tracks.Mapping_{name}]\nurlTemplate={fileName}\nstoreClass=JBrowse/Store/SeqFeature/BAM\ntype=Alignments2\n"
+                    conf.write(template)
+                    conf.close()
+            except:
+                self.deleteDirectories(fullPathToMapping)
+                return 0, {
+                    "label": "Error",
+                    "message": "Error while creating jbrowse tracks.conf.",
+                    "type": "error",
+                }
+
         else:
             return 0, {
                 "label": "Error",
                 "message": "Unsupported type!",
                 "type": "error",
             }
-
-        if deleteAfterMoving:
-            status, notification = remove(path)
-            if not status:
-                return 0, notification
 
         return newPath, {}
 
@@ -290,6 +489,26 @@ class FileManager:
 
         return 1, {}
 
+    # rename directory
+    def renameDirectory(self, path, newPath):
+        """
+        rename directory
+        """
+
+        if not exists(path):
+            return 1, {}
+
+        try:
+            run(["mv", path, newPath])
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Directory/File could not be renamed. Check yourself!",
+                "type": "error",
+            }
+
+        return newPath, {}
+
     # creates directories in storage / jbrowse for one assembly
     def createDirectoriesForSpecies(self, assemblyDirName):
         """
@@ -308,29 +527,25 @@ class FileManager:
             )
 
             # gff3
-            makedirs(f"{pathToSpeciesDirectory}/gff3/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/gff3/", exist_ok=True)
 
             # mappings
-            makedirs(
-                f"{pathToSpeciesDirectory}/mappings/additionalFiles/", exist_ok=True
-            )
+            makedirs(f"{pathToSpeciesDirectory}/mappings/", exist_ok=True)
 
             # quast
-            makedirs(f"{pathToSpeciesDirectory}/quast/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/quast/", exist_ok=True)
 
             # busco
-            makedirs(f"{pathToSpeciesDirectory}/busco/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/busco/", exist_ok=True)
 
             # fCat
-            makedirs(f"{pathToSpeciesDirectory}/fcat/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/fcat/", exist_ok=True)
 
             # repeatmasker
-            makedirs(
-                f"{pathToSpeciesDirectory}/repeatmasker/additionalFiles/", exist_ok=True
-            )
+            makedirs(f"{pathToSpeciesDirectory}/repeatmasker/", exist_ok=True)
 
             # milts
-            makedirs(f"{pathToSpeciesDirectory}/milts/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/milts/", exist_ok=True)
 
             # jbrowse
             makedirs(f"{BASE_PATH_TO_JBROWSE}{assemblyDirName}", exist_ok=True)

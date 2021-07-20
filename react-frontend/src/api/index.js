@@ -281,9 +281,56 @@ export default class API {
   }
 
   // ===== RENAME ASSEMBLY ===== //
-  async renameAssembly(id, name) {
+  async renameAssembly(id, name, userID) {
     return fetch(
-      "http://localhost:3002/renameAssembly?id=" + id + "&name=" + name
+      "http://localhost:3002/renameAssembly?id=" +
+        id +
+        "&name=" +
+        name +
+        "&userID=" +
+        userID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== ADD NEW ANNOTATION ===== //
+  async addNewAnnotation(id, name, path, userID, additionalFilesPath = "") {
+    return fetch(
+      "http://localhost:3002/addNewAnnotation?id=" +
+        id +
+        "&name=" +
+        name +
+        "&path=" +
+        path +
+        "&userID=" +
+        userID +
+        "&additionalFilesPath=" +
+        additionalFilesPath
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== ADD NEW MAPPING ===== //
+  async addNewMapping(id, name, path, userID, additionalFilesPath = "") {
+    return fetch(
+      "http://localhost:3002/addNewMapping?id=" +
+        id +
+        "&name=" +
+        name +
+        "&path=" +
+        path +
+        "&userID=" +
+        userID +
+        "&additionalFilesPath=" +
+        additionalFilesPath
     )
       .then((request) => request.json())
       .then((data) => data)

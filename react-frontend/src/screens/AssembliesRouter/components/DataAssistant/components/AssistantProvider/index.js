@@ -5,6 +5,8 @@ import RemoveConfirmationForm from "./components/RemoveConfirmationForm";
 import UpdateGeneralInfosForm from "./components/UpdateGeneralInfosForm";
 import CreateAssemblyForm from "./components/CreateAssemblyForm";
 import RenameAssemblyForm from "./components/RenameAssemblyForm";
+import AddAnnotationForm from "./components/AddAnnotationForm";
+import AddMappingForm from "./components/AddMappingForm";
 
 const AssistantProvider = (props) => {
   const { view } = props;
@@ -52,9 +54,9 @@ const AssistantProvider = (props) => {
       case "Edit assembly - Rename":
         return <RenameAssemblyForm {...props} />;
       case "Edit assembly - Add annotation":
-        return "3. Enter annotation name and select .gff3!";
+        return <AddAnnotationForm {...props} />;
       case "Edit assembly - Add mapping":
-        return "3. Enter mapping name and select .bam!";
+        return <AddMappingForm {...props} />;
       case "Edit assembly - Add analysis":
         return "3. Enter analysis name and select .bam!";
 

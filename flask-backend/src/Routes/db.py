@@ -243,7 +243,8 @@ def renameAssembly():
     if request.method == "GET":
         id = request.args.get("id")
         name = request.args.get("name")
-        data, notification = api.renameAssembly(id, name)
+        userID = request.args.get("userID")
+        data, notification = api.renameAssembly(id, name, userID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -313,6 +314,48 @@ def removeGeneralInfoByID():
         level = request.args.get("level")
         id = request.args.get("id")
         data, notification = api.removeGeneralInfoByID(level, id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# ================== ANNOTATION ================== #
+# ADD NEW ANNOTATION
+@db.route("/addNewAnnotation", methods=["GET"])
+def addNewAnnotation():
+    if request.method == "GET":
+        id = request.args.get("id")
+        name = request.args.get("name")
+        path = request.args.get("path")
+        userID = request.args.get("userID")
+        additionalFiles = request.args.get("additionalFilesPath")
+        data, notification = api.addNewAnnotation(
+            id, name, path, userID, additionalFiles
+        )
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# ================== MAPPING ================== #
+# ADD NEW MAPPING
+@db.route("/addNewMapping", methods=["GET"])
+def addNewMapping():
+    if request.method == "GET":
+        id = request.args.get("id")
+        name = request.args.get("name")
+        path = request.args.get("path")
+        userID = request.args.get("userID")
+        additionalFiles = request.args.get("additionalFilesPath")
+        data, notification = api.addNewMapping(id, name, path, userID, additionalFiles)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

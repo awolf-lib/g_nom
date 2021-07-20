@@ -15,9 +15,10 @@ module.exports = {
         "100px": "100px",
       },
       minHeight: {
-        12: "12px",
-        24: "24px",
-        48: "48px",
+        12: "3rem",
+        24: "6rem",
+        48: "12rem",
+        96: "24rem",
         "1/4": "25vh",
       },
       height: {

@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
-import API from "../../../../../../../../api";
 import classNames from "classnames";
 
+import API from "../../../../../../../../api";
+import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
-import Button from "../../../../../../../../components/Button";
-
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
-const CreateAssemblyForm = (props) => {
+const AddMappingForm = (props) => {
   const { selectedTaxon, handleModeChange } = props;
 
   const [possibleImports, setPossibleImports] = useState([]);
   const [fetchingAll, setFetchingAll] = useState(false);
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
-  const [newAssemblyName, setNewAssemblyName] = useState("");
+  const [newAnalysisName, setNewAnalysisName] = useState("");
   const [selectedPath, setSelectedPath] = useState([]);
   const [additionalFiles, setAdditionalFiles] = useState([]);
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
-    loadFiles(["fasta"]);
+    loadFiles(["bam"]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -67,10 +66,10 @@ const CreateAssemblyForm = (props) => {
       });
       return;
     }
-    if (!newAssemblyName) {
+    if (!newAnalysisName) {
       handleNewNotification({
         label: "Error",
-        message: "Missing new assembly name!",
+        message: "Missing new mapping name!",
         type: "error",
       });
       return;
@@ -78,7 +77,7 @@ const CreateAssemblyForm = (props) => {
     if (!selectedPath.length) {
       handleNewNotification({
         label: "Error",
-        message: "Missing path to fasta!",
+        message: "Missing path to .bam!",
         type: "error",
       });
       return;
@@ -93,9 +92,9 @@ const CreateAssemblyForm = (props) => {
       return;
     }
     setImporting(true);
-    const response = await api.addNewAssembly(
-      selectedTaxon.id,
-      newAssemblyName.replace(/ /g, "_"),
+    const response = await api.addNewMapping(
+      props.object.id,
+      newAnalysisName.replace(/ /g, "_"),
       selectedPath.join("/"),
       userID,
       additionalFiles.join("/")
@@ -143,24 +142,24 @@ const CreateAssemblyForm = (props) => {
   return (
     <div className="animate-grow-y">
       <div className="flex items-center">
-        <div className="w-64 font-semibold">New assembly name:</div>
+        <div className="w-64 font-semibold">New annotation name:</div>
         <Input
           placeholder="max. 400 characters"
-          onChange={(e) => setNewAssemblyName(e.target.value)}
+          onChange={(e) => setNewAnalysisName(e.target.value)}
         />
       </div>
       <hr className="shadow my-8" />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {possibleImports &&
-        possibleImports.fasta &&
-        Object.keys(possibleImports.fasta).length > 0 ? (
-          Object.keys(possibleImports.fasta).map((extension) => {
+        possibleImports.bam &&
+        Object.keys(possibleImports.bam).length > 0 ? (
+          Object.keys(possibleImports.bam).map((extension) => {
             return (
               <div key={extension}>
                 <div>{extension}</div>
                 <hr className="shadow my-2" />
                 <ul>
-                  {possibleImports.fasta[extension].map((pathArray, index) => {
+                  {possibleImports.bam[extension].map((pathArray, index) => {
                     return (
                       <li
                         key={extension + index}
@@ -268,8 +267,8 @@ const CreateAssemblyForm = (props) => {
   );
 };
 
-export default CreateAssemblyForm;
+export default AddMappingForm;
 
-CreateAssemblyForm.defaultProps = {};
+AddMappingForm.defaultProps = {};
 
-CreateAssemblyForm.propTypes = {};
+AddMappingForm.propTypes = {};

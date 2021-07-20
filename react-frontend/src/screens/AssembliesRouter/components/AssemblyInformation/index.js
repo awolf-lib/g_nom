@@ -5,6 +5,7 @@ import API from "../../../../api";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
 
 import GeneralInformationCarousel from "./components/GeneralInformationTable";
+import GenomeViewer from "./components/GenomeViewer";
 
 const AssemblyInformation = () => {
   const [assemblyInformation, setAssemblyInformation] = useState({});
@@ -38,22 +39,8 @@ const AssemblyInformation = () => {
     setFetchingAll(false);
   };
 
-  const [showNav, setshowNav] = useState(false);
-  const [showTracklist, setShowTracklist] = useState(true);
-
-  const configureSource = () => {
-    return (
-      "http://localhost:8082/index.html?data=data%2F" +
-      assemblyInformation.name +
-      "&nav=" +
-      showNav +
-      "&tracklist=" +
-      showTracklist
-    );
-  };
-
   return (
-    <div className="mb-32">
+    <div className="pb-32">
       <div className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
@@ -76,7 +63,7 @@ const AssemblyInformation = () => {
               setToggleGeneralInfoSection((prevState) => !prevState)
             }
           >
-            <h1 className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-700 to-gray-500 rounded-lg text-white cursor-pointer hover:text-gray-300">
+            <h1 className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
               General information
             </h1>
           </div>
@@ -104,13 +91,7 @@ const AssemblyInformation = () => {
               </h1>
             </div>
             {toggleGenomeViewerSection && (
-              <div className="rounded-lg overflow-hidden p-2 bg-indigo-200 mx-8 animate-grow-y">
-                <iframe
-                  title="jbrowse"
-                  className="w-full h-75"
-                  src={configureSource()}
-                />
-              </div>
+              <GenomeViewer assemblyInformation={assemblyInformation} />
             )}
           </div>
         </div>
