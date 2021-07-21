@@ -75,34 +75,44 @@ const GeneralInformationCarousel = ({
           </div>
         </div>
         <div className="w-full">
-          {generalInfos
-            .sort((a, b) => (a.generalInfoLabel < b.generalInfoLabel ? -1 : 0))
-            .map((generalInfo, index) => {
-              if (
-                index === taxonGeneralInfoCarouselIndex ||
-                taxonGeneralInfoCarouselIndex === -1
-              ) {
-                return (
-                  <div
-                    key={generalInfo.generalInfoLabel + index}
-                    className={
-                      taxonGeneralInfoCarouselIndex !== -1
-                        ? "lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-grow-y lg:min-h-48"
-                        : "lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-grow-y lg:min-h-48"
-                    }
-                  >
-                    <div className="flex justify-center lg:justify-start items-center w-full text-center lg:w-1/5 h-full text-xs lg:text-base lg:font-semibold font-bold rounded p-4">
-                      {generalInfo.generalInfoLabel}
+          {generalInfos && generalInfos.length > 0 ? (
+            generalInfos
+              .sort((a, b) =>
+                a.generalInfoLabel < b.generalInfoLabel ? -1 : 0
+              )
+              .map((generalInfo, index) => {
+                if (
+                  index === taxonGeneralInfoCarouselIndex ||
+                  taxonGeneralInfoCarouselIndex === -1
+                ) {
+                  return (
+                    <div
+                      key={generalInfo.generalInfoLabel + index}
+                      className="lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-grow-y"
+                    >
+                      <div className="flex justify-center lg:justify-start items-center w-full text-center lg:w-1/6 h-full text-xs lg:text-base lg:font-semibold font-bold rounded p-4">
+                        {generalInfo.generalInfoLabel}
+                      </div>
+                      <div className="flex items-center lg:w-5/6 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b lg:min-h-48">
+                        {generalInfo.generalInfoDescription}
+                      </div>
                     </div>
-                    <div className="flex items-center lg:w-4/5 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b">
-                      {generalInfo.generalInfoDescription}
-                    </div>
-                  </div>
-                );
-              } else {
-                return <div key={generalInfo.generalInfoLabel + index} />;
-              }
-            })}
+                  );
+                } else {
+                  return <div key={generalInfo.generalInfoLabel + index} />;
+                }
+              })
+          ) : (
+            <div className="lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-grow-y">
+              <div className="flex justify-center lg:justify-start items-center w-full text-center lg:w-1/6 h-full text-xs lg:text-base lg:font-semibold font-bold rounded p-4">
+                Empty
+              </div>
+              <div className="flex items-center lg:w-5/6 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b lg:min-h-48">
+                There is currently no general information for this taxon! You
+                can add general information as admin in the data assistant!
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex justify-between items-center mx-20">

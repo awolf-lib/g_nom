@@ -6,12 +6,17 @@ import LoadingSpinner from "../../../../components/LoadingSpinner";
 
 import GeneralInformationCarousel from "./components/GeneralInformationTable";
 import GenomeViewer from "./components/GenomeViewer";
+import StaticAssemblyStatisticsViewer from "./components/StaticAssemblyStatisticsViewer";
 
 const AssemblyInformation = () => {
   const [assemblyInformation, setAssemblyInformation] = useState({});
   const [fetchingAll, setFetchingAll] = useState(false);
 
   const [toggleGeneralInfoSection, setToggleGeneralInfoSection] = useState(
+    true
+  );
+
+  const [toggleAssemblyStatistics, setToggleAssemblyStatistics] = useState(
     true
   );
 
@@ -77,7 +82,27 @@ const AssemblyInformation = () => {
               />
             )}
 
-          <hr className="shadow my-16 mx-8" />
+          <hr className="shadow my-8 mx-8" />
+
+          <div
+            className="m-8 select-none"
+            onClick={() =>
+              setToggleAssemblyStatistics((prevState) => !prevState)
+            }
+          >
+            <h1 className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
+              Assembly statistics
+            </h1>
+          </div>
+
+          {toggleAssemblyStatistics &&
+            assemblyInformation.assemblyStatistics && (
+              <StaticAssemblyStatisticsViewer
+                statistics={assemblyInformation.assemblyStatistics}
+              />
+            )}
+
+          <hr className="shadow my-8 mx-8" />
 
           <div className="animate-grow-y">
             <div

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tag, Search, List } from "grommet-icons";
+import { Search, List } from "grommet-icons";
 
 import Button from "../../../../../../components/Button";
 
