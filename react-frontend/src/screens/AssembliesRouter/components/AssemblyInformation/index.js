@@ -1,12 +1,15 @@
+import { Bookmark, Checkmark } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import API from "../../../../api";
+import Button from "../../../../components/Button";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
 
 import GeneralInformationCarousel from "./components/GeneralInformationTable";
 import GenomeViewer from "./components/GenomeViewer";
 import StaticAssemblyStatisticsViewer from "./components/StaticAssemblyStatisticsViewer";
+import { useNotification } from "../../../../components/NotificationProvider";
 
 const AssemblyInformation = () => {
   const [assemblyInformation, setAssemblyInformation] = useState({});
@@ -25,6 +28,18 @@ const AssemblyInformation = () => {
   );
 
   const { id } = useParams();
+  const userID = sessionStorage.getItem("userID");
+
+  // notifications
+  const dispatch = useNotification();
+
+  const handleNewNotification = (notification) => {
+    dispatch({
+      label: notification.label,
+      message: notification.message,
+      type: notification.type,
+    });
+  };
 
   useEffect(() => {
     loadAssemblyInformation();
@@ -36,7 +51,8 @@ const AssemblyInformation = () => {
   const loadAssemblyInformation = async () => {
     setFetchingAll(true);
     const response = await api.fetchAssemblyInformationByAssemblyID(
-      id.replace(":", "")
+      id.replace(":", ""),
+      userID
     );
     if (response && response.payload) {
       setAssemblyInformation(response.payload);
@@ -44,11 +60,30 @@ const AssemblyInformation = () => {
     setFetchingAll(false);
   };
 
+  const handleBookmarkAssembly = async () => {
+    let response;
+    if (!assemblyInformation.bookmarked) {
+      response = await api.addNewBookmark(userID, id.replace(":", ""));
+    } else {
+      response = await api.removeBookmark(userID, id.replace(":", ""));
+    }
+
+    if (response && response.payload) {
+      setAssemblyInformation((prevState) => {
+        return { ...prevState, bookmarked: !prevState.bookmarked };
+      });
+    }
+
+    if (response && response.notification && response.notification.message) {
+      handleNewNotification(response.notification);
+    }
+  };
+
   return (
     <div className="pb-32">
       <div className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center w-full">
             <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mr-4">
               {fetchingAll ? (
                 <LoadingSpinner label="Loading..." />
@@ -56,6 +91,24 @@ const AssemblyInformation = () => {
                 assemblyInformation.scientificName
               )}
             </h1>
+            <div>
+              <Button
+                onClick={() => handleBookmarkAssembly()}
+                color="secondary"
+              >
+                {!assemblyInformation.bookmarked ? (
+                  <Bookmark
+                    className="stroke-current animate-grow-y"
+                    color="blank"
+                  />
+                ) : (
+                  <Checkmark
+                    className="stroke-current animate-grow-y"
+                    color="blank"
+                  />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

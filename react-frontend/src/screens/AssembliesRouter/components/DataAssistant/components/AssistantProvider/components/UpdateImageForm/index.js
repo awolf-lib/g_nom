@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import classNames from "classnames";
 
 import Input from "../../../../../../../../components/Input";
 import API from "../../../../../../../../api";
@@ -15,6 +14,7 @@ const UpdateImageForm = (props) => {
   const [fetchingAll, setFetchingAll] = useState(false);
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [selectedPath, setSelectedPath] = useState([]);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     loadFiles(["image"]);
@@ -50,6 +50,7 @@ const UpdateImageForm = (props) => {
   };
 
   const handleSubmitImport = async () => {
+    setProcessing(true);
     const userID = sessionStorage.getItem("userID");
     if (!userID) {
       handleNewNotification({
@@ -73,6 +74,7 @@ const UpdateImageForm = (props) => {
     if (response && response.notification) {
       handleNewNotification(response.notification);
     }
+    setProcessing(false);
   };
 
   const handleChangeSelectedPath = (inputPathArray) => {
@@ -80,11 +82,6 @@ const UpdateImageForm = (props) => {
     setSelectedPath(inputPathArray);
   };
 
-  const getDirectoryClass = (index, pathArray) =>
-    classNames("hover:text-blue-600 cursor-pointer", {
-      "text-blue-600 font-bold":
-        index === pathArray.length - 1 && pathArray === selectedPath,
-    });
   return (
     <div className="animate-grow-y">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-grow-y">
@@ -151,7 +148,7 @@ const UpdateImageForm = (props) => {
                   <div className="flex justify-center items-center shadow rounded-lg p-4">
                     <div className="w-32 mr-16">
                       <Button
-                        label="Submit"
+                        label={processing ? "Processing..." : "Submit"}
                         color="confirm"
                         onClick={() => handleSubmitImport()}
                       />

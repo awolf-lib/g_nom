@@ -104,9 +104,12 @@ export default class API {
   }
 
   // ===== FETCH ONE ASSEMBLY ===== //
-  async fetchAssemblyInformationByAssemblyID(id) {
+  async fetchAssemblyInformationByAssemblyID(id, userID) {
     return fetch(
-      "http://localhost:3002/fetchAssemblyInformationByAssemblyID?id=" + id
+      "http://localhost:3002/fetchAssemblyInformationByAssemblyID?id=" +
+        id +
+        "&userID=" +
+        userID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -331,6 +334,36 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== ADD NEW BOOKMARK ===== //
+  async addNewBookmark(userID, assemblyID) {
+    return fetch(
+      "http://localhost:3002/addNewBookmark?userID=" +
+        userID +
+        "&assemblyID=" +
+        assemblyID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== REMOVE BOOKMARK ===== //
+  async removeBookmark(userID, assemblyID) {
+    return fetch(
+      "http://localhost:3002/removeBookmark?userID=" +
+        userID +
+        "&assemblyID=" +
+        assemblyID
     )
       .then((request) => request.json())
       .then((data) => data)

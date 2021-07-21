@@ -191,7 +191,8 @@ def fetchAssembliesByTaxonID():
 def fetchAssemblyInformationByAssemblyID():
     if request.method == "GET":
         id = request.args.get("id")
-        data, notification = api.fetchAssemblyInformationByAssemblyID(id)
+        userID = request.args.get("userID")
+        data, notification = api.fetchAssemblyInformationByAssemblyID(id, userID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -356,6 +357,39 @@ def addNewMapping():
         userID = request.args.get("userID")
         additionalFiles = request.args.get("additionalFilesPath")
         data, notification = api.addNewMapping(id, name, path, userID, additionalFiles)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# ================== BOOKMARK ================== #
+# ADD NEW BOOKMARK
+@db.route("/addNewBookmark", methods=["GET"])
+def addNewBookmark():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        assemblyID = request.args.get("assemblyID")
+        data, notification = api.addNewBookmark(userID, assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# REMOVE BOOKMARK
+@db.route("/removeBookmark", methods=["GET"])
+def removeBookmark():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        assemblyID = request.args.get("assemblyID")
+        data, notification = api.removeBookmark(userID, assemblyID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

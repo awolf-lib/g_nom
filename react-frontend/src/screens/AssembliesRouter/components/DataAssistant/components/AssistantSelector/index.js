@@ -25,6 +25,7 @@ const AssistantSelector = (props) => {
 
   useEffect(() => {
     loadAssemblies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.mode]);
 
   // notifications

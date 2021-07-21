@@ -524,12 +524,11 @@ class DatabaseManager:
             }
 
     # FETCH ONE ASSEMBLY
-    def fetchAssemblyInformationByAssemblyID(self, id):
+    def fetchAssemblyInformationByAssemblyID(self, id, userID):
         """
         Gets all necessary information for one assembly from db
         """
 
-        assembly = {}
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
@@ -546,7 +545,6 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        taxonGeneralInfos = []
         try:
             connection, cursor = self.updateConnection()
             ncbiTaxonID = assemblyInformation["ncbiTaxonID"]
@@ -565,7 +563,6 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        assemblyStatistics = {}
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(f"SELECT * FROM assemblyStatistics WHERE assemblyID={id}")
@@ -579,6 +576,24 @@ class DatabaseManager:
             return [], {
                 "label": "Error",
                 "message": "Error while fetching assembly statistics!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT * FROM bookmark WHERE assemblyID={id} AND userID={userID}"
+            )
+            bookmark = cursor.fetchone()
+
+            if bookmark:
+                assemblyInformation.update({"bookmarked": 1})
+            else:
+                assemblyInformation.update({"bookmarked": 0})
+        except:
+            return [], {
+                "label": "Error",
+                "message": "Error while fetching bookmark information!",
                 "type": "error",
             }
 
@@ -1098,5 +1113,56 @@ class DatabaseManager:
         }, {
             "label": "Success",
             "message": f"Successfully imported mapping!",
+            "type": "success",
+        }
+
+    # ================== BOOKMARK ================== #
+    # ADD NEW BOOKMARK
+    def addNewBookmark(self, userID, assemblyID):
+        """
+        add new bookmark
+        """
+
+        # try:
+        connection, cursor = self.updateConnection()
+        cursor.execute(
+            f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})"
+        )
+        connection.commit()
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Error while adding bookmark!",
+        #         "type": "error",
+        #     }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully bookmarked assembly!",
+            "type": "success",
+        }
+
+    # REMOVE BOOKMARK
+    def removeBookmark(self, userID, assemblyID):
+        """
+        remove bookmark
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"DELETE FROM bookmark WHERE userID={userID} AND assemblyID={assemblyID}"
+            )
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while removing bookmark!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed bookmark!",
             "type": "success",
         }
