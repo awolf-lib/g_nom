@@ -39,7 +39,9 @@ class FileManager:
     # ========================================== FILE IMPORT ========================================== #
     # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
-        self, types=["image", "fasta", "gff", "bam"], import_directory=BASE_PATH_TO_UPLOAD
+        self,
+        types=["image", "fasta", "gff", "bam"],
+        import_directory=BASE_PATH_TO_UPLOAD,
     ):
         """
         Fetch all files provided in import dirctory
@@ -170,8 +172,9 @@ class FileManager:
                             "type": "error",
                         }
                     newPath = (
-                        "{BASE_PATH_TO_STORAGE}taxa/images/" + name + ".thumbnail.jpg"
+                        f"{BASE_PATH_TO_STORAGE}taxa/images/" + name + ".thumbnail.jpg"
                     )
+
                     image.save(newPath, "JPEG")
             except:
                 return 0, STORAGEERROR

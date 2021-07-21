@@ -71,6 +71,11 @@ class Parsers:
             sequences_250000 = 0
             sequences_500000 = 0
             sequences_1000000 = 0
+            sequences_2500000 = 0
+            sequences_5000000 = 0
+            sequences_10000000 = 0
+            sequences_25000000 = 0
+            sequences_50000000 = 0
             bases_1000 = 0
             bases_2500 = 0
             bases_5000 = 0
@@ -81,6 +86,11 @@ class Parsers:
             bases_250000 = 0
             bases_500000 = 0
             bases_1000000 = 0
+            bases_2500000 = 0
+            bases_5000000 = 0
+            bases_10000000 = 0
+            bases_25000000 = 0
+            bases_50000000 = 0
             types = []
             type = ""
             maskings = []
@@ -172,34 +182,49 @@ class Parsers:
                     bases += sequence_length
                     sequence_lengths.append(sequence_length)
 
-                    if sequence_length >= 1000000:
+                    if sequence_length >= 50000000:
+                        sequences_50000000 += 1
+                        bases_50000000 += sequence_length
+                    elif sequence_length >= 25000000:
+                        sequences_25000000 += 1
+                        bases_25000000 += sequence_length
+                    elif sequence_length >= 10000000:
+                        sequences_10000000 += 1
+                        bases_10000000 += sequence_length
+                    elif sequence_length >= 5000000:
+                        sequences_5000000 += 1
+                        bases_5000000 += sequence_length
+                    elif sequence_length >= 2500000:
+                        sequences_2500000 += 1
+                        bases_2500000 += sequence_length
+                    elif sequence_length >= 1000000:
                         sequences_1000000 += 1
                         bases_1000000 += sequence_length
-                    if sequence_length >= 500000:
+                    elif sequence_length >= 500000:
                         sequences_500000 += 1
                         bases_500000 += sequence_length
-                    if sequence_length >= 250000:
+                    elif sequence_length >= 250000:
                         sequences_250000 += 1
                         bases_250000 += sequence_length
-                    if sequence_length >= 100000:
+                    elif sequence_length >= 100000:
                         sequences_100000 += 1
                         bases_100000 += sequence_length
-                    if sequence_length >= 50000:
+                    elif sequence_length >= 50000:
                         sequences_50000 += 1
                         bases_50000 += sequence_length
-                    if sequence_length >= 25000:
+                    elif sequence_length >= 25000:
                         sequences_25000 += 1
                         bases_25000 += sequence_length
-                    if sequence_length >= 10000:
+                    elif sequence_length >= 10000:
                         sequences_10000 += 1
                         bases_10000 += sequence_length
-                    if sequence_length >= 5000:
+                    elif sequence_length >= 5000:
                         sequences_5000 += 1
                         bases_5000 += sequence_length
-                    if sequence_length >= 2500:
+                    elif sequence_length >= 2500:
                         sequences_2500 += 1
                         bases_2500 += sequence_length
-                    if sequence_length >= 1000:
+                    elif sequence_length >= 1000:
                         sequences_1000 += 1
                         bases_1000 += sequence_length
 
@@ -273,26 +298,36 @@ class Parsers:
                 "gcPercentMasked": gc_soft,
                 "softmaskedBases": basesSoftMasked,
                 "hardmaskedBases": basesHardMasked,
-                "sequncesLarger1000": sequences_1000,
+                "sequencesLarger1000": sequences_1000,
                 "cumulativeSequenceLengthSequencesLarger1000": bases_1000,
-                "sequncesLarger2500": sequences_2500,
+                "sequencesLarger2500": sequences_2500,
                 "cumulativeSequenceLengthSequencesLarger2500": bases_2500,
-                "sequncesLarger5000": sequences_5000,
+                "sequencesLarger5000": sequences_5000,
                 "cumulativeSequenceLengthSequencesLarger5000": bases_5000,
-                "sequncesLarger10000": sequences_10000,
+                "sequencesLarger10000": sequences_10000,
                 "cumulativeSequenceLengthSequencesLarger10000": bases_10000,
-                "sequncesLarger25000": sequences_25000,
+                "sequencesLarger25000": sequences_25000,
                 "cumulativeSequenceLengthSequencesLarger25000": bases_25000,
-                "sequncesLarger50000": sequences_50000,
+                "sequencesLarger50000": sequences_50000,
                 "cumulativeSequenceLengthSequencesLarger50000": bases_50000,
-                "sequncesLarger100000": sequences_100000,
+                "sequencesLarger100000": sequences_100000,
                 "cumulativeSequenceLengthSequencesLarger100000": bases_100000,
-                "sequncesLarger250000": sequences_250000,
+                "sequencesLarger250000": sequences_250000,
                 "cumulativeSequenceLengthSequencesLarger250000": bases_250000,
-                "sequncesLarger500000": sequences_500000,
+                "sequencesLarger500000": sequences_500000,
                 "cumulativeSequenceLengthSequencesLarger500000": bases_500000,
-                "sequncesLarger1000000": sequences_1000000,
+                "sequencesLarger1000000": sequences_1000000,
                 "cumulativeSequenceLengthSequencesLarger1000000": bases_1000000,
+                "sequencesLarger2500000": sequences_2500000,
+                "cumulativeSequenceLengthSequencesLarger2500000": bases_2500000,
+                "sequencesLarger5000000": sequences_5000000,
+                "cumulativeSequenceLengthSequencesLarger5000000": bases_5000000,
+                "sequencesLarger10000000": sequences_10000000,
+                "cumulativeSequenceLengthSequencesLarger10000000": bases_10000000,
+                "sequencesLarger25000000": sequences_25000000,
+                "cumulativeSequenceLengthSequencesLarger25000000": bases_25000000,
+                "sequencesLarger50000000": sequences_50000000,
+                "cumulativeSequenceLengthSequencesLarger50000000": bases_50000000,
                 "types": unique_types,
                 "maskings": unique_maskings,
             }

@@ -684,7 +684,7 @@ class DatabaseManager:
             self.removeAssemblyByAssemblyID(lastID)
             return 0, {
                 "label": "Error",
-                "message": "Something went wrong while inserting assembly into database!",
+                "message": "Something went wrong while inserting assembly statistics into database!",
                 "type": "error",
             }
 
