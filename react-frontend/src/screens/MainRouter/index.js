@@ -15,6 +15,7 @@ import Logout from "./components/Logout";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import AssembliesRouter from "../AssembliesRouter";
+import Download from "./components/Download";
 
 const MainRouter = () => {
   const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
@@ -41,6 +42,9 @@ const MainRouter = () => {
         </Route>
         <Route path="/g-nom/assemblies">
           <AssembliesRouter />
+        </Route>
+        <Route exact path="/g-nom/download">
+          <Download />
         </Route>
         <Route exact path="/g-nom/imprint">
           <div className="p-4">Imprint</div>

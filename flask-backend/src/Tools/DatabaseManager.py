@@ -580,6 +580,50 @@ class DatabaseManager:
             }
 
         try:
+            analyses = {}
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT * FROM analysis, milts WHERE analysis.assemblyID={id} AND analysis.type='milts' AND milts.analysisID=analysis.id"
+            )
+            row_headers = [x[0] for x in cursor.description]
+            milts = cursor.fetchall()
+
+            if len(milts):
+                analyses.update({"milts": [dict(zip(row_headers, x)) for x in milts]})
+            else:
+                analyses.update({"milts": []})
+
+            cursor.execute(
+                f"SELECT * FROM analysis, busco WHERE analysis.assemblyID={id} AND analysis.type='busco' AND busco.analysisID=analysis.id"
+            )
+            row_headers = [x[0] for x in cursor.description]
+            busco = cursor.fetchall()
+
+            if len(busco):
+                analyses.update({"busco": [dict(zip(row_headers, x)) for x in busco]})
+            else:
+                analyses.update({"busco": []})
+
+            cursor.execute(
+                f"SELECT * FROM analysis, fcat WHERE analysis.assemblyID={id} AND analysis.type='fcat' AND fcat.analysisID=analysis.id"
+            )
+            row_headers = [x[0] for x in cursor.description]
+            fcat = cursor.fetchall()
+
+            if len(busco):
+                analyses.update({"fcat": [dict(zip(row_headers, x)) for x in fcat]})
+            else:
+                analyses.update({"fcat": []})
+
+            assemblyInformation.update({"analyses": analyses})
+        except:
+            return [], {
+                "label": "Error",
+                "message": "Error while fetching analysis information!",
+                "type": "error",
+            }
+
+        try:
             connection, cursor = self.updateConnection()
             cursor.execute(
                 f"SELECT * FROM bookmark WHERE assemblyID={id} AND userID={userID}"
@@ -720,21 +764,21 @@ class DatabaseManager:
         remove assembly by id
         """
 
-        try:
-            connection, cursor = self.updateConnection()
-            cursor.execute(f"SELECT name from assembly where id={id}")
-            name = cursor.fetchone()[0]
-            cursor.execute(f"DELETE FROM assembly WHERE id={id}")
-            connection.commit()
+        # try:
+        connection, cursor = self.updateConnection()
+        cursor.execute(f"SELECT name from assembly where id={id}")
+        name = cursor.fetchone()[0]
+        cursor.execute(f"DELETE FROM assembly WHERE id={id}")
+        connection.commit()
 
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Something went wrong while removing assembly from database!",
-                "type": "error",
-            }
+        fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+        fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Something went wrong while removing assembly from database!",
+        #         "type": "error",
+        #     }
 
         return 1, {
             "label": "Success",
@@ -1096,7 +1140,6 @@ class DatabaseManager:
                 cursor.execute(
                     f"INSERT INTO mapping (assemblyID, name, path, addedBy, addedOn, additionalFilesPath) VALUES ({assemblyID}, '{name}', '{path}', {userID}, NOW(), '{additionalFilesPath}')"
                 )
-            lastID = cursor.lastrowid
             connection.commit()
         except:
             return 0, {
@@ -1116,6 +1159,253 @@ class DatabaseManager:
             "type": "success",
         }
 
+    # ADD NEW ANALYSIS
+    def addNewAnalysis(self, assemblyID, name, path, userID, additionalFilesPath=""):
+        """
+        add new analysis
+        """
+
+        if not path or not name:
+            return 0, {
+                "label": "Error",
+                "message": "Missing path to file or analysis name!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from analysis where name='{name}'")
+            nameAlreadyInDatabase = cursor.fetchone()
+            if nameAlreadyInDatabase:
+                return 0, {
+                    "label": "Error",
+                    "message": "Name already in database!",
+                    "type": "error",
+                }
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking if name is already assigned!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name FROM assembly where id={assemblyID}")
+            assemblyName = cursor.fetchone()[0]
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while checking for assembly name!",
+                "type": "error",
+            }
+
+        fileName = path.split("/")[-1]
+
+        if fileName == "3D_plot.html":
+            type = "milts"
+        elif fileName == "short_summary.txt":
+            type = "busco"
+        elif fileName == "report_summary.txt":
+            type = "fcat"
+        else:
+            return 0, {
+                "label": "Error",
+                "message": "Unknown analysis type!",
+                "type": "error",
+            }
+
+        path, notification = fileManager.moveFileToStorage(
+            type, path, name, additionalFilesPath, assemblyName
+        )
+
+        if not path:
+            return 0, notification
+
+        try:
+            connection, cursor = self.updateConnection()
+            if not additionalFilesPath:
+                cursor.execute(
+                    f"INSERT INTO analysis (assemblyID, name, type, path, addedBy, addedOn) VALUES ({assemblyID}, '{name}', '{type}', '{path}', {userID}, NOW())"
+                )
+            else:
+                cursor.execute(
+                    f"INSERT INTO analysis (assemblyID, name, type, path, addedBy, addedOn, additionalFilesPath) VALUES ({assemblyID}, '{name}', '{type}', '{path}', {userID}, NOW(), '{additionalFilesPath}')"
+                )
+            lastID = cursor.lastrowid
+            connection.commit()
+
+            if type == "milts":
+                cursor.execute(f"INSERT INTO milts (analysisID) VALUES ({lastID})")
+                connection.commit()
+            elif type == "busco":
+                buscoData, notification = parsers.parseBusco(path)
+
+                if not buscoData:
+                    return 0, notification
+
+                importStatus, notification = self.importBusco(lastID, buscoData)
+
+                if not importStatus:
+                    return 0, notification
+            elif type == "fcat":
+                fcatData, notification = parsers.parseFcat(path)
+
+                if not fcatData:
+                    return 0, notification
+
+                importStatus, notification = self.importFcat(lastID, fcatData)
+
+                if not importStatus:
+                    return 0, notification
+        except:
+            cursor.execute(f"DELETE FROM analysis WHERE id={lastID}")
+            cursor.execute(f"DELETE FROM {type} WHERE analysisID={lastID}")
+            connection.commit()
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while inserting analysis into database!",
+                "type": "error",
+            }
+
+        return {
+            "assemblyID": assemblyID,
+            "name": name,
+            "path": path,
+            "additionalFilesPath": additionalFilesPath,
+        }, {
+            "label": "Success",
+            "message": f"Successfully imported analysis!",
+            "type": "success",
+        }
+
+    def importBusco(self, analysisID, buscoData):
+        """
+        Imports busco analysis results
+        """
+
+        if "completeSingle" in buscoData:
+            completeSingle = buscoData["completeSingle"]
+        else:
+            completeSingle = 0
+
+        if "completeDuplicated" in buscoData:
+            completeDuplicated = buscoData["completeDuplicated"]
+        else:
+            completeDuplicated = 0
+
+        if "fragmented" in buscoData:
+            fragmented = buscoData["fragmented"]
+        else:
+            fragmented = 0
+
+        if "missing" in buscoData:
+            missing = buscoData["missing"]
+        else:
+            missing = 0
+
+        if "total" in buscoData:
+            total = buscoData["total"]
+        else:
+            total = 0
+
+        if total != completeSingle + completeDuplicated + fragmented + missing:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while parsing busco!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"INSERT INTO busco (analysisID, completeSingle, completeDuplicated, fragmented, missing, total) VALUES ({analysisID}, '{completeSingle}', '{completeDuplicated}', '{fragmented}', '{missing}', '{total}')"
+            )
+            connection.commit()
+            return 1, {}
+
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Nothing imported!",
+                "type": "error",
+            }
+
+    # import fCat
+    def importFcat(self, analysisID, fcatData):
+        """
+        Imports fCat analysis results
+        """
+
+        for mode in fcatData:
+            if mode == "mode_1":
+                if "similar" in fcatData[mode]:
+                    m1_similar = fcatData[mode]["similar"]
+                if "dissimilar" in fcatData[mode]:
+                    m1_dissimilar = fcatData[mode]["dissimilar"]
+                if "duplicated" in fcatData[mode]:
+                    m1_duplicated = fcatData[mode]["duplicated"]
+                if "missing" in fcatData[mode]:
+                    m1_missing = fcatData[mode]["missing"]
+                if "ignored" in fcatData[mode]:
+                    m1_ignored = fcatData[mode]["ignored"]
+                if "total" in fcatData[mode]:
+                    m1_total = fcatData[mode]["total"]
+            elif mode == "mode_2":
+                if "similar" in fcatData[mode]:
+                    m2_similar = fcatData[mode]["similar"]
+                if "dissimilar" in fcatData[mode]:
+                    m2_dissimilar = fcatData[mode]["dissimilar"]
+                if "duplicated" in fcatData[mode]:
+                    m2_duplicated = fcatData[mode]["duplicated"]
+                if "missing" in fcatData[mode]:
+                    m2_missing = fcatData[mode]["missing"]
+                if "ignored" in fcatData[mode]:
+                    m2_ignored = fcatData[mode]["ignored"]
+                if "total" in fcatData[mode]:
+                    m2_total = fcatData[mode]["total"]
+            elif mode == "mode_3":
+                if "similar" in fcatData[mode]:
+                    m3_similar = fcatData[mode]["similar"]
+                if "dissimilar" in fcatData[mode]:
+                    m3_dissimilar = fcatData[mode]["dissimilar"]
+                if "duplicated" in fcatData[mode]:
+                    m3_duplicated = fcatData[mode]["duplicated"]
+                if "missing" in fcatData[mode]:
+                    m3_missing = fcatData[mode]["missing"]
+                if "ignored" in fcatData[mode]:
+                    m3_ignored = fcatData[mode]["ignored"]
+                if "total" in fcatData[mode]:
+                    m3_total = fcatData[mode]["total"]
+            elif mode == "mode_4":
+                if "similar" in fcatData[mode]:
+                    m4_similar = fcatData[mode]["similar"]
+                if "dissimilar" in fcatData[mode]:
+                    m4_dissimilar = fcatData[mode]["dissimilar"]
+                if "duplicated" in fcatData[mode]:
+                    m4_duplicated = fcatData[mode]["duplicated"]
+                if "missing" in fcatData[mode]:
+                    m4_missing = fcatData[mode]["missing"]
+                if "ignored" in fcatData[mode]:
+                    m4_ignored = fcatData[mode]["ignored"]
+                if "total" in fcatData[mode]:
+                    m4_total = fcatData[mode]["total"]
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"INSERT INTO fcat (analysisID, m1_similar, m1_dissimilar, m1_duplicated, m1_missing, m1_ignored, m2_similar, m2_dissimilar, m2_duplicated, m2_missing, m2_ignored, m3_similar, m3_dissimilar, m3_duplicated, m3_missing, m3_ignored, m4_similar, m4_dissimilar, m4_duplicated, m4_missing, m4_ignored, total) VALUES ({analysisID}, {m1_similar}, {m1_dissimilar}, {m1_duplicated}, {m1_missing}, {m1_ignored}, {m2_similar}, {m2_dissimilar}, {m2_duplicated}, {m2_missing}, {m2_ignored}, {m3_similar}, {m3_dissimilar}, {m3_duplicated}, {m3_missing}, {m3_ignored}, {m4_similar}, {m4_dissimilar}, {m4_duplicated}, {m4_missing}, {m4_ignored}, {m1_total})"
+            )
+            connection.commit()
+            return 1, {}
+
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Nothing imported!",
+                "type": "error",
+            }
+
     # ================== BOOKMARK ================== #
     # ADD NEW BOOKMARK
     def addNewBookmark(self, userID, assemblyID):
@@ -1123,18 +1413,18 @@ class DatabaseManager:
         add new bookmark
         """
 
-        # try:
-        connection, cursor = self.updateConnection()
-        cursor.execute(
-            f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})"
-        )
-        connection.commit()
-        # except:
-        #     return 0, {
-        #         "label": "Error",
-        #         "message": "Error while adding bookmark!",
-        #         "type": "error",
-        #     }
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})"
+            )
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while adding bookmark!",
+                "type": "error",
+            }
 
         return 1, {
             "label": "Success",

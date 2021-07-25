@@ -40,7 +40,7 @@ class FileManager:
     # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
         self,
-        types=["image", "fasta", "gff", "bam"],
+        types=["image", "fasta", "gff", "bam", "analysis"],
         import_directory=BASE_PATH_TO_UPLOAD,
     ):
         """
@@ -48,7 +48,7 @@ class FileManager:
         """
 
         if not isinstance(types, list):
-            types = ["image", "fasta"]
+            types = ["image", "fasta", "gff", "bam", "analysis"]
 
         FILE_TYPE_EXTENSION_PATTERNS = {
             "image": {
@@ -69,6 +69,12 @@ class FileManager:
             },
             "bam": {
                 ".bam": "**/*.bam",
+            },
+            "analysis": {
+                "milts": "**/3D_plot.html",
+                "busco": "**/short_summary.txt",
+                "fcat": "**/report_summary.txt",
+                "repeatmasker": "**/*.tbl",
             },
         }
 
@@ -442,6 +448,69 @@ class FileManager:
                     "message": "Error while creating jbrowse tracks.conf.",
                     "type": "error",
                 }
+
+        elif type == "milts" or type == "busco" or type == "fcat":
+            try:
+                fullPathToAnalysis = (
+                    f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{type}/{name}/"
+                )
+
+                makedirs(
+                    fullPathToAnalysis,
+                    exist_ok=True,
+                )
+                if type == "milts":
+                    newPath = f"{fullPathToAnalysis}{name}_milts_taxonomic_assignment_plot.html"
+                elif type == "busco":
+                    newPath = f"{fullPathToAnalysis}{name}_busco_completeness.txt"
+                elif type == "fcat":
+                    newPath = f"{fullPathToAnalysis}{name}_fcat_completeness.txt"
+                copy(path, newPath)
+            except:
+                self.deleteDirectories(fullPathToAnalysis)
+                return 0, STORAGEERROR
+
+            if type == "milts":
+                try:
+                    with open(newPath, "r") as plotFile:
+                        lines = plotFile.readlines()
+                        plotFile.close()
+
+                    for index, line in enumerate(lines):
+                        if "3D_plot_files" in line:
+                            lines[index] = line.replace(
+                                "3D_plot_files",
+                                "../../../../../additionalFiles/3D_plot_files",
+                            )
+                        elif '"title":"taxonomic assignment",' in line:
+                            lines[index] = line.replace(
+                                '"title":"taxonomic assignment",', ""
+                            )
+
+                    with open(newPath, "w") as plotFile:
+                        lines = plotFile.writelines(lines)
+                        plotFile.close()
+                except:
+                    self.deleteDirectories(fullPathToAnalysis)
+                    return 0, STORAGEERROR
+
+            if additionalFiles:
+                try:
+                    additionalFilesDir = additionalFiles.split("/")[-1]
+                    newAdditionalFilesPath = (
+                        f"{fullPathToAnalysis}additionalFiles/{additionalFilesDir}"
+                    )
+                    copytree(
+                        additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
+                    )
+                    self.deleteFile(f"{fullPathToAnalysis}/additionalFiles/{mainFile}")
+                except:
+                    self.deleteDirectories(fullPathToAnalysis)
+                    return 0, {
+                        "label": "Error",
+                        "message": "Error copying additional files!",
+                        "type": "error",
+                    }
 
         else:
             return 0, {

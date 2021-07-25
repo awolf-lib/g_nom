@@ -242,10 +242,10 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
             </select>
           </div>
         </div>
-        <div className="p-2 bg-indigo-200 rounded-lg shadow-lg">
+        <div className="p-2 bg-gradient-to-b from-indigo-100 via-white to-indigo-100 rounded-lg shadow-lg">
           <table className="w-full bg-white table-fixed">
             <tbody>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   # Sequences
                 </td>
@@ -253,7 +253,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {formatNumbers(statistics["numberOfSequences"])}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   Cumulative sequence length (BP)
                 </td>
@@ -261,7 +261,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {formatNumbers(statistics["cumulativeSequenceLength"])}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   Largest sequence (BP)
                 </td>
@@ -269,7 +269,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {formatNumbers(statistics["largestSequence"])}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   N50 (BP)
                 </td>
@@ -277,7 +277,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {formatNumbers(statistics["n50"])}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   N90 (BP)
                 </td>
@@ -285,7 +285,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {formatNumbers(statistics["n90"])}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   Type
                 </td>
@@ -293,14 +293,14 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   {statistics["types"].toUpperCase()}
                 </td>
               </tr>
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   GC (%)
                 </td>
                 <td className="text-center">{statistics["gcPercent"]}</td>
               </tr>
               {statistics["gcPercentMasked"] !== statistics["gcPercent"] && (
-                <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                   <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                     GC (%; unmasked)
                   </td>
@@ -309,7 +309,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                   </td>
                 </tr>
               )}
-              <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   Masking
                 </td>
@@ -318,7 +318,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                 </td>
               </tr>
               {statistics["hardmaskedBases"] > 0 && (
-                <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                   <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                     Masked (N)
                   </td>
@@ -328,7 +328,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                 </tr>
               )}
               {statistics["softmaskedBases"] > 0 && (
-                <tr className="border hover:bg-indigo-400 hover:text-white transition duration-300 hover:border-indigo-400">
+                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                   <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                     Masked (N)
                   </td>

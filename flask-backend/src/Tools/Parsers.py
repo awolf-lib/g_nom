@@ -389,7 +389,11 @@ class Parsers:
                 summaryData = f.readlines()
                 f.close()
         except:
-            return 0, "Error: Error while opening busco results!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while opening busco results!",
+                "type": "error",
+            }
 
         data = {}
         try:
@@ -408,12 +412,20 @@ class Parsers:
                 elif "Total" in line:
                     data["total"] = int(split[0])
         except:
-            return 0, "Error: Error while parsing busco summary file!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while parsing busco summary file!",
+                "type": "error",
+            }
 
         if len(data.keys()):
-            return data, ""
+            return data, {}
         else:
-            return 0, "Error: No data found!"
+            return 0, {
+                "label": "Error",
+                "message": "No data found!",
+                "type": "error",
+            }
 
     # fCat
 
@@ -427,7 +439,11 @@ class Parsers:
                 summaryData = f.readlines()
                 f.close()
         except:
-            return 0, "Error: Error while opening fCat results!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while opening fCat results!",
+                "type": "error",
+            }
 
         try:
             data = {}
@@ -440,12 +456,20 @@ class Parsers:
                 for index, value in enumerate(values[2:]):
                     data[values[0]][columns[index + 2]] = int(value)
         except:
-            return 0, "Error: Error while parsing fCat results."
+            return 0, {
+                "label": "Error",
+                "message": "Error while parsing fCat results.",
+                "type": "error",
+            }
 
         if len(data.keys()):
-            return data, ""
+            return data, {}
         else:
-            return 0, "Error: No data found!"
+            return 0, {
+                "label": "Error",
+                "message": "No data found!",
+                "type": "error",
+            }
 
     # Repeatmasker
 

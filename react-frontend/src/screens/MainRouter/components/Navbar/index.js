@@ -55,13 +55,9 @@ class Navbar extends Component {
                   <Link to="/g-nom/tools">
                     <Button label="Tools" color="nav" />
                   </Link>
-                  <a
-                    href="http://localhost:5003/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <Link to="/g-nom/download">
                     <Button label="Downloads" color="nav" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -185,9 +181,9 @@ class Navbar extends Component {
               <Link to="/g-nom/tools">
                 <Button label="Tools" color="nav" />
               </Link>
-              <a href="http://localhost:5003/" target="_blank" rel="noreferrer">
+              <Link to="/g-nom/tools">
                 <Button label="Downloads" color="nav" />
-              </a>
+              </Link>
             </div>
           )}
 

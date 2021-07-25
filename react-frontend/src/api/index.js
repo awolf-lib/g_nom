@@ -342,6 +342,27 @@ export default class API {
       });
   }
 
+  // ===== ADD NEW MAPPING ===== //
+  async addNewAnalysis(id, name, path, userID, additionalFilesPath = "") {
+    return fetch(
+      "http://localhost:3002/addNewAnalysis?id=" +
+        id +
+        "&name=" +
+        name +
+        "&path=" +
+        path +
+        "&userID=" +
+        userID +
+        "&additionalFilesPath=" +
+        additionalFilesPath
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== ADD NEW BOOKMARK ===== //
   async addNewBookmark(userID, assemblyID) {
     return fetch(

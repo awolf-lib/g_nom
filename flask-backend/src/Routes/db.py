@@ -366,6 +366,26 @@ def addNewMapping():
         return REQUESTMETHODERROR
 
 
+# ================== ANALYSIS ================== #
+# ADD NEW MAPPING
+@db.route("/addNewAnalysis", methods=["GET"])
+def addNewAnalysis():
+    if request.method == "GET":
+        id = request.args.get("id")
+        name = request.args.get("name")
+        path = request.args.get("path")
+        userID = request.args.get("userID")
+        additionalFiles = request.args.get("additionalFilesPath")
+        data, notification = api.addNewAnalysis(id, name, path, userID, additionalFiles)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== BOOKMARK ================== #
 # ADD NEW BOOKMARK
 @db.route("/addNewBookmark", methods=["GET"])
