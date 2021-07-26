@@ -153,7 +153,7 @@ const CreateAssemblyForm = (props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {possibleImports &&
         possibleImports.fasta &&
-        Object.keys(possibleImports.fasta).length > 0 ? (
+        Object.keys(possibleImports.fasta) ? (
           Object.keys(possibleImports.fasta).map((extension) => {
             return (
               <div key={extension}>
@@ -161,41 +161,45 @@ const CreateAssemblyForm = (props) => {
                 <hr className="shadow my-2" />
                 <ul>
                   {possibleImports.fasta[extension].map((pathArray, index) => {
-                    return (
-                      <li
-                        key={extension + index}
-                        className="flex items-center ml-4"
-                      >
-                        <Input
-                          type="radio"
-                          value={pathArray}
-                          size="sm"
-                          onChange={() => handleChangeSelectedPath(pathArray)}
-                          checked={pathArray === selectedPath}
-                        />
-                        <div className="ml-4">
-                          {pathArray.map((dir, dirIndex) => {
-                            return (
-                              <span
-                                onClick={() =>
-                                  handleAdditionalFiles(
-                                    pathArray,
-                                    pathArray.slice(0, dirIndex + 1)
-                                  )
-                                }
-                                key={extension + dir + dirIndex}
-                                className={getDirectoryClass(
-                                  dirIndex,
-                                  pathArray
-                                )}
-                              >
-                                {"/" + dir}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </li>
-                    );
+                    if (index < 10) {
+                      return (
+                        <li
+                          key={extension + index}
+                          className="flex items-center ml-4"
+                        >
+                          <Input
+                            type="radio"
+                            value={pathArray}
+                            size="sm"
+                            onChange={() => handleChangeSelectedPath(pathArray)}
+                            checked={pathArray === selectedPath}
+                          />
+                          <div className="ml-4">
+                            {pathArray.map((dir, dirIndex) => {
+                              return (
+                                <span
+                                  onClick={() =>
+                                    handleAdditionalFiles(
+                                      pathArray,
+                                      pathArray.slice(0, dirIndex + 1)
+                                    )
+                                  }
+                                  key={extension + dir + dirIndex}
+                                  className={getDirectoryClass(
+                                    dirIndex,
+                                    pathArray
+                                  )}
+                                >
+                                  {"/" + dir}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        </li>
+                      );
+                    } else {
+                      return <span />;
+                    }
                   })}
                 </ul>
               </div>

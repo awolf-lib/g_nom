@@ -5,7 +5,7 @@ const TaxonomicAssignmentViewer = ({
   setTaxonomicAssignmentLoading,
 }) => {
   return (
-    <div className="mx-8 animate-grow-y shadow-lg rounded-lg overflow-hidden border">
+    <div className="mx-8 animate-grow-y shadow-lg rounded-lg overflow-hidden border bg-white">
       <iframe
         onLoad={() => setTaxonomicAssignmentLoading(false)}
         title="MiltsPlot"
