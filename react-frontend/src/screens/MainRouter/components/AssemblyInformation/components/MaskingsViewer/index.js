@@ -385,7 +385,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
             useResizeHandler={true}
             style={{ width: "100%", height: "100%" }}
           />
-          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4">
+          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
               href={
                 "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
@@ -397,11 +397,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
               className="flex justify-center items-center"
             >
               <Button color="link">
-                <Download
-                  size="small"
-                  className="stroke-current"
-                  color="blank"
-                />
+                <Download className="stroke-current" color="blank" />
               </Button>
             </a>
           </div>

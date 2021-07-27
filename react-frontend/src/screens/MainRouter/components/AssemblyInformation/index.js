@@ -1,4 +1,4 @@
-import { Bookmark, Checkmark } from "grommet-icons";
+import { Book, Bookmark, Close } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -17,6 +17,7 @@ import MaskingsViewer from "./components/MaskingsViewer";
 const AssemblyInformation = () => {
   const [assemblyInformation, setAssemblyInformation] = useState({});
   const [fetchingAll, setFetchingAll] = useState(false);
+  const [hoverBookmark, setHoverBookmark] = useState(false);
 
   const [toggleGeneralInfoSection, setToggleGeneralInfoSection] = useState(
     true
@@ -108,7 +109,10 @@ const AssemblyInformation = () => {
                 assemblyInformation.scientificName
               )}
             </div>
-            <div>
+            <div
+              onMouseEnter={() => setHoverBookmark(true)}
+              onMouseLeave={() => setHoverBookmark(false)}
+            >
               <Button
                 onClick={() => handleBookmarkAssembly()}
                 color="secondary"
@@ -119,10 +123,19 @@ const AssemblyInformation = () => {
                     color="blank"
                   />
                 ) : (
-                  <Checkmark
-                    className="stroke-current animate-grow-y"
-                    color="blank"
-                  />
+                  <div>
+                    {!hoverBookmark ? (
+                      <Book
+                        className="stroke-current animate-grow-y"
+                        color="blank"
+                      />
+                    ) : (
+                      <Close
+                        className="stroke-current animate-grow-y"
+                        color="blank"
+                      />
+                    )}
+                  </div>
                 )}
               </Button>
             </div>

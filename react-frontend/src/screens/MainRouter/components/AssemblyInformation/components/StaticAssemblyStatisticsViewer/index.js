@@ -25,7 +25,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
       })
       .forEach((element) => {
         cumulative = cumulative + element["y1"];
-        x1.push(">" + element["x1"]);
+        x1.push(">" + element["x1"] / 1000);
         y1.push(cumulative);
       });
 
@@ -46,7 +46,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
         return a["x2"] > b["x2"] ? 0 : -1;
       })
       .forEach((element) => {
-        x2.push(">" + element["x2"]);
+        x2.push(">" + element["x2"] / 1000);
         y2.push(element["y2"]);
       });
 
@@ -67,7 +67,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
         type: "bar",
         yaxis: "y2",
         opacity: 1,
-        name: "# sequences",
+        name: "# of sequences",
         marker: { color: "orange" },
       },
     ];
@@ -83,13 +83,13 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
       },
       xaxis: {
         type: "category",
-        title: { text: "CONTIG SIZE", standoff: 10 },
+        title: { text: "Contig size (kb)", standoff: 10 },
         tickangle: 45,
         automargin: true,
       },
       yaxis: {
         title: {
-          text: "CUMULATIVE SEQUENCE LENGTH > x",
+          text: "Cumulative sequence length > x",
           standoff: 20,
         },
         side: "right",
@@ -98,7 +98,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
       },
       yaxis2: {
         title: {
-          text: "# sequences > x",
+          text: "# of sequences > x",
           standoff: 20,
         },
         side: "left",
@@ -107,7 +107,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
   };
 
   const formatNumbers = (num) => {
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
   return (
     <div className="mx-8 animate-grow-y">
@@ -126,7 +126,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
             <tbody>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  # Sequences
+                  # of sequences
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["numberOfSequences"])}
@@ -134,7 +134,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Cumulative sequence length (BP)
+                  Cumulative sequence length (bp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["cumulativeSequenceLength"])}
@@ -142,7 +142,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Largest sequence (BP)
+                  Largest sequence (bp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["largestSequence"])}
@@ -150,7 +150,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  N50 (BP)
+                  N50 (bp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["n50"])}
@@ -158,7 +158,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  N90 (BP)
+                  N90 (bp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["n90"])}

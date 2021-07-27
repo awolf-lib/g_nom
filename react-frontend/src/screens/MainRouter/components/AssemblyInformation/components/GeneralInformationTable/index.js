@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 
-import { CaretNext, CaretPrevious, Play, Pause, Up, Down } from "grommet-icons";
+import {
+  CaretNext,
+  CaretPrevious,
+  Play,
+  Pause,
+  Up,
+  Down,
+  Radial,
+  RadialSelected,
+} from "grommet-icons";
 
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import Button from "../../../../../../components/Button";
@@ -62,7 +71,7 @@ const GeneralInformationCarousel = ({
     }
   };
   return (
-    <div className="animate-fade-in mx-8 rounded-lg shadow-lg rounded-lg px-4 lg:px-8 py-4 bg-gradient-to-b from-indigo-100 via-white to-indigo-100 border">
+    <div className="overflow-hidden animate-fade-in mx-8 rounded-lg shadow-lg rounded-lg px-4 lg:px-8 py-4 bg-gradient-to-b from-indigo-100 via-white to-indigo-100 border">
       <div className="lg:flex">
         <div className="lg:p-4">
           <div className="flex justify-center lg:justify-start overflow-hidden rounded-lg">
@@ -86,15 +95,17 @@ const GeneralInformationCarousel = ({
                   taxonGeneralInfoCarouselIndex === -1
                 ) {
                   return (
-                    <div
-                      key={generalInfo.generalInfoLabel + index}
-                      className="lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-grow-y"
-                    >
-                      <div className="border-b-2 border-dashed flex justify-center lg:justify-start items-center w-full text-center lg:w-1/6 h-full text-xs lg:text-base lg:font-semibold font-bold px-4 py-2">
-                        {generalInfo.generalInfoLabel}
-                      </div>
-                      <div className="flex items-center lg:w-5/6 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b lg:min-h-48">
-                        {generalInfo.generalInfoDescription}
+                    <div className="animate-fade-in-fast">
+                      <div
+                        key={generalInfo.generalInfoLabel + index}
+                        className="lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-slide-left"
+                      >
+                        <div className="border-b-2 border-dashed flex justify-center lg:justify-start items-center w-full text-center lg:w-1/6 h-full text-xs lg:text-base lg:font-semibold font-bold px-4 py-2">
+                          {generalInfo.generalInfoLabel}
+                        </div>
+                        <div className="flex items-center lg:w-5/6 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b lg:min-h-48">
+                          {generalInfo.generalInfoDescription}
+                        </div>
                       </div>
                     </div>
                   );
@@ -114,6 +125,31 @@ const GeneralInformationCarousel = ({
             </div>
           )}
           <div className="flex justify-end items-center">
+            <div className="flex justify-center w-full">
+              {generalInfos &&
+                generalInfos.length > 0 &&
+                generalInfos.map((element, index) => {
+                  if (
+                    index !== taxonGeneralInfoCarouselIndex &&
+                    taxonGeneralInfoCarouselIndex !== -1
+                  ) {
+                    return (
+                      <div className="opacity-25 transition transform duration-300 px-1">
+                        <Radial color="blank" className="stroke-current" />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div className="opacity-50 transition transform duration-300 px-1">
+                        <RadialSelected
+                          color="blank"
+                          className="stroke-current"
+                        />
+                      </div>
+                    );
+                  }
+                })}
+            </div>
             <div className="flex justify-between shadow rounded-full bg-white mr-4">
               <div className="px-2">
                 <Button

@@ -1,6 +1,6 @@
 import mysql.connector
 from os import makedirs, remove
-from os.path import exists
+from os.path import exists, isdir, isfile
 from shutil import copy, rmtree, copytree
 from glob import glob
 from PIL import Image
@@ -459,19 +459,74 @@ class FileManager:
                 fullPathToAnalysis = (
                     f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{type}/{name}/"
                 )
-
                 makedirs(
                     fullPathToAnalysis,
                     exist_ok=True,
                 )
                 if type == "milts":
-                    newPath = f"{fullPathToAnalysis}{name}_milts_taxonomic_assignment_plot.html"
+                    newPath = f"{fullPathToAnalysis}milts_taxonomic_assignment_plot.html"
+                    oldPathToParentDir = "/".join(path.split("/")[:-2])
+                    gene_table = glob(f"{oldPathToParentDir}/**/gene_table_taxon_assignment.csv", recursive=True)
+                    if len(gene_table) == 1:
+                        gene_table = gene_table[0]
+                        gene_table_filename = gene_table.split("/")[-1]
+                        copy(gene_table, f"{fullPathToAnalysis}milts_{gene_table_filename}")
+                    pca_clustering = glob(f"{oldPathToParentDir}/**/pca_summary.csv", recursive=True)
+                    if len(pca_clustering) == 1:
+                        pca_clustering = pca_clustering[0]
+                        pca_clustering_filename = pca_clustering.split("/")[-1]
+                        copy(pca_clustering, f"{fullPathToAnalysis}milts_{pca_clustering_filename}")
+                    pca_loadings = glob(f"{oldPathToParentDir}/**/pca_loadings.csv", recursive=True)
+                    if len(pca_loadings) == 1:
+                        pca_loadings = pca_loadings[0]
+                        pca_loadings_filename = pca_loadings.split("/")[-1]
+                        copy(pca_loadings, f"{fullPathToAnalysis}milts_{pca_loadings_filename}")
                 elif type == "busco":
-                    newPath = f"{fullPathToAnalysis}{name}_busco_completeness.txt"
+                    newPath = f"{fullPathToAnalysis}busco_short_summary.txt"
+                    oldPathToParentDir = "/".join(path.split("/")[:-1])
+                    if isdir(f"{oldPathToParentDir}/busco_sequences/"):
+                        copytree(f"{oldPathToParentDir}/busco_sequences/", f"{fullPathToAnalysis}busco_sequences/")
+                    if isfile(f"{oldPathToParentDir}/full_table.tsv"):
+                        copy(f"{oldPathToParentDir}/full_table.tsv", f"{fullPathToAnalysis}busco_full_table.tsv")
+                    if isfile(f"{oldPathToParentDir}/missing_busco_list.tsv"):
+                        copy(f"{oldPathToParentDir}/missing_busco_list.tsv", f"{fullPathToAnalysis}busco_missing.tsv")
                 elif type == "fcat":
-                    newPath = f"{fullPathToAnalysis}{name}_fcat_completeness.txt"
+                    newPath = f"{fullPathToAnalysis}fcat_report_summary.txt"
+                    oldPathToParentDir = "/".join(path.split("/")[:-1])
+                    if isdir(f"{oldPathToParentDir}/genome_dir/"):
+                        copytree(f"{oldPathToParentDir}/genome_dir/", f"{fullPathToAnalysis}genome_dir/")
+                    if isdir(f"{oldPathToParentDir}/phyloprofileOutput/"):
+                        copytree(f"{oldPathToParentDir}/phyloprofileOutput/", f"{fullPathToAnalysis}phyloprofileOutput/")
+                    if isfile(f"{oldPathToParentDir}/ignored.txt"):
+                        copy(f"{oldPathToParentDir}/ignored.txt", f"{fullPathToAnalysis}fcat_ignored.txt")
+                    if isfile(f"{oldPathToParentDir}/last_refspec.txt"):
+                        copy(f"{oldPathToParentDir}/last_refspec.txt", f"{fullPathToAnalysis}fcat_last_refspec.txt")
+                    if isfile(f"{oldPathToParentDir}/missing.txt"):
+                        copy(f"{oldPathToParentDir}/missing.txt", f"{fullPathToAnalysis}fcat_missing.txt")
+                    if isfile(f"{oldPathToParentDir}/report_dismiss.txt"):
+                        copy(f"{oldPathToParentDir}/report_dismiss.txt", f"{fullPathToAnalysis}fcat_report_dismiss.txt")
+                    if isfile(f"{oldPathToParentDir}/report_full.txt"):
+                        copy(f"{oldPathToParentDir}/report_full.txt", f"{fullPathToAnalysis}fcat_report_full.txt")
+                    if isfile(f"{oldPathToParentDir}/report_dismiss.txt"):
+                        copy(f"{oldPathToParentDir}/report_dismiss.txt", f"{fullPathToAnalysis}fcat_report_dismiss.txt")
+                    frags = glob(f"{oldPathToParentDir}/*frag*complete.txt")
+                    if len(frags) == 1:
+                        frags = frags[0]
+                        frags_filename = frags.split("/")[-1]
+                        copy(frags, f"{fullPathToAnalysis}fcat_{frags_filename}")
                 elif type == "repeatmasker":
-                    newPath = f"{fullPathToAnalysis}{name}_repeatmasker.txt"
+                    newPath = f"{fullPathToAnalysis}repeatmasker_summary.tbl"
+                    oldPathToParentDir = "/".join(path.split("/")[:-1])
+                    out = glob(f"{oldPathToParentDir}/*.out")
+                    if len(out) == 1:
+                        out = out[0]
+                        out_filename = out.split("/")[-1]
+                        copy(out, f"{fullPathToAnalysis}repeatmasker_{out_filename}")
+                    masked = glob(f"{oldPathToParentDir}/*.masked")
+                    if len(masked) == 1:
+                        masked = masked[0]
+                        masked_filename = masked.split("/")[-1]
+                        copy(masked, f"{fullPathToAnalysis}repeatmasker_{masked_filename}")
                 copy(path, newPath)
             except:
                 self.deleteDirectories(fullPathToAnalysis)

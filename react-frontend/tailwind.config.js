@@ -37,6 +37,7 @@ module.exports = {
       },
       animation: {
         "spin-slow": "spin 30s linear infinite",
+        "fade-in-fast": "fade-in 0.5s ease-in",
         "fade-in": "fade-in 1s ease-in",
         "fade-in-slow": "fade-in 3s ease-in",
         "slide-left": "slide-left 0.5s",

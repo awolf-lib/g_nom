@@ -19,13 +19,11 @@ const TaxonomicAssignmentViewer = ({
             assemblyInformation.name +
             "/milts/" +
             assemblyInformation.analyses.milts[index].name +
-            "/" +
-            assemblyInformation.analyses.milts[index].name +
-            "_milts_taxonomic_assignment_plot.html"
+            "/milts_taxonomic_assignment_plot.html"
           }
         />
       </div>
-      <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4">
+      <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
         <a
           href={
             "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
@@ -37,12 +35,12 @@ const TaxonomicAssignmentViewer = ({
           className="flex justify-center items-center"
         >
           <Button color="link">
-            <Download size="small" className="stroke-current" color="blank" />
+            <Download className="stroke-current" color="blank" />
           </Button>
         </a>
       </div>
       {assemblyInformation.analyses.milts.length > 1 && (
-        <div className="absolute bottom-0 left-0 z-10 opacity-50 flex items-center mx-4">
+        <div className="absolute bottom-0 left-0 z-10 opacity-50 flex items-center mx-4 my-1">
           <Button
             color="link"
             onClick={() =>
@@ -55,7 +53,7 @@ const TaxonomicAssignmentViewer = ({
               })
             }
           >
-            <Previous size="small" className="stroke-current" color="blank" />
+            <Previous className="stroke-current" color="blank" />
           </Button>
           <Button
             color="link"
@@ -72,7 +70,7 @@ const TaxonomicAssignmentViewer = ({
               })
             }
           >
-            <Next size="small" className="stroke-current" color="blank" />
+            <Next className="stroke-current" color="blank" />
           </Button>
         </div>
       )}

@@ -348,7 +348,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
               </div>
             )}
           </div>
-          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4">
+          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
               href={
                 "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
@@ -360,11 +360,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
               className="flex justify-center items-center"
             >
               <Button color="link">
-                <Download
-                  size="small"
-                  className="stroke-current"
-                  color="blank"
-                />
+                <Download className="stroke-current" color="blank" />
               </Button>
             </a>
           </div>
@@ -397,7 +393,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
               </div>
             )}
           </div>
-          <div className="absolute bottom-0 right-0 mx-4 z-10 opacity-50 flex items-center">
+          <div className="absolute bottom-0 right-0 mx-4 my-1 z-10 opacity-50 flex items-center">
             <a
               href={
                 "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
@@ -409,11 +405,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
               className="flex justify-center items-center"
             >
               <Button color="link">
-                <Download
-                  size="small"
-                  className="stroke-current"
-                  color="blank"
-                />
+                <Download className="stroke-current" color="blank" />
               </Button>
             </a>
           </div>
