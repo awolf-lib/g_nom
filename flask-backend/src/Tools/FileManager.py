@@ -491,7 +491,7 @@ class FileManager:
                             )
                         elif '"title":"taxonomic assignment",' in line:
                             lines[index] = line.replace(
-                                '"title":"taxonomic assignment",', ""
+                                '"title":"taxonomic assignment",', f'"title":"{name}",'
                             )
 
                     with open(newPath, "w") as plotFile:
