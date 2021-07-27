@@ -4,7 +4,7 @@ import propTypes from "prop-types";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
 
-const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
+const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
   const [buscoData, setBuscoData] = useState([]);
   const [buscoLayout, setBuscoLayout] = useState({});
   const [fcatData, setFcatData] = useState([]);
@@ -334,7 +334,7 @@ const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
         <div className="rounded-lg overflow-hidden shadow-lg bg-white relative">
           <div className="animate-fade-in p-4">
-            {buscoData.length && (
+            {buscoData.length > 0 ? (
               <Plot
                 data={buscoData}
                 layout={buscoLayout}
@@ -342,6 +342,10 @@ const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
                 useResizeHandler={true}
                 style={{ width: "100%", height: "100%" }}
               />
+            ) : (
+              <div className="flex items-center justify-center text-center">
+                Not yet imported!
+              </div>
             )}
           </div>
           <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4">
@@ -379,7 +383,7 @@ const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
             </select>
           </div>
           <div className="animate-fade-in p-4">
-            {fcatData.length && (
+            {fcatData.length > 0 ? (
               <Plot
                 data={fcatData}
                 layout={fcatLayout}
@@ -387,6 +391,10 @@ const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
                 useResizeHandler={true}
                 style={{ width: "100%", height: "100%" }}
               />
+            ) : (
+              <div className="flex items-center justify-center text-center">
+                Not yet imported!
+              </div>
             )}
           </div>
           <div className="absolute bottom-0 right-0 mx-4 z-10 opacity-50 flex items-center">
@@ -415,11 +423,11 @@ const AnnoationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
   );
 };
 
-export default AnnoationCompletenessViewer;
+export default AnnotationCompletenessViewer;
 
-AnnoationCompletenessViewer.defaultProps = { busco: [], fcat: [] };
+AnnotationCompletenessViewer.defaultProps = { busco: [], fcat: [] };
 
-AnnoationCompletenessViewer.propTypes = {
+AnnotationCompletenessViewer.propTypes = {
   busco: propTypes.array,
   fcat: propTypes.array,
 };

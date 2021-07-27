@@ -449,7 +449,12 @@ class FileManager:
                     "type": "error",
                 }
 
-        elif type == "milts" or type == "busco" or type == "fcat":
+        elif (
+            type == "milts"
+            or type == "busco"
+            or type == "fcat"
+            or type == "repeatmasker"
+        ):
             try:
                 fullPathToAnalysis = (
                     f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{type}/{name}/"
@@ -465,6 +470,8 @@ class FileManager:
                     newPath = f"{fullPathToAnalysis}{name}_busco_completeness.txt"
                 elif type == "fcat":
                     newPath = f"{fullPathToAnalysis}{name}_fcat_completeness.txt"
+                elif type == "repeatmasker":
+                    newPath = f"{fullPathToAnalysis}{name}_repeatmasker.txt"
                 copy(path, newPath)
             except:
                 self.deleteDirectories(fullPathToAnalysis)

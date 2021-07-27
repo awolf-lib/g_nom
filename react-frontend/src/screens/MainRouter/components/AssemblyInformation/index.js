@@ -12,6 +12,7 @@ import StaticAssemblyStatisticsViewer from "./components/StaticAssemblyStatistic
 import { useNotification } from "../../../../components/NotificationProvider";
 import TaxonomicAssignmentViewer from "./components/TaxonomicAssignmentViewer";
 import AnnotationCompletenessViewer from "./components/AnnotationCompletenessViewer";
+import MaskingsViewer from "./components/MaskingsViewer";
 
 const AssemblyInformation = () => {
   const [assemblyInformation, setAssemblyInformation] = useState({});
@@ -25,6 +26,8 @@ const AssemblyInformation = () => {
     true
   );
 
+  const [toggleMaskings, setToggleMaskings] = useState(false);
+
   const [toggleTaxonomicAssignment, setToggleTaxonomicAssignment] = useState(
     false
   );
@@ -35,7 +38,7 @@ const AssemblyInformation = () => {
   const [
     toggleAnnotationCompleteness,
     setToggleAnnotationCompleteness,
-  ] = useState(true);
+  ] = useState(false);
 
   const [toggleGenomeViewerSection, setToggleGenomeViewerSection] = useState(
     false
@@ -128,126 +131,162 @@ const AssemblyInformation = () => {
       </div>
 
       {assemblyInformation && assemblyInformation.taxonGeneralInfos && (
-        <div className="animate-grow-y">
-          <div
-            className="m-8 select-none"
-            onClick={() =>
-              setToggleGeneralInfoSection((prevState) => !prevState)
-            }
-          >
-            <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
-              General information
-            </div>
-          </div>
-
-          {toggleGeneralInfoSection && (
-            <GeneralInformationCarousel
-              generalInfos={assemblyInformation.taxonGeneralInfos}
-              ncbiTaxonID={assemblyInformation.ncbiTaxonID}
-              imageStatus={assemblyInformation.imageStatus}
-            />
-          )}
-
-          <hr className="shadow my-8 mx-8" />
-
-          {assemblyInformation.assemblyStatistics && (
-            <div>
-              <div
-                className="m-8 select-none"
-                onClick={() =>
-                  setToggleAssemblyStatistics((prevState) => !prevState)
-                }
-              >
-                <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
-                  Assembly statistics
-                </div>
-              </div>
-
-              {toggleAssemblyStatistics && (
-                <StaticAssemblyStatisticsViewer
-                  statistics={assemblyInformation.assemblyStatistics}
-                />
-              )}
-            </div>
-          )}
-
-          <hr className="shadow my-8 mx-8" />
-
-          {assemblyInformation.analyses &&
-            assemblyInformation.analyses.milts &&
-            assemblyInformation.analyses.milts.length > 0 && (
-              <div className="animate-grow-y">
-                <div
-                  className="m-8 select-none"
-                  onClick={() => {
-                    setTaxonomicAssignmentLoading(
-                      toggleTaxonomicAssignment ? false : true
-                    );
-                    setToggleTaxonomicAssignment((prevState) => !prevState);
-                  }}
-                >
-                  <div className="flex justify-between items-center w-full text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-300">
-                    Taxonomic assignment
-                    {taxonomicAssignmentLoading && (
-                      <div className="text-xs">
-                        <LoadingSpinner label="Loading..." />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {toggleTaxonomicAssignment && (
-                  <TaxonomicAssignmentViewer
-                    assemblyInformation={assemblyInformation}
-                    setTaxonomicAssignmentLoading={
-                      setTaxonomicAssignmentLoading
-                    }
-                  />
-                )}
-              </div>
-            )}
-
-          <hr className="shadow my-8 mx-8" />
-
-          {assemblyInformation.analyses &&
-            assemblyInformation.analyses.busco &&
-            assemblyInformation.analyses.fcat && (
-              <div className="animate-grow-y">
-                <div
-                  className="m-8 select-none"
-                  onClick={() => {
-                    setToggleAnnotationCompleteness((prevState) => !prevState);
-                  }}
-                >
-                  <div className="flex justify-between items-center w-full text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-300">
-                    Annotation completeness
-                  </div>
-                </div>
-                {toggleAnnotationCompleteness && (
-                  <AnnotationCompletenessViewer
-                    busco={assemblyInformation.analyses.busco}
-                    fcat={assemblyInformation.analyses.fcat}
-                    assemblyName={assemblyInformation.name}
-                  />
-                )}
-              </div>
-            )}
-
-          <hr className="shadow my-8 mx-8" />
-
+        <div>
           <div className="animate-grow-y">
             <div
               className="m-8 select-none"
               onClick={() =>
-                setToggleGenomeViewerSection((prevState) => !prevState)
+                setToggleGeneralInfoSection((prevState) => !prevState)
               }
             >
-              <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-700 to-gray-500 rounded-lg text-white cursor-pointer hover:text-gray-300">
-                Genome Viewer
+              <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
+                General Information
               </div>
             </div>
-            {toggleGenomeViewerSection && (
-              <GenomeViewer assemblyInformation={assemblyInformation} />
+
+            {toggleGeneralInfoSection && (
+              <GeneralInformationCarousel
+                generalInfos={assemblyInformation.taxonGeneralInfos}
+                ncbiTaxonID={assemblyInformation.ncbiTaxonID}
+                imageStatus={assemblyInformation.imageStatus}
+              />
             )}
+            <hr className="shadow my-8 mx-8" />
+          </div>
+
+          {assemblyInformation.assemblyStatistics && (
+            <div>
+              <div>
+                <div
+                  className="m-8 select-none"
+                  onClick={() =>
+                    setToggleAssemblyStatistics((prevState) => !prevState)
+                  }
+                >
+                  <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
+                    Assembly Statistics
+                  </div>
+                </div>
+
+                {toggleAssemblyStatistics && (
+                  <StaticAssemblyStatisticsViewer
+                    statistics={assemblyInformation.assemblyStatistics}
+                  />
+                )}
+              </div>
+              <hr className="shadow my-8 mx-8" />
+            </div>
+          )}
+
+          {assemblyInformation.analyses &&
+            assemblyInformation.analyses.repeatmasker &&
+            assemblyInformation.analyses.repeatmasker.length > 0 && (
+              <div>
+                <div>
+                  <div
+                    className="m-8 select-none"
+                    onClick={() => setToggleMaskings((prevState) => !prevState)}
+                  >
+                    <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
+                      Masking
+                    </div>
+                  </div>
+
+                  {toggleMaskings && (
+                    <MaskingsViewer
+                      repeatmasker={assemblyInformation.analyses.repeatmasker}
+                      assemblyName={assemblyInformation.name}
+                    />
+                  )}
+                </div>
+                <hr className="shadow my-8 mx-8" />
+              </div>
+            )}
+
+          {assemblyInformation.analyses &&
+            assemblyInformation.analyses.milts &&
+            assemblyInformation.analyses.milts.length > 0 && (
+              <div>
+                <div className="animate-grow-y">
+                  <div
+                    className="m-8 select-none"
+                    onClick={() => {
+                      setTaxonomicAssignmentLoading(
+                        toggleTaxonomicAssignment ? false : true
+                      );
+                      setToggleTaxonomicAssignment((prevState) => !prevState);
+                    }}
+                  >
+                    <div className="flex justify-between items-center w-full text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-300">
+                      Taxonomic Assignment
+                      {taxonomicAssignmentLoading && (
+                        <div className="text-xs">
+                          <LoadingSpinner label="Loading..." />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {toggleTaxonomicAssignment && (
+                    <TaxonomicAssignmentViewer
+                      assemblyInformation={assemblyInformation}
+                      setTaxonomicAssignmentLoading={
+                        setTaxonomicAssignmentLoading
+                      }
+                    />
+                  )}
+                </div>
+                <hr className="shadow my-8 mx-8" />
+              </div>
+            )}
+
+          {assemblyInformation.analyses &&
+            assemblyInformation.analyses.busco &&
+            assemblyInformation.analyses.fcat &&
+            (assemblyInformation.analyses.busco.length > 0 ||
+              assemblyInformation.analyses.fcat.length > 0) && (
+              <div>
+                <div className="animate-grow-y">
+                  <div
+                    className="m-8 select-none"
+                    onClick={() => {
+                      setToggleAnnotationCompleteness(
+                        (prevState) => !prevState
+                      );
+                    }}
+                  >
+                    <div className="flex justify-between items-center w-full text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-300">
+                      Annotation Completeness
+                    </div>
+                  </div>
+                  {toggleAnnotationCompleteness && (
+                    <AnnotationCompletenessViewer
+                      busco={assemblyInformation.analyses.busco}
+                      fcat={assemblyInformation.analyses.fcat}
+                      assemblyName={assemblyInformation.name}
+                    />
+                  )}
+                </div>
+                <hr className="shadow my-8 mx-8" />
+              </div>
+            )}
+
+          <div>
+            <div className="animate-grow-y">
+              <div
+                className="m-8 select-none"
+                onClick={() =>
+                  setToggleGenomeViewerSection((prevState) => !prevState)
+                }
+              >
+                <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-700 to-gray-500 rounded-lg text-white cursor-pointer hover:text-gray-300">
+                  Genome Viewer
+                </div>
+              </div>
+              {toggleGenomeViewerSection && (
+                <GenomeViewer assemblyInformation={assemblyInformation} />
+              )}
+            </div>
+            <hr className="shadow my-8 mx-8" />
           </div>
         </div>
       )}

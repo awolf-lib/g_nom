@@ -428,7 +428,6 @@ class Parsers:
             }
 
     # fCat
-
     def parseFcat(self, pathToFcat):
         """
         Extract data of fCat analysis (report_summary.txt)
@@ -472,7 +471,6 @@ class Parsers:
             }
 
     # Repeatmasker
-
     def parseRepeatmasker(self, pathToRepeatmasker):
         """
         Extract data of Repeatmasker analysis
@@ -483,7 +481,11 @@ class Parsers:
                 summaryData = f.readlines()
                 f.close()
         except:
-            return 0, "Error: Error while opening Repeatmasker results!"
+            return 0, {
+                "label": "Error",
+                "message": "Error while opening Repeatmasker results!",
+                "type": "error",
+            }
 
         try:
             data = {}
@@ -568,9 +570,17 @@ class Parsers:
             data["total_non_repetitive_length"] = sequence_length
             data["total_repetitive_length"] = total_sequence_length - sequence_length
         except:
-            return 0, "Error: Error while parsing fCat results."
+            return 0, {
+                "label": "Error",
+                "message": "Error while parsing repeatmasker results.",
+                "type": "error",
+            }
 
         if len(data.keys()):
-            return data, ""
+            return data, {}
         else:
-            return 0, "Error: No data found!"
+            return 0, {
+                "label": "Error",
+                "message": "No data found!",
+                "type": "error",
+            }

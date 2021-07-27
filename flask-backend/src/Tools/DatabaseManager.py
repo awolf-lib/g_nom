@@ -610,10 +610,23 @@ class DatabaseManager:
             row_headers = [x[0] for x in cursor.description]
             fcat = cursor.fetchall()
 
-            if len(busco):
+            if len(fcat):
                 analyses.update({"fcat": [dict(zip(row_headers, x)) for x in fcat]})
             else:
                 analyses.update({"fcat": []})
+
+            assemblyInformation.update({"analyses": analyses})
+
+            cursor.execute(
+                f"SELECT * FROM analysis, repeatmasker WHERE analysis.assemblyID={id} AND analysis.type='repeatmasker' AND repeatmasker.analysisID=analysis.id"
+            )
+            row_headers = [x[0] for x in cursor.description]
+            repeatmasker = cursor.fetchall()
+
+            if len(repeatmasker):
+                analyses.update({"repeatmasker": [dict(zip(row_headers, x)) for x in repeatmasker]})
+            else:
+                analyses.update({"repeatmasker": []})
 
             assemblyInformation.update({"analyses": analyses})
         except:
@@ -764,21 +777,21 @@ class DatabaseManager:
         remove assembly by id
         """
 
-        # try:
-        connection, cursor = self.updateConnection()
-        cursor.execute(f"SELECT name from assembly where id={id}")
-        name = cursor.fetchone()[0]
-        cursor.execute(f"DELETE FROM assembly WHERE id={id}")
-        connection.commit()
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT name from assembly where id={id}")
+            name = cursor.fetchone()[0]
+            cursor.execute(f"DELETE FROM assembly WHERE id={id}")
+            connection.commit()
 
-        fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-        fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
-        # except:
-        #     return 0, {
-        #         "label": "Error",
-        #         "message": "Something went wrong while removing assembly from database!",
-        #         "type": "error",
-        #     }
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing assembly from database!",
+                "type": "error",
+            }
 
         return 1, {
             "label": "Success",
@@ -1208,6 +1221,8 @@ class DatabaseManager:
             type = "busco"
         elif fileName == "report_summary.txt":
             type = "fcat"
+        elif fileName.endswith(".tbl"):
+            type = "repeatmasker"
         else:
             return 0, {
                 "label": "Error",
@@ -1255,6 +1270,18 @@ class DatabaseManager:
                     return 0, notification
 
                 importStatus, notification = self.importFcat(lastID, fcatData)
+
+                if not importStatus:
+                    return 0, notification
+            elif type == "repeatmasker":
+                repeatmaskerData, notification = parsers.parseRepeatmasker(path)
+
+                if not repeatmaskerData:
+                    return 0, notification
+
+                importStatus, notification = self.importRepeatmasker(
+                    lastID, repeatmaskerData
+                )
 
                 if not importStatus:
                     return 0, notification
@@ -1399,6 +1426,69 @@ class DatabaseManager:
             connection.commit()
             return 1, {}
 
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Nothing imported!",
+                "type": "error",
+            }
+
+    # import Repeatmasker
+    def importRepeatmasker(self, analysisID, repeatmaskerData):
+        """
+        Imports Repeatmasker analysis results
+        """
+
+        if "retroelements" in repeatmaskerData:
+            retroelements = repeatmaskerData["retroelements"]
+        if "retroelements_length" in repeatmaskerData:
+            retroelements_length = repeatmaskerData["retroelements_length"]
+        if "dna_transposons" in repeatmaskerData:
+            dna_transposons = repeatmaskerData["dna_transposons"]
+        if "dna_transposons_length" in repeatmaskerData:
+            dna_transposons_length = repeatmaskerData["dna_transposons_length"]
+        if "rolling_circles" in repeatmaskerData:
+            rolling_circles = repeatmaskerData["rolling_circles"]
+        if "rolling_circles_length" in repeatmaskerData:
+            rolling_circles_length = repeatmaskerData["rolling_circles_length"]
+        if "unclassified" in repeatmaskerData:
+            unclassified = repeatmaskerData["unclassified"]
+        if "unclassified_length" in repeatmaskerData:
+            unclassified_length = repeatmaskerData["unclassified_length"]
+        if "small_rna" in repeatmaskerData:
+            small_rna = repeatmaskerData["small_rna"]
+        if "small_rna_length" in repeatmaskerData:
+            small_rna_length = repeatmaskerData["small_rna_length"]
+        if "satellites" in repeatmaskerData:
+            satellites = repeatmaskerData["satellites"]
+        if "satellites_length" in repeatmaskerData:
+            satellites_length = repeatmaskerData["satellites_length"]
+        if "simple_repeats" in repeatmaskerData:
+            simple_repeats = repeatmaskerData["simple_repeats"]
+        if "simple_repeats_length" in repeatmaskerData:
+            simple_repeats_length = repeatmaskerData["simple_repeats_length"]
+        if "low_complexity" in repeatmaskerData:
+            low_complexity = repeatmaskerData["low_complexity"]
+        if "low_complexity_length" in repeatmaskerData:
+            low_complexity_length = repeatmaskerData["low_complexity_length"]
+        if "total_non_repetitive_length" in repeatmaskerData:
+            total_non_repetitive_length = repeatmaskerData[
+                "total_non_repetitive_length"
+            ]
+        if "total_repetitive_length" in repeatmaskerData:
+            total_repetitive_length = repeatmaskerData["total_repetitive_length"]
+        if "numberN" in repeatmaskerData:
+            numberN = repeatmaskerData["numberN"]
+        if "percentN" in repeatmaskerData:
+            percentN = repeatmaskerData["percentN"]
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"INSERT INTO repeatmasker (analysisID, retroelements, retroelements_length, dna_transposons, dna_transposons_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, {retroelements}, {retroelements_length}, {dna_transposons}, {dna_transposons_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
+            )
+            connection.commit()
+            return 1, {}
         except:
             return 0, {
                 "label": "Error",

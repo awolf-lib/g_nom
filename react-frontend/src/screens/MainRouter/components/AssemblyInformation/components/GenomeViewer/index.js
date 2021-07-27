@@ -22,7 +22,7 @@ const GenomeViewer = ({ assemblyInformation }) => {
       <div className="rounded-lg overflow-hidden p-1 bg-white animate-grow-y relative shadow-lg border">
         <iframe
           title="jbrowse"
-          className="w-full h-75 border"
+          className="w-full h-75 border animate-fade-in"
           src={configureSource()}
         />
         <div className="absolute left-0 bottom-0 flex m-8">
