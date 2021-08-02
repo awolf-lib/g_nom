@@ -801,50 +801,58 @@ class DatabaseManager:
             "type": "success",
         }
 
-    # RENAME ASSEMBLY
-    def renameAssembly(self, id, name, userID):
-        """
-        update assembly name
-        """
-        name = name.replace("/", "_")
-        try:
-            connection, cursor = self.updateConnection()
-            cursor.execute(f"SELECT path from assembly where id={id}")
-            path = cursor.fetchone()[0]
-            pathSplit = path.split("/")
-            oldPath = "/".join(pathSplit[:5])
-            pathSplit[4] = name
-            newPath = "/".join(pathSplit[:5])
-            pathSplit[-1] = f"{name}_assembly.fasta"
-            fullNewPath = "/".join(pathSplit)
-            newPath, notification = fileManager.renameDirectory(oldPath, newPath)
-            if not newPath:
-                return 0, notification
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Something went wrong while renaming directory/file name",
-                "type": "error",
-            }
+    # # RENAME ASSEMBLY
+    # def renameAssembly(self, id, name, userID):
+    #     """
+    #     update assembly name
+    #     """
+    #     name = name.replace("/", "_")
+    #     try:
+    #         connection, cursor = self.updateConnection()
+    #         cursor.execute(f"SELECT path from assembly where id={id}")
+    #         path = cursor.fetchone()[0]
+    #         pathSplit = path.split("/")
+    #         oldPath = "/".join(pathSplit[:5])
+    #         oldName = pathSplit[4]
+    #         pathSplit[4] = name
+    #         newPath = "/".join(pathSplit[:5])
+    #         pathSplit[-1] = f"{name}_assembly.fasta"
+    #         fullNewPath = "/".join(pathSplit)
+    #         newPath, notification = fileManager.renameDirectory(oldPath, newPath)
+    #         if not newPath:
+    #             return 0, notification
 
-        try:
-            connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"UPDATE assembly SET name='{name}', path='{fullNewPath}', lastUpdatedBy='{userID}', lastUpdatedOn=NOW()  WHERE id={id}"
-            )
-            connection.commit()
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Something went wrong while updating assembly name",
-                "type": "error",
-            }
+    #         fileManager.renameDirectory(
+    #             f"{BASE_PATH_TO_JBROWSE}/{oldName}", f"{BASE_PATH_TO_JBROWSE}/{name}"
+    #         )
 
-        return 1, {
-            "label": "Success",
-            "message": f"Successfully updated assembly name to {name}!",
-            "type": "success",
-        }
+    #         fileManager.renameJbrowseTrack(name, "assembly", oldName, name)
+
+    #     except:
+    #         return 0, {
+    #             "label": "Error",
+    #             "message": "Something went wrong while renaming directory/file name",
+    #             "type": "error",
+    #         }
+
+    #     try:
+    #         connection, cursor = self.updateConnection()
+    #         cursor.execute(
+    #             f"UPDATE assembly SET name='{name}', path='{fullNewPath}', lastUpdatedBy='{userID}', lastUpdatedOn=NOW()  WHERE id={id}"
+    #         )
+    #         connection.commit()
+    #     except:
+    #         return 0, {
+    #             "label": "Error",
+    #             "message": "Something went wrong while updating assembly name",
+    #             "type": "error",
+    #         }
+
+    #     return 1, {
+    #         "label": "Success",
+    #         "message": f"Successfully updated assembly name to {name}!",
+    #         "type": "success",
+    #     }
 
     # ================== GENERAL INFO ANY LEVEL ================== #
     # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
@@ -986,6 +994,34 @@ class DatabaseManager:
         }
 
     # ================== ANNOTATION ================== #
+    # FETCH ALL ANNOTATIONS BY ASSEMBLY ID
+    def fetchAnnotationsByAssemblyID(self, id):
+        """
+        Gets all annotations by assembly ID
+        """
+
+        annotations = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT * from annotation WHERE assemblyID={id}")
+
+            row_headers = [x[0] for x in cursor.description]
+            annotations = cursor.fetchall()
+        except:
+            return (
+                [],
+                f"Error while fetching annotations from DB. Check database connection!",
+            )
+
+        if len(annotations):
+            return [dict(zip(row_headers, x)) for x in annotations], {}
+        else:
+            return [], {
+                "label": "Info",
+                "message": "No annotations for given assembly in database!",
+                "type": "info",
+            }
+
     # ADD NEW ANNOTATION
     def addNewAnnotation(self, assemblyID, name, path, userID, additionalFilesPath=""):
         """
@@ -1135,6 +1171,34 @@ class DatabaseManager:
         }
 
     # ================== MAPPING ================== #
+    # FETCH ALL MAPPINGS BY ASSEMBLY ID
+    def fetchMappingsByAssemblyID(self, id):
+        """
+        Gets all mappings by assembly ID
+        """
+
+        mappings = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT * from mapping WHERE assemblyID={id}")
+
+            row_headers = [x[0] for x in cursor.description]
+            mappings = cursor.fetchall()
+        except:
+            return (
+                [],
+                f"Error while fetching mappings from DB. Check database connection!",
+            )
+
+        if len(mappings):
+            return [dict(zip(row_headers, x)) for x in mappings], {}
+        else:
+            return [], {
+                "label": "Info",
+                "message": "No mappings for given assembly in database!",
+                "type": "info",
+            }
+
     # ADD NEW MAPPING
     def addNewMapping(self, assemblyID, name, path, userID, additionalFilesPath=""):
         """
@@ -1249,6 +1313,35 @@ class DatabaseManager:
             "message": f"Successfully removed mapping '{mappingName}'!",
             "type": "success",
         }
+
+    # ================== ANALYSIS ================== #
+    # FETCH ALL ANALYSES BY ASSEMBLY ID
+    def fetchAnalysesByAssemblyID(self, id):
+        """
+        Gets all analyses by assembly ID
+        """
+
+        analyses = []
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"SELECT * from analysis WHERE assemblyID={id}")
+
+            row_headers = [x[0] for x in cursor.description]
+            analyses = cursor.fetchall()
+        except:
+            return (
+                [],
+                f"Error while fetching analyses from DB. Check database connection!",
+            )
+
+        if len(analyses):
+            return [dict(zip(row_headers, x)) for x in analyses], {}
+        else:
+            return [], {
+                "label": "Info",
+                "message": "No analyses for given assembly in database!",
+                "type": "info",
+            }
 
     # ADD NEW ANALYSIS
     def addNewAnalysis(self, assemblyID, name, path, userID, additionalFilesPath=""):

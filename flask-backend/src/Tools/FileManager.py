@@ -654,7 +654,6 @@ class FileManager:
         try:
             for file in listdir(f"{BASE_PATH_TO_JBROWSE}{assemblyName}"):
                 if file.startswith(fileLabel):
-                    print(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/{file}")
                     run(["rm", f"{BASE_PATH_TO_JBROWSE}{assemblyName}/{file}"])
         except:
             return 0, {
@@ -730,6 +729,33 @@ class FileManager:
             }
 
         return 1, {}
+
+    # # rename jbrowse track data
+    # def renameJbrowseTrack(self, assemblyName, type, oldName, newName):
+    #     """
+    #     rename jbrowse track data
+    #     """
+    #     try:
+    #         with open(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "r") as conf:
+    #             lines = conf.readlines()
+    #             conf.close()
+
+    #         for line in lines:
+    #             if type == "assembly":
+    #                 line.replace(f"{oldName}_assembly", f"{newName}_assembly")
+    #             elif type == "annotation":
+    #                 line.replace(f"Annotation_{oldName}", f"Annotation_{newName}")
+    #                 line.replace(
+    #                     f"{oldName}_genomic_annotation", f"{newName}_genomic_annotation"
+    #                 )
+    #             elif type == "mapping":
+    #                 line.replace(f"{oldName}_assembly", f"{newName}_assembly")
+    #     except:
+    #         return 0, {
+    #             "label": "Error",
+    #             "message": "Error while renaming jbrowse data!",
+    #             "type": "error",
+    #         }
 
     # rename directory
     def renameDirectory(self, path, newPath):

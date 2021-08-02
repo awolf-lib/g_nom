@@ -8,6 +8,7 @@ import RenameAssemblyForm from "./components/RenameAssemblyForm";
 import AddAnnotationForm from "./components/AddAnnotationForm";
 import AddMappingForm from "./components/AddMappingForm";
 import AddAnalysisForm from "./components/AddAnalysisForm";
+import EditAnalysisForm from "./components/EditAnalysisForm";
 
 const AssistantProvider = (props) => {
   const { view } = props;
@@ -31,6 +32,12 @@ const AssistantProvider = (props) => {
         return "3. Enter mapping name and select .bam!";
       case "Edit assembly - Add analysis":
         return "3. Enter analysis name and select file!";
+      case "Edit assembly - Edit annotation":
+        return "3. Edit annotation name or remove!";
+      case "Edit assembly - Edit mapping":
+        return "3. Edit mapping name or remove!";
+      case "Edit assembly - Edit analysis":
+        return "3. Enter analysis name or remove!";
 
       default:
         break;
@@ -60,6 +67,12 @@ const AssistantProvider = (props) => {
         return <AddMappingForm {...props} />;
       case "Edit assembly - Add analysis":
         return <AddAnalysisForm {...props} />;
+      case "Edit assembly - Edit annotation":
+        return <EditAnalysisForm {...props} type="annotation" />;
+      case "Edit assembly - Edit mapping":
+        return <EditAnalysisForm {...props} type="mapping" />;
+      case "Edit assembly - Edit analysis":
+        return <EditAnalysisForm {...props} type="analysis" />;
 
       default:
         break;

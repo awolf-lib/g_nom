@@ -283,22 +283,22 @@ export default class API {
       });
   }
 
-  // ===== RENAME ASSEMBLY ===== //
-  async renameAssembly(id, name, userID) {
-    return fetch(
-      "http://localhost:3002/renameAssembly?id=" +
-        id +
-        "&name=" +
-        name +
-        "&userID=" +
-        userID
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
-        console.error(error);
-      });
-  }
+  // // ===== RENAME ASSEMBLY ===== //
+  // async renameAssembly(id, name, userID) {
+  //   return fetch(
+  //     "http://localhost:3002/renameAssembly?id=" +
+  //       id +
+  //       "&name=" +
+  //       name +
+  //       "&userID=" +
+  //       userID
+  //   )
+  //     .then((request) => request.json())
+  //     .then((data) => data)
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }
 
   // ===== ADD NEW ANNOTATION ===== //
   async addNewAnnotation(id, name, path, userID, additionalFilesPath = "") {
@@ -342,7 +342,44 @@ export default class API {
       });
   }
 
-  // ===== ADD NEW MAPPING ===== //
+  // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
+  async fetchMappingsByAssemblyID(assemblyID) {
+    return fetch(
+      "http://localhost:3002/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
+  async fetchAnnotationsByAssemblyID(assemblyID) {
+    return fetch(
+      "http://localhost:3002/fetchAnnotationsByAssemblyID?assemblyID=" +
+        assemblyID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
+  async fetchAnalysesByAssemblyID(assemblyID) {
+    return fetch(
+      "http://localhost:3002/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== ADD NEW ANALYSIS ===== //
   async addNewAnalysis(id, name, path, userID, additionalFilesPath = "") {
     return fetch(
       "http://localhost:3002/addNewAnalysis?id=" +
@@ -355,6 +392,18 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== REMOVE ANNOTATION BY ID ===== //
+  async removeAnnotationByAnnotationID(id) {
+    return fetch(
+      "http://localhost:3002/removeAnnotationByAnnotationID?id=" + id
     )
       .then((request) => request.json())
       .then((data) => data)

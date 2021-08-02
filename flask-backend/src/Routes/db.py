@@ -238,21 +238,21 @@ def removeAssemblyByAssemblyID():
         return REQUESTMETHODERROR
 
 
-# RENAME ASSEMBLY
-@db.route("/renameAssembly", methods=["GET"])
-def renameAssembly():
-    if request.method == "GET":
-        id = request.args.get("id")
-        name = request.args.get("name")
-        userID = request.args.get("userID")
-        data, notification = api.renameAssembly(id, name, userID)
+# # RENAME ASSEMBLY
+# @db.route("/renameAssembly", methods=["GET"])
+# def renameAssembly():
+#     if request.method == "GET":
+#         id = request.args.get("id")
+#         name = request.args.get("name")
+#         userID = request.args.get("userID")
+#         data, notification = api.renameAssembly(id, name, userID)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
 # ================== GENERAL INFO ANY LEVEL ================== #
@@ -325,6 +325,21 @@ def removeGeneralInfoByID():
 
 
 # ================== ANNOTATION ================== #
+# FETCH ALL ANNOTATIONS BY ASSEMBLY ID
+@db.route("/fetchAnnotationsByAssemblyID", methods=["GET"])
+def fetchAnnotationsByAssemblyID():
+    if request.method == "GET":
+        assemblyID = request.args.get("assemblyID")
+        data, notification = api.fetchAnnotationsByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ADD NEW ANNOTATION
 @db.route("/addNewAnnotation", methods=["GET"])
 def addNewAnnotation():
@@ -362,6 +377,21 @@ def removeAnnotationByAnnotationID():
 
 
 # ================== MAPPING ================== #
+# FETCH ALL MAPPINGS BY ASSEMBLY ID
+@db.route("/fetchMappingsByAssemblyID", methods=["GET"])
+def fetchMappingsByAssemblyID():
+    if request.method == "GET":
+        assemblyID = request.args.get("assemblyID")
+        data, notification = api.fetchMappingsByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ADD NEW MAPPING
 @db.route("/addNewMapping", methods=["GET"])
 def addNewMapping():
@@ -380,6 +410,7 @@ def addNewMapping():
     else:
         return REQUESTMETHODERROR
 
+
 # REMOVE MAPPING
 @db.route("/removeMappingByMappingID", methods=["GET"])
 def removeMappingByMappingID():
@@ -396,6 +427,21 @@ def removeMappingByMappingID():
 
 
 # ================== ANALYSIS ================== #
+# FETCH ALL ANALYSES BY ASSEMBLY ID
+@db.route("/fetchAnalysesByAssemblyID", methods=["GET"])
+def fetchAnalysesByAssemblyID():
+    if request.method == "GET":
+        assemblyID = request.args.get("assemblyID")
+        data, notification = api.fetchAnalysesByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ADD NEW ANALYSIS
 @db.route("/addNewAnalysis", methods=["GET"])
 def addNewAnalysis():
@@ -413,6 +459,7 @@ def addNewAnalysis():
         return response
     else:
         return REQUESTMETHODERROR
+
 
 # REMOVE ANALYSIS
 @db.route("/removeAnalysisByAnalysisID", methods=["GET"])

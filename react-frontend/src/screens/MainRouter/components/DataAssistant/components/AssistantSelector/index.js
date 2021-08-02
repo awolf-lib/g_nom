@@ -228,7 +228,7 @@ const AssistantSelector = (props) => {
                             <div className="col-span-3 animate-grow-y">
                               <hr className="shadow mb-4" />
                               <div className="grid grid-cols-3 gap-4 mb-2 animate-grow-y">
-                                <Button
+                                {/* <Button
                                   size="sm"
                                   color="secondary"
                                   onClick={() => {
@@ -239,7 +239,7 @@ const AssistantSelector = (props) => {
                                     setView(false);
                                   }}
                                   label="Rename"
-                                />
+                                /> */}
                                 <Button
                                   size="sm"
                                   color="secondary"
@@ -275,6 +275,42 @@ const AssistantSelector = (props) => {
                                     setView(false);
                                   }}
                                   label="Add analysis"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Edit annotation",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Edit annotation"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Edit mapping",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Edit mapping"
+                                />
+                                <Button
+                                  size="sm"
+                                  color="secondary"
+                                  onClick={() => {
+                                    handleModeChange(
+                                      "Edit assembly - Edit analysis",
+                                      assembly
+                                    );
+                                    setView(false);
+                                  }}
+                                  label="Edit analysis"
                                 />
                               </div>
                             </div>
