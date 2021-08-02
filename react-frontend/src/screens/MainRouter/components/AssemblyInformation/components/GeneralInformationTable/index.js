@@ -134,13 +134,13 @@ const GeneralInformationCarousel = ({
                     taxonGeneralInfoCarouselIndex !== -1
                   ) {
                     return (
-                      <div className="opacity-25 transition transform duration-300 px-1">
+                      <div className="opacity-25 transition transform duration-300 px-1 scale-90">
                         <Radial color="blank" className="stroke-current" />
                       </div>
                     );
                   } else {
                     return (
-                      <div className="opacity-50 transition transform duration-300 px-1">
+                      <div className="opacity-50 transition transform duration-300 px-1 scale-110">
                         <RadialSelected
                           color="blank"
                           className="stroke-current"
@@ -155,13 +155,23 @@ const GeneralInformationCarousel = ({
                 <Button
                   color="link"
                   size="sm"
-                  onClick={() =>
+                  onClick={() => {
                     setTaxonGeneralInfoCarouselIndex((prevState) =>
-                      prevState - 1 > 0
+                      prevState - 1 >= 0
                         ? prevState - 1
                         : generalInfos.length - 1
-                    )
-                  }
+                    );
+                    clearInterval(taxonGeneralInfoInterval);
+                    setTaxonGeneralInfoInterval(
+                      setInterval(() => {
+                        setTaxonGeneralInfoCarouselIndex((prevState) =>
+                          prevState + 1 < generalInfos.length
+                            ? prevState + 1
+                            : 0
+                        );
+                      }, 10000)
+                    );
+                  }}
                 >
                   <CaretPrevious
                     size="small"
@@ -195,11 +205,21 @@ const GeneralInformationCarousel = ({
                 <Button
                   color="link"
                   size="sm"
-                  onClick={() =>
+                  onClick={() => {
                     setTaxonGeneralInfoCarouselIndex((prevState) =>
                       prevState + 1 < generalInfos.length ? prevState + 1 : 0
-                    )
-                  }
+                    );
+                    clearInterval(taxonGeneralInfoInterval);
+                    setTaxonGeneralInfoInterval(
+                      setInterval(() => {
+                        setTaxonGeneralInfoCarouselIndex((prevState) =>
+                          prevState + 1 < generalInfos.length
+                            ? prevState + 1
+                            : 0
+                        );
+                      }, 10000)
+                    );
+                  }}
                 >
                   <CaretNext
                     size="small"

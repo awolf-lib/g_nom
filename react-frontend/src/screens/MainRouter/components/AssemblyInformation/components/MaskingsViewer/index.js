@@ -44,47 +44,47 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         retroelements_numbers.push(
           analysis["retroelements"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         dna_transposons_lengths.push(analysis["dna_transposons_length"]);
         dna_transposons_numbers.push(
           analysis["dna_transposons"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         rolling_circles_lengths.push(analysis["rolling_circles_length"]);
         rolling_circles_numbers.push(
           analysis["rolling_circles"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         unclassified_lengths.push(analysis["unclassified_length"]);
         unclassified_numbers.push(
           analysis["unclassified"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         small_rna_lengths.push(analysis["small_rna_length"]);
         small_rna_numbers.push(
-          analysis["small_rna"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+          analysis["small_rna"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         satellites_lengths.push(analysis["satellites_length"]);
         satellites_numbers.push(
           analysis["satellites"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         simple_repeats_lengths.push(analysis["simple_repeats_length"]);
         simple_repeats_numbers.push(
           analysis["simple_repeats"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         low_complexity_lengths.push(analysis["low_complexity_length"]);
         low_complexity_numbers.push(
           analysis["low_complexity"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 
@@ -93,7 +93,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Retroelements",
       text: retroelements_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: retroelements_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -111,7 +111,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "DNA Transposons",
       text: dna_transposons_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: dna_transposons_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -129,7 +129,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Rolling-circles",
       text: rolling_circles_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: rolling_circles_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -147,7 +147,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Unclassified",
       text: unclassified_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: unclassified_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -165,7 +165,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Small RNA",
       text: small_rna_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: small_rna_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -183,7 +183,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Satellites",
       text: satellites_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: satellites_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -201,7 +201,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Simple repeats",
       text: simple_repeats_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: simple_repeats_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -219,7 +219,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       y: names,
       name: "Low complexity",
       text: low_complexity_lengths.map((val) => {
-        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " bp";
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
       customdata: low_complexity_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
@@ -284,7 +284,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         total_repetitive_length_absolute.push(
           analysis["total_repetitive_length"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         total_non_repetitive_length.push(
           (analysis["total_non_repetitive_length"] * 100) / total
@@ -292,7 +292,7 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         total_non_repetitive_length_absolute.push(
           analysis["total_non_repetitive_length"]
             .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 

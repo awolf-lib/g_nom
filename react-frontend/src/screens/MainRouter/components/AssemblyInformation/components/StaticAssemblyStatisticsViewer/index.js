@@ -25,7 +25,12 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
       })
       .forEach((element) => {
         cumulative = cumulative + element["y1"];
-        x1.push(">" + element["x1"] / 1000);
+        x1.push(
+          ">" +
+            (element["x1"] / 1000)
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
         y1.push(cumulative);
       });
 
@@ -46,7 +51,12 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
         return a["x2"] > b["x2"] ? 0 : -1;
       })
       .forEach((element) => {
-        x2.push(">" + element["x2"] / 1000);
+        x2.push(
+          ">" +
+            (element["x2"] / 1000)
+              .toString()
+              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
         y2.push(element["y2"]);
       });
 

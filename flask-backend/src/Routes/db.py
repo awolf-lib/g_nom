@@ -346,6 +346,21 @@ def addNewAnnotation():
         return REQUESTMETHODERROR
 
 
+# REMOVE ANNOTATION
+@db.route("/removeAnnotationByAnnotationID", methods=["GET"])
+def removeAnnotationByAnnotationID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = api.removeAnnotationByAnnotationID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== MAPPING ================== #
 # ADD NEW MAPPING
 @db.route("/addNewMapping", methods=["GET"])
@@ -365,9 +380,23 @@ def addNewMapping():
     else:
         return REQUESTMETHODERROR
 
+# REMOVE MAPPING
+@db.route("/removeMappingByMappingID", methods=["GET"])
+def removeMappingByMappingID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = api.removeMappingByMappingID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
 
 # ================== ANALYSIS ================== #
-# ADD NEW MAPPING
+# ADD NEW ANALYSIS
 @db.route("/addNewAnalysis", methods=["GET"])
 def addNewAnalysis():
     if request.method == "GET":
@@ -377,6 +406,20 @@ def addNewAnalysis():
         userID = request.args.get("userID")
         additionalFiles = request.args.get("additionalFilesPath")
         data, notification = api.addNewAnalysis(id, name, path, userID, additionalFiles)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+# REMOVE ANALYSIS
+@db.route("/removeAnalysisByAnalysisID", methods=["GET"])
+def removeAnalysisByAnalysisID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = api.removeAnalysisByAnalysisID(id)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

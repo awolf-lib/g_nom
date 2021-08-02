@@ -624,7 +624,9 @@ class DatabaseManager:
             repeatmasker = cursor.fetchall()
 
             if len(repeatmasker):
-                analyses.update({"repeatmasker": [dict(zip(row_headers, x)) for x in repeatmasker]})
+                analyses.update(
+                    {"repeatmasker": [dict(zip(row_headers, x)) for x in repeatmasker]}
+                )
             else:
                 analyses.update({"repeatmasker": []})
 
@@ -1094,6 +1096,44 @@ class DatabaseManager:
             "type": "success",
         }
 
+    # REMOVE ANNOTATION
+    def removeAnnotationByAnnotationID(self, id):
+        """
+        remove annotation by id
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT assembly.name, annotation.name from assembly, annotation where annotation.id={id} AND annotation.assemblyID=assembly.id"
+            )
+            assemblyName, annotationName = cursor.fetchone()
+            cursor.execute(f"DELETE FROM annotation WHERE id={id}")
+
+            fileManager.deleteDirectories(
+                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{annotationName}"
+            )
+            status, notification = fileManager.removeTrackFromJbrowse(
+                assemblyName, annotationName, "annotation"
+            )
+
+            if not status:
+                return 0, notification
+
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing annotation from database!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed annotation '{annotationName}'!",
+            "type": "success",
+        }
+
     # ================== MAPPING ================== #
     # ADD NEW MAPPING
     def addNewMapping(self, assemblyID, name, path, userID, additionalFilesPath=""):
@@ -1169,6 +1209,44 @@ class DatabaseManager:
         }, {
             "label": "Success",
             "message": f"Successfully imported mapping!",
+            "type": "success",
+        }
+
+    # REMOVE MAPPING
+    def removeMappingByMappingID(self, id):
+        """
+        remove mapping by id
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT assembly.name, mapping.name from assembly, mapping where mapping.id={id} AND mapping.assemblyID=assembly.id"
+            )
+            assemblyName, mappingName = cursor.fetchone()
+            cursor.execute(f"DELETE FROM mapping WHERE id={id}")
+
+            fileManager.deleteDirectories(
+                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{mappingName}"
+            )
+            status, notification = fileManager.removeTrackFromJbrowse(
+                assemblyName, mappingName, "mapping"
+            )
+
+            if not status:
+                return 0, notification
+
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing mapping from database!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed mapping '{mappingName}'!",
             "type": "success",
         }
 
@@ -1303,6 +1381,37 @@ class DatabaseManager:
         }, {
             "label": "Success",
             "message": f"Successfully imported analysis!",
+            "type": "success",
+        }
+
+    # REMOVE ANALYSIS
+    def removeAnalysisByAnalysisID(self, id):
+        """
+        remove analysis by id
+        """
+
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT assembly.name, analysis.name, analysis.type from assembly, analysis where analysis.id={id} AND analysis.assemblyID=assembly.id"
+            )
+            assemblyName, analysisName, analysisType = cursor.fetchone()
+            cursor.execute(f"DELETE FROM analysis WHERE id={id}")
+
+            fileManager.deleteDirectories(
+                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{analysisType}/{analysisName}"
+            )
+            connection.commit()
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Something went wrong while removing analysis from database!",
+                "type": "error",
+            }
+
+        return 1, {
+            "label": "Success",
+            "message": f"Successfully removed analysis '{analysisName}'!",
             "type": "success",
         }
 

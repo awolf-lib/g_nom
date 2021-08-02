@@ -109,28 +109,36 @@ const Notification = ({ id, label, message, type, dispatch }) => {
   };
 
   return (
-    <div
-      className={containerClass(type, exit)}
-      onMouseEnter={() => {
-        handlePauseTimer();
-        setViewDetails(true);
-      }}
-      onMouseLeave={() => {
-        handleStartTimer();
-        setViewDetails(null);
-      }}
-    >
-      <div className="flex">
-        <div className="w-full flex justify-around items-center">
-          <div className="">{getTypeClass(type)}</div>
-          <div className="flex lg:block w-full items-center text-xs lg:text-base lg:truncate">
-            <div className="px-4 font-semibold">{label}</div>
-            <div className={messageClass}>{message}</div>
+    <div className="overflow-hidden">
+      <div
+        className={containerClass(type, exit)}
+        onMouseEnter={() => {
+          handlePauseTimer();
+          setViewDetails(true);
+        }}
+        onMouseLeave={() => {
+          handleStartTimer();
+          setViewDetails(null);
+        }}
+      >
+        <div className="flex">
+          <div className="w-full flex justify-around items-center">
+            <div className="">{getTypeClass(type)}</div>
+            <div className="flex lg:block w-full items-center text-xs lg:text-base">
+              <div className="px-4 font-semibold">{label}</div>
+              <div className={messageClass}>{message}</div>
+            </div>
+            <FormClose
+              className="cursor-pointer"
+              onClick={() => setExit(true)}
+            />
           </div>
-          <FormClose className="cursor-pointer" onClick={() => setExit(true)} />
         </div>
+        <div
+          className={timeBarClass(type)}
+          style={{ width: `${width}%` }}
+        ></div>
       </div>
-      <div className={timeBarClass(type)} style={{ width: `${width}%` }}></div>
     </div>
   );
 };

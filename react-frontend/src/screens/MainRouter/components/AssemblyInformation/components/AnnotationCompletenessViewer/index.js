@@ -137,7 +137,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
       },
       xaxis: {
         automargin: true,
-        title: { text: "% sequences", standoff: 10 },
+        title: { text: "% of sequences", standoff: 10 },
         range: [0, 100],
         tick0: 0,
         dtick: 10,
@@ -309,7 +309,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
       },
       xaxis: {
         automargin: true,
-        title: { text: "% sequences", standoff: 10 },
+        title: { text: "% of sequences", standoff: 10 },
         range: [0, 100],
         tick0: 0,
         dtick: 10,
