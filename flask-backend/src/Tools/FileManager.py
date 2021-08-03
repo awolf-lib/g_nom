@@ -7,11 +7,11 @@ from PIL import Image
 from subprocess import run
 
 # defaults
-BASE_PATH_TO_UPLOAD = "src/files/upload/"
-BASE_PATH_TO_STORAGE = "src/files/download/"
+BASE_PATH_TO_UPLOAD = "storage/files/upload/"
+BASE_PATH_TO_STORAGE = "storage/files/download/"
 
-BASE_PATH_TO_JBROWSE = "src/externalTools/jbrowse/data/"
-JBROWSEGENERATENAMESCALL = "src/externalTools/jbrowse/bin/generate-names.pl"
+BASE_PATH_TO_JBROWSE = "storage/externalTools/jbrowse/data/"
+JBROWSEGENERATENAMESCALL = "storage/externalTools/jbrowse/bin/generate-names.pl"
 
 # images
 SIZE = 256, 256

@@ -134,13 +134,28 @@ const GeneralInformationCarousel = ({
                     taxonGeneralInfoCarouselIndex !== -1
                   ) {
                     return (
-                      <div className="opacity-25 transition transform duration-300 px-1 scale-90">
+                      <div
+                        className="opacity-25 transition transform duration-300 px-1 scale-90 hover:scale-110 cursor-pointer"
+                        onClick={() => {
+                          setTaxonGeneralInfoCarouselIndex(index);
+                          clearInterval(taxonGeneralInfoInterval);
+                          setTaxonGeneralInfoInterval(
+                            setInterval(() => {
+                              setTaxonGeneralInfoCarouselIndex((prevState) =>
+                                prevState + 1 < generalInfos.length
+                                  ? prevState + 1
+                                  : 0
+                              );
+                            }, 10000)
+                          );
+                        }}
+                      >
                         <Radial color="blank" className="stroke-current" />
                       </div>
                     );
                   } else {
                     return (
-                      <div className="opacity-50 transition transform duration-300 px-1 scale-110">
+                      <div className="opacity-50 transition transform duration-300 px-1 scale-110 cursor-pointer">
                         <RadialSelected
                           color="blank"
                           className="stroke-current"

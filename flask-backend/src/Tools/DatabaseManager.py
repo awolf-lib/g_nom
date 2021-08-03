@@ -1,5 +1,5 @@
 import mysql.connector
-from hashlib import new, sha512
+from hashlib import sha512
 from math import ceil
 
 from .FileManager import FileManager
@@ -8,10 +8,10 @@ from .Parsers import Parsers
 fileManager = FileManager()
 parsers = Parsers()
 
-BASE_PATH_TO_UPLOAD = "src/files/upload/"
-BASE_PATH_TO_STORAGE = "src/files/download/"
+BASE_PATH_TO_UPLOAD = "storage/files/upload/"
+BASE_PATH_TO_STORAGE = "storage/files/download/"
 
-BASE_PATH_TO_JBROWSE = "src/externalTools/jbrowse/data/"
+BASE_PATH_TO_JBROWSE = "storage/externalTools/jbrowse/data/"
 
 
 class DatabaseManager:
@@ -164,7 +164,7 @@ class DatabaseManager:
     # IMPORT ALL FROM TAXDUMP FILE
     def reloadTaxonIDsFromFile(self, userID):
         """
-        Takes names.dmp from src/files/download/taxa/names.dmp directory and fills db with
+        Takes names.dmp from storage directory and fills db with
         all tax IDs
         """
 
@@ -172,14 +172,15 @@ class DatabaseManager:
 
         taxonData = []
         try:
-            with open("src/files/download/taxa/names.dmp", "r") as taxonFile:
+            with open(f"{BASE_PATH_TO_STORAGE}taxa/names.dmp", "r") as taxonFile:
                 taxonData = taxonFile.readlines()
                 taxonFile.close()
         except:
-            return (
-                0,
-                "Error: Error while reading names.dmp. Check if file is provided at 'src/files/download/taxa/names.dmp' directory!",
-            )
+            return 0, {
+                "label": "Error",
+                "message": f"Error while reading names.dmp. Check if file is provided at '{BASE_PATH_TO_STORAGE}taxa/names.dmp' directory!",
+                "type": "error",
+            }
 
         try:
             taxonID = None
@@ -302,7 +303,7 @@ class DatabaseManager:
         """
 
         status, notification = fileManager.deleteFile(
-            "src/FileStorage/taxa/images/" + taxonID + ".thumbnail.jpg"
+            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg"
         )
         if not status:
             return 0, notification
