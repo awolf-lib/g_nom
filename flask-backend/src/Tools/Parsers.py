@@ -487,94 +487,145 @@ class Parsers:
                 "type": "error",
             }
 
-        try:
-            data = {}
-            value_pattern = compile(r" [\d.]+ ")
-            for line in summaryData:
-                if line[0] == "=" or line[0] == "-":
-                    continue
+        # try:
+        data = {}
+        value_pattern = compile(r"[\d.]+ ")
 
-                values = value_pattern.findall(line)
-                values = [value.strip() for value in values]
+        number_of_sequences = 0
+        total_sequence_length = 0
+        sequence_length = 0
+        gc_level = 0.0
+        data["numberN"] = 0
+        data["percentN"] = 0.0
 
-                # header
-                if len(values) == 0:
-                    continue
-                elif "sequences" in line:
-                    number_of_sequences = int(values[0])
-                    continue
+        data["sines"] = 0
+        data["sines_length"] = 0
+        data["lines"] = 0
+        data["lines_length"] = 0
+        data["ltr_elements"] = 0
+        data["ltr_elements_length"] = 0
+        data["dna_elements"] = 0
+        data["dna_elements_length"] = 0
+        data["unclassified"] = 0
+        data["unclassified_length"] = 0
+        total_interspersed_repeats = 0
+        data["rolling_circles"] = 0
+        data["rolling_circles_length"] = 0
+        data["small_rna"] = 0
+        data["small_rna_length"] = 0
+        data["satellites"] = 0
+        data["satellites_length"] = 0
+        data["simple_repeats"] = 0
+        data["simple_repeats_length"] = 0
+        data["low_complexity"] = 0
+        data["low_complexity_length"] = 0
+        for line in summaryData:
+            if line[0] == "=" or line[0] == "-":
+                continue
 
-                elif "total length" in line:
-                    total_sequence_length = int(values[0])
-                    sequence_length = int(values[0])
-                    continue
+            values = value_pattern.findall(line)
+            values = [value.strip() for value in values]
 
-                elif "GC level" in line:
-                    gc_level = float(values[0])
-                    continue
+            # header
+            if len(values) == 0:
+                continue
+            elif "sequences" in line.lower():
+                print(line, values)
+                number_of_sequences = int(values[0])
+                print("numberSequences", number_of_sequences)
+                continue
 
-                elif "bases masked" in line:
-                    data["numberN"] = int(values[0])
-                    data["percentN"] = float(values[1])
-                    continue
+            elif "total length" in line.lower():
+                total_sequence_length = int(values[0])
+                sequence_length = int(values[0])
+                print("totalLength", total_sequence_length)
+                continue
 
-                # body
-                if "Retroelements" in line:
-                    length_occupied = int(values[1])
-                    data["retroelements"] = int(values[0])
-                    data["retroelements_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "gc level" in line.lower():
+                gc_level = float(values[0])
+                print("gc", gc_level)
+                continue
 
-                elif "DNA transposons" in line:
-                    length_occupied = int(values[1])
-                    data["dna_transposons"] = int(values[0])
-                    data["dna_transposons_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "bases masked" in line.lower():
+                data["numberN"] = int(values[0])
+                data["percentN"] = float(values[1])
+                print("n", data["numberN"])
+                print("pn", data["percentN"])
+                continue
 
-                elif "Rolling-circles" in line:
-                    length_occupied = int(values[1])
-                    data["rolling_circles"] = int(values[0])
-                    data["rolling_circles_length"] = length_occupied
-                    sequence_length -= length_occupied
+            # body
+            if "sines" in line.lower():
+                length_occupied = int(values[1])
+                data["sines"] = int(values[0])
+                data["sines_length"] = length_occupied
+                sequence_length -= length_occupied
 
-                elif "Unclassified" in line:
-                    length_occupied = int(values[1])
-                    data["unclassified"] = int(values[0])
-                    data["unclassified_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "lines" in line.lower():
+                length_occupied = int(values[1])
+                data["lines"] = int(values[0])
+                data["lines_length"] = length_occupied
+                sequence_length -= length_occupied
 
-                elif "Small RNA" in line:
-                    length_occupied = int(values[1])
-                    data["small_rna"] = int(values[0])
-                    data["small_rna_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "ltr elements" in line.lower():
+                length_occupied = int(values[1])
+                data["ltr_elements"] = int(values[0])
+                data["ltr_elements_length"] = length_occupied
+                sequence_length -= length_occupied
 
-                elif "Satellites" in line:
-                    length_occupied = int(values[1])
-                    data["satellites"] = int(values[0])
-                    data["satellites_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "dna transposons" in line.lower() or "dna elements" in line.lower():
+                length_occupied = int(values[1])
+                data["dna_elements"] = int(values[0])
+                data["dna_elements_length"] = length_occupied
+                sequence_length -= length_occupied
 
-                elif "Simple repeats" in line:
-                    length_occupied = int(values[1])
-                    data["simple_repeats"] = int(values[0])
-                    data["simple_repeats_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "unclassified" in line.lower():
+                length_occupied = int(values[1])
+                data["unclassified"] = int(values[0])
+                data["unclassified_length"] = length_occupied
+                sequence_length -= length_occupied
 
-                elif "Low complexity" in line:
-                    length_occupied = int(values[1])
-                    data["low_complexity"] = int(values[0])
-                    data["low_complexity_length"] = length_occupied
-                    sequence_length -= length_occupied
+            elif "total interspersed repeats" in line.lower():
+                print(line, values)
+                total_interspersed_repeats = int(values[0])
 
-            data["total_non_repetitive_length"] = sequence_length
-            data["total_repetitive_length"] = total_sequence_length - sequence_length
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Error while parsing repeatmasker results.",
-                "type": "error",
-            }
+            elif "rolling-circles" in line.lower():
+                length_occupied = int(values[1])
+                data["rolling_circles"] = int(values[0])
+                data["rolling_circles_length"] = length_occupied
+                sequence_length -= length_occupied
+
+            elif "small rna" in line.lower():
+                length_occupied = int(values[1])
+                data["small_rna"] = int(values[0])
+                data["small_rna_length"] = length_occupied
+                sequence_length -= length_occupied
+
+            elif "satellites" in line.lower():
+                length_occupied = int(values[1])
+                data["satellites"] = int(values[0])
+                data["satellites_length"] = length_occupied
+                sequence_length -= length_occupied
+
+            elif "simple repeats" in line.lower():
+                length_occupied = int(values[1])
+                data["simple_repeats"] = int(values[0])
+                data["simple_repeats_length"] = length_occupied
+                sequence_length -= length_occupied
+
+            elif "low complexity" in line.lower():
+                length_occupied = int(values[1])
+                data["low_complexity"] = int(values[0])
+                data["low_complexity_length"] = length_occupied
+                sequence_length -= length_occupied
+
+        data["total_non_repetitive_length"] = sequence_length
+        data["total_repetitive_length"] = total_sequence_length - sequence_length
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Error while parsing repeatmasker results.",
+        #         "type": "error",
+        #     }
 
         if len(data.keys()):
             return data, {}

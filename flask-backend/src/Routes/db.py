@@ -100,6 +100,34 @@ def reloadTaxonIDsFromFile():
         return REQUESTMETHODERROR
 
 
+# UPDATE TAXON TREE
+@db.route("/updateTaxonTree", methods=["GET"])
+def updateTaxonTree():
+    if request.method == "GET":
+        data, notification = api.updateTaxonTree()
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH TAXON TREE
+@db.route("/fetchTaxonTree", methods=["GET"])
+def fetchTaxonTree():
+    if request.method == "GET":
+        data, notification = api.fetchTaxonTree()
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
 # FETCH ONE TAXON BY TAXON ID
 @db.route("/fetchTaxonByNCBITaxonID", methods=["GET"])
 def fetchTaxonByNCBITaxonID():
@@ -123,6 +151,21 @@ def updateImageByTaxonID():
         path = request.args.get("path")
         userID = request.args.get("userID")
         data, notification = api.updateImageByTaxonID(taxonID, path, userID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH MULTIPLE ASSEMBLIES BY TAXON IDS
+@db.route("/fetchAssembliesByTaxonIDs", methods=["GET"])
+def fetchAssembliesByTaxonIDs():
+    if request.method == "GET":
+        taxonIDs = request.args.get("taxonIDs")
+        data, notification = api.fetchAssembliesByTaxonIDs(taxonIDs)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

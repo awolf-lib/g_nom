@@ -1,6 +1,8 @@
+import json
 import mysql.connector
 from hashlib import sha512
 from math import ceil
+from json import dumps, loads
 
 from .FileManager import FileManager
 from .Parsers import Parsers
@@ -168,17 +170,44 @@ class DatabaseManager:
         all tax IDs
         """
 
+        status, notification = fileManager.reloadTaxonFilesFromNCBI()
+        if not status:
+            return 0, notification
+
         connection, cursor = self.updateConnection()
 
         taxonData = []
         try:
-            with open(f"{BASE_PATH_TO_STORAGE}taxa/names.dmp", "r") as taxonFile:
+            with open(
+                f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/names.dmp", "r"
+            ) as taxonFile, open(
+                f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/nodes.dmp", "r"
+            ) as nodeFile:
                 taxonData = taxonFile.readlines()
+                nodeData = nodeFile.readlines()
                 taxonFile.close()
+                nodeFile.close()
         except:
+
             return 0, {
                 "label": "Error",
-                "message": f"Error while reading names.dmp. Check if file is provided at '{BASE_PATH_TO_STORAGE}taxa/names.dmp' directory!",
+                "message": f"Error while reading names.dmp/nodes.dmp. Check if files are provided at '{BASE_PATH_TO_STORAGE}taxa/taxdmp/' directory!",
+                "type": "error",
+            }
+
+        try:
+            cursor.execute("DELETE FROM taxon")
+            connection.commit()
+            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+            connection.commit()
+        except:
+            cursor.execute("DELETE FROM taxon")
+            connection.commit()
+            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+            connection.commit()
+            return 0, {
+                "label": "Error",
+                "message": "Error while resetting database!",
                 "type": "error",
             }
 
@@ -186,34 +215,67 @@ class DatabaseManager:
             taxonID = None
             counter = 0
             values = ""
+            commonName = ""
             for index, line in enumerate(taxonData):
-                split = line.split("\t")
-                taxonID = int(split[0])
+                taxonSplit = line.split("\t")
+                taxonID = int(taxonSplit[0])
 
                 if "scientific name" in line:
-                    scientificName = split[2].replace("'", "")
+                    scientificName = taxonSplit[2].replace("'", "")
+
+                if "genbank common name" in line:
+                    commonName = taxonSplit[2].replace("'", "")
 
                 if (
                     index < len(taxonData) - 1
                     and int(taxonData[index + 1].split("\t")[0]) != taxonID
                 ):
-                    values += f"({taxonID}, '{scientificName}', {userID}, NOW()),"
+                    if not scientificName or not taxonID:
+                        cursor.execute("DELETE FROM taxon")
+                        connection.commit()
+                        return 0, {
+                            "label": "Error",
+                            "message": "Error while inserting taxa (Missing name)!",
+                            "type": "error",
+                        }
+
+                    nodeSplit = nodeData[counter].split("\t")
+                    if int(nodeSplit[0]) != taxonID:
+                        cursor.execute("DELETE FROM taxon")
+                        connection.commit()
+                        cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+                        connection.commit()
+                        return 0, {
+                            "label": "Error",
+                            "message": "Error while retreiving node data (Missing node)!",
+                            "type": "error",
+                        }
+
+                    parentTaxonID = int(nodeSplit[2])
+                    rank = nodeSplit[4].replace("'", "")
+
+                    values += f"({taxonID}, {parentTaxonID}, '{scientificName}', '{rank}', {userID}, NOW(), '{commonName}'),"
                     counter += 1
                     taxonID = None
+                    scientificName = ""
+                    commonName = ""
 
-                if counter == 5000:
-                    values = values[:-1]
-                    sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName, lastUpdatedBy, lastUpdatedOn) VALUES {values}"
-                    cursor.execute(sql)
-                    connection.commit()
-                    counter = 0
-                    values = ""
+                    if counter % 5000 == 0 and counter > 0:
+                        values = values[:-1]
+                        sql = f"INSERT INTO taxon (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES {values}"
+                        cursor.execute(sql)
+                        connection.commit()
+                        values = ""
 
             values = values[:-1]
-            sql = f"INSERT INTO taxon (ncbiTaxonID, scientificName, lastUpdatedBy, lastUpdatedOn) VALUES {values}"
+            sql = f"INSERT INTO taxon (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES {values}"
             cursor.execute(sql)
             connection.commit()
         except:
+            cursor.execute("DELETE FROM taxon")
+            connection.commit()
+            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "Error while inserting taxa!",
@@ -224,6 +286,10 @@ class DatabaseManager:
             cursor.execute(f"SELECT COUNT(ncbiTaxonID) FROM taxon")
             taxaCount = cursor.fetchone()[0]
         except:
+            cursor.execute("DELETE FROM taxon")
+            connection.commit()
+            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "Error while receiving taxon count!",
@@ -231,8 +297,16 @@ class DatabaseManager:
             }
 
         if taxaCount:
-            return taxaCount, ""
+            return taxaCount, {
+                "label": "Success",
+                "message": f"{taxaCount:,} taxa imported!",
+                "type": "success",
+            }
         else:
+            cursor.execute("DELETE FROM taxon")
+            connection.commit()
+            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
+            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "No taxa imported!",
@@ -267,6 +341,145 @@ class DatabaseManager:
                 "type": "info",
             }
 
+    # UPDATE TAXON TREE
+    def updateTaxonTree(self):
+        """
+        Update existing tree
+        """
+        lineageDict = {}
+        taxonInfo = {}
+        level = 0
+        try:
+            connection, cursor = self.updateConnection()
+            cursor.execute(
+                f"SELECT assembly.taxonID, taxon.ncbiTaxonID, taxon.parentNcbiTaxonID, taxon.scientificName, taxon.taxonRank, taxon.imageStatus FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
+            )
+            taxa = [x for x in cursor.fetchall()]
+
+            if len(taxa) == 0:
+                with open("storage/files/download/taxa/tree.json", "w") as treeFile:
+                    treeFile.write("")
+                    treeFile.close()
+                return 1, {
+                    "label": "Info",
+                    "message": f"No assemblies in database!",
+                    "type": "info",
+                }
+
+            taxonSqlString = "(" + ",".join([str(x[2]) for x in taxa]) + ")"
+
+            for taxon in taxa:
+                taxonInfo.update(
+                    {
+                        taxon[1]: {
+                            "name": taxon[3],
+                            "rank": taxon[4],
+                            "level": level,
+                            "id": taxon[0],
+                            "ncbiID": taxon[1],
+                            "imageStatus": taxon[5],
+                        }
+                    }
+                )
+                if taxon[2] not in lineageDict:
+                    lineageDict.update({taxon[2]: {"children": [taxon[1]]}})
+                else:
+                    children = lineageDict[taxon[2]]["children"]
+                    children.append(taxon[1])
+
+        except:
+            return {}, {
+                "label": "Error",
+                "message": f"Error while fetching taxa in database!",
+                "type": "error",
+            }
+
+        try:
+            connection, cursor = self.updateConnection()
+            safetyCounter = 0
+            while (
+                len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa
+            ) and safetyCounter < 100:
+                level += 1
+                cursor.execute(
+                    f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imageStatus FROM taxon WHERE ncbiTaxonID IN {taxonSqlString}"
+                )
+                taxa = cursor.fetchall()
+                taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
+                safetyCounter += 1
+
+                for taxon in taxa:
+                    taxonInfo.update(
+                        {
+                            taxon[0]: {
+                                "name": taxon[2],
+                                "rank": taxon[3],
+                                "level": level,
+                                "id": taxon[4],
+                                "ncbiID": taxon[0],
+                                "imageStatus": taxon[5],
+                            }
+                        }
+                    )
+                    if taxon[1] not in lineageDict:
+                        lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
+                    else:
+                        if (
+                            taxon[0] not in lineageDict[taxon[1]]["children"]
+                            and taxon[0] != 1
+                        ):
+                            children = lineageDict[taxon[1]]["children"]
+                            children.append(taxon[0])
+
+        except:
+            return {}, {
+                "label": "Error",
+                "message": f"Error while fetching parent nodes!",
+                "type": "error",
+            }
+
+        for id in taxonInfo:
+            if id in lineageDict:
+                lineageDict[id].update(taxonInfo[id])
+            else:
+                lineageDict[id] = taxonInfo[id]
+
+        currentLevel = 1
+        while currentLevel <= level:
+            for id in lineageDict:
+                if lineageDict[id]["level"] == currentLevel:
+                    for index, child in enumerate(lineageDict[id]["children"]):
+                        childNode = lineageDict[child]
+                        lineageDict[id]["children"][index] = childNode
+            currentLevel += 1
+
+        with open("storage/files/download/taxa/tree.json", "w") as treeFile:
+            treeFile.write(dumps(lineageDict[1]))
+            treeFile.close()
+
+        return lineageDict[1], {}
+
+    # FETCH TAXON TREE
+    def fetchTaxonTree(self):
+        """
+        Fetch taxon tree from file
+        """
+        connection, cursor = self.updateConnection()
+
+        try:
+            with open("storage/files/download/taxa/tree.json", "r") as treeFile:
+                treeData = treeFile.readline()
+                treeData = loads(treeData)
+                treeFile.close()
+
+            return treeData, {}
+        except:
+            return {}, {
+                "label": "Error",
+                "message": f"Error while fetching taxon tree from tree.json!",
+                "type": "error",
+            }
+
     # UPDATE TAXON IMAGE
     def updateImageByTaxonID(self, taxonID, path, userID):
         """
@@ -289,6 +502,10 @@ class DatabaseManager:
                 "message": "Something went wrong while updating taxon image!",
                 "type": "error",
             }
+
+        status, notification = self.updateTaxonTree()
+        if not status:
+            return 0, notification
 
         return taxonID, {
             "label": "Success",
@@ -320,6 +537,10 @@ class DatabaseManager:
                 "message": "Something went wrong while updating taxon image!",
                 "type": "error",
             }
+
+        status, notification = self.updateTaxonTree()
+        if not status:
+            return 0, notification
 
         return taxonID, {
             "label": "Success",
@@ -380,7 +601,7 @@ class DatabaseManager:
                         if (
                             search in str(x["id"])
                             or search in x["name"].lower()
-                            or search in str(x["taxonID"])
+                            or search in str(x["ncbiTaxonID"])
                             or search in x["scientificName"].lower()
                         )
                     ]
@@ -521,6 +742,37 @@ class DatabaseManager:
             return [], {
                 "label": "Info",
                 "message": "No assemblies with given ID in database!",
+                "type": "info",
+            }
+
+    # FETCH MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
+    def fetchAssembliesByTaxonIDs(self, taxonIDsString):
+        """
+        Gets taxa by taxon id from taxon table
+        """
+        try:
+            connection, cursor = self.updateConnection()
+            taxonIDs = taxonIDsString.split(",")
+            taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
+            cursor.execute(
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStatus, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id AND taxon.id IN {taxonSqlString}"
+            )
+            row_headers = [x[0] for x in cursor.description]
+            assemblies = cursor.fetchall()
+
+        except:
+            return {}, {
+                "label": "Error",
+                "message": f"Error while fetching assembly information from database!",
+                "type": "error",
+            }
+
+        if len(assemblies):
+            return [dict(zip(row_headers, x)) for x in assemblies], {}
+        else:
+            return {}, {
+                "label": "Info",
+                "message": f"No assemblies found!",
                 "type": "info",
             }
 
@@ -763,6 +1015,10 @@ class DatabaseManager:
                 "type": "error",
             }
 
+        status, notification = self.updateTaxonTree()
+        if not status:
+            return 0, notification
+
         return {
             "taxonID": taxonID,
             "name": name,
@@ -789,6 +1045,10 @@ class DatabaseManager:
 
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
             fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+
+            status, notification = self.updateTaxonTree()
+            if not status:
+                return 0, notification
         except:
             return 0, {
                 "label": "Error",
@@ -1389,9 +1649,9 @@ class DatabaseManager:
 
         if fileName == "3D_plot.html":
             type = "milts"
-        elif fileName == "short_summary.txt":
+        elif "short_summary" in fileName and fileName.endswith(".txt"):
             type = "busco"
-        elif fileName == "report_summary.txt":
+        elif "report_summary" in fileName and fileName.endswith(".txt"):
             type = "fcat"
         elif fileName.endswith(".tbl"):
             type = "repeatmasker"
@@ -1555,6 +1815,9 @@ class DatabaseManager:
             return 1, {}
 
         except:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"DELETE FROM ANALYSIS WHERE id = {analysisID}")
+            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "Nothing imported!",
@@ -1630,6 +1893,9 @@ class DatabaseManager:
             return 1, {}
 
         except:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"DELETE FROM ANALYSIS WHERE id = {analysisID}")
+            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "Nothing imported!",
@@ -1642,14 +1908,22 @@ class DatabaseManager:
         Imports Repeatmasker analysis results
         """
 
-        if "retroelements" in repeatmaskerData:
-            retroelements = repeatmaskerData["retroelements"]
-        if "retroelements_length" in repeatmaskerData:
-            retroelements_length = repeatmaskerData["retroelements_length"]
-        if "dna_transposons" in repeatmaskerData:
-            dna_transposons = repeatmaskerData["dna_transposons"]
-        if "dna_transposons_length" in repeatmaskerData:
-            dna_transposons_length = repeatmaskerData["dna_transposons_length"]
+        if "sines" in repeatmaskerData:
+            sines = repeatmaskerData["sines"]
+        if "sines_length" in repeatmaskerData:
+            sines_length = repeatmaskerData["sines_length"]
+        if "lines" in repeatmaskerData:
+            lines = repeatmaskerData["lines"]
+        if "lines_length" in repeatmaskerData:
+            lines_length = repeatmaskerData["lines_length"]
+        if "ltr_elements" in repeatmaskerData:
+            ltr_elements = repeatmaskerData["ltr_elements"]
+        if "ltr_elements_length" in repeatmaskerData:
+            ltr_elements_length = repeatmaskerData["ltr_elements_length"]
+        if "dna_elements" in repeatmaskerData:
+            dna_elements = repeatmaskerData["dna_elements"]
+        if "dna_elements_length" in repeatmaskerData:
+            dna_elements_length = repeatmaskerData["dna_elements_length"]
         if "rolling_circles" in repeatmaskerData:
             rolling_circles = repeatmaskerData["rolling_circles"]
         if "rolling_circles_length" in repeatmaskerData:
@@ -1688,14 +1962,17 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"INSERT INTO repeatmasker (analysisID, retroelements, retroelements_length, dna_transposons, dna_transposons_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, {retroelements}, {retroelements_length}, {dna_transposons}, {dna_transposons_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
+                f"INSERT INTO repeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, {sines}, {sines_length}, {lines}, {lines_length}, {ltr_elements}, {ltr_elements_length}, {dna_elements}, {dna_elements_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
             )
             connection.commit()
             return 1, {}
         except:
+            connection, cursor = self.updateConnection()
+            cursor.execute(f"DELETE FROM ANALYSIS WHERE id = {analysisID}")
+            connection.commit()
             return 0, {
                 "label": "Error",
-                "message": "Nothing imported!",
+                "message": "Nothing imported! Maybe the selected Version of Repeatmasker is not supported!",
                 "type": "error",
             }
 

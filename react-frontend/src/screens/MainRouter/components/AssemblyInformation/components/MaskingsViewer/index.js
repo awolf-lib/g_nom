@@ -20,10 +20,14 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
 
   const getElementsData = () => {
     let tracks = [];
-    let retroelements_lengths = [];
-    let retroelements_numbers = [];
-    let dna_transposons_lengths = [];
-    let dna_transposons_numbers = [];
+    let sines_lengths = [];
+    let sines_numbers = [];
+    let lines_lengths = [];
+    let lines_numbers = [];
+    let ltr_elements_lengths = [];
+    let ltr_elements_numbers = [];
+    let dna_elements_lengths = [];
+    let dna_elements_numbers = [];
     let rolling_circles_lengths = [];
     let rolling_circles_numbers = [];
     let unclassified_lengths = [];
@@ -40,15 +44,23 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
     repeatmasker.length > 0 &&
       repeatmasker.forEach((analysis) => {
         names.push(analysis.name);
-        retroelements_lengths.push(analysis["retroelements_length"]);
-        retroelements_numbers.push(
-          analysis["retroelements"]
+        sines_lengths.push(analysis["sines_length"]);
+        sines_numbers.push(
+          analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
+        lines_lengths.push(analysis["lines_length"]);
+        lines_numbers.push(
+          analysis["lines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
+        ltr_elements_lengths.push(analysis["ltr_elements_length"]);
+        ltr_elements_numbers.push(
+          analysis["ltr_elements"]
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
-        dna_transposons_lengths.push(analysis["dna_transposons_length"]);
-        dna_transposons_numbers.push(
-          analysis["dna_transposons"]
+        dna_elements_lengths.push(analysis["dna_elements_length"]);
+        dna_elements_numbers.push(
+          analysis["dna_elements"]
             .toString()
             .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
@@ -89,13 +101,13 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       });
 
     tracks.push({
-      x: retroelements_lengths,
+      x: sines_lengths,
       y: names,
-      name: "Retroelements",
-      text: retroelements_lengths.map((val) => {
+      name: "SINEs",
+      text: sines_lengths.map((val) => {
         return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
-      customdata: retroelements_numbers,
+      customdata: sines_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
       orientation: "h",
       type: "bar",
@@ -107,13 +119,49 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       width: 0.5,
     });
     tracks.push({
-      x: dna_transposons_lengths,
+      x: lines_lengths,
       y: names,
-      name: "DNA Transposons",
-      text: dna_transposons_lengths.map((val) => {
+      name: "LINEs",
+      text: lines_lengths.map((val) => {
         return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
-      customdata: dna_transposons_numbers,
+      customdata: lines_numbers,
+      hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
+      orientation: "h",
+      type: "bar",
+      marker: {
+        color: "#2F5D62",
+        line: { width: 1, color: "#515E63" },
+      },
+      opacity: 0.7,
+      width: 0.5,
+    });
+    tracks.push({
+      x: ltr_elements_lengths,
+      y: names,
+      name: "LTR Elements",
+      text: ltr_elements_lengths.map((val) => {
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
+      }),
+      customdata: ltr_elements_numbers,
+      hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
+      orientation: "h",
+      type: "bar",
+      marker: {
+        color: "#2F5D62",
+        line: { width: 1, color: "#515E63" },
+      },
+      opacity: 0.7,
+      width: 0.5,
+    });
+    tracks.push({
+      x: dna_elements_lengths,
+      y: names,
+      name: "DNA Elements",
+      text: dna_elements_lengths.map((val) => {
+        return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
+      }),
+      customdata: dna_elements_numbers,
       hovertemplate: "%{label}: <br> Elements: %{customdata} </br> %{text}",
       orientation: "h",
       type: "bar",

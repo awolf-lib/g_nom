@@ -18,6 +18,7 @@ import Download from "./components/Download";
 import AssembliesTable from "../../components/AssembliesTable";
 import DataAssistant from "./components/DataAssistant";
 import AssemblyInformation from "./components/AssemblyInformation";
+import AssembliesTreeViewer from "../../components/AssembliesTreeViewer";
 
 const MainRouter = () => {
   const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
@@ -42,6 +43,21 @@ const MainRouter = () => {
         <Route exact path="/g-nom/dashboard">
           <Dashboard />
         </Route>
+        <Route exact path="/g-nom/assemblies">
+          <Redirect to="/g-nom/assemblies/list" />
+        </Route>
+        <Route exact path={"/g-nom/assemblies/list"}>
+          <AssembliesTable />
+        </Route>
+        <Route exact path={"/g-nom/assemblies/manage"}>
+          <DataAssistant />
+        </Route>
+        <Route exact path={"/g-nom/assemblies/assembly:id"}>
+          <AssemblyInformation />
+        </Route>
+        <Route exact path="/g-nom/tools">
+          <div className="p-4">Tools</div>
+        </Route>
         <Route exact path="/g-nom/download">
           <Download />
         </Route>
@@ -62,18 +78,6 @@ const MainRouter = () => {
         </Route>
         <Route path="/logout">
           <Logout setToken={setToken} />
-        </Route>
-        <Route exact path="/g-nom/assemblies">
-          <Redirect to="/g-nom/assemblies/list" />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/list"}>
-          <AssembliesTable />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/manage"}>
-          <DataAssistant />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/assembly:id"}>
-          <AssemblyInformation />
         </Route>
       </Switch>
       <Footer />

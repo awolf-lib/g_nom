@@ -146,6 +146,18 @@ export default class API {
       });
   }
 
+  // ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
+  async fetchAssembliesByTaxonIDs(taxonIDs) {
+    return fetch(
+      "http://localhost:3002/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== UPDATE TAXON IMAGE ===== //
   async updateImageByTaxonID(taxonID, path, userID) {
     return fetch(
@@ -435,6 +447,38 @@ export default class API {
         "&assemblyID=" +
         assemblyID
     )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== RELOAD TAXA DATABASE ===== //
+  async reloadTaxonIDsFromFile(userID) {
+    return fetch(
+      "http://localhost:3002/reloadTaxonIDsFromFile?userID=" + userID
+    )
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== UPDATE TAXA TREE ===== //
+  async updateTaxonTree() {
+    return fetch("http://localhost:3002/updateTaxonTree")
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== FETCH TAXA TREE ===== //
+  async fetchTaxonTree() {
+    return fetch("http://localhost:3002/fetchTaxonTree")
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {

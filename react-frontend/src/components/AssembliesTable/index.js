@@ -13,6 +13,7 @@ import AssemblyInfoCard from "../AssemblyInfoCard";
 import { useNotification } from "../NotificationProvider";
 import AssemblyInfoListItem from "../AssemblyInfoListItem";
 import Input from "../Input";
+import AssembliesTreeViewer from "../AssembliesTreeViewer";
 
 const AssembliesTable = ({ label, userID }) => {
   const [assemblies, setAssemblies] = useState([]);
@@ -158,6 +159,7 @@ const AssembliesTable = ({ label, userID }) => {
             >
               <option value="grid">Grid</option>
               <option value="list">List</option>
+              <option value="tree">Tree</option>
             </select>
             <Input
               onChange={(e) => {
@@ -176,7 +178,7 @@ const AssembliesTable = ({ label, userID }) => {
         <div className="mx-auto py-6 sm:px-6 lg:px-8 mt-4">
           <div className="px-4 sm:px-0">
             {/* HEADERS */}
-            {viewType !== "grid" && (
+            {viewType !== "grid" && viewType !== "tree" && (
               <div className="text-xs md:text-base bg-indigo-200 my-2 py-8 flex shadow font-semibold items-center rounded-lg text-center">
                 <div className="hidden sm:block w-1/12 px-4 truncate">
                   Image
@@ -192,47 +194,52 @@ const AssembliesTable = ({ label, userID }) => {
 
             {/* ELEMENTS */}
             {!fetching ? (
-              <div className={elementsContainerClass}>
-                {assemblies && assemblies.length > 0 ? (
-                  assemblies.map((assembly) => {
-                    return viewType === "grid" ? (
-                      <AssemblyInfoCard
-                        id={assembly.id}
-                        scientificName={assembly.scientificName}
-                        taxonID={assembly.ncbiTaxonID}
-                        assemblyName={assembly.name}
-                        types={assembly.types}
-                        imageStatus={assembly.imageStatus}
-                        key={assembly.id}
-                      />
+              <div>
+                {viewType !== "tree" && (
+                  <div className={elementsContainerClass}>
+                    {assemblies && assemblies.length > 0 ? (
+                      assemblies.map((assembly) => {
+                        return viewType === "grid" ? (
+                          <AssemblyInfoCard
+                            id={assembly.id}
+                            scientificName={assembly.scientificName}
+                            taxonID={assembly.ncbiTaxonID}
+                            assemblyName={assembly.name}
+                            types={assembly.types}
+                            imageStatus={assembly.imageStatus}
+                            key={assembly.id}
+                          />
+                        ) : (
+                          <AssemblyInfoListItem
+                            id={assembly.id}
+                            scientificName={assembly.scientificName}
+                            taxonID={assembly.ncbiTaxonID}
+                            assemblyName={assembly.name}
+                            types={assembly.types}
+                            imageStatus={assembly.imageStatus}
+                            key={assembly.id}
+                          />
+                        );
+                      })
                     ) : (
-                      <AssemblyInfoListItem
-                        id={assembly.id}
-                        scientificName={assembly.scientificName}
-                        taxonID={assembly.ncbiTaxonID}
-                        assemblyName={assembly.name}
-                        types={assembly.types}
-                        imageStatus={assembly.imageStatus}
-                        key={assembly.id}
-                      />
-                    );
-                  })
-                ) : (
-                  <div className="my-2 py-4 px-2 text-center shadow rounded-lg lg:col-span-2 xl:col-span-3">
-                    {pagination && pagination.count === 0 && !search ? (
-                      <Link
-                        to="/g-nom/assemblies/manageAssemblies"
-                        className="mx-2 text-blue-600 hover:text-blue-400"
-                      >
-                        Import new assembly...
-                      </Link>
-                    ) : (
-                      <div className="mx-2 text-blue-600 hover:text-blue-400">
-                        No results for given search!
+                      <div className="my-2 py-4 px-2 text-center shadow rounded-lg lg:col-span-2 xl:col-span-3">
+                        {pagination && pagination.count === 0 && !search ? (
+                          <Link
+                            to="/g-nom/assemblies/manageAssemblies"
+                            className="mx-2 text-blue-600 hover:text-blue-400"
+                          >
+                            Import new assembly...
+                          </Link>
+                        ) : (
+                          <div className="mx-2 text-blue-600 hover:text-blue-400">
+                            No results for given search!
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
                 )}
+                {viewType === "tree" && <AssembliesTreeViewer />}
               </div>
             ) : (
               <div className="flex justify-center h-16">
@@ -242,7 +249,7 @@ const AssembliesTable = ({ label, userID }) => {
             <hr className="shadow mt-8" />
 
             {/* Pagination */}
-            {pagination && (
+            {pagination && viewType !== "tree" && (
               <div className="flex justify-center items-center mt-4">
                 <div className="w-12 mx-4">
                   <Button

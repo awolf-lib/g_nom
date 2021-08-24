@@ -37,6 +37,42 @@ class FileManager:
 
     #####################################################################################################
     # ========================================== FILE IMPORT ========================================== #
+
+    # reload names.dmp/nodes.dmp
+    def reloadTaxonFilesFromNCBI(self):
+        """
+        reload names.dmp and nodes.dmp from NCBO
+        """
+
+        try:
+            self.deleteFile(f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/taxdmp.zip")
+            run(
+                [
+                    "wget",
+                    "-P",
+                    f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/",
+                    "https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip",
+                ]
+            )
+            run(
+                [
+                    "unzip",
+                    "-o",
+                    f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/taxdmp.zip",
+                    "-d",
+                    f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/",
+                ]
+            )
+            self.deleteFile(f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/taxdmp.zip")
+        except:
+            return 0, {
+                "label": "Error",
+                "message": "Error while fetching ncbi dumps!",
+                "type": "error",
+            }
+
+        return 1, {}
+
     # FETCH ALL FILES IN IMPORT DIRECTORY
     def fetchPossibleImports(
         self,
@@ -71,9 +107,9 @@ class FileManager:
                 ".bam": "**/*.bam",
             },
             "analysis": {
-                "milts": "**/3D_plot.html",
-                "busco": "**/short_summary.txt",
-                "fcat": "**/report_summary.txt",
+                "milts": "**/*3D_plot*.html",
+                "busco": "**/*short_summary*.txt",
+                "fcat": "**/*report_summary*.txt",
                 "repeatmasker": "**/*.tbl",
             },
         }
