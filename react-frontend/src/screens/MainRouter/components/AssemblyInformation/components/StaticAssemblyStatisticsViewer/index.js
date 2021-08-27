@@ -219,7 +219,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               {statistics["softmaskedBases"] > 0 && (
                 <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                   <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                    Masked (N)
+                    Masked (atgc)
                   </td>
                   <td className="text-center">
                     {formatNumbers(statistics["softmaskedBases"])}
