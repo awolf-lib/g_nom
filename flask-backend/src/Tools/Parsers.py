@@ -53,9 +53,11 @@ class Parsers:
             dnaPattern = compile(r"^[AGTC]+$")
             dnaSoftPattern = compile(r"^[AaGgTtCc]+$")
             dnaHardPattern = compile(r"^[AGTCN]+$")
+            dnaMixedPattern = compile(r"^[AaGgTtCcN]+$")
             rnaPattern = compile(r"^[AGUC]+$")
             rnaSoftPattern = compile(r"^[AaGgUuCc]+$")
             rnaHardPattern = compile(r"^[AGUCN]+$")
+            rnaMixedPattern = compile(r"^[AaGgUuCcN]+$")
             transcriptPattern = compile(r"^[ARNDCQEGHILKMFPSTWYVUO]+$")
             headers = []
             sequence = ""
@@ -135,6 +137,13 @@ class Parsers:
                             masking = "hard"
                         elif masking != "hard":
                             masking = "mixed"
+                    elif dnaMixedPattern.match(line):
+                        if not type:
+                            type = "dna"
+                        elif type != "dna":
+                            return 0, MULTIPLETYPEERROR
+
+                        masking = "mixed"
                     elif rnaPattern.match(line):
                         if not type:
                             type = "rna"
@@ -160,12 +169,20 @@ class Parsers:
                             masking = "hard"
                         elif masking != "hard":
                             masking = "mixed"
+                    elif rnaMixedPattern.match(line):
+                        if not type:
+                            type = "rna"
+                        elif type != "rna":
+                            return 0, MULTIPLETYPEERROR
+
+                        masking = "mixed"
                     elif transcriptPattern.match(line):
                         if not type:
                             type = "prot"
                         elif type != "prot":
                             return 0, MULTIPLETYPEERROR
                     else:
+                        print(line)
                         return (
                             0,
                             {
@@ -249,6 +266,7 @@ class Parsers:
 
                     if not masking:
                         masking = "none"
+                        
                     maskings.append(masking)
                     masking = ""
 
@@ -282,7 +300,10 @@ class Parsers:
             unique_types = ", ".join(unique_types)
 
             unique_maskings = list(set(maskings))
-            unique_maskings.remove("none")
+            if "mixed" in unique_maskings:
+                unique_maskings = ["soft", "hard"]
+            if ("soft" in unique_maskings or "hard" in unique_maskings) and "none" in unique_maskings:
+                unique_maskings.remove("none")
             unique_maskings = ", ".join(unique_maskings)
 
             gc /= bases
