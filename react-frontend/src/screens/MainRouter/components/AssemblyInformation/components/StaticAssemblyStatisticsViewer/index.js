@@ -191,10 +191,10 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               {statistics["gcPercentMasked"] !== statistics["gcPercent"] && (
                 <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                   <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                    GC (%; unmasked)
+                    GC (%; with masked)
                   </td>
                   <td className="text-center">
-                    {formatNumbers(statistics["n90"])}
+                    {statistics["gcPercentMasked"]}
                   </td>
                 </tr>
               )}

@@ -2,6 +2,7 @@ from os.path import exists, split
 from os import listdir
 from re import compile
 from operator import itemgetter
+from collections import Counter
 
 
 class Parsers:
@@ -50,15 +51,6 @@ class Parsers:
 
         try:
             headerPattern = compile(r"^>([\.\w]+)(.*)$")
-            dnaPattern = compile(r"^[AGTC]+$")
-            dnaSoftPattern = compile(r"^[AaGgTtCc]+$")
-            dnaHardPattern = compile(r"^[AGTCN]+$")
-            dnaMixedPattern = compile(r"^[AaGgTtCcN]+$")
-            rnaPattern = compile(r"^[AGUC]+$")
-            rnaSoftPattern = compile(r"^[AaGgUuCc]+$")
-            rnaHardPattern = compile(r"^[AGUCN]+$")
-            rnaMixedPattern = compile(r"^[AaGgUuCcN]+$")
-            transcriptPattern = compile(r"^[ARNDCQEGHILKMFPSTWYVUO]+$")
             headers = []
             sequence = ""
             bases = 0
@@ -93,109 +85,25 @@ class Parsers:
             bases_10000000 = 0
             bases_25000000 = 0
             bases_50000000 = 0
-            types = []
-            type = ""
-            maskings = []
-            masking = ""
-            basesHardMasked = 0
-            basesSoftMasked = 0
-            gc = 0
-            gc_soft = 0
-            MULTIPLETYPEERROR = {
-                "label": "Error",
-                "message": "Error: One sequence contains multiple types.",
-                "type": "error",
-            }
+            
+            alphabet = {}
+            sequence_length = 0
             for index, line in enumerate(lines):
                 line = line.strip().replace("\n", "")
                 headerPatternMatch = headerPattern.match(line)
                 if headerPatternMatch:
                     headers.append(headerPatternMatch[1])
                 else:
-                    if dnaPattern.match(line):
-                        if not type:
-                            type = "dna"
-                        elif type != "dna":
-                            return 0, MULTIPLETYPEERROR
-                    elif dnaSoftPattern.match(line):
-                        if not type:
-                            type = "dna"
-                        elif type != "dna":
-                            return 0, MULTIPLETYPEERROR
-
-                        if not masking and not masking == "mixed":
-                            masking = "soft"
-                        elif masking != "soft":
-                            masking = "mixed"
-                    elif dnaHardPattern.match(line):
-                        if not type:
-                            type = "dna"
-                        elif type != "dna":
-                            return 0, MULTIPLETYPEERROR
-
-                        if not masking and not masking == "mixed":
-                            masking = "hard"
-                        elif masking != "hard":
-                            masking = "mixed"
-                    elif dnaMixedPattern.match(line):
-                        if not type:
-                            type = "dna"
-                        elif type != "dna":
-                            return 0, MULTIPLETYPEERROR
-
-                        masking = "mixed"
-                    elif rnaPattern.match(line):
-                        if not type:
-                            type = "rna"
-                        elif type != "rna":
-                            return 0, MULTIPLETYPEERROR
-                    elif rnaSoftPattern.match(line):
-                        if not type:
-                            type = "rna"
-                        elif type != "rna":
-                            return 0, MULTIPLETYPEERROR
-
-                        if not masking and not masking == "mixed":
-                            masking = "soft"
-                        elif masking != "soft":
-                            masking = "mixed"
-                    elif rnaHardPattern.match(line):
-                        if not type:
-                            type = "rna"
-                        elif type != "rna":
-                            return 0, MULTIPLETYPEERROR
-
-                        if not masking and not masking == "mixed":
-                            masking = "hard"
-                        elif masking != "hard":
-                            masking = "mixed"
-                    elif rnaMixedPattern.match(line):
-                        if not type:
-                            type = "rna"
-                        elif type != "rna":
-                            return 0, MULTIPLETYPEERROR
-
-                        masking = "mixed"
-                    elif transcriptPattern.match(line):
-                        if not type:
-                            type = "prot"
-                        elif type != "prot":
-                            return 0, MULTIPLETYPEERROR
-                    else:
-                        print(line)
-                        return (
-                            0,
-                            {
-                                "label": "Error",
-                                "message": "At least one sequence did not match any sequence type. Abborting...",
-                                "type": "error",
-                            },
-                        )
+                    for char in line:
+                        sequence_length += 1
+                        if char in alphabet:
+                            alphabet[char] += 1
+                        else:
+                            alphabet[char] = 1
 
                     sequence += line
 
                 if index + 1 == len(lines) or headerPattern.match(lines[index + 1]):
-                    sequence_length = len(sequence)
                     bases += sequence_length
                     sequence_lengths.append(sequence_length)
 
@@ -245,47 +153,75 @@ class Parsers:
                         sequences_1000 += 1
                         bases_1000 += sequence_length
 
-                    if masking and masking != "none":
-                        if masking == "hard" or masking == "mixed":
-                            basesHardMasked += sequence.count("N")
-                        elif masking == "soft" or masking == "mixed":
-                            basesSoftMasked += sequence.count("a")
-                            basesSoftMasked += sequence.count("g")
-                            basesSoftMasked += sequence.count("t")
-                            basesSoftMasked += sequence.count("c")
-                            basesSoftMasked += sequence.count("u")
+                    sequence_length = 0
 
-                    if fixedType and fixedType != type:
-                        return 0, {
-                            "label": "Error",
-                            "message": f"File includes sequences of types {type}!",
-                            "type": "error",
-                        }
-                    types.append(type)
-                    type = ""
+            print(alphabet)
 
-                    if not masking:
-                        masking = "none"
-                        
-                    maskings.append(masking)
-                    masking = ""
+            # sequence type
+            atgcu = 0
+            ts = 0
+            us = 0
+            if "A" in alphabet:
+                atgcu += alphabet["A"]
+            if "a" in alphabet:
+                atgcu += alphabet["a"]
+            if "T" in alphabet:
+                atgcu += alphabet["T"]
+                ts += alphabet["T"]
+            if "t" in alphabet:
+                atgcu += alphabet["t"]
+                ts += alphabet["t"]
+            if "G" in alphabet:
+                atgcu += alphabet["G"]
+            if "g" in alphabet:
+                atgcu += alphabet["g"]
+            if "C" in alphabet:
+                atgcu += alphabet["C"]
+            if "c" in alphabet:
+                atgcu += alphabet["c"]
+            if "U" in alphabet:
+                atgcu += alphabet["U"]
+                us += alphabet["U"]
+            if "u" in alphabet:
+                atgcu += alphabet["u"]
+                us += alphabet["u"]
 
-                    c = sequence.count("C")
-                    g = sequence.count("G")
-                    gc += c
-                    gc += g
+            if atgcu / bases > 0.5:
+                if us > ts:
+                    type = "rna"
+                else:
+                    type = "dna"
+            else:
+                type = "protein"
 
-                    if masking == "soft" or "mixed":
-                        gc_soft += g + c
-                        gc_soft += sequence.count("g")
-                        gc_soft += sequence.count("c")
+            # maskings
+            maskings = set()
+            hard_markings = ["N"]
+            if any(char for char in alphabet if char in hard_markings):
+                maskings.add("hard")
+                basesHardMasked = alphabet["N"]
+            else:
+                basesHardMasked = 0
+            if any(char for char in alphabet if char.islower()):
+                maskings.add("soft")
+                basesSoftMasked = 0
+                for char in alphabet:
+                    if char.islower():
+                        basesSoftMasked += alphabet[char]
+            else:
+                basesSoftMasked = 0
 
-                    sequence = ""
-
-            data = list(zip(headers, sequence_lengths, types, maskings))
+            if "soft" not in maskings and "hard" not in maskings:
+                maskings.add("none")
+            
+            predicted_maskings = ",".join(maskings)
+            
+            data = list(zip(headers, sequence_lengths))
             data.sort(key=itemgetter(1), reverse=True)
+            # number of sequences
             sequences = len(data)
 
+            # N50 / N90
             cumulative_length = 0
             n50 = 0
             n90 = 0
@@ -296,16 +232,10 @@ class Parsers:
                 if cumulative_length >= bases * 0.9 and not n90:
                     n90 = sequence[1]
 
-            unique_types = list(set(types))
-            unique_types = ", ".join(unique_types)
-
-            unique_maskings = list(set(maskings))
-            if "mixed" in unique_maskings:
-                unique_maskings = ["soft", "hard"]
-            if ("soft" in unique_maskings or "hard" in unique_maskings) and "none" in unique_maskings:
-                unique_maskings.remove("none")
-            unique_maskings = ", ".join(unique_maskings)
-
+            # GC
+            gc = alphabet["C"] + alphabet["G"]
+            if "soft" in maskings:
+                gc_soft = gc + alphabet["c"] + alphabet["g"]
             gc /= bases
             gc_soft /= bases
 
@@ -349,9 +279,20 @@ class Parsers:
                 "cumulativeSequenceLengthSequencesLarger25000000": bases_25000000,
                 "sequencesLarger50000000": sequences_50000000,
                 "cumulativeSequenceLengthSequencesLarger50000000": bases_50000000,
-                "types": unique_types,
-                "maskings": unique_maskings,
+                "types": type,
+                "maskings": predicted_maskings,
             }
+
+            print(data_dict, fixedType)
+
+            if fixedType and fixedType != type:
+                return 0, {
+                    "label": "Error",
+                    "message": f"File includes sequences of types {type}!",
+                    "type": "error",
+                }
+            
+            return data_dict, {}
 
         except:
             return 0, {
@@ -359,10 +300,9 @@ class Parsers:
                 "message": "Something went wrong while parsing file!",
                 "type": "error",
             }
-        return data_dict, {}
+
 
     # quast
-
     def parseQuast(self, pathToQuast):
         """
         Takes an ID of an assembly and converts the results of quast (if in database) from the
