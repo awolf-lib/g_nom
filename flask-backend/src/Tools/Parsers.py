@@ -155,8 +155,6 @@ class Parsers:
 
                     sequence_length = 0
 
-            print(alphabet)
-
             # sequence type
             atgcu = 0
             ts = 0
@@ -282,8 +280,6 @@ class Parsers:
                 "types": type,
                 "maskings": predicted_maskings,
             }
-
-            print(data_dict, fixedType)
 
             if fixedType and fixedType != type:
                 return 0, {
