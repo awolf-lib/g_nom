@@ -144,7 +144,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Cumulative sequence length (bp)
+                  Cumulative sequence length (kbp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["cumulativeSequenceLength"])}

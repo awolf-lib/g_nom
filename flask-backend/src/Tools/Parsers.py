@@ -2,7 +2,7 @@ from os.path import exists, split
 from os import listdir
 from re import compile
 from operator import itemgetter
-from collections import Counter
+from math import floor
 
 
 class Parsers:
@@ -95,6 +95,7 @@ class Parsers:
                     headers.append(headerPatternMatch[1])
                 else:
                     for char in line:
+                        bases += 1
                         sequence_length += 1
                         if char in alphabet:
                             alphabet[char] += 1
@@ -104,7 +105,8 @@ class Parsers:
                     sequence += line
 
                 if index + 1 == len(lines) or headerPattern.match(lines[index + 1]):
-                    bases += sequence_length
+                    # bases += sequence_length
+                    # print(bases)
                     sequence_lengths.append(sequence_length)
 
                     if sequence_length >= 50000000:
@@ -155,6 +157,8 @@ class Parsers:
 
                     sequence_length = 0
 
+            bases = floor(bases / 1000)
+            
             # sequence type
             atgcu = 0
             ts = 0
