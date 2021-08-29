@@ -238,6 +238,8 @@ class Parsers:
             gc = alphabet["C"] + alphabet["G"]
             if "soft" in maskings:
                 gc_soft = gc + alphabet["c"] + alphabet["g"]
+            else:
+                gc_soft = gc
             gc /= bases
             gc_soft /= bases
 
