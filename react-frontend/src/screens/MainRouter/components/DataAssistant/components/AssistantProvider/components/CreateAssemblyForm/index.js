@@ -150,14 +150,14 @@ const CreateAssemblyForm = (props) => {
         />
       </div>
       <hr className="shadow my-8" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {possibleImports &&
         possibleImports.fasta &&
         Object.keys(possibleImports.fasta) ? (
           Object.keys(possibleImports.fasta).map((extension) => {
             return (
               <div key={extension}>
-                <div>{extension}</div>
+                <div className="font-semibold">{extension}</div>
                 <hr className="shadow my-2" />
                 <ul>
                   {possibleImports.fasta[extension].map((pathArray, index) => {

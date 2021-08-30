@@ -149,14 +149,14 @@ const AddMappingForm = (props) => {
         />
       </div>
       <hr className="shadow my-8" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 gap-8">
         {possibleImports &&
         possibleImports.bam &&
         Object.keys(possibleImports.bam).length > 0 ? (
           Object.keys(possibleImports.bam).map((extension) => {
             return (
               <div key={extension}>
-                <div>{extension}</div>
+                <div className="font-semibold">{extension}</div>
                 <hr className="shadow my-2" />
                 <ul>
                   {possibleImports.bam[extension].map((pathArray, index) => {
