@@ -157,7 +157,7 @@ class Parsers:
 
                     sequence_length = 0
 
-            bases = floor(bases / 1000)
+            bases_rounded = floor(bases / 1000)
             
             # sequence type
             atgcu = 0
@@ -245,7 +245,7 @@ class Parsers:
 
             data_dict = {
                 "numberOfSequences": sequences,
-                "cumulativeSequenceLength": bases,
+                "cumulativeSequenceLength": bases_rounded,
                 "n50": n50,
                 "n90": n90,
                 "largestSequence": data[0][1],
