@@ -21,7 +21,13 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
     let cumulative = 0;
     cumulativeLengths
       .sort((a, b) => {
-        return a["x1"] > b["x1"] ? 0 : -1;
+        if (a["x1"] > b["x1"]) {
+          return 1;
+        }
+        if (a["x1"] < b["x1"]) {
+          return -1;
+        }
+        return 0;
       })
       .forEach((element) => {
         cumulative = cumulative + element["y1"];
