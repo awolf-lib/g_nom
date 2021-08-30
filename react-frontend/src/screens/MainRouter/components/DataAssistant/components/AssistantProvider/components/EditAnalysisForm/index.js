@@ -52,7 +52,21 @@ const EditAnalysisForm = (props) => {
   const handleRemove = async (confirmation) => {
     setConfirmRemoving(confirmation);
     if (confirmation === "REMOVE" && removing) {
-      const response = await api.removeAnnotationByAnnotationID(removing);
+      let response;
+      if (props.type === "annotation") {
+        response = await api.removeAnnotationByAnnotationID(removing);
+      } else if (props.type === "analysis") {
+        response = await api.removeAnalysisByAnalysisID(removing);
+      } else if (props.type === "mapping") {
+        response = await api.removeMappingByMappingID(removing);
+      } else {
+        handleNewNotification({
+          label: "Error",
+          message: "Unknown type to remove!",
+          type: "error",
+        });
+        return 0;
+      }
 
       if (response && response.payload) {
         setConfirmRemoving("");
