@@ -424,6 +424,26 @@ export default class API {
       });
   }
 
+  // ===== REMOVE MAPPING BY ID ===== //
+  async removeMappingByMappingID(id) {
+    return fetch("http://localhost:3002/removeMappingByMappingID?id=" + id)
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+  // ===== REMOVE ANALYSIS BY ID ===== //
+  async removeAnalysisByAnalysisID(id) {
+    return fetch("http://localhost:3002/removeAnalysisByAnalysisID?id=" + id)
+      .then((request) => request.json())
+      .then((data) => data)
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
   // ===== ADD NEW BOOKMARK ===== //
   async addNewBookmark(userID, assemblyID) {
     return fetch(
