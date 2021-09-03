@@ -1,28 +1,19 @@
 import React from "react";
 import "../../App.css";
-import PropTypes from "prop-types";
+import PropTypes, { InferProps } from "prop-types";
 import { Link } from "react-router-dom";
 
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import classNames from "classnames";
 
-export interface IAssemblyInfoProps{
-  id: any,
-  scientificName: any,
-  taxonID: any,
-  assemblyName: any,
-  types: any,
-  imageStatus: any
-}
-
-const AssemblyInfoCard = ({
+export function AssemblyInfoCard({
   id,
   scientificName,
   taxonID,
   assemblyName,
   types,
   imageStatus,
-}: IAssemblyInfoProps) => {
+}: InferProps<typeof AssemblyInfoCard.propTypes>) {
   const analysisClass = (analysisDone: boolean) =>
     classNames(
       "my-2 rounded-full px-1 text-center text-xs text-white py-px shadow",
@@ -93,7 +84,8 @@ AssemblyInfoCard.propTypes = {
   scientificName: PropTypes.string,
   taxonID: PropTypes.number,
   assemblyName: PropTypes.string,
-  types: PropTypes.array,
+  types: PropTypes.arrayOf(PropTypes.string.isRequired),
+  imageStatus: PropTypes.any
 };
 
 AssemblyInfoCard.defaultProps = {
