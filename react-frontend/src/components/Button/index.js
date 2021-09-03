@@ -69,6 +69,7 @@ Button.propTypes = {
   primary: PropTypes.string,
   secondary: PropTypes.bool,
   size: PropTypes.string.isRequired,
+  onClick: PropTypes.func
 };
 
 export default Button;
