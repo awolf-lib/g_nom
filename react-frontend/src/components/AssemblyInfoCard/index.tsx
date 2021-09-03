@@ -6,6 +6,15 @@ import { Link } from "react-router-dom";
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import classNames from "classnames";
 
+export interface IAssemblyInfoProps{
+  id: any,
+  scientificName: any,
+  taxonID: any,
+  assemblyName: any,
+  types: any,
+  imageStatus: any
+}
+
 const AssemblyInfoCard = ({
   id,
   scientificName,
@@ -13,8 +22,8 @@ const AssemblyInfoCard = ({
   assemblyName,
   types,
   imageStatus,
-}) => {
-  const analysisClass = (analysisDone) =>
+}: IAssemblyInfoProps) => {
+  const analysisClass = (analysisDone: boolean) =>
     classNames(
       "my-2 rounded-full px-1 text-center text-xs text-white py-px shadow",
       {
