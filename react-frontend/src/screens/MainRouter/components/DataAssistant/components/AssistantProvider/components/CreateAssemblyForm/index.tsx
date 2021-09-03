@@ -1,22 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import API from "../../../../../../../../api";
 import classNames from "classnames";
 
+import PropTypes, { InferProps } from "prop-types";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
 
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
-const CreateAssemblyForm = (props) => {
+export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.propTypes>){
   const { selectedTaxon, handleModeChange } = props;
 
-  const [possibleImports, setPossibleImports] = useState([]);
+  const [possibleImports, setPossibleImports] = useState<{fasta: {[key: string]: string[][]}}>();
   const [fetchingAll, setFetchingAll] = useState(false);
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [newAssemblyName, setNewAssemblyName] = useState("");
-  const [selectedPath, setSelectedPath] = useState([]);
-  const [additionalFiles, setAdditionalFiles] = useState([]);
+  const [selectedPath, setSelectedPath] = useState<string[]>([]);
+  const [additionalFiles, setAdditionalFiles] = useState<string[]>([]);
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
@@ -29,7 +30,7 @@ const CreateAssemblyForm = (props) => {
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification) => {
+  const handleNewNotification = (notification: {label: string, message: string, type: string}) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -37,7 +38,7 @@ const CreateAssemblyForm = (props) => {
     });
   };
 
-  const loadFiles = async (types = undefined) => {
+  const loadFiles = async (types: string[] | undefined = undefined) => {
     setFetchingAll(true);
     const response = await api.fetchPossibleImports(types);
     if (response && response.payload) {
@@ -50,7 +51,7 @@ const CreateAssemblyForm = (props) => {
     setFetchingAll(false);
   };
 
-  const handleSubmitImport = async () => {
+  const handleSubmitImport = async () =>  {
     if (importing) {
       handleNewNotification({
         label: "Info",
@@ -110,15 +111,15 @@ const CreateAssemblyForm = (props) => {
     handleModeChange("");
   };
 
-  const handleChangeSelectedPath = (inputPathArray) => {
+  const handleChangeSelectedPath = (inputPathArray: string[]) => {
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
     setAdditionalFiles([]);
   };
 
   const handleAdditionalFiles = (
-    inputPathArray,
-    inputPathArrayAddtionalFiles
+    inputPathArray: string[],
+    inputPathArrayAddtionalFiles: string[]
   ) => {
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
@@ -129,7 +130,7 @@ const CreateAssemblyForm = (props) => {
     }
   };
 
-  const getDirectoryClass = (index, pathArray) =>
+  const getDirectoryClass = (index: number, pathArray: string[]) =>
     classNames("hover:text-blue-600 cursor-pointer", {
       "text-blue-600 font-bold":
         index === pathArray.length - 1 && pathArray === selectedPath,
@@ -146,7 +147,7 @@ const CreateAssemblyForm = (props) => {
         <div className="w-64 font-semibold">New assembly name:</div>
         <Input
           placeholder="max. 400 characters"
-          onChange={(e) => setNewAssemblyName(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setNewAssemblyName(e.target.value)}
         />
       </div>
       <hr className="shadow my-8" />
@@ -276,4 +277,9 @@ export default CreateAssemblyForm;
 
 CreateAssemblyForm.defaultProps = {};
 
-CreateAssemblyForm.propTypes = {};
+CreateAssemblyForm.propTypes = {
+  selectedTaxon: PropTypes.shape({
+    id: PropTypes.number.isRequired
+  }).isRequired,
+  handleModeChange: PropTypes.func.isRequired
+};
