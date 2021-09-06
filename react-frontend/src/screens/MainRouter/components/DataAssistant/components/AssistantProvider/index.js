@@ -9,6 +9,7 @@ import AddAnnotationForm from "./components/AddAnnotationForm";
 import AddMappingForm from "./components/AddMappingForm";
 import AddAnalysisForm from "./components/AddAnalysisForm";
 import EditAnalysisForm from "./components/EditAnalysisForm";
+import CreateAssemblyBundleForm from "./components/CreateAssemblyBundleForm";
 
 const AssistantProvider = (props) => {
   const { view } = props;
@@ -55,6 +56,8 @@ const AssistantProvider = (props) => {
         return <UpdateGeneralInfosForm {...props} level="taxon" />;
       case "Create new assembly":
         return <CreateAssemblyForm {...props} />;
+      case "Create bulk assemblies":
+        return <CreateAssemblyBundleForm {...props} assemblies={[]} />;
       case "Remove assembly":
         return (
           <RemoveConfirmationForm {...props} confirmationType="assembly" />
