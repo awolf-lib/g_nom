@@ -265,7 +265,7 @@ export default class API {
   }
 
   // ===== IMPORT NEW ASSEMBLY ===== //
-  addNewAssembly(taxonID: number, name: string, path: string, userID: string, additionalFilesPath: string = "") {
+  addNewAssembly(taxonID: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
     return fromFetch(
       this.adress + "/addNewAssembly?taxonID=" +
         taxonID +
