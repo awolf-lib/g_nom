@@ -38,7 +38,7 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
     });
   };
 
-  const loadFiles = async (types: string[] | undefined = undefined) => {
+  const loadFiles = async (types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) => {
     setFetchingAll(true);
     const response = await api.fetchPossibleImports(types);
     if (response && response.payload) {
