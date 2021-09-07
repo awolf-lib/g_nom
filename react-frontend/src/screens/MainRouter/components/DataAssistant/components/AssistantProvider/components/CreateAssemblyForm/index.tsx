@@ -94,21 +94,22 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
       return;
     }
     setImporting(true);
-    const response = await api.addNewAssembly(
+    api.addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
       selectedPath.join("/"),
       userID,
       additionalFiles.join("/")
-    );
-    if (response && response.payload) {
-      setShowConfirmationForm(false);
-    }
-    if (response && response.notification) {
-      handleNewNotification(response.notification);
-    }
-    setImporting(false);
-    handleModeChange("");
+    ).subscribe(response => {
+      if (response && response.payload) {
+        setShowConfirmationForm(false);
+      }
+      if (response && response.notification) {
+        handleNewNotification(response.notification);
+      }
+      setImporting(false);
+      handleModeChange("");
+    });
   };
 
   const handleChangeSelectedPath = (inputPathArray: string[]) => {

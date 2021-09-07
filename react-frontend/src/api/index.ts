@@ -1,22 +1,27 @@
+import { of } from 'rxjs';
+import { fromFetch } from 'rxjs/fetch';
+import { catchError, map, switchMap } from 'rxjs/operators';
+
 export default class API {
   constructor() {
     this.adress = process.env.REACT_APP_API_ADRESS;
   }
 
   // USER AUTHENTIFCATION
-  async login(username: string, password: string) {
-    return fetch(this.adress + "/login", {
+  login(username: string, password: string) {
+    return fromFetch(this.adress + "/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ username: username, password: password }),
-    })
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    }).pipe(
+      switchMap(request => request.json()),
+      catchError(error => {
         console.error(error);
-      });
+        return of(error);
+      })
+    );
   }
 
   // ADD NEW USER
@@ -260,10 +265,9 @@ export default class API {
   }
 
   // ===== IMPORT NEW ASSEMBLY ===== //
-  async addNewAssembly(taxonID: number, name: string, path: string, userID: string, additionalFilesPath: string = "") {
-    return fetch(
-      this.adress +
-        "/addNewAssembly?taxonID=" +
+  addNewAssembly(taxonID: number, name: string, path: string, userID: string, additionalFilesPath: string = "") {
+    return fromFetch(
+      this.adress + "/addNewAssembly?taxonID=" +
         taxonID +
         "&name=" +
         name +
@@ -274,11 +278,13 @@ export default class API {
         "&additionalFilesPath=" +
         additionalFilesPath
     )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
-        console.error(error);
-      });
+      .pipe(
+        switchMap(request => request.json()),
+        catchError(error => {
+          console.error(error);
+          return of(error)
+        })
+      );
   }
 
   // ===== REMOVE ASSEMBLY ===== //
@@ -401,10 +407,9 @@ export default class API {
   }
 
   // ===== ADD NEW ANALYSIS ===== //
-  async addNewAnalysis(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
-    return fetch(
-      this.adress +
-        "/addNewAnalysis?id=" +
+  addNewAnalysis(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+    return fromFetch(
+      this.adress + "/addNewAnalysis?id=" +
         id +
         "&name=" +
         name +
@@ -414,12 +419,13 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    ).pipe(
+      switchMap(request => <Promise<IResponse>>request.json()),
+      catchError((error: IResponse) => {
         console.error(error);
-      });
+        return of(error);
+      })
+    );
   }
 
   // ===== REMOVE ANNOTATION BY ID ===== //
@@ -517,4 +523,9 @@ export default class API {
         console.error(error);
       });
   }
+}
+
+export interface IResponse<T = any>{
+  payload: T;
+  notification: any;
 }
