@@ -28,25 +28,25 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await api.login(username, password);
-
-    if (response) {
-      if (response.payload?.token) {
-        setToken(response.payload.token);
-        setUserID(response.payload.userID);
-        setUserRole(response.payload.role);
+    api.login(username, password).subscribe(response => {
+      if (response) {
+        if (response.payload?.token) {
+          setToken(response.payload.token);
+          setUserID(response.payload.userID);
+          setUserRole(response.payload.role);
+        }
+        if (response.notification) {
+          handleNewNotification(response.notification);
+        }
+      } else {
+        handleNewNotification({
+          label: "Error",
+          message: "Something went wrong!",
+          type: "error",
+        });
+        setToken("");
       }
-      if (response.notification) {
-        handleNewNotification(response.notification);
-      }
-    } else {
-      handleNewNotification({
-        label: "Error",
-        message: "Something went wrong!",
-        type: "error",
-      });
-      setToken("");
-    }
+    });
   };
 
   return (
