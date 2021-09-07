@@ -4,7 +4,7 @@ export default class API {
   }
 
   // USER AUTHENTIFCATION
-  async login(username, password) {
+  async login(username: string, password: string) {
     return fetch(this.adress + "/login", {
       method: "POST",
       headers: {
@@ -20,7 +20,7 @@ export default class API {
   }
 
   // ADD NEW USER
-  async addUser(username, password, role) {
+  async addUser(username: string, password: string, role: string) {
     return fetch(this.adress + "/addUser", {
       method: "POST",
       headers: {
@@ -50,7 +50,7 @@ export default class API {
   }
 
   // ===== DELETE USER BY USER ID ===== //
-  async deleteUserByUserID(userID) {
+  async deleteUserByUserID(userID: number) {
     return fetch(this.adress + "/deleteUserByUserID?userID=" + userID)
       .then((request) => request.json())
       .then((data) => data)
@@ -60,7 +60,7 @@ export default class API {
   }
 
   // ===== UPDATE USER ROLE BY USER ID ===== //
-  async updateUserRoleByUserID(userID, role) {
+  async updateUserRoleByUserID(userID: number, role: string) {
     return fetch(
       this.adress + "/updateUserRoleByUserID?userID=" + userID + "&role=" + role
     )
@@ -106,7 +106,7 @@ export default class API {
   }
 
   // ===== FETCH ONE ASSEMBLY ===== //
-  async fetchAssemblyInformationByAssemblyID(id, userID) {
+  async fetchAssemblyInformationByAssemblyID(id: string, userID: string) {
     return fetch(
       this.adress +
         "/fetchAssemblyInformationByAssemblyID?id=" +
@@ -122,7 +122,7 @@ export default class API {
   }
 
   // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
-  async fetchPossibleImports(types = undefined) {
+  async fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
     return fetch(this.adress + "/fetchPossibleImports", {
       method: "POST",
       headers: {
@@ -138,8 +138,10 @@ export default class API {
   }
 
   // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
-  async fetchTaxonByNCBITaxonID(taxonID) {
-    return fetch(this.adress + "/fetchTaxonByNCBITaxonID?taxonID=" + taxonID)
+  async fetchTaxonByNCBITaxonID(taxonID: number) {
+    return fetch(
+      this.adress + "/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
+    )
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -148,7 +150,7 @@ export default class API {
   }
 
   // ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
-  async fetchAssembliesByTaxonIDs(taxonIDs) {
+  async fetchAssembliesByTaxonIDs(taxonIDs: number[]) {
     return fetch(
       this.adress + "/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs
     )
@@ -160,7 +162,7 @@ export default class API {
   }
 
   // ===== UPDATE TAXON IMAGE ===== //
-  async updateImageByTaxonID(taxonID, path, userID) {
+  async updateImageByTaxonID(taxonID: number, path: string, userID: number) {
     return fetch(
       this.adress +
         "/updateImageByTaxonID?taxonID=" +
@@ -178,7 +180,7 @@ export default class API {
   }
 
   // ===== DELETE TAXON IMAGE ===== //
-  async removeImageByTaxonID(taxonID, userID) {
+  async removeImageByTaxonID(taxonID: number, userID: number) {
     return fetch(
       this.adress +
         "/removeImageByTaxonID?taxonID=" +
@@ -194,7 +196,7 @@ export default class API {
   }
 
   // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
-  async fetchGeneralInfosByID(level, id) {
+  async fetchGeneralInfosByID(level: number, id: number) {
     return fetch(
       this.adress + "/fetchGeneralInfosByID?level=" + level + "&id=" + id
     )
@@ -206,7 +208,7 @@ export default class API {
   }
 
   // ===== ADD GENERAL INFO ===== //
-  async addGeneralInfo(level, id, key, value) {
+  async addGeneralInfo(level: number, id: number, key: string, value: string) {
     return fetch(
       this.adress +
         "/addGeneralInfo?level=" +
@@ -226,7 +228,7 @@ export default class API {
   }
 
   // =====  UPDATE GENERAL INFO ===== //
-  async updateGeneralInfoByID(level, id, key, value) {
+  async updateGeneralInfoByID(level: number, id: number, key: string, value: string) {
     return fetch(
       this.adress +
         "/updateGeneralInfoByID?level=" +
@@ -246,7 +248,7 @@ export default class API {
   }
 
   // ===== DELETE GENERAL INFO ===== //
-  async removeGeneralInfoByID(level, id) {
+  async removeGeneralInfoByID(level: number, id: number) {
     return fetch(
       this.adress + "/removeGeneralInfoByID?level=" + level + "&id=" + id
     )
@@ -258,7 +260,7 @@ export default class API {
   }
 
   // ===== IMPORT NEW ASSEMBLY ===== //
-  async addNewAssembly(taxonID, name, path, userID, additionalFilesPath = "") {
+  async addNewAssembly(taxonID: number, name: string, path: string, userID: string, additionalFilesPath: string = "") {
     return fetch(
       this.adress +
         "/addNewAssembly?taxonID=" +
@@ -280,7 +282,7 @@ export default class API {
   }
 
   // ===== REMOVE ASSEMBLY ===== //
-  async removeAssemblyByAssemblyID(id) {
+  async removeAssemblyByAssemblyID(id: number) {
     return fetch(this.adress + "/removeAssemblyByAssemblyID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
@@ -290,8 +292,10 @@ export default class API {
   }
 
   // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
-  async fetchAssembliesByTaxonID(taxonID) {
-    return fetch(this.adress + "/fetchAssembliesByTaxonID?taxonID=" + taxonID)
+  async fetchAssembliesByTaxonID(taxonID: number) {
+    return fetch(
+      this.adress + "/fetchAssembliesByTaxonID?taxonID=" + taxonID
+    )
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -317,7 +321,7 @@ export default class API {
   // }
 
   // ===== ADD NEW ANNOTATION ===== //
-  async addNewAnnotation(id, name, path, userID, additionalFilesPath = "") {
+  async addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
     return fetch(
       this.adress +
         "/addNewAnnotation?id=" +
@@ -339,7 +343,7 @@ export default class API {
   }
 
   // ===== ADD NEW MAPPING ===== //
-  async addNewMapping(id, name, path, userID, additionalFilesPath = "") {
+  async addNewMapping(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
     return fetch(
       this.adress +
         "/addNewMapping?id=" +
@@ -361,7 +365,7 @@ export default class API {
   }
 
   // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
-  async fetchMappingsByAssemblyID(assemblyID) {
+  async fetchMappingsByAssemblyID(assemblyID: number) {
     return fetch(
       this.adress + "/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
     )
@@ -373,7 +377,7 @@ export default class API {
   }
 
   // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
-  async fetchAnnotationsByAssemblyID(assemblyID) {
+  async fetchAnnotationsByAssemblyID(assemblyID: number) {
     return fetch(
       this.adress + "/fetchAnnotationsByAssemblyID?assemblyID=" + assemblyID
     )
@@ -385,7 +389,7 @@ export default class API {
   }
 
   // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
-  async fetchAnalysesByAssemblyID(assemblyID) {
+  async fetchAnalysesByAssemblyID(assemblyID: number) {
     return fetch(
       this.adress + "/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
     )
@@ -397,7 +401,7 @@ export default class API {
   }
 
   // ===== ADD NEW ANALYSIS ===== //
-  async addNewAnalysis(id, name, path, userID, additionalFilesPath = "") {
+  async addNewAnalysis(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
     return fetch(
       this.adress +
         "/addNewAnalysis?id=" +
@@ -419,8 +423,10 @@ export default class API {
   }
 
   // ===== REMOVE ANNOTATION BY ID ===== //
-  async removeAnnotationByAnnotationID(id) {
-    return fetch(this.adress + "/removeAnnotationByAnnotationID?id=" + id)
+  async removeAnnotationByAnnotationID(id: number) {
+    return fetch(
+      this.adress + "/removeAnnotationByAnnotationID?id=" + id
+    )
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -429,7 +435,7 @@ export default class API {
   }
 
   // ===== REMOVE MAPPING BY ID ===== //
-  async removeMappingByMappingID(id) {
+  async removeMappingByMappingID(id: number) {
     return fetch(this.adress + "/removeMappingByMappingID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
@@ -439,7 +445,7 @@ export default class API {
   }
 
   // ===== REMOVE ANALYSIS BY ID ===== //
-  async removeAnalysisByAnalysisID(id) {
+  async removeAnalysisByAnalysisID(id: number) {
     return fetch(this.adress + "/removeAnalysisByAnalysisID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
@@ -449,7 +455,7 @@ export default class API {
   }
 
   // ===== ADD NEW BOOKMARK ===== //
-  async addNewBookmark(userID, assemblyID) {
+  async addNewBookmark(userID: number, assemblyID: number) {
     return fetch(
       this.adress +
         "/addNewBookmark?userID=" +
@@ -465,7 +471,7 @@ export default class API {
   }
 
   // ===== REMOVE BOOKMARK ===== //
-  async removeBookmark(userID, assemblyID) {
+  async removeBookmark(userID: number, assemblyID: number) {
     return fetch(
       this.adress +
         "/removeBookmark?userID=" +
@@ -481,8 +487,10 @@ export default class API {
   }
 
   // ===== RELOAD TAXA DATABASE ===== //
-  async reloadTaxonIDsFromFile(userID) {
-    return fetch(this.adress + "/reloadTaxonIDsFromFile?userID=" + userID)
+  async reloadTaxonIDsFromFile(userID: number) {
+    return fetch(
+      this.adress + "/reloadTaxonIDsFromFile?userID=" + userID
+    )
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
