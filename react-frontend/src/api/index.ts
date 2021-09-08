@@ -127,7 +127,7 @@ export default class API {
   }
 
   // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
-  async fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
+  async fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined): Promise<IResponse<IPossibleImports>> {
     return fetch(this.adress + "/fetchPossibleImports", {
       method: "POST",
       headers: {
@@ -327,10 +327,9 @@ export default class API {
   // }
 
   // ===== ADD NEW ANNOTATION ===== //
-  async addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
-    return fetch(
-      this.adress +
-        "/addNewAnnotation?id=" +
+  addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+    return fromFetch(
+      this.adress + "/addNewAnnotation?id=" +
         id +
         "&name=" +
         name +
@@ -340,19 +339,19 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    ).pipe(
+      switchMap(request => request.json()),
+      catchError(error => {
         console.error(error);
-      });
+        return of(error)
+      })
+    );
   }
 
   // ===== ADD NEW MAPPING ===== //
   async addNewMapping(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
-    return fetch(
-      this.adress +
-        "/addNewMapping?id=" +
+    return fromFetch(
+      this.adress + "/addNewMapping?id=" +
         id +
         "&name=" +
         name +
@@ -362,12 +361,13 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    ).pipe(
+      switchMap(request => request.json()),
+      catchError(error => {
         console.error(error);
-      });
+        return of(error)
+      })
+    );
   }
 
   // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
@@ -528,4 +528,11 @@ export default class API {
 export interface IResponse<T = any>{
   payload: T;
   notification: any;
+}
+
+export interface IPossibleImports{
+  'fasta': {[key: string]: string[][]};
+  'gff': {[key: string]: string[][]};
+  'bam': {[key: string]: string[][]};
+  'analysis': {[key: string]: string[][]};
 }

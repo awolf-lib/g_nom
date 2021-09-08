@@ -945,7 +945,7 @@ class DatabaseManager:
             }
 
     # ADD NEW ASSEMBLY
-    def addNewAssembly(self, taxonID, name, path, userID, additionalFilesPath=""):
+    def addNewAssembly(self, taxonID: int, name: str, path: str, userID: int, additionalFilesPath: str=""):
         """
         add new assembly
         """
