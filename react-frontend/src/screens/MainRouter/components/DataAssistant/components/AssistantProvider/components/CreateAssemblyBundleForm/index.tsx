@@ -1,13 +1,16 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import API from "../../../../../../../../api";
+import { forkJoin } from "rxjs";
+import { switchMap } from "rxjs/operators";
+import API, { IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
+import { IPath, PathSelector } from "./PathSelector";
 
 export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Element {
     const [assemblies, setAssemblies] = useState<IAssembly[]>([]);
     const [draft, setDraft] = useState(defaultAssembly());
     const [selected, setSelected] = useState<number | null>(null);
-    const [possibleImports, setPossibleImports] = useState<{fasta: {[key: string]: string[][]}}>({fasta: {}});
+    const [possibleImports, setPossibleImports] = useState<IPossibleImports>({fasta: {}, gff: {}, bam: {}, analysis: {}});
     const [fetching, setFetching] = useState(false);
 
     useEffect(() => {
@@ -27,7 +30,11 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         return {
             taxonId: 0,
             name: "",
-            files: []
+            files: [],
+            assembly: null,
+            annotation: null,
+            mapping: null,
+            analysis: null,
         }
     }
 
@@ -71,6 +78,32 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         }
     }
 
+    function toggleFastaInSelectedAssembly(fasta: IPath | null){
+        if(selected !== null) {
+            const assems = [...assemblies];
+            assems.splice(selected, 1, {
+                ...assemblies[selected],
+                assembly: fasta
+            });
+            setAssemblies(assems);
+        }
+    }
+
+    function uploadAssemblies() {
+        const $uploads = assemblies.map(assembly => {
+            return api.addNewAssembly(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]).pipe(
+                switchMap(_ => forkJoin([
+                    api.addNewAnnotation(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]),
+                    api.addNewMapping(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]),
+                    api.addNewAnalysis(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0])
+                ]))
+            )
+        });
+        forkJoin($uploads).subscribe(_ => {
+            //clear assemblies
+        });
+    }
+
     return (<div className="flex">
         <ul className="flex-2">
             {
@@ -90,16 +123,52 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             }
             <li className="mt-4 animate-grow-y shadow p-4 rounded-lg w-64">
                 <Input type="number" placeholder="taxonId" value={[`${draft.taxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, taxonId: parseInt(e.target.value)})}></Input>
-                <Input placeholder="assembly name" value={[draft.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, name: e.target.value})}></Input>
-                <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
+                <div className="mt-4">
+                    <Input placeholder="assembly name" value={[draft.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, name: e.target.value})}></Input>
+                </div>
+                <div className="mt-4">
+                    <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
+                </div>
             </li>
         </ul>
-        <div className="flex-1">
-            Files - tree with checkmarks:
+        <div className="flex-1 mt-4">
+            <h4>Assemblies</h4>
             {<ul>
-                {Object.entries(possibleImports.fasta).map(([k, v]) =>
-                    v.map(vs => <li onClick={() => togglePathInSelectedAssembly(vs.join('/'))} className={filesClassName(vs.join('/'))}>{vs.join('/')}</li>)
-                )}
+                {Object.entries(possibleImports.fasta).map(([k,v]) => v.map(vs => (<PathSelector
+                    value={selected !== null ? assemblies[selected].assembly : null}
+                    pathArray={vs}
+                    onSelect={p => toggleFastaInSelectedAssembly(p)}
+                />)))}
+            </ul>}
+        </div>
+        <div className="flex-1 mt-4">
+            <h4>Annotations</h4>
+            {<ul>
+                {Object.entries(possibleImports.gff).map(([k,v]) => v.map(vs => (<PathSelector
+                    value={selected !== null ? assemblies[selected].annotation : null}
+                    pathArray={vs}
+                    onSelect={p => toggleFastaInSelectedAssembly(p)}
+                />)))}
+            </ul>}
+        </div>
+        <div className="flex-1 mt-4">
+            <h4>Mapping</h4>
+            {<ul>
+                {Object.entries(possibleImports.bam).map(([k,v]) => v.map(vs => (<PathSelector
+                    value={selected !== null ? assemblies[selected].mapping : null}
+                    pathArray={vs}
+                    onSelect={p => toggleFastaInSelectedAssembly(p)}
+                />)))}
+            </ul>}
+        </div>
+        <div className="flex-1 mt-4">
+            <h4>Analysis</h4>
+            {<ul>
+                {Object.entries(possibleImports.analysis).map(([k,v]) => v.map(vs => (<PathSelector
+                    value={selected !== null ? assemblies[selected].analysis : null}
+                    pathArray={vs}
+                    onSelect={p => toggleFastaInSelectedAssembly(p)}
+                />)))}
             </ul>}
         </div>
     </div>);
@@ -115,5 +184,9 @@ interface IAssembly{
     taxonId: number;
     name: string;
     files: string[];
+    assembly: IPath | null;
+    annotation: IPath | null;
+    mapping: IPath | null;
+    analysis: IPath | null;
 }
 
