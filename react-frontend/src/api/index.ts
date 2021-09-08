@@ -124,7 +124,7 @@ export default class API {
   }
 
   // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
-  async fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
+  async fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined): Promise<IResponse<IPossibleImports>> {
     return fetch("http://localhost:3002/fetchPossibleImports", {
       method: "POST",
       headers: {
@@ -320,8 +320,8 @@ export default class API {
   // }
 
   // ===== ADD NEW ANNOTATION ===== //
-  async addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
-    return fetch(
+  addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+    return fromFetch(
       "http://localhost:3002/addNewAnnotation?id=" +
         id +
         "&name=" +
@@ -332,17 +332,18 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    ).pipe(
+      switchMap(request => request.json()),
+      catchError(error => {
         console.error(error);
-      });
+        return of(error)
+      })
+    );
   }
 
   // ===== ADD NEW MAPPING ===== //
   async addNewMapping(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
-    return fetch(
+    return fromFetch(
       "http://localhost:3002/addNewMapping?id=" +
         id +
         "&name=" +
@@ -353,12 +354,13 @@ export default class API {
         userID +
         "&additionalFilesPath=" +
         additionalFilesPath
-    )
-      .then((request) => request.json())
-      .then((data) => data)
-      .catch((error) => {
+    ).pipe(
+      switchMap(request => request.json()),
+      catchError(error => {
         console.error(error);
-      });
+        return of(error)
+      })
+    );
   }
 
   // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
@@ -518,4 +520,11 @@ export default class API {
 export interface IResponse<T = any>{
   payload: T;
   notification: any;
+}
+
+export interface IPossibleImports{
+  'fasta': {[key: string]: string[][]};
+  'gff': {[key: string]: string[][]};
+  'bam': {[key: string]: string[][]};
+  'analysis': {[key: string]: string[][]};
 }

@@ -98,7 +98,7 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
       selectedPath.join("/"),
-      userID,
+      parseInt(userID),
       additionalFiles.join("/")
     ).subscribe(response => {
       if (response && response.payload) {
