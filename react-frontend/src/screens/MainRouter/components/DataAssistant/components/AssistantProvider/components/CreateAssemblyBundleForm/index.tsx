@@ -20,21 +20,21 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     const api = new API();
 
     function addDraftAssembly(){
-        if(draft.name || draft.taxonId) {
-            setAssemblies([...assemblies, draft]);
+        if(draft.taxonId) {
+            const copyDraft = {...draft};
             setDraft(defaultAssembly());
+            setAssemblies([...assemblies, copyDraft]);
+            setSelected(assemblies.length);
         }
     }
 
     function defaultAssembly(): IAssembly {
         return {
             taxonId: 0,
-            name: "",
-            files: [],
-            assembly: null,
-            annotation: null,
-            mapping: null,
-            analysis: null,
+            assembly: {name:'', path: null},
+            annotation: {name:'', path: null},
+            mapping: {name:'', path: null},
+            analysis: {name:'', path: null},
         }
     }
 
@@ -57,33 +57,27 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             "mt-4 animate-grow-y shadow p-4 rounded-lg w-64";
     }
 
-    function filesClassName(filePath: string): string {
-        if(selected !== null && assemblies[selected].files.some(fp => fp === filePath)) {
-            return "text-green-600 font-semibold";
-        } else {
-            return "";
-        }
-    }
-
-    function togglePathInSelectedAssembly(filePath: string){
-        if(selected !== null) {
-            const assems = [...assemblies];
-            assems.splice(selected, 1, {
-                ...assemblies[selected],
-                files: assemblies[selected].files.some(path => filePath === path) ?
-                assemblies[selected].files.filter(path => filePath !== path) :
-                [...assemblies[selected].files, filePath]
+    function setNameForSelectedAssemblySet(name: string, key: AssemblyKeys){
+        if(selected !== null){
+            setAssemblies({
+                ...assemblies,
+                [key]: {
+                    ...assemblies[selected][key],
+                    name
+                }
             });
-            setAssemblies(assems);
         }
     }
 
-    function toggleFastaInSelectedAssembly(fasta: IPath | null){
+    function toggleInSelectedAssembly(path: IPath | null, key: AssemblyKeys){
         if(selected !== null) {
             const assems = [...assemblies];
             assems.splice(selected, 1, {
                 ...assemblies[selected],
-                assembly: fasta
+                [key]: {
+                    ...assemblies[selected][key],
+                    path
+                }
             });
             setAssemblies(assems);
         }
@@ -91,14 +85,36 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
 
     function uploadAssemblies() {
         const $uploads = assemblies.map(assembly => {
-            return api.addNewAssembly(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]).pipe(
+            return assembly.assembly.path !== null ? api.addNewAssembly(
+                assembly.taxonId,
+                assembly.assembly.name,
+                assembly.assembly.path,
+                1
+            ).pipe(
                 switchMap(_ => forkJoin([
-                    api.addNewAnnotation(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]),
-                    api.addNewMapping(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0]),
-                    api.addNewAnalysis(assembly.taxonId, assembly.name, assembly.files[0], 1, assembly.files.slice(1)[0])
-                ]))
-            )
-        });
+                    assembly.annotation.path !== null ? api.addNewAnnotation(
+                        assembly.taxonId,
+                        assembly.annotation.name,
+                        assembly.annotation.path.path,
+                        1,
+                        assembly.annotation.path.additionalFilesPath || ''
+                    ) : null,
+                    assembly.mapping.path !== null ? api.addNewMapping(
+                        assembly.taxonId,
+                        assembly.mapping.name,
+                        assembly.mapping.path.path,
+                        1,
+                        assembly.mapping.path.additionalFilesPath || ''
+                    ) : null,
+                    assembly.analysis.path !== null ? api.addNewAnalysis(assembly.taxonId,
+                        assembly.analysis.name,
+                        assembly.analysis.path.path,
+                        1,
+                        assembly.analysis.path.additionalFilesPath || ''
+                    ) : null
+                ].filter(x => x)))
+            ) : null
+        }).filter(x => x);
         forkJoin($uploads).subscribe(_ => {
             //clear assemblies
         });
@@ -108,9 +124,9 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         <ul className="flex-2">
             {
                 assemblies.map((assembly, idx) => {
-                    return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)}>
+                    return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
                         <div className="flex items-center">
-                            <span>{assembly.name} ({assembly.taxonId})</span>
+                            <span>{assembly.taxonId}</span>
                             {/* files */}
                             {/* <div className="w-64 font-semibold">New assembly name:</div>
                             <Input
@@ -121,56 +137,59 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                     </li>)
                 })
             }
-            <li className="mt-4 animate-grow-y shadow p-4 rounded-lg w-64">
+            <li className="mt-4 animate-grow-y shadow p-4 rounded-lg w-64" key="draft">
                 <Input type="number" placeholder="taxonId" value={[`${draft.taxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, taxonId: parseInt(e.target.value)})}></Input>
-                <div className="mt-4">
-                    <Input placeholder="assembly name" value={[draft.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, name: e.target.value})}></Input>
-                </div>
+                
                 <div className="mt-4">
                     <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
                 </div>
             </li>
         </ul>
-        <div className="flex-1 mt-4">
-            <h4>Assemblies</h4>
-            {<ul>
-                {Object.entries(possibleImports.fasta).map(([k,v]) => v.map(vs => (<PathSelector
-                    value={selected !== null ? assemblies[selected].assembly : null}
-                    pathArray={vs}
-                    onSelect={p => toggleFastaInSelectedAssembly(p)}
-                />)))}
-            </ul>}
+        <span>{selected}</span>
+        { selected !== null ? (
+        <div className="flex-1 grid gap-4 md:grid-cols-2">
+            <div>
+                <h4>Annotations</h4>
+                {<ul>
+                    {Object.entries(possibleImports.fasta).map(([k,v]) => v.map(vs => (<PathSelector
+                        value={assemblies[selected].assembly.path}
+                        pathArray={vs}
+                        onSelect={p => toggleInSelectedAssembly(p, 'assembly')}
+                    />)))}
+                </ul>}
+            </div>
+            <div>
+                <h4>Annotations</h4>
+                {<ul>
+                    {Object.entries(possibleImports.gff).map(([k,v]) => v.map(vs => (<PathSelector
+                        value={assemblies[selected].annotation.path}
+                        pathArray={vs}
+                        onSelect={p => toggleInSelectedAssembly(p, 'annotation')}
+                    />)))}
+                </ul>}
+            </div>
+            <div>
+                <h4>Mapping</h4>
+                {<ul>
+                    {Object.entries(possibleImports.bam).map(([k,v]) => v.map(vs => (<PathSelector
+                        value={assemblies[selected].mapping.path}
+                        pathArray={vs}
+                        onSelect={p => toggleInSelectedAssembly(p, 'mapping')}
+                    />)))}
+                </ul>}
+            </div>
+            <div>
+                <h4>Analysis</h4>
+                {<ul>
+                    {Object.entries(possibleImports.analysis).map(([k,v]) => v.map(vs => (<PathSelector
+                        value={assemblies[selected].analysis.path}
+                        pathArray={vs}
+                        onSelect={p => toggleInSelectedAssembly(p, 'analysis')}
+                    />)))}
+                </ul>}
+            </div>
         </div>
-        <div className="flex-1 mt-4">
-            <h4>Annotations</h4>
-            {<ul>
-                {Object.entries(possibleImports.gff).map(([k,v]) => v.map(vs => (<PathSelector
-                    value={selected !== null ? assemblies[selected].annotation : null}
-                    pathArray={vs}
-                    onSelect={p => toggleFastaInSelectedAssembly(p)}
-                />)))}
-            </ul>}
-        </div>
-        <div className="flex-1 mt-4">
-            <h4>Mapping</h4>
-            {<ul>
-                {Object.entries(possibleImports.bam).map(([k,v]) => v.map(vs => (<PathSelector
-                    value={selected !== null ? assemblies[selected].mapping : null}
-                    pathArray={vs}
-                    onSelect={p => toggleFastaInSelectedAssembly(p)}
-                />)))}
-            </ul>}
-        </div>
-        <div className="flex-1 mt-4">
-            <h4>Analysis</h4>
-            {<ul>
-                {Object.entries(possibleImports.analysis).map(([k,v]) => v.map(vs => (<PathSelector
-                    value={selected !== null ? assemblies[selected].analysis : null}
-                    pathArray={vs}
-                    onSelect={p => toggleFastaInSelectedAssembly(p)}
-                />)))}
-            </ul>}
-        </div>
+        )  : null}
     </div>);
 }
 
@@ -182,11 +201,15 @@ export type ICreateAssemblyProps = {}
 
 interface IAssembly{
     taxonId: number;
-    name: string;
-    files: string[];
-    assembly: IPath | null;
-    annotation: IPath | null;
-    mapping: IPath | null;
-    analysis: IPath | null;
+    assembly: IPathSet;
+    annotation:IPathSet;
+    mapping: IPathSet;
+    analysis: IPathSet;
 }
 
+type AssemblyKeys = 'assembly' | 'annotation' | 'mapping' | 'analysis';
+
+interface IPathSet{
+    name: string;
+    path: IPath | null;
+}

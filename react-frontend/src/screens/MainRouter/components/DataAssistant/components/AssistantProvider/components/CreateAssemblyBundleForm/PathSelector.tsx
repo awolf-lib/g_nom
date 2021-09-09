@@ -38,6 +38,7 @@ export function PathSelector(props: IPathSelectorProps){
       return (
         <span
           onClick={() => select(path, dirIndex)}
+          key={`${dir}_${dirIndex}`}
           className={getDirectoryClass(
             dirIndex,
             props.pathArray

@@ -1,6 +1,7 @@
 import { of } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { catchError, map, switchMap } from 'rxjs/operators';
+import { IPath } from '../screens/MainRouter/components/DataAssistant/components/AssistantProvider/components/CreateAssemblyBundleForm/PathSelector';
 
 export default class API {
   // USER AUTHENTIFCATION
@@ -258,18 +259,18 @@ export default class API {
   }
 
   // ===== IMPORT NEW ASSEMBLY ===== //
-  addNewAssembly(taxonID: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+  addNewAssembly(taxonID: number, name: string, path: IPath, userID: number) {
     return fromFetch(
       "http://localhost:3002/addNewAssembly?taxonID=" +
         taxonID +
         "&name=" +
         name +
         "&path=" +
-        path +
+        path.path +
         "&userID=" +
         userID +
         "&additionalFilesPath=" +
-        additionalFilesPath
+        path.additionalFilesPath ?? ''
     )
       .pipe(
         switchMap(request => request.json()),

@@ -97,9 +97,8 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
     api.addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
-      selectedPath.join("/"),
+      { path: selectedPath.join("/"), additionalFilesPath: additionalFiles.join("/") },
       parseInt(userID),
-      additionalFiles.join("/")
     ).subscribe(response => {
       if (response && response.payload) {
         setShowConfirmationForm(false);
