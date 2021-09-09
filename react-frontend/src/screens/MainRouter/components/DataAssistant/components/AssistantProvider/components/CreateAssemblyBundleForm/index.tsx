@@ -57,7 +57,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             "mt-4 animate-grow-y shadow p-4 rounded-lg w-64";
     }
 
-    function setNameForSelectedAssemblySet(name: string, key: AssemblyKeys){
+    function setNameForSelected(name: string, key: AssemblyKeys){
         if(selected !== null){
             const assems = [...assemblies];
             assems.splice(selected, 1, {
@@ -71,7 +71,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         }
     }
 
-    function toggleInSelectedAssembly(path: IPath | null, key: AssemblyKeys){
+    function togglePathInSelected(path: IPath | null, key: AssemblyKeys){
         if(selected !== null) {
             const assems = [...assemblies];
             assems.splice(selected, 1, {
@@ -126,21 +126,13 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     return (<div className="flex flex-col space-y-4">
         <div className="flex space-x-4">
             <ul className="flex-2 space-y-4">
-                {
-                    assemblies.map((assembly, idx) => {
-                        return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
-                            <div className="flex items-center">
-                                <span>{assembly.taxonId}</span>
-                                {/* files */}
-                                {/* <div className="w-64 font-semibold">New assembly name:</div>
-                                <Input
-                                placeholder="max. 400 characters"
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setNewAssemblyName(e.target.value)}
-                                /> */}
-                            </div>
-                        </li>)
-                    })
-                }
+                {assemblies.map((assembly, idx) => {
+                    return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
+                        <div className="flex items-center">
+                            <span>{assembly.taxonId}</span>
+                        </div>
+                    </li>)
+                })}
                 <li className="animate-grow-y shadow p-4 rounded-lg w-64 space-y-4" key="draft">
                     <Input type="number" placeholder="taxonId" value={[`${draft.taxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, taxonId: parseInt(e.target.value)})}></Input>
                     
@@ -154,26 +146,26 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 <div>
                     <div className="flex items-center space-x-4">
                         <h3>Assembly:</h3>
-                        <Input value={[assemblies[selected].assembly.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelectedAssemblySet(e.target.value, 'assembly')}></Input>
+                        <Input value={[assemblies[selected].assembly.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'assembly')}></Input>
                     </div>
                     {<ul>
                         {Object.entries(possibleImports.fasta).map(([k,v]) => v.map(vs => (<PathSelector
                             value={assemblies[selected].assembly.path}
                             pathArray={vs}
-                            onSelect={p => toggleInSelectedAssembly(p, 'assembly')}
+                            onSelect={p => togglePathInSelected(p, 'assembly')}
                         />)))}
                     </ul>}
                 </div>
                 <div>
                     <div className="flex items-center space-x-4">
                         <h3>Annotations:</h3>
-                        <Input value={[assemblies[selected].annotation.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelectedAssemblySet(e.target.value, 'annotation')}></Input>
+                        <Input value={[assemblies[selected].annotation.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'annotation')}></Input>
                     </div>
                     {<ul>
                         {Object.entries(possibleImports.gff).map(([k,v]) => v.map(vs => (<PathSelector
                             value={assemblies[selected].annotation.path}
                             pathArray={vs}
-                            onSelect={p => toggleInSelectedAssembly(p, 'annotation')}
+                            onSelect={p => togglePathInSelected(p, 'annotation')}
                         />)))}
                     </ul>}
                 </div>
@@ -182,14 +174,14 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                         <h3>Mapping:</h3>
                         <Input 
                             value={[assemblies[selected].mapping.name]}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelectedAssemblySet(e.target.value, 'mapping')}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'mapping')}
                         ></Input>
                     </div>
                     {<ul>
                         {Object.entries(possibleImports.bam).map(([k,v]) => v.map(vs => (<PathSelector
                             value={assemblies[selected].mapping.path}
                             pathArray={vs}
-                            onSelect={p => toggleInSelectedAssembly(p, 'mapping')}
+                            onSelect={p => togglePathInSelected(p, 'mapping')}
                         />)))}
                     </ul>}
                 </div>
@@ -198,14 +190,14 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                         <h3>Analysis:</h3>
                         <Input 
                             value={[assemblies[selected].analysis.name]}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelectedAssemblySet(e.target.value, 'analysis')}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'analysis')}
                         ></Input>
                     </div>
                     {<ul>
                         {Object.entries(possibleImports.analysis).map(([k,v]) => v.map(vs => (<PathSelector
                             value={assemblies[selected].analysis.path}
                             pathArray={vs}
-                            onSelect={p => toggleInSelectedAssembly(p, 'analysis')}
+                            onSelect={p => togglePathInSelected(p, 'analysis')}
                         />)))}
                     </ul>}
                 </div>
