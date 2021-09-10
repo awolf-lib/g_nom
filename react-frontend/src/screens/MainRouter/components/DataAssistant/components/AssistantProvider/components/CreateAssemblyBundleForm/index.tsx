@@ -86,6 +86,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     }
 
     function uploadAssemblies() {
+        setSelected(null);
         const $uploads = assemblies.map(assembly => {
             return assembly.assembly.path !== null ? api.addNewAssembly(
                 assembly.taxonId,
@@ -119,7 +120,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             ) : null
         }).filter(x => x);
         forkJoin($uploads).subscribe(_ => {
-            //clear assemblies
+            setAssemblies([]);
         });
     }
 
@@ -145,7 +146,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             <div className="flex-1 grid gap-4 md:grid-cols-2">
                 <div>
                     <div className="flex items-center space-x-4">
-                        <h3>Assembly:</h3>
+                        <h3 className="font-bold">Assembly:</h3>
                         <Input value={[assemblies[selected].assembly.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'assembly')}></Input>
                     </div>
                     {<ul>
@@ -158,7 +159,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 </div>
                 <div>
                     <div className="flex items-center space-x-4">
-                        <h3>Annotations:</h3>
+                        <h3 className="font-bold">Annotations:</h3>
                         <Input value={[assemblies[selected].annotation.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'annotation')}></Input>
                     </div>
                     {<ul>
@@ -171,7 +172,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 </div>
                 <div>
                     <div className="flex items-center space-x-4">
-                        <h3>Mapping:</h3>
+                        <h3 className="font-bold">Mapping:</h3>
                         <Input 
                             value={[assemblies[selected].mapping.name]}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'mapping')}
@@ -187,7 +188,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 </div>
                 <div>
                     <div className="flex items-center space-x-4">
-                        <h3>Analysis:</h3>
+                        <h3 className="font-bold">Analysis:</h3>
                         <Input 
                             value={[assemblies[selected].analysis.name]}
                             onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'analysis')}
@@ -204,8 +205,10 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             </div>
             )  : null}
         </div>
-        <div className="items-end">
-            <Button onClick={() => uploadAssemblies()} size="200">Process</Button>
+        <div className="flex content-end">
+            <div className="max-w-sm">
+                <Button onClick={() => uploadAssemblies()} size="200">Process</Button>
+            </div>
         </div>
     </div>);
 }
