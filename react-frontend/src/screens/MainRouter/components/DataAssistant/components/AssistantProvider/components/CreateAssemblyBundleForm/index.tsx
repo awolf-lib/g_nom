@@ -137,13 +137,14 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     }
 
     function removeAssembly(idx: number) {
-        if(selected !== null && idx > selected) {
-            setSelected(selected-1);
+        if(selected !== null) {
+            if(idx > selected) {
+                setSelected(selected-1);
+            } else if (idx === selected) {
+                setSelected(null);
+            }
         }
-        if(selected !== null && idx === selected) {
-            setSelected(null);
-        }
-        setAssemblies(assemblies.slice(idx, 1))
+        setAssemblies(assemblies.filter((_, i) => idx !== i))
     }
 
     return (<div className="flex flex-col space-y-4">
@@ -170,7 +171,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                     </div>
                 </li>
             </ul>
-            { selected !== null ? (
+            { selected !== null && assemblies[selected] ? (
             <div className="flex-1 grid gap-4 md:grid-cols-2">
                 <div>
                     <div className="flex items-center space-x-4">
