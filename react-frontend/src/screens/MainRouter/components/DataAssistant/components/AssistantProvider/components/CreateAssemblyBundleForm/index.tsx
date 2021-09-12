@@ -1,9 +1,11 @@
+import { Trash } from "grommet-icons";
 import { ChangeEvent, useEffect, useState } from "react";
 import { forkJoin } from "rxjs";
 import { switchMap } from "rxjs/operators";
 import API, { IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
+import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import { IPath, PathSelector } from "./PathSelector";
 
 export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Element {
@@ -14,6 +16,19 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     const [fetching, setFetching] = useState(false);
 
     useEffect(() => {
+        const api = new API();
+        async function loadFiles(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
+            setFetching(true);
+            const response = await api.fetchPossibleImports(types);
+            if (response && response.payload) {
+                setPossibleImports(response.payload);
+            }
+    
+            if (response && response.notification) {
+            //   handleNewNotification(response.notification);
+            }
+            setFetching(false);
+        };
         loadFiles(["image", "fasta", "gff", "bam", "analysis"]);
     }, []);
     
@@ -37,19 +52,6 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             analysis: {name:'', path: null},
         }
     }
-
-    async function loadFiles(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
-        setFetching(true);
-        const response = await api.fetchPossibleImports(types);
-        if (response && response.payload) {
-            setPossibleImports(response.payload);
-        }
-
-        if (response && response.notification) {
-        //   handleNewNotification(response.notification);
-        }
-        setFetching(false);
-    };
 
     function assemblyClassName(assemblyIdx: number): string {
         return selected === assemblyIdx ?
@@ -85,8 +87,18 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         }
     }
 
+    function allAssembliesValid(): boolean {
+        return assemblies.every(a =>
+            (a.analysis.name.length > 0 && a.analysis.path !== null) ||
+            (a.assembly.name.length > 0 && a.assembly.path !== null) ||
+            (a.mapping.name.length > 0 && a.mapping.path !== null) ||
+            (a.annotation.name.length > 0 && a.annotation.path !== null)
+        )
+    }
+
     function uploadAssemblies() {
         setSelected(null);
+        setFetching(true);
         const $uploads = assemblies.map(assembly => {
             return assembly.assembly.path !== null ? api.addNewAssembly(
                 assembly.taxonId,
@@ -119,18 +131,34 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 ].filter(x => x)))
             ) : null
         }).filter(x => x);
-        forkJoin($uploads).subscribe(_ => {
+        forkJoin($uploads).subscribe({next: _ => {
             setAssemblies([]);
-        });
+        }, error: () => setFetching(false), complete: () => setFetching(false)});
+    }
+
+    function removeAssembly(idx: number) {
+        if(selected !== null && idx > selected) {
+            setSelected(selected-1);
+        }
+        if(selected !== null && idx === selected) {
+            setSelected(null);
+        }
+        setAssemblies(assemblies.slice(idx, 1))
     }
 
     return (<div className="flex flex-col space-y-4">
-        <div className="flex space-x-4">
+        <div className="flex space-x-4 relative">
+            { fetching ? <div className="absolute bottom-0 left-0 top-0 right-0 bg-gray-100 opacity-50 flex content-center justify-center">
+                <LoadingSpinner label="Fetching..." />
+            </div> : null}
             <ul className="flex-2 space-y-4">
                 {assemblies.map((assembly, idx) => {
                     return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
-                        <div className="flex items-center">
+                        <div className="flex items-center justify-between">
                             <span>{assembly.taxonId}</span>
+                            <button onClick={() => removeAssembly(idx)}>
+                                <Trash color="red" className="stroke-current" />
+                            </button>
                         </div>
                     </li>)
                 })}
@@ -207,7 +235,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         </div>
         <div className="flex justify-end">
             <div className="max-w-sm">
-                <Button onClick={() => uploadAssemblies()} size="md" disabled={true}>Process</Button>
+                <Button onClick={() => uploadAssemblies()} size="md" disabled={!allAssembliesValid()}>Process</Button>
             </div>
         </div>
     </div>);

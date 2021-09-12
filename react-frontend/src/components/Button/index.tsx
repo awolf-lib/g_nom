@@ -1,13 +1,12 @@
 import React, { MouseEventHandler, useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import PropTypes, { InferProps } from "prop-types";
 
 export function Button(props: IButtonProps){
   const [showChildren, setShowChildren] = useState(false);
 
   const buttonContainerClass = classNames(
-    "py-2 h-full rounded-lg active:cursor-pointer focus:outline-none disabled:bg-gray-500 disabled:opacity-50 active:ring-2 w-full transition duration-500",
+    "py-2 h-full rounded-lg focus:outline-none active:ring-2 w-full transition duration-500",
     {
       "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600":
         props.color === "primary",
@@ -21,6 +20,8 @@ export function Button(props: IButtonProps){
         props.color === "nav",
       "text-gray-900 hover:text-blue-700 cursor-pointer":
         props.color === "link",
+      "cursor-pointer": !props.disabled,
+      "cursor-not-allowed opacity-50": props.disabled
     },
     {
       "text-sm transform scale-75 md:scale-100": props.size === "sm",
