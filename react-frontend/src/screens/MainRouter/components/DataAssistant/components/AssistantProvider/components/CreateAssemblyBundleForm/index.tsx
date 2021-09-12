@@ -205,9 +205,9 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             </div>
             )  : null}
         </div>
-        <div className="flex content-end">
+        <div className="flex justify-end">
             <div className="max-w-sm">
-                <Button onClick={() => uploadAssemblies()} size="200">Process</Button>
+                <Button onClick={() => uploadAssemblies()} size="md" disabled={true}>Process</Button>
             </div>
         </div>
     </div>);
