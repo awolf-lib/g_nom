@@ -141,7 +141,7 @@ export default class API {
   }
 
   // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
-  async fetchTaxonByNCBITaxonID(taxonID: number) {
+  async fetchTaxonByNCBITaxonID(taxonID: number): Promise<IResponse<ReadonlyArray<INcbiTaxon>>> {
     return fetch(
       "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
     )
@@ -518,9 +518,15 @@ export default class API {
   }
 }
 
-export interface IResponse<T = any>{
+export interface IResponse<T = unknown>{
   payload: T;
-  notification: any;
+  notification: INotification;
+}
+
+export interface INotification{
+  label: string;
+  message: string;
+  type: string;
 }
 
 export interface IPossibleImports{
@@ -528,4 +534,16 @@ export interface IPossibleImports{
   'gff': {[key: string]: string[][]};
   'bam': {[key: string]: string[][]};
   'analysis': {[key: string]: string[][]};
+}
+
+export interface INcbiTaxon{
+  commonName: string;
+  id: number;
+  imageStatus: number;
+  lastUpdatedBy: number;
+  lastUpdatedOn: string; // TimeString
+  ncbiTaxonID: number;
+  parentNcbiTaxonID: number;
+  scientificName: string;
+  taxonRank: "species";
 }

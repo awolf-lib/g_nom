@@ -9,7 +9,7 @@ export function PathSelector(props: IPathSelectorProps){
             return classNames(baseClasses, {
                 "text-blue-600 font-bold":
                   index === pathArray.length - 1 && props.value.path === currentFile.path,
-                "text-green-600 font-semibold": // TODO probably breaks at paths creater 1
+                "text-green-600 font-semibold":
                   index < pathArray.length - 1 && props.value.path === currentFile.path && props.value.additionalFilesPath !== null
               })
         } else {

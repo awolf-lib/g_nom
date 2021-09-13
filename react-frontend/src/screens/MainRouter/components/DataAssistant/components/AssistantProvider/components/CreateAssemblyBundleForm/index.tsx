@@ -1,16 +1,17 @@
 import { Trash } from "grommet-icons";
 import { ChangeEvent, useEffect, useState } from "react";
-import { forkJoin } from "rxjs";
+import { forkJoin, from } from "rxjs";
 import { switchMap } from "rxjs/operators";
-import API, { IPossibleImports } from "../../../../../../../../api";
+import API, { INotification, IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
+import { useNotification } from "../../../../../../../../components/NotificationProvider";
 import { IPath, PathSelector } from "./PathSelector";
 
 export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Element {
     const [assemblies, setAssemblies] = useState<IAssembly[]>([]);
-    const [draft, setDraft] = useState(defaultAssembly());
+    const [draftTaxonId, setDraftTaxonId] = useState(0);
     const [selected, setSelected] = useState<number | null>(null);
     const [possibleImports, setPossibleImports] = useState<IPossibleImports>({fasta: {}, gff: {}, bam: {}, analysis: {}});
     const [fetching, setFetching] = useState(false);
@@ -25,7 +26,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             }
     
             if (response && response.notification) {
-            //   handleNewNotification(response.notification);
+                handleNewNotification(response.notification);
             }
             setFetching(false);
         };
@@ -34,18 +35,30 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     
     const api = new API();
 
-    function addDraftAssembly(){
-        if(draft.taxonId) {
-            const copyDraft = {...draft};
-            setDraft(defaultAssembly());
-            setAssemblies([...assemblies, copyDraft]);
-            setSelected(assemblies.length);
-        }
+    const Dispatch: (n: INotification) => void = useNotification();
+
+    function handleNewNotification(notification: INotification){
+        Dispatch(notification);
     }
 
-    function defaultAssembly(): IAssembly {
+    function addDraftAssembly(){
+        setFetching(true);
+        from(api.fetchTaxonByNCBITaxonID(draftTaxonId)).subscribe(next => {
+            if(next?.payload?.length > 0){
+                setAssemblies([...assemblies, defaultAssembly(draftTaxonId, next.payload[0].scientificName)]);
+                setSelected(assemblies.length-1);
+                setDraftTaxonId(0);
+            } else {
+                handleNewNotification(next.notification);
+            }
+            setFetching(false);
+        });
+    }
+
+    function defaultAssembly(taxonId: number, title: string): IAssembly {
         return {
-            taxonId: 0,
+            taxonId,
+            title,
             assembly: {name:'', path: null},
             annotation: {name:'', path: null},
             mapping: {name:'', path: null},
@@ -156,7 +169,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 {assemblies.map((assembly, idx) => {
                     return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
                         <div className="flex items-center justify-between">
-                            <span>{assembly.taxonId}</span>
+                            <span>{assembly.title} ({assembly.taxonId})</span>
                             <button onClick={() => removeAssembly(idx)} title="Remove Assembly">
                                 <Trash color="red" className="stroke-current" />
                             </button>
@@ -164,8 +177,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                     </li>)
                 })}
                 <li className="animate-grow-y shadow p-4 rounded-lg w-64 space-y-4" key="draft">
-                    <Input type="number" placeholder="taxonId" value={[`${draft.taxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraft({...draft, taxonId: parseInt(e.target.value)})}></Input>
-                    
+                    <Input type="number" placeholder="taxonId" value={[`${draftTaxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraftTaxonId(parseInt(e.target.value))}></Input>
                     <div>
                         <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
                     </div>
@@ -250,6 +262,7 @@ export type ICreateAssemblyProps = {}
 
 interface IAssembly{
     taxonId: number;
+    title: string;
     assembly: IPathSet;
     annotation:IPathSet;
     mapping: IPathSet;

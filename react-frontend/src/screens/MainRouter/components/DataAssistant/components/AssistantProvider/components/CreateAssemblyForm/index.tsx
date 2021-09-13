@@ -1,5 +1,5 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import API from "../../../../../../../../api";
+import API, { INotification } from "../../../../../../../../api";
 import classNames from "classnames";
 
 import PropTypes, { InferProps } from "prop-types";
@@ -30,7 +30,7 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: {label: string, message: string, type: string}) => {
+  const handleNewNotification = (notification: INotification) => {
     dispatch({
       label: notification.label,
       message: notification.message,
