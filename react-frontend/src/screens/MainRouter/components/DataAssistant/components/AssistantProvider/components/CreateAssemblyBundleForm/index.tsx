@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Trash } from "grommet-icons";
 import { ChangeEvent, useEffect, useState } from "react";
 import { forkJoin, from } from "rxjs";
@@ -67,9 +68,9 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     }
 
     function assemblyClassName(assemblyIdx: number): string {
-        return selected === assemblyIdx ?
-            "mt-4 animate-grow-y shadow p-4 rounded-lg w-64 bg-green-200" :
-            "mt-4 animate-grow-y shadow p-4 rounded-lg w-64";
+        return classNames("mt-4 animate-grow-y shadow p-4 rounded-lg w-64 cursor-pointer", {
+            "bg-green-200": selected === assemblyIdx
+        });
     }
 
     function setNameForSelected(name: string, key: AssemblyKeys){
@@ -168,9 +169,10 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             <ul className="flex-2 space-y-4">
                 {assemblies.map((assembly, idx) => {
                     return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
-                        <div className="flex items-center justify-between">
-                            <span>{assembly.title} ({assembly.taxonId})</span>
-                            <button onClick={() => removeAssembly(idx)} title="Remove Assembly">
+                        <div className="flex items-center justify-between space-x-2" title={`${assembly.title} (${assembly.taxonId})`}>
+                            <span className="truncate">{assembly.title}</span>
+                            <span>({assembly.taxonId})</span>
+                            <button onClick={() => removeAssembly(idx)} title="remove taxon data bundle">
                                 <Trash color="red" className="stroke-current" />
                             </button>
                         </div>
