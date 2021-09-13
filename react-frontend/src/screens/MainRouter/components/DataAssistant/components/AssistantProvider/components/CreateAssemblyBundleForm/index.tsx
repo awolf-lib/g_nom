@@ -157,7 +157,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                     return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
                         <div className="flex items-center justify-between">
                             <span>{assembly.taxonId}</span>
-                            <button onClick={() => removeAssembly(idx)}>
+                            <button onClick={() => removeAssembly(idx)} title="Remove Assembly">
                                 <Trash color="red" className="stroke-current" />
                             </button>
                         </div>
@@ -179,11 +179,11 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                         <Input value={[assemblies[selected].assembly.name]} onChange={(e: ChangeEvent<HTMLInputElement>) => setNameForSelected(e.target.value, 'assembly')}></Input>
                     </div>
                     {<ul>
-                        {Object.entries(possibleImports.fasta).map(([k,v]) => v.map(vs => (<PathSelector
+                        {Object.entries(possibleImports.fasta).map(([k,v]) => (<ul><li className="font-bold">{k}</li>{v.map(vs => (<PathSelector
                             value={assemblies[selected].assembly.path}
                             pathArray={vs}
                             onSelect={p => togglePathInSelected(p, 'assembly')}
-                        />)))}
+                        />))}</ul>))}
                     </ul>}
                 </div>
                 <div>
