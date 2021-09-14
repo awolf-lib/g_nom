@@ -1,4 +1,5 @@
 import classNames from "classnames";
+import { IPath } from "./_interfaces";
 
 export function PathSelector(props: IPathSelectorProps){
 
@@ -57,7 +58,3 @@ interface IPathSelectorProps{
     onSelect: (path: IPath | null) => void;
 }
 
-export interface IPath{
-    path: string;
-    additionalFilesPath: string | null;
-}
