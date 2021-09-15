@@ -39,7 +39,8 @@ const AssistantProvider = (props) => {
         return "3. Edit mapping name or remove!";
       case "Edit assembly - Edit analysis":
         return "3. Enter analysis name or remove!";
-
+      case "Create bulk assemblies":
+        return "3. Define and upload sets of assemblies"
       default:
         break;
     }
