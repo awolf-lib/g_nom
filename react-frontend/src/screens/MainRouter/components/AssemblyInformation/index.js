@@ -2,7 +2,7 @@ import { Book, Bookmark, Close } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import API from "../../../../api";
+import {addNewBookmark, fetchAssemblyInformationByAssemblyID, removeBookmark} from "../../../../api";
 import Button from "../../../../components/Button";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
 
@@ -64,11 +64,9 @@ const AssemblyInformation = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   const loadAssemblyInformation = async () => {
     setFetchingAll(true);
-    const response = await api.fetchAssemblyInformationByAssemblyID(
+    const response = await fetchAssemblyInformationByAssemblyID(
       id.replace(":", ""),
       userID
     );
@@ -81,9 +79,9 @@ const AssemblyInformation = () => {
   const handleBookmarkAssembly = async () => {
     let response;
     if (!assemblyInformation.bookmarked) {
-      response = await api.addNewBookmark(userID, id.replace(":", ""));
+      response = await addNewBookmark(userID, id.replace(":", ""));
     } else {
-      response = await api.removeBookmark(userID, id.replace(":", ""));
+      response = await removeBookmark(userID, id.replace(":", ""));
     }
 
     if (response && response.payload) {

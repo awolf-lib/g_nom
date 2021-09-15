@@ -1,14 +1,13 @@
 import classNames from "classnames";
 import { Save, Trash, Edit, FormClose } from "grommet-icons";
 import React, { useEffect, useState } from "react";
-import API from "../../../../../../api";
+import {deleteUserByUserID, fetchAllUsers, updateUserRoleByUserID} from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
 const ManageUserForm = () => {
   const loggedInUserID = parseInt(sessionStorage.getItem("userID"));
 
-  const api = new API();
   const [users, setUsers] = useState();
   const [toggleSelectRole, setToggleSelectRole] = useState(false);
   const [userRole, setUserRole] = useState(false);
@@ -26,7 +25,7 @@ const ManageUserForm = () => {
 
   const loadData = async () => {
     setFetching(true);
-    const response = await api.fetchAllUsers();
+    const response = await fetchAllUsers();
 
     if (response && response.payload) {
       setUsers(response.payload);
@@ -45,7 +44,7 @@ const ManageUserForm = () => {
   const handleDeleteUser = async (userID, confirmation) => {
     if (userID !== loggedInUserID) {
       if (confirmation === "REMOVE") {
-        const response = await api.deleteUserByUserID(userID);
+        const response = await deleteUserByUserID(userID);
 
         if (response && response.notification) {
           handleNewNotification(response.notification);
@@ -59,7 +58,7 @@ const ManageUserForm = () => {
 
   const handleSaveNewUserRole = async (userID) => {
     if (userID !== loggedInUserID) {
-      const response = await api.updateUserRoleByUserID(userID, userRole);
+      const response = await updateUserRoleByUserID(userID, userRole);
 
       if (response && response.notification) {
         handleNewNotification(response.notification);

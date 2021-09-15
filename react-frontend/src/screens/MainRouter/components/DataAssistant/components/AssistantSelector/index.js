@@ -11,7 +11,7 @@ import {
 } from "grommet-icons";
 
 import Button from "../../../../../../components/Button";
-import API from "../../../../../../api";
+import {fetchAssembliesByTaxonID} from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const AssistantSelector = (props) => {
@@ -20,8 +20,6 @@ const AssistantSelector = (props) => {
   const [assemblies, setAssemblies] = useState([]);
   const [showInfo, setShowInfo] = useState(undefined);
   const [showOptions, setShowOptions] = useState(undefined);
-
-  const api = new API();
 
   useEffect(() => {
     loadAssemblies();
@@ -40,7 +38,7 @@ const AssistantSelector = (props) => {
   };
 
   const loadAssemblies = async () => {
-    const response = await api.fetchAssembliesByTaxonID(selectedTaxon.id);
+    const response = await fetchAssembliesByTaxonID(selectedTaxon.id);
 
     if (response && response.payload) {
       setAssemblies(response.payload);

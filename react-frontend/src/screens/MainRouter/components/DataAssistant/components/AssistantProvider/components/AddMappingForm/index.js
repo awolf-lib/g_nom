@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import classNames from "classnames";
 
-import API from "../../../../../../../../api";
+import {addNewMapping, fetchPossibleImports} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -23,8 +23,6 @@ const AddMappingForm = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -38,7 +36,7 @@ const AddMappingForm = (props) => {
 
   const loadFiles = async (types = undefined) => {
     setFetchingAll(true);
-    const response = await api.fetchPossibleImports(types);
+    const response = await fetchPossibleImports(types);
     if (response && response.payload) {
       setPossibleImports(response.payload);
     }
@@ -92,7 +90,7 @@ const AddMappingForm = (props) => {
       return;
     }
     setImporting(true);
-    const response = await api.addNewMapping(
+    const response = await addNewMapping(
       props.object.id,
       newAnalysisName.replace(/ /g, "_"),
       selectedPath.join("/"),

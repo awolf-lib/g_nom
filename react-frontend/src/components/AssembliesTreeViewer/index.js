@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
 import PropTypes from "prop-types";
-import API from "../../api";
+import {fetchAssembliesByTaxonIDs, fetchTaxonTree} from "../../api";
 import { useNotification } from "../../components/NotificationProvider";
 import SpeciesProfilePictureViewer from "../../components/SpeciesProfilePictureViewer";
 
@@ -17,8 +17,6 @@ const AssembliesTreeViewer = () => {
     loadTree();
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -31,7 +29,7 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTree = async () => {
-    const response = await api.fetchTaxonTree();
+    const response = await fetchTaxonTree();
 
     if (response && response.payload) {
       setTree(response.payload);
@@ -43,7 +41,7 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTaxa = async (nodeDatum) => {
-    const response = await api.fetchAssembliesByTaxonIDs(
+    const response = await fetchAssembliesByTaxonIDs(
       getChildrenTaxIds(nodeDatum)
     );
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import Input from "../../../../../../../../components/Input";
-import API from "../../../../../../../../api";
+import {fetchPossibleImports, updateImageByTaxonID} from "../../../../../../../../api";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
@@ -23,8 +23,6 @@ const UpdateImageForm = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -38,7 +36,7 @@ const UpdateImageForm = (props) => {
 
   const loadFiles = async (types = undefined) => {
     setFetchingAll(true);
-    const response = await api.fetchPossibleImports(types);
+    const response = await fetchPossibleImports(types);
     if (response && response.payload && mounted) {
       setPossibleImports(response.payload);
     }
@@ -59,7 +57,7 @@ const UpdateImageForm = (props) => {
         type: "error",
       });
     }
-    const response = await api.updateImageByTaxonID(
+    const response = await updateImageByTaxonID(
       selectedTaxon.ncbiTaxonID,
       selectedPath.join("/"),
       userID

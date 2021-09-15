@@ -3,7 +3,7 @@ import { Trash } from "grommet-icons";
 import { ChangeEvent, useEffect, useState } from "react";
 import { forkJoin, from } from "rxjs";
 import { switchMap } from "rxjs/operators";
-import API, { INotification, IPossibleImports } from "../../../../../../../../api";
+import { addNewAnalysis, addNewAnnotation, addNewAssembly, addNewMapping, fetchPossibleImports, fetchTaxonByNCBITaxonID, INotification, IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -19,10 +19,9 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     const [fetching, setFetching] = useState(false);
 
     useEffect(() => {
-        const api = new API();
         async function loadFiles(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
             setFetching(true);
-            const response = await api.fetchPossibleImports(types);
+            const response = await fetchPossibleImports(types);
             if (response && response.payload) {
                 setPossibleImports(response.payload);
             }
@@ -34,8 +33,6 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         };
         loadFiles(["image", "fasta", "gff", "bam", "analysis"]);
     }, []);
-    
-    const api = new API();
 
     const Dispatch: (n: INotification) => void = useNotification();
 
@@ -45,7 +42,7 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
 
     function addDraftAssembly(){
         setFetching(true);
-        from(api.fetchTaxonByNCBITaxonID(draftTaxonId)).subscribe(next => {
+        from(fetchTaxonByNCBITaxonID(draftTaxonId)).subscribe(next => {
             if(next?.payload?.length > 0){
                 setAssemblies([...assemblies, defaultAssembly(draftTaxonId, next.payload[0].scientificName)]);
                 setSelected(assemblies.length-1);
@@ -98,28 +95,28 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         setSelected(null);
         setFetching(true);
         const $uploads = assemblies.map(assembly => {
-            return assembly.assembly !== null && assembly.assembly.path !== null ? api.addNewAssembly(
+            return assembly.assembly !== null && assembly.assembly.path !== null ? addNewAssembly(
                 assembly.taxonId,
                 assembly.assembly.name,
                 assembly.assembly.path,
                 1
             ).pipe(
                 switchMap(_ => forkJoin([
-                    assembly.annotation !== null && assembly.annotation.path !== null ? api.addNewAnnotation(
+                    assembly.annotation !== null && assembly.annotation.path !== null ? addNewAnnotation(
                         assembly.taxonId,
                         assembly.annotation.name,
                         assembly.annotation.path.path,
                         1,
                         assembly.annotation.path.additionalFilesPath || ''
                     ) : null,
-                    assembly.mapping !== null && assembly.mapping.path !== null ? api.addNewMapping(
+                    assembly.mapping !== null && assembly.mapping.path !== null ? addNewMapping(
                         assembly.taxonId,
                         assembly.mapping.name,
                         assembly.mapping.path.path,
                         1,
                         assembly.mapping.path.additionalFilesPath || ''
                     ) : null,
-                    assembly.analysis !== null && assembly.analysis.path !== null ? api.addNewAnalysis(
+                    assembly.analysis !== null && assembly.analysis.path !== null ? addNewAnalysis(
                         assembly.taxonId,
                         assembly.analysis.name,
                         assembly.analysis.path.path,

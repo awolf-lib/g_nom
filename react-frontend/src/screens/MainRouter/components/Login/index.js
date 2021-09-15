@@ -4,7 +4,7 @@ import "../../../../App.css";
 
 import Button from "../../../../components/Button";
 
-import API from "../../../../api";
+import {login} from "../../../../api";
 
 import treeOfLife from "../../../../images/loginToL.jpg";
 import { useNotification } from "../../../../components/NotificationProvider";
@@ -13,8 +13,6 @@ import Input from "../../../../components/Input";
 const Login = ({ setToken, setUserID, setUserRole }) => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
-
-  const api = new API();
 
   const dispatch = useNotification();
 
@@ -28,7 +26,7 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    api.login(username, password).subscribe(response => {
+    login(username, password).subscribe(response => {
       if (response) {
         if (response.payload?.token) {
           setToken(response.payload.token);
