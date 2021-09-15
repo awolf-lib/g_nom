@@ -1,7 +1,6 @@
-import { Close, Edit, Trash, Validate } from "grommet-icons";
+import { Close, Trash, Validate } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import API from "../../../../../../../../api";
-import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
@@ -13,6 +12,7 @@ const EditAnalysisForm = (props) => {
   const [newName, setNewName] = useState("");
   useEffect(() => {
     loadAnalyses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.type]);
 
   const api = new API();
@@ -131,10 +131,8 @@ const EditAnalysisForm = (props) => {
                           className="stroke-current text-red-600 hover:bg-red-600 hover:text-white rounded-lg p-1 transition duration-300 cursor-pointer mx-2"
                           color="blank"
                           onClick={() => {
-                            {
-                              setEditing(undefined);
-                              setNewName("");
-                            }
+                            setEditing(undefined);
+                            setNewName("");
                           }}
                         />
                       </div>

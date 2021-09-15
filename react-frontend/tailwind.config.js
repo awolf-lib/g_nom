@@ -20,6 +20,7 @@ module.exports = {
         48: "12rem",
         96: "24rem",
         "1/4": "25vh",
+        "1/2": "50vh",
       },
       height: {
         50: "50vh",
