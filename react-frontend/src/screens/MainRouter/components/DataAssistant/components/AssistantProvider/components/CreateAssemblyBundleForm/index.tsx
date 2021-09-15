@@ -87,10 +87,10 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
 
     function allAssembliesValid(): boolean {
         return assemblies.every(a =>
-            a.analysis !== null && (a.analysis.name.length > 0 && a.analysis.path !== null) ||
-            a.assembly !== null && (a.assembly.name.length > 0 && a.assembly.path !== null) ||
-            a.mapping !== null && (a.mapping.name.length > 0 && a.mapping.path !== null) ||
-            a.annotation !== null && (a.annotation.name.length > 0 && a.annotation.path !== null)
+            (a.analysis !== null && (a.analysis.name.length > 0 && a.analysis.path !== null)) ||
+            (a.assembly !== null && (a.assembly.name.length > 0 && a.assembly.path !== null)) ||
+            (a.mapping !== null && (a.mapping.name.length > 0 && a.mapping.path !== null)) ||
+            (a.annotation !== null && (a.annotation.name.length > 0 && a.annotation.path !== null))
         )
     }
 
@@ -145,42 +145,44 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         setAssemblies(assemblies.filter((_, i) => idx !== i))
     }
 
-    return (<div className="flex flex-col space-y-4">
-        <div className="flex space-x-4 relative">
-            { fetching ? <div className="absolute bottom-0 left-0 top-0 right-0 bg-gray-100 opacity-50 flex content-center justify-center">
-                <LoadingSpinner label="Fetching..." />
-            </div> : null}
-            <ul className="flex-2 space-y-4">
-                {assemblies.map((assembly, idx) => {
-                    return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
-                        <div className="flex items-center justify-between space-x-2" title={`${assembly.title} (${assembly.taxonId})`}>
-                            <span className="truncate">{assembly.title}</span>
-                            <span>({assembly.taxonId})</span>
-                            <button onClick={() => removeAssembly(idx)} title="remove taxon data bundle">
-                                <Trash color="red" className="stroke-current" />
-                            </button>
+    return (<div className="relative">
+        { fetching ? <div className="absolute bottom-0 left-0 top-0 right-0 bg-gray-100 opacity-50 flex content-center justify-center">
+            <LoadingSpinner label="Fetching..." />
+        </div> : null}
+        <div className="flex flex-col space-y-4">
+            <div className="flex space-x-4 relative">
+                <ul className="flex-2 space-y-4">
+                    {assemblies.map((assembly, idx) => {
+                        return (<li className={assemblyClassName(idx)} onClick={() => setSelected(idx)} key={`assembly_${idx}`}>
+                            <div className="flex items-center justify-between space-x-2" title={`${assembly.title} (${assembly.taxonId})`}>
+                                <span className="truncate">{assembly.title}</span>
+                                <span>({assembly.taxonId})</span>
+                                <button onClick={() => removeAssembly(idx)} title="remove taxon data bundle">
+                                    <Trash color="red" className="stroke-current" />
+                                </button>
+                            </div>
+                        </li>)
+                    })}
+                    <li className="animate-grow-y shadow p-4 rounded-lg w-64 space-y-4" key="draft">
+                        <Input type="number" placeholder="taxonId" value={[`${draftTaxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraftTaxonId(parseInt(e.target.value))}></Input>
+                        <div>
+                            <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
                         </div>
-                    </li>)
-                })}
-                <li className="animate-grow-y shadow p-4 rounded-lg w-64 space-y-4" key="draft">
-                    <Input type="number" placeholder="taxonId" value={[`${draftTaxonId}`]} onChange={(e: ChangeEvent<HTMLInputElement>) => setDraftTaxonId(parseInt(e.target.value))}></Input>
-                    <div>
-                        <Button onClick={() => addDraftAssembly()}>Add additional Assembly</Button>
-                    </div>
-                </li>
-            </ul>
-            { selected !== null && assemblies[selected] ? (
-            <div className="flex-1 grid gap-4 md:grid-cols-2">
-                {<PathSetEditor value={assemblies[selected].assembly} onChange={(set) => updatePathSet(set, 'assembly')} title="Assembly" possibleImports={possibleImports.fasta} />}
-                {<PathSetEditor value={assemblies[selected].annotation} onChange={(set) => updatePathSet(set, 'annotation')} title="Annotations" possibleImports={possibleImports.gff} />}
-                {<PathSetEditor value={assemblies[selected].mapping} onChange={(set) => updatePathSet(set, 'mapping')} title="Mapping" possibleImports={possibleImports.bam} />}
-                {<PathSetEditor value={assemblies[selected].analysis} onChange={(set) => updatePathSet(set, 'analysis')} title="Analysis" possibleImports={possibleImports.analysis} />}
+                    </li>
+                </ul>
+                { selected !== null && assemblies[selected] ? (
+                <div className="flex-1 grid gap-4 md:grid-cols-2">
+                    {<PathSetEditor value={assemblies[selected].assembly} onChange={(set) => updatePathSet(set, 'assembly')} title="Assembly" possibleImports={possibleImports.fasta} />}
+                    {<PathSetEditor value={assemblies[selected].annotation} onChange={(set) => updatePathSet(set, 'annotation')} title="Annotations" possibleImports={possibleImports.gff} />}
+                    {<PathSetEditor value={assemblies[selected].mapping} onChange={(set) => updatePathSet(set, 'mapping')} title="Mapping" possibleImports={possibleImports.bam} />}
+                    {<PathSetEditor value={assemblies[selected].analysis} onChange={(set) => updatePathSet(set, 'analysis')} title="Analysis" possibleImports={possibleImports.analysis} />}
+                </div>
+                )  : null}
             </div>
-            )  : null}
-        </div>
-        <div className="flex justify-end">
-            <div className="max-w-sm">
-                <Button onClick={() => uploadAssemblies()} size="md" disabled={!allAssembliesValid()}>Process</Button>
+            <div className="flex justify-end">
+                <div className="max-w-sm">
+                    <Button onClick={() => uploadAssemblies()} size="md" disabled={!allAssembliesValid()}>Process</Button>
+                </div>
             </div>
         </div>
     </div>);
