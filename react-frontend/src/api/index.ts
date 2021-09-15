@@ -321,21 +321,21 @@ export async function fetchAssembliesByTaxonID(taxonID: number) {
 }
 
 // // ===== RENAME ASSEMBLY ===== //
-// async renameAssembly(id, name, userID) {
-//   return fetch(
-//     "http://localhost:3002/renameAssembly?id=" +
-//       id +
-//       "&name=" +
-//       name +
-//       "&userID=" +
-//       userID
-//   )
-//     .then((request) => request.json())
-//     .then((data) => data)
-//     .catch((error) => {
-//       console.error(error);
-//     });
-// }
+export async function renameAssembly(id: number, name: string, userID: number) {
+  return fetch(
+    "http://localhost:3002/renameAssembly?id=" +
+      id +
+      "&name=" +
+      name +
+      "&userID=" +
+      userID
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
 
 // ===== ADD NEW ANNOTATION ===== //
 export function addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
