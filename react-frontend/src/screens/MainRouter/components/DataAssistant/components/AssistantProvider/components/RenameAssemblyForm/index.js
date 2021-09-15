@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import API from "../../../../../../../../api";
+import {renameAssembly} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
 const RenameAssemblyForm = ({ object, handleModeChange }) => {
   const [newAssemblyName, setNewAssemblyName] = useState("");
-
-  const api = new API();
 
   // notifications
   const dispatch = useNotification();
@@ -23,7 +21,7 @@ const RenameAssemblyForm = ({ object, handleModeChange }) => {
   const handleSubmit = async () => {
     const userID = sessionStorage.getItem("userID");
     if (object && object.id && newAssemblyName && userID) {
-      const response = await api.renameAssembly(
+      const response = await renameAssembly(
         object.id,
         newAssemblyName.replace(/ /g, "_"),
         userID
