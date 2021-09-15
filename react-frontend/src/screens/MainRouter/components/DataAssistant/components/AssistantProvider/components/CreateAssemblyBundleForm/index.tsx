@@ -1,5 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import API from "../../../../../../../../api";
+import { forkJoin, from } from "rxjs";
+import { switchMap } from "rxjs/operators";
+import { addNewAnalysis, addNewAnnotation, addNewAssembly, addNewMapping, fetchPossibleImports, fetchTaxonByNCBITaxonID, INotification, IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 
@@ -11,16 +13,33 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
     const [fetching, setFetching] = useState(false);
 
     useEffect(() => {
+        async function loadFiles(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) {
+            setFetching(true);
+            const response = await fetchPossibleImports(types);
+            if (response && response.payload) {
+                setPossibleImports(response.payload);
+            }
+    
+            if (response && response.notification) {
+                handleNewNotification(response.notification);
+            }
+            setFetching(false);
+        };
         loadFiles(["image", "fasta", "gff", "bam", "analysis"]);
     }, []);
-    
-    const api = new API();
 
     function addDraftAssembly(){
-        if(draft.name || draft.taxonId) {
-            setAssemblies([...assemblies, draft]);
-            setDraft(defaultAssembly());
-        }
+        setFetching(true);
+        from(fetchTaxonByNCBITaxonID(draftTaxonId)).subscribe(next => {
+            if(next?.payload?.length > 0){
+                setAssemblies([...assemblies, defaultAssembly(draftTaxonId, next.payload[0].scientificName)]);
+                setSelected(assemblies.length-1);
+                setDraftTaxonId(0);
+            } else {
+                handleNewNotification(next.notification);
+            }
+            setFetching(false);
+        });
     }
 
     function defaultAssembly(): IAssembly {
@@ -50,12 +69,44 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
             "mt-4 animate-grow-y shadow p-4 rounded-lg w-64";
     }
 
-    function filesClassName(filePath: string): string {
-        if(selected !== null && assemblies[selected].files.some(fp => fp === filePath)) {
-            return "text-green-600 font-semibold";
-        } else {
-            return "";
-        }
+    function uploadAssemblies() {
+        setSelected(null);
+        setFetching(true);
+        const $uploads = assemblies.map(assembly => {
+            return assembly.assembly !== null && assembly.assembly.path !== null ? addNewAssembly(
+                assembly.taxonId,
+                assembly.assembly.name,
+                assembly.assembly.path,
+                1
+            ).pipe(
+                switchMap(_ => forkJoin([
+                    assembly.annotation !== null && assembly.annotation.path !== null ? addNewAnnotation(
+                        assembly.taxonId,
+                        assembly.annotation.name,
+                        assembly.annotation.path.path,
+                        1,
+                        assembly.annotation.path.additionalFilesPath || ''
+                    ) : null,
+                    assembly.mapping !== null && assembly.mapping.path !== null ? addNewMapping(
+                        assembly.taxonId,
+                        assembly.mapping.name,
+                        assembly.mapping.path.path,
+                        1,
+                        assembly.mapping.path.additionalFilesPath || ''
+                    ) : null,
+                    assembly.analysis !== null && assembly.analysis.path !== null ? addNewAnalysis(
+                        assembly.taxonId,
+                        assembly.analysis.name,
+                        assembly.analysis.path.path,
+                        1,
+                        assembly.analysis.path.additionalFilesPath || ''
+                    ) : null
+                ].filter(x => x)))
+            ) : null
+        }).filter(x => x);
+        forkJoin($uploads).subscribe({next: _ => {
+            setAssemblies([]);
+        }, error: () => setFetching(false), complete: () => setFetching(false)});
     }
 
     function togglePathInSelectedAssembly(filePath: string){

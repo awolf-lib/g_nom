@@ -1,6 +1,7 @@
 import { Close, Trash, Validate } from "grommet-icons";
 import React, { useEffect, useState } from "react";
-import API from "../../../../../../../../api";
+import {fetchAnalysesByAssemblyID, fetchAnnotationsByAssemblyID, fetchMappingsByAssemblyID, removeAnnotationByAnnotationID, removeMappingByMappingID, removeAnalysisByAnalysisID} from "../../../../../../../../api";
+import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
@@ -14,8 +15,6 @@ const EditAnalysisForm = (props) => {
     loadAnalyses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.type]);
-
-  const api = new API();
 
   // notifications
   const dispatch = useNotification();
@@ -31,11 +30,11 @@ const EditAnalysisForm = (props) => {
   const loadAnalyses = async () => {
     var response;
     if (props.type === "annotation") {
-      response = await api.fetchAnnotationsByAssemblyID(props.object.id);
+      response = await fetchAnnotationsByAssemblyID(props.object.id);
     } else if (props.type === "mapping") {
-      response = await api.fetchMappingsByAssemblyID(props.object.id);
+      response = await fetchMappingsByAssemblyID(props.object.id);
     } else if (props.type === "analysis") {
-      response = await api.fetchAnalysesByAssemblyID(props.object.id);
+      response = await fetchAnalysesByAssemblyID(props.object.id);
     }
 
     if (response && response.payload) {
@@ -54,11 +53,11 @@ const EditAnalysisForm = (props) => {
     if (confirmation === "REMOVE" && removing) {
       let response;
       if (props.type === "annotation") {
-        response = await api.removeAnnotationByAnnotationID(removing);
+        response = await removeAnnotationByAnnotationID(removing);
       } else if (props.type === "analysis") {
-        response = await api.removeAnalysisByAnalysisID(removing);
+        response = await removeAnalysisByAnalysisID(removing);
       } else if (props.type === "mapping") {
-        response = await api.removeMappingByMappingID(removing);
+        response = await removeMappingByMappingID(removing);
       } else {
         handleNewNotification({
           label: "Error",

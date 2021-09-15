@@ -1,15 +1,15 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import API from "../../../../../../../../api";
+import { fetchPossibleImports, INotification, addNewAssembly } from "../../../../../../../../api";
 import classNames from "classnames";
 
-import PropTypes, { InferProps } from "prop-types";
+import PropTypes from "prop-types";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
 
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
-export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.propTypes>){
+export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
   const { selectedTaxon, handleModeChange } = props;
 
   const [possibleImports, setPossibleImports] = useState<{fasta: {[key: string]: string[][]}}>();
@@ -25,8 +25,6 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -40,7 +38,7 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
 
   const loadFiles = async (types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined) => {
     setFetchingAll(true);
-    const response = await api.fetchPossibleImports(types);
+    const response = await fetchPossibleImports(types);
     if (response && response.payload) {
       setPossibleImports(response.payload);
     }
@@ -94,7 +92,7 @@ export function CreateAssemblyForm(props: InferProps<typeof CreateAssemblyForm.p
       return;
     }
     setImporting(true);
-    api.addNewAssembly(
+    addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
       selectedPath.join("/"),
@@ -278,9 +276,9 @@ export default CreateAssemblyForm;
 
 CreateAssemblyForm.defaultProps = {};
 
-CreateAssemblyForm.propTypes = {
-  selectedTaxon: PropTypes.shape({
-    id: PropTypes.number.isRequired
-  }).isRequired,
-  handleModeChange: PropTypes.func.isRequired
-};
+export interface ICreateAssemblyFormProps{
+  selectedTaxon: {
+    id: number;
+  };
+  handleModeChange: (mode: string) => void
+}
