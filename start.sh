@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export API_ADRESS="http://localhost:3002/"
+export API_ADRESS="http://localhost:3002"
 
 sudo /etc/init.d/mysql start
 screen -dmS "frontend" "npm" "start" "--prefix" "react-frontend/"

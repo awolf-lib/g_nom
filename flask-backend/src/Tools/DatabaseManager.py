@@ -4,6 +4,8 @@ from math import ceil
 from json import dumps, loads
 from os import getenv
 
+from mysql.connector.errors import Error
+
 from .FileManager import FileManager
 from .Parsers import Parsers
 
@@ -558,7 +560,6 @@ class DatabaseManager:
         """
         try:
             api = getenv("API_ADRESS")
-            print(api)
             if not api:
                 return (
                     [],
@@ -691,7 +692,7 @@ class DatabaseManager:
                     else:
                         pagination.update(
                             {
-                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={range}&search={search}"
+                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={range}&search={search}&userID={userID}"
                             }
                         )
 
