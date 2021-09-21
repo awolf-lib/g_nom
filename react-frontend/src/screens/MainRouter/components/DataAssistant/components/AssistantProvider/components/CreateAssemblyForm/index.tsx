@@ -1,12 +1,9 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import { fetchPossibleImports, INotification, addNewAssembly } from "../../../../../../../../api";
+import { fetchPossibleImports, Notification, addNewAssembly } from "../../../../../../../../api";
 import classNames from "classnames";
-
-import PropTypes from "prop-types";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
-
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
 export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
@@ -28,7 +25,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: INotification) => {
+  const handleNewNotification = (notification: Notification) => {
     dispatch({
       label: notification.label,
       message: notification.message,

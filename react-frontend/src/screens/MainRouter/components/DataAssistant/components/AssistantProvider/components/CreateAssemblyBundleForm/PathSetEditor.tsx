@@ -56,7 +56,7 @@ export function PathSetEditor(props: IPathSetEditorProps){
             </div>
             <div className="flex flex-col">
                 <span><span className="font-bold">main path:</span> {set.path === null ? (<span className="italic">None</span>): set.path.path}</span>
-                <span><span className="font-bold">additional:</span> {set.path?.additionalFilesPath !== null ? set.path?.additionalFilesPath : (<span className="italic">None</span>)}</span>
+                <span><span className="font-bold">additional:</span> {set.path?.additionalFilesPath !== null ? `./${set.path?.additionalFilesPath}/*` : (<span className="italic">None</span>)}</span>
             </div>
             {<ul className="h-40 overflow-y-auto border rounded-lg border-gray-300 px-3 py-2 bg-white">
                 {Object.entries(props.possibleImports).map(([k,v], idx) => (<ul><li className="font-bold" key={`fasta_${idx}`}>{k}</li>{v.map(vs => (<PathSelector

@@ -3,7 +3,7 @@ import { Trash } from "grommet-icons";
 import { ChangeEvent, useEffect, useState } from "react";
 import { forkJoin, from } from "rxjs";
 import { switchMap } from "rxjs/operators";
-import { addNewAnalysis, addNewAnnotation, addNewAssembly, addNewMapping, fetchPossibleImports, fetchTaxonByNCBITaxonID, INotification, IPossibleImports } from "../../../../../../../../api";
+import { addNewAnalysis, addNewAnnotation, addNewAssembly, addNewMapping, fetchPossibleImports, fetchTaxonByNCBITaxonID, Notification, IPossibleImports } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -34,9 +34,9 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         loadFiles(["image", "fasta", "gff", "bam", "analysis"]);
     }, []);
 
-    const Dispatch: (n: INotification) => void = useNotification();
+    const Dispatch: (n: Notification) => void = useNotification();
 
-    function handleNewNotification(notification: INotification){
+    function handleNewNotification(notification: Notification){
         Dispatch(notification);
     }
 
@@ -101,23 +101,23 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
                 assembly.assembly.path,
                 1
             ).pipe(
-                switchMap(_ => forkJoin([
+                switchMap(result => forkJoin([
                     assembly.annotation !== null && assembly.annotation.path !== null ? addNewAnnotation(
-                        assembly.taxonId,
+                        result.payload.assemblyId,
                         assembly.annotation.name,
                         assembly.annotation.path.path,
                         1,
                         assembly.annotation.path.additionalFilesPath || ''
                     ) : null,
                     assembly.mapping !== null && assembly.mapping.path !== null ? addNewMapping(
-                        assembly.taxonId,
+                        result.payload.assemblyId,
                         assembly.mapping.name,
                         assembly.mapping.path.path,
                         1,
                         assembly.mapping.path.additionalFilesPath || ''
                     ) : null,
                     assembly.analysis !== null && assembly.analysis.path !== null ? addNewAnalysis(
-                        assembly.taxonId,
+                        result.payload.assemblyId,
                         assembly.analysis.name,
                         assembly.analysis.path.path,
                         1,

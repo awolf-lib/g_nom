@@ -32,7 +32,7 @@ export function PathSelector(props: IPathSelectorProps){
         }
     }
 
-    const additionFilesFrom = (path: string[]): string => `./${path.join('/')}/*`
+    const additionFilesFrom = (path: string[]): string => `${path.join('/')}`
 
     return <div className="ml-4">
     {props.pathArray.map((dir, dirIndex, path) => {
