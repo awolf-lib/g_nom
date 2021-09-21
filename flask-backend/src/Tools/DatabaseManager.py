@@ -676,7 +676,7 @@ class DatabaseManager:
                             lastRange = range
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={lastRange}&search={search}&userID={userID}"
+                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={lastRange}&search={search}&userID={userID}"
                             }
                         )
                     elif page + 1 > pages:
@@ -685,13 +685,13 @@ class DatabaseManager:
                             lastRange = range
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page}&range={lastRange}&search={search}&userID={userID}"
+                                "next": f"{api}/fetchAllAssemblies?page={page}&range={lastRange}&search={search}&userID={userID}"
                             }
                         )
                     else:
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={range}&search={search}"
+                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={range}&search={search}"
                             }
                         )
 
