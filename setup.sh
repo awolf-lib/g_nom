@@ -14,7 +14,8 @@ unzip ./flask-backend/storage/externalTools/master.zip
 sudo apt-get install samtools
 
 wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P ./flask-backend/storage/files/download/taxa
-gunzip ./flask-backend/storage/files/download/taxa/taxdmp.zip
+unzip ./flask-backend/storage/files/download/taxa/taxdmp.zip
+rm -r ./flask-backend/storage/files/download/taxa/taxdmp.zip
 
 sudo npm i cloudcmd -g
 
