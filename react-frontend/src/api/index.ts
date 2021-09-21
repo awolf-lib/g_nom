@@ -1,4 +1,4 @@
-import { Observable, of } from 'rxjs';
+import { Observable, of, pipe, UnaryFunction } from 'rxjs';
 import { fromFetch } from 'rxjs/fetch';
 import { catchError, map, switchMap } from 'rxjs/operators';
 
@@ -290,12 +290,16 @@ export function addNewAssembly(taxonID: number, name: string, path: IPath, userI
       path.additionalFilesPath ?? ''
   )
     .pipe(
-      switchMap(request => request.json()),
-      catchError(error => {
-        console.error(error);
-        return of(error)
-      })
+      mapError<IAssemblyAdded>()
     );
+}
+
+export interface IAssemblyAdded{
+  assemblyId: number;
+  taxonID: number;
+  name: string;
+  path: string;
+  additionalFilesPath: string;
 }
 
 // ===== REMOVE ASSEMBLY ===== //
@@ -338,10 +342,10 @@ export async function renameAssembly(id: number, name: string, userID: number) {
 }
 
 // ===== ADD NEW ANNOTATION ===== //
-export function addNewAnnotation(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export function addNewAnnotation(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
   return fromFetch(
     "http://localhost:3002/addNewAnnotation?id=" +
-      id +
+      assemblyId +
       "&name=" +
       name +
       "&path=" +
@@ -351,19 +355,22 @@ export function addNewAnnotation(id: number, name: string, path: string, userID:
       "&additionalFilesPath=" +
       additionalFilesPath
   ).pipe(
-    switchMap(request => request.json()),
-    catchError(error => {
-      console.error(error);
-      return of(error)
-    })
+    mapError<IAnnotionationAdded>()
   );
 }
 
+export interface IAnnotionationAdded{
+  assemblyID: number;
+  name: string;
+  path: string;
+  additionalFilesPath: string;
+}
+
 // ===== ADD NEW MAPPING ===== //
-export async function addNewMapping(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export async function addNewMapping(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
   return fromFetch(
     "http://localhost:3002/addNewMapping?id=" +
-      id +
+      assemblyId +
       "&name=" +
       name +
       "&path=" +
@@ -373,12 +380,15 @@ export async function addNewMapping(id: number, name: string, path: string, user
       "&additionalFilesPath=" +
       additionalFilesPath
   ).pipe(
-    switchMap(request => request.json()),
-    catchError(error => {
-      console.error(error);
-      return of(error)
-    })
+    mapError<IMappingAdded>()
   );
+}
+
+export interface IMappingAdded{
+  assemblyID: number;
+  name: string;
+  path: string;
+  additionalFilesPath: string;
 }
 
 // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
@@ -419,10 +429,10 @@ export async function fetchAnalysesByAssemblyID(assemblyID: number) {
 }
 
 // ===== ADD NEW ANALYSIS ===== //
-export function addNewAnalysis(id: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export function addNewAnalysis(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
   return fromFetch(
     "http://localhost:3002/addNewAnalysis?id=" +
-      id +
+      assemblyId +
       "&name=" +
       name +
       "&path=" +
@@ -432,12 +442,15 @@ export function addNewAnalysis(id: number, name: string, path: string, userID: n
       "&additionalFilesPath=" +
       additionalFilesPath
   ).pipe(
-    switchMap(request => <Promise<IResponse>>request.json()),
-    catchError((error: IResponse) => {
-      console.error(error);
-      return of(error);
-    })
+    mapError<IAnalysisAdded>()
   );
+}
+
+interface IAnalysisAdded{
+  assemblyID: number;
+  name: string;
+  path: string;
+  additionalFilesPath: string;
 }
 
 // ===== REMOVE ANNOTATION BY ID ===== //
@@ -534,7 +547,40 @@ export async function fetchTaxonTree() {
     });
 }
 
-export interface IResponse<T = any>{
+function mapError<T>(): UnaryFunction<Observable<globalThis.Response>, Observable<IResponse<T>>> {
+  return pipe(
+    switchMap(request => <Promise<Response<T>>>request.json()),
+    map(output => { if(output.notification.type === "error") {throw output.notification} else {return <IResponse<T>>output} })
+  );
+}
+
+export type Response<T = unknown> = IResponse<T> | IErrorResponse;
+
+interface IResponse<T = unknown>{
   payload: T;
-  notification: any;
+  notification: IInfoNotification | ISuccessNotification;
+}
+
+interface IErrorResponse{
+  payload: 0;
+  notification: IErrorNotification;
+}
+
+interface INotification{
+  label: string;
+  message: string;
+}
+
+export type Notification = IInfoNotification | ISuccessNotification | IErrorNotification;
+
+interface IInfoNotification extends INotification{
+  type: "info";
+}
+
+interface ISuccessNotification extends INotification{
+  type: "success";
+}
+
+interface IErrorNotification extends INotification{
+  type: "error";
 }

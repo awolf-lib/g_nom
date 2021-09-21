@@ -1046,6 +1046,7 @@ class DatabaseManager:
             return 0, notification
 
         return {
+            "assemblyId": lastID,
             "taxonID": taxonID,
             "name": name,
             "path": path,
