@@ -1,7 +1,8 @@
 # FLASK
 **/__pycache__
 **/venv
-**/files/**
+**/files/download/
+**/files/upload/
 **/jbrowse
 
 # REACT

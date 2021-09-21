@@ -16,7 +16,8 @@ const SpeciesProfilePictureViewer = ({ taxonID, imageStatus }) => {
     let url = "";
     if (taxonID && imageStatus) {
       url =
-        "http://localhost:5003/g-nom/portal/api/v1/fs/download/taxa/images/" +
+        process.env.REACT_APP_FTP_ADRESS +
+        "/g-nom/portal/api/v1/fs/download/taxa/images/" +
         taxonID +
         ".thumbnail.jpg";
     }

@@ -6,7 +6,7 @@ const Download = () => {
       <iframe
         title="download"
         className="w-full h-75"
-        src="http://localhost:5003/g-nom/portal/"
+        src={process.env.REACT_APP_FTP_ADRESS + "/g-nom/portal/"}
       />
     </div>
   );
