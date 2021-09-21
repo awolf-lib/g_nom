@@ -18,7 +18,6 @@ import Download from "./components/Download";
 import AssembliesTable from "../../components/AssembliesTable";
 import DataAssistant from "./components/DataAssistant";
 import AssemblyInformation from "./components/AssemblyInformation";
-import AssembliesTreeViewer from "../../components/AssembliesTreeViewer";
 
 const MainRouter = () => {
   const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
