@@ -15,7 +15,8 @@ const TaxonomicAssignmentViewer = ({
           title="MiltsPlot"
           className="w-full h-screen"
           src={
-            "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
+            process.env.REACT_APP_FTP_ADRESS +
+            "/g-nom/portal/fs/download/assemblies/" +
             assemblyInformation.name +
             "/milts/" +
             assemblyInformation.analyses.milts[index].name +
@@ -26,7 +27,8 @@ const TaxonomicAssignmentViewer = ({
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
         <a
           href={
-            "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
+            process.env.REACT_APP_FTP_ADRESS +
+            "/g-nom/portal/fs/download/assemblies/" +
             assemblyInformation.name +
             "/milts/"
           }

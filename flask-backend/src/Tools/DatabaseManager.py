@@ -1,8 +1,10 @@
-import json
 import mysql.connector
 from hashlib import sha512
 from math import ceil
 from json import dumps, loads
+from os import getenv
+
+from mysql.connector.errors import Error
 
 from .FileManager import FileManager
 from .Parsers import Parsers
@@ -557,6 +559,28 @@ class DatabaseManager:
         Gets all assemblies from db
         """
         try:
+            api = getenv("API_ADRESS")
+            if not api:
+                return (
+                    [],
+                    {},
+                    {
+                        "label": "Error",
+                        "message": "Environment variables missing!",
+                        "type": "error",
+                    },
+                )
+        except:
+            return (
+                [],
+                {},
+                {
+                    "label": "Error",
+                    "message": "Environment variables missing!",
+                    "type": "error",
+                },
+            )
+        try:
             connection, cursor = self.updateConnection()
             userID = int(userID)
             if not userID:
@@ -637,13 +661,13 @@ class DatabaseManager:
                     if page - 1 < 1:
                         pagination.update(
                             {
-                                "previous": f"http://localhost:3002/fetchAllAssemblies?page=1&range={range}&search={search}&userID={userID}"
+                                "previous": f"{api}/fetchAllAssemblies?page=1&range={range}&search={search}&userID={userID}"
                             }
                         )
                     else:
                         pagination.update(
                             {
-                                "previous": f"http://localhost:3002/fetchAllAssemblies?page={page-1}&range={range}&search={search}&userID={userID}"
+                                "previous": f"{api}/fetchAllAssemblies?page={page-1}&range={range}&search={search}&userID={userID}"
                             }
                         )
 
@@ -653,7 +677,7 @@ class DatabaseManager:
                             lastRange = range
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={lastRange}&search={search}&userID={userID}"
+                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={lastRange}&search={search}&userID={userID}"
                             }
                         )
                     elif page + 1 > pages:
@@ -662,13 +686,13 @@ class DatabaseManager:
                             lastRange = range
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page}&range={lastRange}&search={search}&userID={userID}"
+                                "next": f"{api}/fetchAllAssemblies?page={page}&range={lastRange}&search={search}&userID={userID}"
                             }
                         )
                     else:
                         pagination.update(
                             {
-                                "next": f"http://localhost:3002/fetchAllAssemblies?page={page+1}&range={range}&search={search}"
+                                "next": f"{api}/fetchAllAssemblies?page={page+1}&range={range}&search={search}&userID={userID}"
                             }
                         )
 
