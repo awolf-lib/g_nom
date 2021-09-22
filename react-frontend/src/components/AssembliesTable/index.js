@@ -159,14 +159,16 @@ const AssembliesTable = ({ label, userID }) => {
               <option value="list">List</option>
               <option value="tree">Tree</option>
             </select>
-            <Input
-              onChange={(e) => {
-                handleSearchChange(e.target.value);
-              }}
-              type="search"
-              name="search"
-              placeholder="Search..."
-            />
+            {viewType !== "tree" && (
+              <Input
+                onChange={(e) => {
+                  handleSearchChange(e.target.value);
+                }}
+                type="search"
+                name="search"
+                placeholder="Search..."
+              />
+            )}
           </div>
         </div>
       </header>

@@ -355,6 +355,8 @@ class DatabaseManager:
                 f"SELECT assembly.taxonID, taxon.ncbiTaxonID, taxon.parentNcbiTaxonID, taxon.scientificName, taxon.taxonRank, taxon.imageStatus FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
             )
             taxa = [x for x in cursor.fetchall()]
+            taxa = set(taxa)
+            taxa = list(taxa)
 
             if len(taxa) == 0:
                 with open("storage/files/download/taxa/tree.json", "w") as treeFile:
