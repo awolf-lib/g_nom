@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import PropTypes from "prop-types";
-import {fetchAssembliesByTaxonIDs, fetchTaxonTree} from "../../api";
 import { useNotification } from "../../components/NotificationProvider";
+import {fetchAssembliesByTaxonIDs, fetchTaxonTree} from "../../api";
 import SpeciesProfilePictureViewer from "../../components/SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
@@ -44,6 +43,7 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTree = async () => {
+    setLoadingTree(true);
     const response = await fetchTaxonTree();
 
     if (response && response.payload) {

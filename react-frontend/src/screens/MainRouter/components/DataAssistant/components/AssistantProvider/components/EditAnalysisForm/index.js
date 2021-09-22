@@ -1,7 +1,6 @@
 import { Close, Trash, Validate } from "grommet-icons";
 import React, { useEffect, useState } from "react";
 import {fetchAnalysesByAssemblyID, fetchAnnotationsByAssemblyID, fetchMappingsByAssemblyID, removeAnnotationByAnnotationID, removeMappingByMappingID, removeAnalysisByAnalysisID} from "../../../../../../../../api";
-import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
