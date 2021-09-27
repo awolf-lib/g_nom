@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IPossibleImports } from "../../../../../../../../api";
+import { PathEditor } from "./PathEditor";
 import { PathSetEditor } from "./PathSetEditor";
 import Tabs from "./Tabs";
 import { IAssembly } from "./_interfaces";
@@ -15,7 +16,13 @@ export function AssemblyEditor(props: IAssemblyEditorProps) {
     }
 
     return (<Tabs selected={selected} onChange={id => setSelected(id)}>
-        {/* {<PathSetEditor value={props.assembly} onChange={(set) => update(set, 'assembly')} title="Assembly" possibleImports={possibleImports.fasta} />} */}
+        <div title="Assembly" className="p-4">
+            <PathEditor
+                path={props.assembly.path}
+                onChange={(path) => updateAssembly({path})}
+                possibleImports={props.possibleImports.fasta}
+            />
+        </div>
         <div title="Annotation">
             <PathSetEditor
                 value={props.assembly.annotation}

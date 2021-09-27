@@ -3,8 +3,8 @@ import { Add, Close } from "grommet-icons";
 import { ChangeEvent, useState } from "react";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
-import { PathSelector } from "./PathSelector";
-import { IPath, IPathSet } from "./_interfaces";
+import { PathEditor } from "./PathEditor";
+import { IPathSet } from "./_interfaces";
 
 export function PathSetEditor(props: IPathSetEditorProps){
     const [draftName, setDraftName] = useState("");
@@ -13,13 +13,6 @@ export function PathSetEditor(props: IPathSetEditorProps){
         props.onChange({
             ...set,
             name
-        });
-    }
-
-    function togglePathInSelected(set: IPathSet, path: IPath | null) {
-        props.onChange({
-            ...set,
-            path
         });
     }
 
@@ -54,17 +47,11 @@ export function PathSetEditor(props: IPathSetEditorProps){
                     </Button>
                 </div>
             </div>
-            <div className="flex flex-col">
-                <span><span className="font-bold">main path:</span> {set.path === null ? (<span className="italic">None</span>): set.path.path}</span>
-                <span><span className="font-bold">additional:</span> {set.path?.additionalFilesPath !== null ? `./${set.path?.additionalFilesPath}/*` : (<span className="italic">None</span>)}</span>
-            </div>
-            {<ul className="h-40 overflow-y-auto border rounded-lg border-gray-300 px-3 py-2 bg-white">
-                {Object.entries(props.possibleImports).map(([k,v], idx) => (<ul><li className="font-bold" key={`fasta_${idx}`}>{k}</li>{v.map(vs => (<PathSelector
-                    value={set.path}
-                    pathArray={vs}
-                    onSelect={p => togglePathInSelected(set, p)}
-                />))}</ul>))}
-            </ul>}
+            <PathEditor
+                path={set.path}
+                onChange={path => props.onChange({...set, path})}
+                possibleImports={props.possibleImports}
+            />
         </div>);
     }
 
