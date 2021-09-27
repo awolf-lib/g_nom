@@ -51,20 +51,17 @@ const DataAssistant = () => {
     );
   };
 
-  const loadTaxaByNcbiTaxonID = async (taxonID) => {
-    const response = await fetchTaxonByNCBITaxonID(taxonID);
-
-    if (response && response.payload) {
+  function loadTaxaByNcbiTaxonID(taxonID) {
+    fetchTaxonByNCBITaxonID(taxonID).subscribe(response => {
       setTaxa(response.payload);
       if (response.payload.length === 1) {
         setSelectedTaxon(response.payload[0]);
         setView1(false);
       }
-    }
-
-    if (response && response.notification && response.notification.message) {
-      handleNewNotification(response.notification);
-    }
+      if (response && response.notification && response.notification.message) {
+        handleNewNotification(response.notification);
+      }
+    })
   };
 
   const handleChangeSelectedTaxon = (inputNcbiTaxonID) => {

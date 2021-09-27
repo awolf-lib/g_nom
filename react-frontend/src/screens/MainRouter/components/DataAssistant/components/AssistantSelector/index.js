@@ -37,16 +37,16 @@ const AssistantSelector = (props) => {
     });
   };
 
-  const loadAssemblies = async () => {
-    const response = await fetchAssembliesByTaxonID(selectedTaxon.id);
-
-    if (response && response.payload) {
-      setAssemblies(response.payload);
-    }
-
-    if (response && response.notification && response.notification.message) {
-      handleNewNotification(response.notification);
-    }
+  function loadAssemblies() {
+    fetchAssembliesByTaxonID(selectedTaxon.id).subscribe(response => {
+      if (response && response.payload) {
+        setAssemblies(response.payload);
+      }
+  
+      if (response && response.notification && response.notification.message) {
+        handleNewNotification(response.notification);
+      }
+    });
   };
 
   return (

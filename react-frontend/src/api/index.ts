@@ -147,20 +147,15 @@ export interface IPossibleImports{
 }
 
 // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
-export async function fetchTaxonByNCBITaxonID(taxonID: number): Promise<IResponse<ReadonlyArray<INcbiTaxon>>> {
-  return fetch(
-    "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
+export function fetchTaxonByNCBITaxonID(ncbiTaxonID: number) {
+  return fromFetch(
+    "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + ncbiTaxonID
+  ).pipe(mapError<ReadonlyArray<INcbiTaxon>>());
 }
 
 export interface INcbiTaxon{
   commonName: string;
-  id: number;
+  id: number; // taxonId
   imageStatus: number;
   lastUpdatedBy: number;
   lastUpdatedOn: string; // TimeString
@@ -314,15 +309,26 @@ export async function removeAssemblyByAssemblyID(id: number) {
 }
 
 // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
-export async function fetchAssembliesByTaxonID(taxonID: number) {
-  return fetch(
+export function fetchAssembliesByTaxonID(taxonID: number) {
+  return fromFetch(
     "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" + taxonID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
+  ).pipe(
+    mapError<IAssemblyByTaxon[]>()
+  );
+}
+
+export interface IAssemblyByTaxon{
+  addedBy: number, // user_id
+  addedByUsername: string,
+  addedOn: string, // Date
+  additionalFilesPath: null,
+  id: number,
+  lastUpdatedBy: 1, //user_id
+  lastUpdatedByUsername: string,
+  lastUpdatedOn: string, // Date
+  name: string,
+  path: string,
+  taxonID: number
 }
 
 // // ===== RENAME ASSEMBLY ===== //
