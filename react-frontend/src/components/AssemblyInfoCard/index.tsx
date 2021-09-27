@@ -1,6 +1,5 @@
 import React from "react";
 import "../../App.css";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
