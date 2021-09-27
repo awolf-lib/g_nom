@@ -7,7 +7,7 @@ import { IAssembly } from "./_interfaces";
 export function AssemblyEditor(props: IAssemblyEditorProps) {
     const [selected, setSelected] = useState(0);
 
-    function update(update: Partial<IAssembly>){
+    function updateAssembly(update: Partial<IAssembly>){
         props.onChange({
             ...props.assembly,
             ...update
@@ -19,7 +19,7 @@ export function AssemblyEditor(props: IAssemblyEditorProps) {
         <div title="Annotation">
             <PathSetEditor
                 value={props.assembly.annotation}
-                onChange={(set) => update({annotation: set})}
+                onChange={(set) => updateAssembly({annotation: set})}
                 title="Annotations"
                 possibleImports={props.possibleImports.gff}
             />   
@@ -27,7 +27,7 @@ export function AssemblyEditor(props: IAssemblyEditorProps) {
         <div title="Mapping">
             <PathSetEditor
                 value={props.assembly.mapping}
-                onChange={(set) => update({mapping: set})}
+                onChange={(set) => updateAssembly({mapping: set})}
                 title="Mapping"
                 possibleImports={props.possibleImports.bam}
             />
@@ -35,7 +35,7 @@ export function AssemblyEditor(props: IAssemblyEditorProps) {
         <div title="Analysis">
             <PathSetEditor
                 value={props.assembly.analysis}
-                onChange={(set) => update({analysis: set})}
+                onChange={(set) => updateAssembly({analysis: set})}
                 title="Analysis"
                 possibleImports={props.possibleImports.analysis}
             />

@@ -556,8 +556,8 @@ export async function fetchTaxonTree() {
 
 function mapError<T>(): UnaryFunction<Observable<globalThis.Response>, Observable<IResponse<T>>> {
   return pipe(
-    switchMap(request => <Promise<Response<T>>>request.json()),
-    map(output => { if(output.notification.type === "error") {throw output.notification} else {return <IResponse<T>>output} })
+    switchMap(request => request.json() as Promise<Response<T>>),
+    map(output => { if(output.notification.type === "error") {throw output.notification} else {return output as IResponse<T>} })
   );
 }
 

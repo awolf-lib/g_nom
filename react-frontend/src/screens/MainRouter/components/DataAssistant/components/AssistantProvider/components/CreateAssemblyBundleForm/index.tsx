@@ -9,7 +9,7 @@ import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 import { AssembliesEditor } from "./AssembliesEditor";
-import { IAssembly, IPathSet } from "./_interfaces";
+import { IAssembly } from "./_interfaces";
 
 export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Element {
     const [taxons, setTaxons] = useState<ITaxon[]>([]);
@@ -87,17 +87,6 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         });
     }
 
-    function updatePathSet(set: IPathSet | null, key: AssemblyKeys){
-        if(selected !== null){
-            const assems = [...taxons];
-            assems.splice(selected, 1, {
-                ...taxons[selected],
-                [key]: set
-            });
-            setTaxons(assems);
-        }
-    }
-
     function allAssembliesValid(): boolean {
         return false
         // return taxons.every(a =>
@@ -106,14 +95,6 @@ export function CreateAssemblyBundleForm(props: ICreateAssemblyProps): JSX.Eleme
         //     (a.mapping !== null && (a.mapping.name.length > 0 && a.mapping.path !== null)) ||
         //     (a.annotation !== null && (a.annotation.name.length > 0 && a.annotation.path !== null))
         // )
-    }
-
-    function checkTaxon(): boolean {
-        return false
-    }
-
-    function checkAssembly(assemblies: IAssembly[]): boolean {
-        return assemblies.every(a => a.name.length > 0 && a.mapping !== null)
     }
 
     function uploadAssemblies() {
@@ -218,5 +199,3 @@ interface ITaxon{
     title: string;
     assemblies: IAssembly[];
 }
-
-type AssemblyKeys = 'assembly' | 'annotation' | 'mapping' | 'analysis';
