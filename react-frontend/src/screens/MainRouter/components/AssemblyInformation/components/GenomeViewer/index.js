@@ -9,7 +9,8 @@ const GenomeViewer = ({ assemblyInformation }) => {
 
   const configureSource = () => {
     return (
-      "http://localhost:8082/index.html?data=data%2F" +
+      process.env.REACT_APP_JBROWSE_ADRESS +
+      "/index.html?data=data%2F" +
       assemblyInformation.name +
       "&nav=" +
       showNav +

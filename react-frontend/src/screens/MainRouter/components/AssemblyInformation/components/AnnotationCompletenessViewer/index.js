@@ -351,7 +351,8 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
           <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
               href={
-                "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
+                process.env.REACT_APP_FTP_ADRESS +
+                "/g-nom/portal/fs/download/assemblies/" +
                 assemblyName +
                 "/busco/"
               }
@@ -396,7 +397,8 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
           <div className="absolute bottom-0 right-0 mx-4 my-1 z-10 opacity-50 flex items-center">
             <a
               href={
-                "http://localhost:5003/g-nom/portal/fs/download/assemblies/" +
+                process.env.REACT_APP_FTP_ADRESS +
+                "/g-nom/portal/fs/download/assemblies/" +
                 assemblyName +
                 "/fcat/"
               }
