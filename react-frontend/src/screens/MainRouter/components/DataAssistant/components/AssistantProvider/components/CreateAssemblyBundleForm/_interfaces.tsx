@@ -1,6 +1,6 @@
 export interface IPath{
     path: string;
-    additionalFilesPath: string | null;
+    additionalFilesPath: string[] | null;
 }
 
 export interface IPathSet{

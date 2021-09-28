@@ -273,6 +273,7 @@ export async function removeGeneralInfoByID(level: number, id: number) {
 
 // ===== IMPORT NEW ASSEMBLY ===== //
 export function addNewAssembly(taxonID: number, name: string, path: IPath, userID: number) {
+  const additionFilesFrom = (path: string[]): string => `${path.join('/')}`
   return fromFetch(
     "http://localhost:3002/addNewAssembly?taxonID=" +
       taxonID +
@@ -283,7 +284,7 @@ export function addNewAssembly(taxonID: number, name: string, path: IPath, userI
       "&userID=" +
       userID +
       "&additionalFilesPath=" +
-      path.additionalFilesPath ?? ''
+      (path.additionalFilesPath !== null ? additionFilesFrom(path.additionalFilesPath) : '')
   )
     .pipe(
       mapError<IAssemblyAdded>()

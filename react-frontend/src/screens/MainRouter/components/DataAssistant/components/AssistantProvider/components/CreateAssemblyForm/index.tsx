@@ -14,7 +14,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
   const [showConfirmationForm, setShowConfirmationForm] = useState(false);
   const [newAssemblyName, setNewAssemblyName] = useState("");
   const [selectedPath, setSelectedPath] = useState<string[]>([]);
-  const [additionalFiles, setAdditionalFiles] = useState<string[]>([]);
+  const [additionalFilesPath, setAdditionalFilesPath] = useState<string[]>([]);
   const [importing, setImporting] = useState(false);
 
   useEffect(() => {
@@ -92,7 +92,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
     addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
-      { path: selectedPath.join("/"), additionalFilesPath: additionalFiles.join("/") },
+      { path: selectedPath.join("/"), additionalFilesPath },
       parseInt(userID),
     ).subscribe(response => {
       if (response && response.payload) {
@@ -109,7 +109,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
   const handleChangeSelectedPath = (inputPathArray: string[]) => {
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
-    setAdditionalFiles([]);
+    setAdditionalFilesPath([]);
   };
 
   const handleAdditionalFiles = (
@@ -119,9 +119,9 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
     setShowConfirmationForm(true);
     setSelectedPath(inputPathArray);
     if (inputPathArrayAddtionalFiles.length < inputPathArray.length) {
-      setAdditionalFiles(inputPathArrayAddtionalFiles);
+      setAdditionalFilesPath(inputPathArrayAddtionalFiles);
     } else {
-      setAdditionalFiles([]);
+      setAdditionalFilesPath([]);
     }
   };
 
@@ -132,8 +132,8 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
       "text-green-600 font-semibold":
         index < pathArray.length - 1 &&
         pathArray === selectedPath &&
-        index >= additionalFiles.length - 1 &&
-        additionalFiles.length > 0,
+        index >= additionalFilesPath.length - 1 &&
+        additionalFilesPath.length > 0,
     });
 
   return (
@@ -231,8 +231,8 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
                     </div>
                     <div className="flex justify-between">
                       <span>Additional files:</span>
-                      {additionalFiles.length ? (
-                        <span>{"./" + additionalFiles.join("/") + "/*"}</span>
+                      {additionalFilesPath.length ? (
+                        <span>{"./" + additionalFilesPath.join("/") + "/*"}</span>
                       ) : (
                         <span>None</span>
                       )}

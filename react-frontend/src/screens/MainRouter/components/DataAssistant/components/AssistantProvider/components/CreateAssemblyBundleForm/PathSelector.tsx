@@ -11,30 +11,32 @@ export function PathSelector(props: IPathSelectorProps){
                 "text-blue-600 font-bold":
                   index === pathArray.length - 1 && props.value.path === currentFile.path,
                 "text-green-600 font-semibold":
-                  index < pathArray.length - 1 && props.value.path === currentFile.path && props.value.additionalFilesPath !== null
+                  props.value.additionalFilesPath !== null && index >= props.value.additionalFilesPath.length-1 && props.value.path === currentFile.path
               })
         } else {
             return baseClasses
         }
     }
 
-    const filePath = (path: string[], idx: number) => ({
+    const filePath = (path: string[], idx: number): IPath => ({
         path: `./${path.join('/')}`,
-        additionalFilesPath: idx === path.length-1 ? null : additionFilesFrom(path.slice(0, idx+1))
+        additionalFilesPath: idx === path.length-1 ? null : path.slice(0, idx+1)
     });
 
     const select = (path: string[], idx: number) => {
-        const file = path[path.length-1];
-        if(file !== props.value?.path) {
-            props.onSelect(filePath(path, idx))
+        const next_path_set = filePath(path, idx);
+        if(
+          props.value &&
+          props.value.additionalFilesPath === next_path_set.additionalFilesPath && 
+          props.value.path === next_path_set.path
+        ){
+          props.onSelect(null);
         } else {
-            props.onSelect(null)
+          props.onSelect(next_path_set);
         }
     }
 
-    const additionFilesFrom = (path: string[]): string => `${path.join('/')}`
-
-    return <div className="ml-4">
+    return <div className="ml-4">{props.pathArray.length}
     {props.pathArray.map((dir, dirIndex, path) => {
       return (
         <span
