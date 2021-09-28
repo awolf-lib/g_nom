@@ -85,7 +85,7 @@ class Parsers:
             bases_10000000 = 0
             bases_25000000 = 0
             bases_50000000 = 0
-            
+
             alphabet = {}
             sequence_length = 0
             for index, line in enumerate(lines):
@@ -158,7 +158,7 @@ class Parsers:
                     sequence_length = 0
 
             bases_rounded = floor(bases / 1000)
-            
+
             # sequence type
             atgcu = 0
             ts = 0
@@ -215,9 +215,9 @@ class Parsers:
 
             if "soft" not in maskings and "hard" not in maskings:
                 maskings.add("none")
-            
+
             predicted_maskings = ",".join(maskings)
-            
+
             data = list(zip(headers, sequence_lengths))
             data.sort(key=itemgetter(1), reverse=True)
             # number of sequences
@@ -293,7 +293,7 @@ class Parsers:
                     "message": f"File includes sequences of types {type}!",
                     "type": "error",
                 }
-            
+
             return data_dict, {}
 
         except:
@@ -302,7 +302,6 @@ class Parsers:
                 "message": "Something went wrong while parsing file!",
                 "type": "error",
             }
-
 
     # quast
     def parseQuast(self, pathToQuast):
@@ -535,7 +534,9 @@ class Parsers:
                     data["ltr_elements_length"] = length_occupied
                     sequence_length -= length_occupied
 
-                elif "dna transposons" in line.lower() or "dna elements" in line.lower():
+                elif (
+                    "dna transposons" in line.lower() or "dna elements" in line.lower()
+                ):
                     length_occupied = int(values[1])
                     data["dna_elements"] = int(values[0])
                     data["dna_elements_length"] = length_occupied

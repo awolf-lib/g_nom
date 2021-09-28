@@ -1,10 +1,13 @@
 # FLASK
 **/__pycache__
 **/venv
-**/files/**
+**/files/download/
+**/files/upload/
 **/jbrowse
 
 # REACT
+**/.env
+
 # dependencies
 **/node_modules
 **/.pnp

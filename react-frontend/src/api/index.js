@@ -1,7 +1,11 @@
 export default class API {
+  constructor() {
+    this.adress = process.env.REACT_APP_API_ADRESS;
+  }
+
   // USER AUTHENTIFCATION
   async login(username, password) {
-    return fetch("http://localhost:3002/login", {
+    return fetch(this.adress + "/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -17,7 +21,7 @@ export default class API {
 
   // ADD NEW USER
   async addUser(username, password, role) {
-    return fetch("http://localhost:3002/addUser", {
+    return fetch(this.adress + "/addUser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -37,7 +41,7 @@ export default class API {
 
   // ===== FETCH ALL USERS ===== //
   async fetchAllUsers() {
-    return fetch("http://localhost:3002/fetchAllUsers")
+    return fetch(this.adress + "/fetchAllUsers")
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -47,7 +51,7 @@ export default class API {
 
   // ===== DELETE USER BY USER ID ===== //
   async deleteUserByUserID(userID) {
-    return fetch("http://localhost:3002/deleteUserByUserID?userID=" + userID)
+    return fetch(this.adress + "/deleteUserByUserID?userID=" + userID)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -58,10 +62,7 @@ export default class API {
   // ===== UPDATE USER ROLE BY USER ID ===== //
   async updateUserRoleByUserID(userID, role) {
     return fetch(
-      "http://localhost:3002/updateUserRoleByUserID?userID=" +
-        userID +
-        "&role=" +
-        role
+      this.adress + "/updateUserRoleByUserID?userID=" + userID + "&role=" + role
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -87,7 +88,8 @@ export default class API {
         });
     }
     return fetch(
-      "http://localhost:3002/fetchAllAssemblies?page=" +
+      this.adress +
+        "/fetchAllAssemblies?page=" +
         page +
         "&range=" +
         range +
@@ -106,7 +108,8 @@ export default class API {
   // ===== FETCH ONE ASSEMBLY ===== //
   async fetchAssemblyInformationByAssemblyID(id, userID) {
     return fetch(
-      "http://localhost:3002/fetchAssemblyInformationByAssemblyID?id=" +
+      this.adress +
+        "/fetchAssemblyInformationByAssemblyID?id=" +
         id +
         "&userID=" +
         userID
@@ -120,7 +123,7 @@ export default class API {
 
   // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
   async fetchPossibleImports(types = undefined) {
-    return fetch("http://localhost:3002/fetchPossibleImports", {
+    return fetch(this.adress + "/fetchPossibleImports", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -136,9 +139,7 @@ export default class API {
 
   // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
   async fetchTaxonByNCBITaxonID(taxonID) {
-    return fetch(
-      "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + taxonID
-    )
+    return fetch(this.adress + "/fetchTaxonByNCBITaxonID?taxonID=" + taxonID)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -149,7 +150,7 @@ export default class API {
   // ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
   async fetchAssembliesByTaxonIDs(taxonIDs) {
     return fetch(
-      "http://localhost:3002/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs
+      this.adress + "/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -161,7 +162,8 @@ export default class API {
   // ===== UPDATE TAXON IMAGE ===== //
   async updateImageByTaxonID(taxonID, path, userID) {
     return fetch(
-      "http://localhost:3002/updateImageByTaxonID?taxonID=" +
+      this.adress +
+        "/updateImageByTaxonID?taxonID=" +
         taxonID +
         "&path=" +
         path +
@@ -178,7 +180,8 @@ export default class API {
   // ===== DELETE TAXON IMAGE ===== //
   async removeImageByTaxonID(taxonID, userID) {
     return fetch(
-      "http://localhost:3002/removeImageByTaxonID?taxonID=" +
+      this.adress +
+        "/removeImageByTaxonID?taxonID=" +
         taxonID +
         "&userID=" +
         userID
@@ -193,7 +196,7 @@ export default class API {
   // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
   async fetchGeneralInfosByID(level, id) {
     return fetch(
-      "http://localhost:3002/fetchGeneralInfosByID?level=" + level + "&id=" + id
+      this.adress + "/fetchGeneralInfosByID?level=" + level + "&id=" + id
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -205,7 +208,8 @@ export default class API {
   // ===== ADD GENERAL INFO ===== //
   async addGeneralInfo(level, id, key, value) {
     return fetch(
-      "http://localhost:3002/addGeneralInfo?level=" +
+      this.adress +
+        "/addGeneralInfo?level=" +
         level +
         "&id=" +
         id +
@@ -224,7 +228,8 @@ export default class API {
   // =====  UPDATE GENERAL INFO ===== //
   async updateGeneralInfoByID(level, id, key, value) {
     return fetch(
-      "http://localhost:3002/updateGeneralInfoByID?level=" +
+      this.adress +
+        "/updateGeneralInfoByID?level=" +
         level +
         "&id=" +
         id +
@@ -243,7 +248,7 @@ export default class API {
   // ===== DELETE GENERAL INFO ===== //
   async removeGeneralInfoByID(level, id) {
     return fetch(
-      "http://localhost:3002/removeGeneralInfoByID?level=" + level + "&id=" + id
+      this.adress + "/removeGeneralInfoByID?level=" + level + "&id=" + id
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -255,7 +260,8 @@ export default class API {
   // ===== IMPORT NEW ASSEMBLY ===== //
   async addNewAssembly(taxonID, name, path, userID, additionalFilesPath = "") {
     return fetch(
-      "http://localhost:3002/addNewAssembly?taxonID=" +
+      this.adress +
+        "/addNewAssembly?taxonID=" +
         taxonID +
         "&name=" +
         name +
@@ -275,7 +281,7 @@ export default class API {
 
   // ===== REMOVE ASSEMBLY ===== //
   async removeAssemblyByAssemblyID(id) {
-    return fetch("http://localhost:3002/removeAssemblyByAssemblyID?id=" + id)
+    return fetch(this.adress + "/removeAssemblyByAssemblyID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -285,9 +291,7 @@ export default class API {
 
   // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
   async fetchAssembliesByTaxonID(taxonID) {
-    return fetch(
-      "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" + taxonID
-    )
+    return fetch(this.adress + "/fetchAssembliesByTaxonID?taxonID=" + taxonID)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -298,7 +302,7 @@ export default class API {
   // // ===== RENAME ASSEMBLY ===== //
   // async renameAssembly(id, name, userID) {
   //   return fetch(
-  //     "http://localhost:3002/renameAssembly?id=" +
+  //     this.adress + "/renameAssembly?id=" +
   //       id +
   //       "&name=" +
   //       name +
@@ -315,7 +319,8 @@ export default class API {
   // ===== ADD NEW ANNOTATION ===== //
   async addNewAnnotation(id, name, path, userID, additionalFilesPath = "") {
     return fetch(
-      "http://localhost:3002/addNewAnnotation?id=" +
+      this.adress +
+        "/addNewAnnotation?id=" +
         id +
         "&name=" +
         name +
@@ -336,7 +341,8 @@ export default class API {
   // ===== ADD NEW MAPPING ===== //
   async addNewMapping(id, name, path, userID, additionalFilesPath = "") {
     return fetch(
-      "http://localhost:3002/addNewMapping?id=" +
+      this.adress +
+        "/addNewMapping?id=" +
         id +
         "&name=" +
         name +
@@ -357,7 +363,7 @@ export default class API {
   // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
   async fetchMappingsByAssemblyID(assemblyID) {
     return fetch(
-      "http://localhost:3002/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
+      this.adress + "/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -369,8 +375,7 @@ export default class API {
   // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
   async fetchAnnotationsByAssemblyID(assemblyID) {
     return fetch(
-      "http://localhost:3002/fetchAnnotationsByAssemblyID?assemblyID=" +
-        assemblyID
+      this.adress + "/fetchAnnotationsByAssemblyID?assemblyID=" + assemblyID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -382,7 +387,7 @@ export default class API {
   // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
   async fetchAnalysesByAssemblyID(assemblyID) {
     return fetch(
-      "http://localhost:3002/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
+      this.adress + "/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
     )
       .then((request) => request.json())
       .then((data) => data)
@@ -394,7 +399,8 @@ export default class API {
   // ===== ADD NEW ANALYSIS ===== //
   async addNewAnalysis(id, name, path, userID, additionalFilesPath = "") {
     return fetch(
-      "http://localhost:3002/addNewAnalysis?id=" +
+      this.adress +
+        "/addNewAnalysis?id=" +
         id +
         "&name=" +
         name +
@@ -414,9 +420,7 @@ export default class API {
 
   // ===== REMOVE ANNOTATION BY ID ===== //
   async removeAnnotationByAnnotationID(id) {
-    return fetch(
-      "http://localhost:3002/removeAnnotationByAnnotationID?id=" + id
-    )
+    return fetch(this.adress + "/removeAnnotationByAnnotationID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -426,7 +430,7 @@ export default class API {
 
   // ===== REMOVE MAPPING BY ID ===== //
   async removeMappingByMappingID(id) {
-    return fetch("http://localhost:3002/removeMappingByMappingID?id=" + id)
+    return fetch(this.adress + "/removeMappingByMappingID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -436,7 +440,7 @@ export default class API {
 
   // ===== REMOVE ANALYSIS BY ID ===== //
   async removeAnalysisByAnalysisID(id) {
-    return fetch("http://localhost:3002/removeAnalysisByAnalysisID?id=" + id)
+    return fetch(this.adress + "/removeAnalysisByAnalysisID?id=" + id)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -447,7 +451,8 @@ export default class API {
   // ===== ADD NEW BOOKMARK ===== //
   async addNewBookmark(userID, assemblyID) {
     return fetch(
-      "http://localhost:3002/addNewBookmark?userID=" +
+      this.adress +
+        "/addNewBookmark?userID=" +
         userID +
         "&assemblyID=" +
         assemblyID
@@ -462,7 +467,8 @@ export default class API {
   // ===== REMOVE BOOKMARK ===== //
   async removeBookmark(userID, assemblyID) {
     return fetch(
-      "http://localhost:3002/removeBookmark?userID=" +
+      this.adress +
+        "/removeBookmark?userID=" +
         userID +
         "&assemblyID=" +
         assemblyID
@@ -476,9 +482,7 @@ export default class API {
 
   // ===== RELOAD TAXA DATABASE ===== //
   async reloadTaxonIDsFromFile(userID) {
-    return fetch(
-      "http://localhost:3002/reloadTaxonIDsFromFile?userID=" + userID
-    )
+    return fetch(this.adress + "/reloadTaxonIDsFromFile?userID=" + userID)
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -488,7 +492,7 @@ export default class API {
 
   // ===== UPDATE TAXA TREE ===== //
   async updateTaxonTree() {
-    return fetch("http://localhost:3002/updateTaxonTree")
+    return fetch(this.adress + "/updateTaxonTree")
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
@@ -498,7 +502,7 @@ export default class API {
 
   // ===== FETCH TAXA TREE ===== //
   async fetchTaxonTree() {
-    return fetch("http://localhost:3002/fetchTaxonTree")
+    return fetch(this.adress + "/fetchTaxonTree")
       .then((request) => request.json())
       .then((data) => data)
       .catch((error) => {
