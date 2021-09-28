@@ -1,2 +1,0 @@
-sudo /etc/init.d/mysql start
-npx ts-migrate-full . --sources src/components/AssemblyInfoCard/
