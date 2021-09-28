@@ -13,7 +13,7 @@ wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P ./flask-backend/sto
 unzip ./flask-backend/storage/files/download/taxa/taxdmp.zip -d ./flask-backend/storage/files/download/taxa/taxdmp
 rm -r ./flask-backend/storage/files/download/taxa/taxdmp.zip
 
-sudo npm i cloudcmd -g
+npm i cloudcmd -g
 
 cd ./react-frontend
 npm install
@@ -34,3 +34,5 @@ rm -r ./flask-backend/storage/externalTools/master.zip
 cd ./flask-backend/storage/externalTools/jbrowse
 ./setup.sh
 cd ../../../../
+
+sudo apt-get install screen
