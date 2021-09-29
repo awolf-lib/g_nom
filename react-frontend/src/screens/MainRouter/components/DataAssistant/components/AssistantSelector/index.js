@@ -149,20 +149,6 @@ const AssistantSelector = (props) => {
                         </Button>
                       </div>
                     </div>
-                      <div className="w-1/3 font-semibold">New Assemblies:</div>
-                      <div className="w-2/3">
-                        <Button
-                          label="Bulk Assemblies"
-                          size="sm"
-                          onClick={() => {
-                            handleModeChange("Create bulk assemblies");
-                            setView(false);
-                          }}
-                        >
-                          <New color="blank" className="stroke-current" />
-                        </Button>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 <div className="shadow rounded-lg p-4">
