@@ -1,7 +1,6 @@
 import React, { MouseEventHandler, useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import PropTypes, { InferProps } from "prop-types";
 
 export function Button(props: IButtonProps){
   const [showChildren, setShowChildren] = useState(false);

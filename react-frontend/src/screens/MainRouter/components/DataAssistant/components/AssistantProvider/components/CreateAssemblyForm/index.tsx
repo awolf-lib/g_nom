@@ -92,9 +92,9 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
     addNewAssembly(
       selectedTaxon.id,
       newAssemblyName.replace(/ /g, "_"),
-      selectedPath.join("/"),
+      selectedPath,
       parseInt(userID),
-      additionalFiles.join("/")
+      additionalFiles
     ).subscribe(response => {
       if (response && response.payload) {
         setShowConfirmationForm(false);
