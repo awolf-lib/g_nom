@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export API_ADRESS=${grep "API_ADRESS" ./config.txt | cut -f2 -d "="}
+export API_ADRESS=$(grep "API_ADRESS" ./config.txt | cut -f2 -d "=")
 
 # start MySQL Server
 sudo /etc/init.d/mysql start
