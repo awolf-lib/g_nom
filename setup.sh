@@ -50,3 +50,14 @@ rm -r ./flask-backend/storage/files/download/taxa/taxdmp.zip
 grep "API_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
 grep "FTP_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
 grep "JBROWSE_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
+
+# setup mysql docker container
+MYSQL_HOST_ADRESS=$(grep "MYSQL_HOST_ADRESS" config.txt | cut -f2 -d "=")
+MYSQL_ROOT_PASSWORD=$(grep "MYSQL_ROOT_PASSWORD" config.txt | cut -f2 -d "=")
+MYSQL_CONTAINER_NAME=$(grep "MYSQL_CONTAINER_NAME" config.txt | cut -f2 -d "=")
+docker run -p 3306:3306 --name=$MYSQL_CONTAINER_NAME -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -d mysql/mysql-server:latest -h $MYSQL_HOST_ADRESS
+echo "Waiting for container to start..."
+while [ "`docker inspect -f {{.State.Health.Status}} ${MYSQL_CONTAINER_NAME}`" != "healthy" ]; do sleep 1; done 
+docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"CREATE USER 'gnom'@'${MYSQL_HOST_ADRESS}' IDENTIFIED BY 'G-nom_BOT#0';\"; exit;"
+docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"GRANT ALL PRIVILEGES ON * . * TO 'gnom'@'${MYSQL_HOST_ADRESS}';\"; exit;"
+cat ./mysql/create_g-nom_dev.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/mysql -u root --password=$MYSQL_ROOT_PASSWORD

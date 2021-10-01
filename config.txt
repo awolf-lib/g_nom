@@ -1,5 +1,9 @@
 # Environment
-
 API_ADRESS=http://localhost:3002
 FTP_ADRESS=http://localhost:5003
 JBROWSE_ADRESS=http://localhost:8082
+
+# Docker
+MYSQL_HOST_ADRESS=172.17.0.1
+MYSQL_ROOT_PASSWORD=JaghRMI104
+MYSQL_CONTAINER_NAME=mysql_gnom
