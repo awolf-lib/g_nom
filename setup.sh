@@ -61,3 +61,8 @@ while [ "`docker inspect -f {{.State.Health.Status}} ${MYSQL_CONTAINER_NAME}`" !
 docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"CREATE USER 'gnom'@'${MYSQL_HOST_ADRESS}' IDENTIFIED BY 'G-nom_BOT#0';\"; exit;"
 docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"GRANT ALL PRIVILEGES ON * . * TO 'gnom'@'${MYSQL_HOST_ADRESS}';\"; exit;"
 cat ./mysql/create_g-nom_dev.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/mysql -u root --password=$MYSQL_ROOT_PASSWORD
+
+# initial load taxa
+cd ./flask-backend/src/
+python3 -c 'from Tools import DatabaseManager; api=DatabaseManager(); api.reloadTaxonIDsFromFile(1, False)'
+cd ../../
