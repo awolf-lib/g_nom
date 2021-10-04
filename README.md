@@ -2,7 +2,9 @@
 
     1. Docker
     2. Node.js & npm
-    3. Linux Server
+    3. Python
+
+    All other requirements will automatically be installed during the setup process.
 
 # Installation
 

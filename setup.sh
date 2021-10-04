@@ -1,16 +1,26 @@
 #!/bin/bash
 
+# check if docker daemon is running
+if ! docker info > /dev/null 2>&1; then
+  echo "This script uses docker, and it isn't running - please start docker and try again!"
+  exit 1
+fi
+
 # install local requirements
 ## samtools
+echo "Install samtools..."
 sudo apt-get install samtools
 
 ## screen
+echo "Install screen..."
 sudo apt-get install screen
 
 ## Cloudcommander
+echo "Install cloudcmd..."
 npm i cloudcmd -g
 
 ## Jbrowse requirements
+echo "Install and setup Jrbrowse..."
 sudo apt install build-essential zlib1g-dev
 
 ## Jbrowse
@@ -23,17 +33,20 @@ cd ./flask-backend/storage/externalTools/jbrowse
 cd ../../../../
 
 ## React Webapp
+echo "Install additional react dependencies..."
 cd ./react-frontend
 npm install
 cd ..
 
 ## Flask Server and Python libraries (venv)
+echo "Setting up Python virtual environment..."
 python3 -m venv ./flask-backend/venv
 source ./flask-backend/venv/bin/activate
 pip install -r ./flask-backend/requirements.txt
 deactivate
 
 # setup missing directories
+echo "Create storage directories..."
 mkdir -p ./flask-backend/storage/files/download/assemblies
 mkdir -p ./flask-backend/storage/files/download/taxa/images
 mkdir -p ./flask-backend/storage/files/download/taxa/taxdmp
@@ -42,6 +55,7 @@ mkdir -p ./flask-backend/storage/externalTools/
 touch ./flask-backend/storage/files/download/taxa/tree.json
 
 # download taxa information from NCBI
+echo "Download taxa from NCBI..."
 wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P ./flask-backend/storage/files/download/taxa
 unzip ./flask-backend/storage/files/download/taxa/taxdmp.zip -d ./flask-backend/storage/files/download/taxa/taxdmp
 rm -r ./flask-backend/storage/files/download/taxa/taxdmp.zip
@@ -63,6 +77,7 @@ docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_P
 cat ./mysql/create_g-nom_dev.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/mysql -u root --password=$MYSQL_ROOT_PASSWORD
 
 # initial load taxa
+echo "Import taxa into database..."
 cd ./flask-backend/src/
 python3 -c 'from Tools import DatabaseManager; api=DatabaseManager(); api.reloadTaxonIDsFromFile(1, False)'
 cd ../../
