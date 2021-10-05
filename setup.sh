@@ -7,6 +7,11 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # install local requirements
+## python2 and python3
+sudo apt-get update
+sudo apt install python2
+sudo apt-get install python3.8
+
 ## samtools
 echo "Install samtools..."
 sudo apt-get install samtools
@@ -20,7 +25,7 @@ echo "Install cloudcmd..."
 npm i cloudcmd -g
 
 ## Jbrowse requirements
-echo "Install and setup Jrbrowse..."
+echo "Install and setup Jbrowse..."
 sudo apt install build-essential zlib1g-dev
 
 ## Jbrowse
