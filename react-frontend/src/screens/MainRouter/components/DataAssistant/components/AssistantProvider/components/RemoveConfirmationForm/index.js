@@ -1,5 +1,5 @@
 import React from "react";
-import API from "../../../../../../../../api";
+import {removeImageByTaxonID, removeAssemblyByAssemblyID} from "../../../../../../../../api";
 
 import Button from "../../../../../../../../components/Button";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
@@ -12,8 +12,6 @@ const RemoveConfirmationForm = (props) => {
     object,
     confirmationType,
   } = props;
-
-  const api = new API();
 
   // notifications
   const dispatch = useNotification();
@@ -49,7 +47,7 @@ const RemoveConfirmationForm = (props) => {
         type: "error",
       });
     }
-    const response = await api.removeImageByTaxonID(
+    const response = await removeImageByTaxonID(
       selectedTaxon.ncbiTaxonID,
       userID
     );
@@ -65,7 +63,7 @@ const RemoveConfirmationForm = (props) => {
   };
 
   const handleRemoveAssembly = async () => {
-    const response = await api.removeAssemblyByAssemblyID(object.id);
+    const response = await removeAssemblyByAssemblyID(object.id);
 
     if (response && response.notification && response.notification.message) {
       handleNewNotification(response.notification);

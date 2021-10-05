@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { Add, Next, Previous } from "grommet-icons";
 
-import API from "../../api";
+import {fetchAllAssemblies} from "../../api";
 
 import Button from "../Button";
 import LoadingSpinner from "../LoadingSpinner";
@@ -35,8 +35,6 @@ const AssembliesTable = ({ label, userID }) => {
   });
   const [viewType, setViewType] = useState(userID ? "grid" : "list");
 
-  const api = new API();
-
   useEffect(() => {
     loadData();
 
@@ -63,7 +61,7 @@ const AssembliesTable = ({ label, userID }) => {
   const loadData = async (page = 1, range = 10, search = "", link = "") => {
     setFetching(true);
 
-    const response = await api.fetchAllAssemblies(
+    const response = await fetchAllAssemblies(
       page,
       range,
       search,

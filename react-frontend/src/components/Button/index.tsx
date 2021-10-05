@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { MouseEventHandler, useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import PropTypes from "prop-types";
 
-const Button = (props) => {
+export function Button(props: IButtonProps){
   const [showChildren, setShowChildren] = useState(false);
 
   const buttonContainerClass = classNames(
-    "py-2 h-full rounded-lg cursor-pointer focus:outline-none active:ring-2 w-full transition duration-500",
+    "py-2 h-full rounded-lg active:cursor-pointer focus:outline-none disabled:bg-gray-500 disabled:opacity-50 active:ring-2 w-full transition duration-500",
     {
       "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600":
         props.color === "primary",
@@ -61,14 +60,18 @@ const Button = (props) => {
 Button.defaultProps = {
   color: "primary",
   size: "md",
+  disabled: false,
 };
 
-Button.propTypes = {
-  label: PropTypes.string,
-  children: PropTypes.node,
-  primary: PropTypes.string,
-  secondary: PropTypes.bool,
-  size: PropTypes.string.isRequired,
-};
+interface IButtonProps{
+  label?: string;
+  children?: React.ReactNode;
+  primary?: string;
+  secondary?: string;
+  color: 'primary'|'secondary'|'confirm'|'cancel'|'nav'|'link';
+  size: 'sm'|'md'|'lg'|'xl';
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  disabled?: boolean;
+}
 
 export default Button;

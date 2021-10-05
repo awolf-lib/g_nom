@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import classNames from "classnames";
 
 import Button from "../../../../../../components/Button";
-import API from "../../../../../../api";
+import { addUser } from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const AddUserForm = () => {
@@ -25,7 +25,6 @@ const AddUserForm = () => {
   };
 
   const handleSubmitNewUser = async () => {
-    const api = new API();
     setSubmitted(true);
     if (
       username &&
@@ -34,7 +33,7 @@ const AddUserForm = () => {
       password === confirmPassword &&
       (role === "admin" || role === "user")
     ) {
-      const response = await api.addUser(username, password, role);
+      const response = await addUser(username, password, role);
       if (response?.notification) {
         handleNewNotification(response.notification);
       }

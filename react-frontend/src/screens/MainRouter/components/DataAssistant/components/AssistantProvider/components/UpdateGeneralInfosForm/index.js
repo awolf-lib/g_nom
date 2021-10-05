@@ -1,6 +1,6 @@
 import { Close, New, Trash, Validate } from "grommet-icons";
 import React, { useEffect, useState } from "react";
-import API from "../../../../../../../../api";
+import {fetchGeneralInfosByID, addGeneralInfo, updateGeneralInfoByID, removeGeneralInfoByID} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -26,8 +26,6 @@ const UpdateGeneralInfosForm = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -51,7 +49,7 @@ const UpdateGeneralInfosForm = (props) => {
 
   const loadGeneralInfos = async (level, id) => {
     setFetchingAll(true);
-    const response = await api.fetchGeneralInfosByID(level, id);
+    const response = await fetchGeneralInfosByID(level, id);
     if (response && response.payload) {
       setGeneralInfos(response.payload);
     }
@@ -62,7 +60,7 @@ const UpdateGeneralInfosForm = (props) => {
     setFetchingOnNew(true);
     if (newKey && newValue) {
       if (newKey.length <= 400 || newValue.length <= 2000) {
-        const response = await api.addGeneralInfo(
+        const response = await addGeneralInfo(
           level,
           selectedTaxon.ncbiTaxonID,
           newKey,
@@ -98,7 +96,7 @@ const UpdateGeneralInfosForm = (props) => {
     setFetchingOnUpdate(true);
     if (updatedKey && updatedValue) {
       if (updatedKey.length <= 400 || updatedValue.length <= 2000) {
-        const response = await api.updateGeneralInfoByID(
+        const response = await updateGeneralInfoByID(
           level,
           id,
           updatedKey,
@@ -132,7 +130,7 @@ const UpdateGeneralInfosForm = (props) => {
 
   const deleteGeneralInfo = async (id) => {
     setFetchingOnDelete(true);
-    const response = await api.removeGeneralInfoByID(level, id);
+    const response = await removeGeneralInfoByID(level, id);
     if (response && response.notification) {
       handleNewNotification(response.notification);
     }

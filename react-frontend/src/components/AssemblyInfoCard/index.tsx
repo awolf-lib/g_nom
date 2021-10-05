@@ -1,20 +1,19 @@
 import React from "react";
 import "../../App.css";
-import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import classNames from "classnames";
 
-const AssemblyInfoCard = ({
+export function AssemblyInfoCard({
   id,
   scientificName,
   taxonID,
   assemblyName,
   types,
   imageStatus,
-}) => {
-  const analysisClass = (analysisDone) =>
+}: IAssemblyInfoCardProps) {
+  const analysisClass = (analysisDone: boolean) =>
     classNames(
       "my-2 rounded-full px-1 text-center text-xs text-white py-px shadow",
       {
@@ -79,13 +78,14 @@ const AssemblyInfoCard = ({
 
 export default AssemblyInfoCard;
 
-AssemblyInfoCard.propTypes = {
-  id: PropTypes.number.isRequired,
-  scientificName: PropTypes.string,
-  taxonID: PropTypes.number,
-  assemblyName: PropTypes.string,
-  types: PropTypes.array,
-};
+export interface IAssemblyInfoCardProps{
+  id: number;
+  scientificName: string;
+  taxonID: number;
+  assemblyName: string;
+  types: string[];
+  imageStatus: any;
+}
 
 AssemblyInfoCard.defaultProps = {
   scientificName: "",
