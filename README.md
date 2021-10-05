@@ -1,55 +1,31 @@
-# Prepare Flask
+# Prerequisites
 
-    - Setup virtual environment:
-        Go to .../g-nom/flask-backend
-        python3 -m venv /g-nom/flask-backend/venv
-    - Activate venv:
-        source /g-nom/flask-backend/venv/bin/activate
-    - Install requirements:
-        pip install -r /g-nom/flask-backend/requirements.txt
-    - Deactivate venv:
-        deactivate
+    1. Docker
+    2. Node.js & npm
+    3. Python
 
-# CloudCommander
+    All other requirements will automatically be installed during the setup process.
 
-Install:
-npm i cloudcmd -g
+# Installation
 
-Run:
-cloudcmd --username admin --password admin --save --port 5003 --one-file-panel --no-contact --root /g-nom/download/ --prefix /g-nom/portal
+1. Clone project from github:
 
-# React App
+   git clone https://github.com/awolf-lib/g_nom.git
 
-Install:
-cd react-frontend
-npm install
+2. Enter the project directory:
+   cd .../g_nom/
 
-Run:
-cd react-frontend
-npm start
+3. Change config.txt to match your environment.
 
-# MySQL
+4. Start setup:
+   ./setup.sh
 
-Run:
-sudo /etc/init.d/mysql start
+# Start
 
-# jbrowse
+Start services:
+./start.sh
 
-Install:
-Clone master into flask-backend/src/externalTools/jbrowse
-cd jbrowse
-./setup.sh
+# Stop
 
-Run:
-cd jbrowse
-npm start
-
-Prerequisites:
-sudo apt-get install samtools
-
-# insert names.dmp
-
-Download:
-https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip
-
-Extract files and insert names.dmp and nodes.dmp at .../g-nom/flask-backend/storage/files/download/taxa/
+Stop services:
+./shutdown.sh
