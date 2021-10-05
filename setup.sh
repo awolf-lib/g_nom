@@ -78,6 +78,8 @@ cat ./mysql/create_g-nom_dev.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin
 
 # initial load taxa
 echo "Import taxa into database..."
-cd ./flask-backend/src/
-python3 -c 'from Tools import DatabaseManager; api=DatabaseManager(); api.reloadTaxonIDsFromFile(1, False)'
-cd ../../
+cd ./flask-backend/
+source ./venv/bin/activate
+python3 -c 'from src.Tools import DatabaseManager; api=DatabaseManager(); api.reloadTaxonIDsFromFile(1, False)'
+deactivate
+cd ../
