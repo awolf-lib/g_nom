@@ -62,7 +62,7 @@ const DataAssistant = () => {
         handleNewNotification(response.notification);
       }
     })
-  };
+  }
 
   const handleChangeSelectedTaxon = (inputNcbiTaxonID) => {
     setView1(false);

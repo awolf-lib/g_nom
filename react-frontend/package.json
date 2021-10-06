@@ -28,12 +28,20 @@
     "test": "craco test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "lint": "eslint . --fix"
   },
   "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
     "extends": [
       "react-app",
-      "react-app/jest"
+      "react-app/jest",
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
     ],
     "overrides": [
       {
@@ -68,8 +76,10 @@
     "@tailwindcss/postcss7-compat": "^2.0.4",
     "@types/react-router-dom": "^5.1.8",
     "autoprefixer": "^9.8.6",
+    "eslint": "^7.32.0",
     "postcss": "^7.0.35",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.4",
-    "ts-migrate": "^0.1.22"
+    "ts-migrate": "^0.1.22",
+    "typescript-eslint": "^0.0.1-alpha.0"
   }
 }

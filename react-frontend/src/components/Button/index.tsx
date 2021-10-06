@@ -55,7 +55,7 @@ export function Button(props: IButtonProps){
       {getContent()}
     </button>
   );
-};
+}
 
 Button.defaultProps = {
   color: "primary",

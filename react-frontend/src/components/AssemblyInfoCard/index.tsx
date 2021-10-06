@@ -74,7 +74,7 @@ export function AssemblyInfoCard({
       </div>
     </Link>
   );
-};
+}
 
 export default AssemblyInfoCard;
 

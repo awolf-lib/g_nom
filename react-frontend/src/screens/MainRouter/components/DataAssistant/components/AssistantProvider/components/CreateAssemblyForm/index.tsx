@@ -267,7 +267,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
       )}
     </div>
   );
-};
+}
 
 export default CreateAssemblyForm;
 

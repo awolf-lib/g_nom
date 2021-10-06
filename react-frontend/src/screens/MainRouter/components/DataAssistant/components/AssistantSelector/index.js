@@ -47,7 +47,7 @@ const AssistantSelector = (props) => {
         handleNewNotification(response.notification);
       }
     });
-  };
+  }
 
   return (
     <div>
