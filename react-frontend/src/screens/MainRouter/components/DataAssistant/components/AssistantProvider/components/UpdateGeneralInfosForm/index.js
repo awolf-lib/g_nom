@@ -1,5 +1,5 @@
 import { Close, New, Trash, Validate } from "grommet-icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {fetchGeneralInfosByID, addGeneralInfo, updateGeneralInfoByID, removeGeneralInfoByID} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";

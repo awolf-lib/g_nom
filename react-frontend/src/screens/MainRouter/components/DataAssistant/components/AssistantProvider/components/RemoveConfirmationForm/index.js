@@ -1,6 +1,4 @@
-import React from "react";
 import {removeImageByTaxonID, removeAssemblyByAssemblyID} from "../../../../../../../../api";
-
 import Button from "../../../../../../../../components/Button";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 

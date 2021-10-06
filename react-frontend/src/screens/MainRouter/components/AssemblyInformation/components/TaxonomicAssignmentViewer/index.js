@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
 

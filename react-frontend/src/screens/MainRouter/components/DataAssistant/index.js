@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {fetchTaxonByNCBITaxonID} from "../../../../api";
 import { useNotification } from "../../../../components/NotificationProvider";
 

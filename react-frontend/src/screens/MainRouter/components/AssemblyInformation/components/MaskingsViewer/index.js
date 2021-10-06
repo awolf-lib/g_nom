@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
 import propTypes from "prop-types";
 import Button from "../../../../../../components/Button";

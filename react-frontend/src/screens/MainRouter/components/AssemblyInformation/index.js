@@ -1,5 +1,5 @@
 import { Book, Bookmark, Close } from "grommet-icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import {addNewBookmark, fetchAssemblyInformationByAssemblyID, removeBookmark} from "../../../../api";

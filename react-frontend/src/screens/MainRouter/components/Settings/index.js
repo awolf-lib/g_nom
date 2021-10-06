@@ -1,6 +1,5 @@
 import { Down, Up } from "grommet-icons";
-import React, { useState } from "react";
-
+import { useState } from "react";
 import AddUserForm from "./components/AddUserForm";
 import ManageUserForm from "./components/ManageUserForm";
 

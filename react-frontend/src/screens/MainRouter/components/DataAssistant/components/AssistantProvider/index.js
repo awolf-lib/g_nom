@@ -1,5 +1,3 @@
-import React from "react";
-
 import UpdateImageForm from "./components/UpdateImageForm";
 import RemoveConfirmationForm from "./components/RemoveConfirmationForm";
 import UpdateGeneralInfosForm from "./components/UpdateGeneralInfosForm";
