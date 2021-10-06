@@ -1,7 +1,5 @@
-import React from "react";
 import "../../App.css";
 import { Link } from "react-router-dom";
-
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import classNames from "classnames";
 

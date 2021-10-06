@@ -1,6 +1,6 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import { fetchPossibleImports, Notification, addNewAssembly } from "../../../../../../../../api";
 import classNames from "classnames";
+import { fetchPossibleImports, Notification, addNewAssembly } from "../../../../../../../../api";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
