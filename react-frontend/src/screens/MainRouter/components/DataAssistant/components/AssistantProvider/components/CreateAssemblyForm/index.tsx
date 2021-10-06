@@ -6,7 +6,7 @@ import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
-export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
+export function CreateAssemblyForm(props: ICreateAssemblyFormProps): JSX.Element {
   const { selectedTaxon, handleModeChange } = props;
 
   const [possibleImports, setPossibleImports] = useState<{fasta: {[key: string]: string[][]}}>();

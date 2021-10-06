@@ -12,7 +12,7 @@ export function AssemblyInfoCard({
   assemblyName,
   types,
   imageStatus,
-}: IAssemblyInfoCardProps) {
+}: IAssemblyInfoCardProps): JSX.Element {
   const analysisClass = (analysisDone: boolean) =>
     classNames(
       "my-2 rounded-full px-1 text-center text-xs text-white py-px shadow",
