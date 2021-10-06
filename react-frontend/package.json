@@ -18,6 +18,7 @@
     "react-plotly.js": "^2.5.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
+    "rxjs": "^7.3.0",
     "styled-components": "^5.3.0",
     "web-vitals": "^1.1.1"
   },
@@ -31,8 +32,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ],
     "overrides": [
       {
@@ -65,8 +65,10 @@
     "@storybook/preset-create-react-app": "^3.1.7",
     "@storybook/react": "^6.2.8",
     "@tailwindcss/postcss7-compat": "^2.0.4",
+    "@types/react-router-dom": "^5.1.8",
     "autoprefixer": "^9.8.6",
     "postcss": "^7.0.35",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.4"
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.4",
+    "ts-migrate": "^0.1.22"
   }
 }

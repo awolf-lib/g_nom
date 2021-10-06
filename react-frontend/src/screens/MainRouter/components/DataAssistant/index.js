@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import API from "../../../../api";
+import {fetchTaxonByNCBITaxonID} from "../../../../api";
 import { useNotification } from "../../../../components/NotificationProvider";
 
 import TaxonomyInputForm from "./components/TaxonomyInputForm";
@@ -21,8 +21,6 @@ const DataAssistant = () => {
 
   // view 3 - states
   const [view3, setView3] = useState(true);
-
-  const api = new API();
 
   // notifications
   const dispatch = useNotification();
@@ -53,20 +51,17 @@ const DataAssistant = () => {
     );
   };
 
-  const loadTaxaByNcbiTaxonID = async (taxonID) => {
-    const response = await api.fetchTaxonByNCBITaxonID(taxonID);
-
-    if (response && response.payload) {
+  function loadTaxaByNcbiTaxonID(taxonID) {
+    fetchTaxonByNCBITaxonID(taxonID).subscribe(response => {
       setTaxa(response.payload);
       if (response.payload.length === 1) {
         setSelectedTaxon(response.payload[0]);
         setView1(false);
       }
-    }
-
-    if (response && response.notification && response.notification.message) {
-      handleNewNotification(response.notification);
-    }
+      if (response && response.notification && response.notification.message) {
+        handleNewNotification(response.notification);
+      }
+    })
   };
 
   const handleChangeSelectedTaxon = (inputNcbiTaxonID) => {

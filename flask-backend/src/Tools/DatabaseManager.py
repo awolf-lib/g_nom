@@ -166,15 +166,16 @@ class DatabaseManager:
 
     # ================== TAXON ================== #
     # IMPORT ALL FROM TAXDUMP FILE
-    def reloadTaxonIDsFromFile(self, userID):
+    def reloadTaxonIDsFromFile(self, userID=1, reloadFromNCBI=True):
         """
         Takes names.dmp from storage directory and fills db with
         all tax IDs
         """
 
-        status, notification = fileManager.reloadTaxonFilesFromNCBI()
-        if not status:
-            return 0, notification
+        if reloadFromNCBI:
+            status, notification = fileManager.reloadTaxonFilesFromNCBI()
+            if not status:
+                return 0, notification
 
         connection, cursor = self.updateConnection()
 
@@ -203,10 +204,6 @@ class DatabaseManager:
             cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
             connection.commit()
         except:
-            cursor.execute("DELETE FROM taxon")
-            connection.commit()
-            cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
-            connection.commit()
             return 0, {
                 "label": "Error",
                 "message": "Error while resetting database!",
@@ -945,7 +942,7 @@ class DatabaseManager:
             }
 
     # ADD NEW ASSEMBLY
-    def addNewAssembly(self, taxonID, name, path, userID, additionalFilesPath=""):
+    def addNewAssembly(self, taxonID: int, name: str, path: str, userID: int, additionalFilesPath: str=""):
         """
         add new assembly
         """
@@ -1046,6 +1043,7 @@ class DatabaseManager:
             return 0, notification
 
         return {
+            "assemblyId": lastID,
             "taxonID": taxonID,
             "name": name,
             "path": path,

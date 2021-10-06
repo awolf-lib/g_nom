@@ -4,7 +4,7 @@ import "../../../../App.css";
 
 import Button from "../../../../components/Button";
 
-import API from "../../../../api";
+import {login} from "../../../../api";
 
 import treeOfLife from "../../../../images/loginToL.jpg";
 import { useNotification } from "../../../../components/NotificationProvider";
@@ -13,8 +13,6 @@ import Input from "../../../../components/Input";
 const Login = ({ setToken, setUserID, setUserRole }) => {
   const [username, setUserName] = useState();
   const [password, setPassword] = useState();
-
-  const api = new API();
 
   const dispatch = useNotification();
 
@@ -28,25 +26,25 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await api.login(username, password);
-
-    if (response) {
-      if (response.payload?.token) {
-        setToken(response.payload.token);
-        setUserID(response.payload.userID);
-        setUserRole(response.payload.role);
+    login(username, password).subscribe(response => {
+      if (response) {
+        if (response.payload?.token) {
+          setToken(response.payload.token);
+          setUserID(response.payload.userID);
+          setUserRole(response.payload.role);
+        }
+        if (response.notification) {
+          handleNewNotification(response.notification);
+        }
+      } else {
+        handleNewNotification({
+          label: "Error",
+          message: "Something went wrong!",
+          type: "error",
+        });
+        setToken("");
       }
-      if (response.notification) {
-        handleNewNotification(response.notification);
-      }
-    } else {
-      handleNewNotification({
-        label: "Error",
-        message: "Something went wrong!",
-        type: "error",
-      });
-      setToken("");
-    }
+    });
   };
 
   return (

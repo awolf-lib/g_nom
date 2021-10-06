@@ -47,7 +47,7 @@ const TaxonomyInputForm = (props) => {
                   id="taxonomyID"
                   type="number"
                   placeholder="NCBI taxonomy ID..."
-                  value={taxonID}
+                  value={[`${taxonID}`]}
                   onChange={(e) => handleTaxonIDChange(e.target.value)}
                 />
               </div>

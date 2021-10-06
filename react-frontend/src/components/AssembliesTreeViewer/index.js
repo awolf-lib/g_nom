@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import API from "../../api";
 import { useNotification } from "../../components/NotificationProvider";
+import {fetchAssembliesByTaxonIDs, fetchTaxonTree} from "../../api";
 import SpeciesProfilePictureViewer from "../../components/SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
@@ -31,8 +31,6 @@ const AssembliesTreeViewer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const api = new API();
-
   // notifications
   const dispatch = useNotification();
 
@@ -46,7 +44,7 @@ const AssembliesTreeViewer = () => {
 
   const loadTree = async () => {
     setLoadingTree(true);
-    const response = await api.fetchTaxonTree();
+    const response = await fetchTaxonTree();
 
     if (response && response.payload) {
       setFullTree(response.payload);
@@ -83,7 +81,7 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTaxa = async (nodeDatum) => {
-    const response = await api.fetchAssembliesByTaxonIDs(
+    const response = await fetchAssembliesByTaxonIDs(
       getChildrenTaxIds(nodeDatum)
     );
 
