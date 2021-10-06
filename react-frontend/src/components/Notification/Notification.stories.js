@@ -5,7 +5,7 @@ export default {
   component: Notification,
 };
 
-const Template = (args) => <Notification dispatch={() => {}} {...args} />;
+const Template = (args) => <Notification dispatch={() => null} {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};

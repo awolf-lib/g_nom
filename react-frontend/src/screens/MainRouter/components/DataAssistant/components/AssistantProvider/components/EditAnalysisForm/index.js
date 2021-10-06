@@ -45,7 +45,7 @@ const EditAnalysisForm = (props) => {
     }
   };
 
-  const handleRename = () => {};
+  const handleRename = () => null;
 
   const handleRemove = async (confirmation) => {
     setConfirmRemoving(confirmation);
