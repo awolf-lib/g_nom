@@ -37,10 +37,12 @@ cd ./flask-backend/storage/externalTools/jbrowse
 ./setup.sh
 cd ../../../../
 
-## React Webapp
-echo "Install additional react dependencies..."
+## Reactapp
+echo "Build reactapp docker container and install dependencies..."
+REACTAPP_CONTAINER_NAME=$(grep "REACTAPP_CONTAINER_NAME" config.txt | cut -f2 -d "=")
 cd ./react-frontend
-npm install
+docker build -t gnom/reactapp .
+docker run --name $REACTAPP_CONTAINER_NAME -dp 3000:3000 gnom/reactapp
 cd ..
 
 ## Flask Server and Python libraries (venv)
@@ -66,7 +68,7 @@ unzip ./flask-backend/storage/files/download/taxa/taxdmp.zip -d ./flask-backend/
 rm -r ./flask-backend/storage/files/download/taxa/taxdmp.zip
 
 # read config / write .env
-grep "API_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
+grep "API_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' > ./react-frontend/.env
 grep "FTP_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
 grep "JBROWSE_ADRESS" config.txt | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
 
