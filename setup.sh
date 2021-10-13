@@ -116,6 +116,15 @@ until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${API_ADR
 done;
 echo ""
 
+# JBrowse container
+mkdir jbrowse_data
+echo "Build jbrowse docker container"
+CONTAINER_NAME_JBROWSE=$(grep "CONTAINER_NAME_JBROWSE" config.txt | cut -f2 -d "=")
+cd ./jbrowse
+docker build -t gnom/jbrowse .
+docker run --name $CONTAINER_NAME_JBROWSE -dp 8082:8082 --mount type=bind,source="$(pwd)"/../jbrowse_data,target=/root/jbrowse/data gnom/jbrowse
+cd ..
+
 # setup missing directories
 docker exec $FLASK_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/assemblies"
 docker exec $FLASK_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/taxa/images"
