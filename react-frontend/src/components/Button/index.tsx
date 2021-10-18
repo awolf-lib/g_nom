@@ -2,7 +2,7 @@ import React, { MouseEventHandler, useState } from "react";
 import classNames from "classnames";
 import "../../App.css";
 
-export function Button(props: IButtonProps){
+export function Button(props: IButtonProps): JSX.Element {
   const [showChildren, setShowChildren] = useState(false);
 
   const buttonContainerClass = classNames(
@@ -55,7 +55,7 @@ export function Button(props: IButtonProps){
       {getContent()}
     </button>
   );
-};
+}
 
 Button.defaultProps = {
   color: "primary",

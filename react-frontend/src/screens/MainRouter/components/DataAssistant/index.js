@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {fetchTaxonByNCBITaxonID} from "../../../../api";
 import { useNotification } from "../../../../components/NotificationProvider";
 
@@ -62,7 +62,7 @@ const DataAssistant = () => {
         handleNewNotification(response.notification);
       }
     })
-  };
+  }
 
   const handleChangeSelectedTaxon = (inputNcbiTaxonID) => {
     setView1(false);

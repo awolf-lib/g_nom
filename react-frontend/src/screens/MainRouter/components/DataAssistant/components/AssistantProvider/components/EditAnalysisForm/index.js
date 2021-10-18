@@ -1,5 +1,5 @@
 import { Close, Trash, Validate } from "grommet-icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {fetchAnalysesByAssemblyID, fetchAnnotationsByAssemblyID, fetchMappingsByAssemblyID, removeAnnotationByAnnotationID, removeMappingByMappingID, removeAnalysisByAnalysisID} from "../../../../../../../../api";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
@@ -45,7 +45,7 @@ const EditAnalysisForm = (props) => {
     }
   };
 
-  const handleRename = () => {};
+  const handleRename = () => null;
 
   const handleRemove = async (confirmation) => {
     setConfirmRemoving(confirmation);

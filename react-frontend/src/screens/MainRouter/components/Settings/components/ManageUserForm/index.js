@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import { Save, Trash, Edit, FormClose } from "grommet-icons";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {deleteUserByUserID, fetchAllUsers, updateUserRoleByUserID} from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";

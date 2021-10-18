@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
 import "../../App.css";
 import { useNotification } from "../../components/NotificationProvider";

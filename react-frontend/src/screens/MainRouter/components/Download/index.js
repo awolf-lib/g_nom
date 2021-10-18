@@ -1,5 +1,3 @@
-import React from "react";
-
 const Download = () => {
   return (
     <div className="animate-grow-y mb-16">

@@ -28,12 +28,26 @@
     "test": "craco test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "lint": "eslint . --fix"
   },
   "eslintConfig": {
-    "extends": [
-      "react-app"
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
     ],
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-use-before-define": "off"
+    },
     "overrides": [
       {
         "files": [
@@ -41,6 +55,17 @@
         ],
         "rules": {
           "import/no-anonymous-default-export": "off"
+        }
+      },
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "rules": {
+          "@typescript-eslint/explicit-module-boundary-types": ["warn"],
+          "@typescript-eslint/no-unused-vars": ["warn"],
+          "@typescript-eslint/no-use-before-define": ["warn"]
         }
       }
     ]
@@ -66,7 +91,10 @@
     "@storybook/react": "^6.2.8",
     "@tailwindcss/postcss7-compat": "^2.0.4",
     "@types/react-router-dom": "^5.1.8",
+    "@typescript-eslint/eslint-plugin": "^4.33.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "autoprefixer": "^9.8.6",
+    "eslint": "^7.32.0",
     "postcss": "^7.0.35",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.4",
     "ts-migrate": "^0.1.22"

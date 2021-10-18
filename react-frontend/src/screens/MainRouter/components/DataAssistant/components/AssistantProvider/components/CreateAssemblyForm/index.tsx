@@ -1,12 +1,12 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import { fetchPossibleImports, Notification, addNewAssembly } from "../../../../../../../../api";
 import classNames from "classnames";
+import { fetchPossibleImports, Notification, addNewAssembly } from "../../../../../../../../api";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import Button from "../../../../../../../../components/Button";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
-export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
+export function CreateAssemblyForm(props: ICreateAssemblyFormProps): JSX.Element {
   const { selectedTaxon, handleModeChange } = props;
 
   const [possibleImports, setPossibleImports] = useState<{fasta: {[key: string]: string[][]}}>();
@@ -267,7 +267,7 @@ export function CreateAssemblyForm(props: ICreateAssemblyFormProps){
       )}
     </div>
   );
-};
+}
 
 export default CreateAssemblyForm;
 

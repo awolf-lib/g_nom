@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CircleInformation,
@@ -47,7 +47,7 @@ const AssistantSelector = (props) => {
         handleNewNotification(response.notification);
       }
     });
-  };
+  }
 
   return (
     <div>

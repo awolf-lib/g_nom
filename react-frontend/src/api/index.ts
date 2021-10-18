@@ -348,7 +348,7 @@ export async function renameAssembly(id: number, name: string, userID: number) {
 }
 
 // ===== ADD NEW ANNOTATION ===== //
-export function addNewAnnotation(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export function addNewAnnotation(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
   return fromFetch(
     "http://localhost:3002/addNewAnnotation?id=" +
       assemblyId +
@@ -373,7 +373,7 @@ export interface IAnnotionationAdded{
 }
 
 // ===== ADD NEW MAPPING ===== //
-export async function addNewMapping(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export async function addNewMapping(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
   return fromFetch(
     "http://localhost:3002/addNewMapping?id=" +
       assemblyId +
@@ -435,7 +435,7 @@ export async function fetchAnalysesByAssemblyID(assemblyID: number) {
 }
 
 // ===== ADD NEW ANALYSIS ===== //
-export function addNewAnalysis(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath: string = "") {
+export function addNewAnalysis(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
   return fromFetch(
     "http://localhost:3002/addNewAnalysis?id=" +
       assemblyId +
