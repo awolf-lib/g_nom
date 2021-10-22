@@ -1,40 +1,13 @@
-# FROM jbrowser/jbrowser
-FROM node:16-alpine
+FROM httpd:2.4
 
-## Jbrowse requirements
-RUN echo "Install and setup Jbrowse..."
-RUN apk add --update git g++ gcc libgcc libstdc++ linux-headers make zlib python2 wget bash
+RUN apt update
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt install -y genometools samtools tabix nodejs npm
 
-# install libsass
-RUN git clone https://github.com/sass/sassc && cd sassc && \
-    git clone https://github.com/sass/libsass && \
-    SASS_LIBSASS_PATH=/sassc/libsass make && \
-    mv bin/sassc /usr/bin/sassc && \
-    cd ../ && rm -rf /sassc
+RUN npm install -g @jbrowse/cli
+# Maybe we should force create so we are using the root directory
+RUN jbrowse create -f /usr/local/apache2/htdocs
 
-# created node-sass binary
-ENV SASS_BINARY_PATH=/usr/lib/node_modules/node-sass/build/Release/binding.node
-RUN git clone --recursive https://github.com/sass/node-sass.git && \
-    cd node-sass && \
-    git submodule update --init --recursive && \
-    npm install && \
-    node scripts/build -f && \
-    cd ../ && rm -rf node-sass
+COPY target/release/jbrowselistener /usr/local/jbrowselistener
 
-# add binary path of node-sass to .npmrc
-RUN touch $HOME/.npmrc && echo "sass_binary_cache=${SASS_BINARY_PATH}" >> $HOME/.npmrc
-
-ENV SKIP_SASS_BINARY_DOWNLOAD_FOR_CI true
-ENV SKIP_NODE_SASS_TESTS true
-
-## Jbrowse
-RUN wget https://github.com/GMOD/jbrowse/archive/refs/heads/master.zip -P ~/downloads/
-RUN unzip ~/downloads/master.zip -d ~/downloads
-RUN mv ~/downloads/jbrowse-master ~/jbrowse
-RUN rm -r ~/downloads/master.zip
-RUN cd ~/jbrowse && ./setup.sh
-RUN cd ~/jbrowse && npm i express --save
-RUN rm -rf ~/jbrowse/data
-
-EXPOSE 8082
-CMD cd ~/jbrowse && npm start
+EXPOSE 80

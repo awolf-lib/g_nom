@@ -26,7 +26,6 @@ docker start $CONTAINER_NAME_JBROWSE
 # open screen sessions
 cd flask-backend/
 screen -dmS "backend_gnom" "./run_main.sh"
-screen -dmS "jbrowse_gnom" "npm" "start" "--prefix" "./storage/externalTools/jbrowse/"
 cd storage/files
 rm -r ~/.cloudcmd.json
 screen -dmS "cloudcmd_gnom" "cloudcmd" "--port" "5003" "--one-file-panel" "--no-contact" "--root" "." "--prefix" "/g-nom/portal" "--open" "false"

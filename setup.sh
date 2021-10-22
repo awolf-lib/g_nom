@@ -122,7 +122,9 @@ echo "Build jbrowse docker container"
 CONTAINER_NAME_JBROWSE=$(grep "CONTAINER_NAME_JBROWSE" config.txt | cut -f2 -d "=")
 cd ./jbrowse
 docker build -t gnom/jbrowse .
-docker run --name $CONTAINER_NAME_JBROWSE -dp 8082:8082 --mount type=bind,source="$(pwd)"/../jbrowse_data,target=/root/jbrowse/data gnom/jbrowse
+docker stop $CONTAINER_NAME_JBROWSE
+docker rm $CONTAINER_NAME_JBROWSE
+docker run --name $CONTAINER_NAME_JBROWSE -dp 8082:5000 --mount type=bind,source="$(pwd)"/../flask-backend/storage,target=/storage gnom/jbrowse
 cd ..
 
 # setup missing directories
