@@ -1,0 +1,12 @@
+[package]
+name = "jbrowselistener"
+version = "0.1.0"
+authors = ["Archina Void <archina5thrider@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+serde="*"
+serde_derive="*"
+serde_json = "*"
+# dotenv={version="*", optional=true}
+amiquip = { version = "0.4", default-features = false }
