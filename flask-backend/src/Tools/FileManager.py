@@ -9,17 +9,12 @@ from re import compile
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 
-# defaults
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
-BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
-BASE_PATH_TO_JBROWSE = ""  # outsourced
-JBROWSEGENERATENAMESCALL = (
-    "/flask-backend/storage/externalTools/jbrowse/bin/generate-names.pl"
-)
+
+from .Paths import BASE_PATH_TO_JBROWSE, JBROWSEGENERATENAMESCALL, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD
 
 # images
 SIZE = 256, 256
-
 
 class FileManager:
     def __init__(self):
@@ -256,10 +251,12 @@ class FileManager:
                         "type": "error",
                     }
 
+            # TODO we need to pika a connection here and send
+            # TODO skip this as it is done by the jbrowse container
             # try:
             #     run(["samtools", "faidx", newPath])
-            #     run(["ln", "-rs", newPath, f"{BASE_PATH_TO_JBROWSE}{name}/"])
-            #     run(["ln", "-rs", f"{newPath}.fai", f"{BASE_PATH_TO_JBROWSE}{name}/"])
+            #     run(["ln", "-rs", newPath, f"/storage/{name}/"])
+            #     run(["ln", "-rs", f"{newPath}.fai", f"/storage/{name}/"])
             # except:
             #     self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
             #     self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
