@@ -8,5 +8,4 @@ edition = "2018"
 serde="*"
 serde_derive="*"
 serde_json = "*"
-# dotenv={version="*", optional=true}
 amiquip = { version = "0.4", default-features = false }

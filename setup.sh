@@ -81,6 +81,9 @@ docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
 
 # ============================================ #
 
+docker network create gnome_rabbitmq
+docker run -d --network gnome_rabbitmq --hostname gnom_rabbit_host --name gnom_rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management-alpine
+
 ## Reactapp
 echo "Build reactapp docker container and install dependencies..."
 # envs
@@ -121,10 +124,9 @@ mkdir jbrowse_data
 echo "Build jbrowse docker container"
 CONTAINER_NAME_JBROWSE=$(grep "CONTAINER_NAME_JBROWSE" config.txt | cut -f2 -d "=")
 cd ./jbrowse
-docker build -t gnom/jbrowse .
-docker stop $CONTAINER_NAME_JBROWSE
-docker rm $CONTAINER_NAME_JBROWSE
-docker run --name $CONTAINER_NAME_JBROWSE -dp 8082:5000 --mount type=bind,source="$(pwd)"/../flask-backend/storage,target=/storage gnom/jbrowse
+cargo build --release && docker build -t gnom/jbrowse .
+docker stop $CONTAINER_NAME_JBROWSE && docker rm $CONTAINER_NAME_JBROWSE
+docker run --name $CONTAINER_NAME_JBROWSE -dp 8082:5000 --network gnome_rabbitmq --mount type=bind,source="$(pwd)"/../flask-backend/storage,target=/storage gnom/jbrowse
 cd ..
 
 # setup missing directories

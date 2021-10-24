@@ -39,7 +39,8 @@ fn handle_new_assembly(message: &NewAssemblyMessage){
 }
 
 fn main() -> Result<()> {
-    let mut connection = Connection::insecure_open("amqp://guest:guest@127.0.0.1:5672").expect("RabbitMQ Connection not established");
+    let rabbit_host = "amqp://guest:guest@gnom_rabbit:5672";
+    let mut connection = Connection::insecure_open(&rabbit_host).expect("RabbitMQ Connection not established");
     let channel = connection.open_channel(None).expect("RabbitMQ cannot access channel");
     let queue = channel.queue_declare("assembly", QueueDeclareOptions{
         durable: true,
