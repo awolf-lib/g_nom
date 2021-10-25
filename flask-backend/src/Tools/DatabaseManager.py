@@ -994,13 +994,10 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "assembly", path, name, additionalFilesPath
-        )
+        path, notification = fileManager.moveAssemblyToStorage(path, name, additionalFilesPath)
 
         if not path:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, notification
 
         try:
@@ -1017,18 +1014,18 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, {
                 "label": "Error",
                 "message": "Something went wrong while inserting assembly into database!",
                 "type": "error",
             }
 
+        fileManager.notify_assembly(lastID, name, path)
+
         data, notification = parsers.parseFasta(path)
 
         if not data:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             cursor.execute(f"DELETE FROM assembly WHERE id={lastID}")
             connection.commit()
             return 0, notification
@@ -1052,7 +1049,6 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             self.removeAssemblyByAssemblyID(lastID)
             return 0, {
                 "label": "Error",
