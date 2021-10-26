@@ -22,7 +22,7 @@ fn handle_new_assembly(message: &message::AssemblyMessage) -> Result<ExitStatus,
         .arg("--name")
         .arg(&message.assembly.name)
         .arg("--target")
-        .arg(format!("{}/{}", &JBROWSE_PATH, &message.assembly.name))
+        .arg(format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name))
         .status();
 
     samtolls.and(jbrowse)
