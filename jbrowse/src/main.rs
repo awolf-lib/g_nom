@@ -8,13 +8,19 @@ const JBROWSE_PATH: &str = "/usr/local/apache2/htdocs";
 
 fn handle_new_assembly(message: &message::AssemblyMessage) -> Result<ExitStatus, std::io::Error>{
     let storage_fasta = format!("{}{}", STORAGE_ROOT, &message.storage_path);
+    let jbrowse_assembly_path = format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name);
 
     let samtolls = Command::new("samtools")
         .arg("faidx")
         .arg(&storage_fasta)
         .status();
 
+    let mkdir = Command::new("mkdir")
+        .arg("-p")
+        .arg(&jbrowse_assembly_path).status();
+
     let jbrowse = Command::new("jbrowse")
+        .current_dir(&jbrowse_assembly_path)
         .arg("add-assembly")
         .arg(&storage_fasta)
         .arg("--load")
@@ -25,7 +31,7 @@ fn handle_new_assembly(message: &message::AssemblyMessage) -> Result<ExitStatus,
         .arg(format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name))
         .status();
 
-    samtolls.and(jbrowse)
+    samtolls.and(mkdir).and(jbrowse)
 }
 
 fn main() -> Result<()> {
