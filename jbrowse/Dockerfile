@@ -10,4 +10,4 @@ RUN jbrowse create -f /usr/local/apache2/htdocs
 EXPOSE 80
 
 COPY target/release/jbrowselistener /usr/local/j_listener/jbrowselistener
-CMD cd /usr/local/j_listener && ./jbrowselistener
+CMD httpd-foreground & cd /usr/local/j_listener && ./jbrowselistener
