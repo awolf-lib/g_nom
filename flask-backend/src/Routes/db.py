@@ -90,7 +90,7 @@ def updateUserRoleByUserID():
 def reloadTaxonIDsFromFile():
     if request.method == "GET":
         userID = request.args.get("userID")
-        data, notification = api.reloadTaxonIDsFromFile(userID)
+        data, notification = api.reloadTaxonIDsFromFile(userID, False)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

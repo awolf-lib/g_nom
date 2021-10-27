@@ -1,19 +1,20 @@
 import mysql.connector
 from secrets import token_hex
 from hashlib import sha512
+from json import dumps
 
 
 class Auth:
     def __init__(self):
-        self.hostURL = "0.0.0.0"
+        self.hostURL = "mysql_gnom"
 
     # ====== GENERAL ====== #
     # reconnect to get updates
     def updateConnection(self, database="g-nom_dev"):
         connection = mysql.connector.connect(
             host=self.hostURL,
-            user="gnom",
-            password="G-nom_BOT#0",
+            user="root",
+            password="JaghRMI104",
             database=database,
             auth_plugin="mysql_native_password",
         )

@@ -27,8 +27,6 @@
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public",
     "lint": "eslint . --fix"
   },
   "eslintConfig": {
@@ -39,7 +37,6 @@
     ],
     "extends": [
       "react-app",
-      "react-app/jest",
       "eslint:recommended",
       "plugin:@typescript-eslint/recommended"
     ],
@@ -63,9 +60,15 @@
           "*.tsx"
         ],
         "rules": {
-          "@typescript-eslint/explicit-module-boundary-types": ["warn"],
-          "@typescript-eslint/no-unused-vars": ["warn"],
-          "@typescript-eslint/no-use-before-define": ["warn"]
+          "@typescript-eslint/explicit-module-boundary-types": [
+            "warn"
+          ],
+          "@typescript-eslint/no-unused-vars": [
+            "warn"
+          ],
+          "@typescript-eslint/no-use-before-define": [
+            "warn"
+          ]
         }
       }
     ]
@@ -83,12 +86,6 @@
     ]
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^6.2.8",
-    "@storybook/addon-essentials": "^6.2.8",
-    "@storybook/addon-links": "^6.2.8",
-    "@storybook/node-logger": "^6.2.8",
-    "@storybook/preset-create-react-app": "^3.1.7",
-    "@storybook/react": "^6.2.8",
     "@tailwindcss/postcss7-compat": "^2.0.4",
     "@types/react-router-dom": "^5.1.8",
     "@typescript-eslint/eslint-plugin": "^4.33.0",

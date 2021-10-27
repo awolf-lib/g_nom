@@ -7,11 +7,12 @@ from PIL import Image
 from subprocess import run
 
 # defaults
-BASE_PATH_TO_UPLOAD = "storage/files/upload/"
-BASE_PATH_TO_STORAGE = "storage/files/download/"
-
-BASE_PATH_TO_JBROWSE = "storage/externalTools/jbrowse/data/"
-JBROWSEGENERATENAMESCALL = "storage/externalTools/jbrowse/bin/generate-names.pl"
+BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
+BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
+BASE_PATH_TO_JBROWSE = ""  # outsourced
+JBROWSEGENERATENAMESCALL = (
+    "/flask-backend/storage/externalTools/jbrowse/bin/generate-names.pl"
+)
 
 # images
 SIZE = 256, 256
@@ -19,7 +20,7 @@ SIZE = 256, 256
 
 class FileManager:
     def __init__(self):
-        self.hostURL = "0.0.0.0"
+        self.hostURL = "mysql_gnom"
 
     # ====== GENERAL ====== #
     # reconnect to get updates
@@ -77,7 +78,7 @@ class FileManager:
     def fetchPossibleImports(
         self,
         types=["image", "fasta", "gff", "bam", "analysis"],
-        import_directory=BASE_PATH_TO_UPLOAD,
+        import_directory=BASE_PATH_TO_IMPORT,
     ):
         """
         Fetch all files provided in import dirctory
@@ -116,11 +117,11 @@ class FileManager:
 
         # check if import directory exist or create
         if not exists(import_directory):
-            if not exists(BASE_PATH_TO_UPLOAD):
-                makedirs(BASE_PATH_TO_UPLOAD, exist_ok=True)
+            if not exists(BASE_PATH_TO_IMPORT):
+                makedirs(BASE_PATH_TO_IMPORT, exist_ok=True)
             return 0, {
                 "label": "Info",
-                "message": f"Import directory deleted from file system. Created directory: '{BASE_PATH_TO_UPLOAD}'",
+                "message": f"Import directory deleted from file system. Created directory: '{BASE_PATH_TO_IMPORT}'",
                 "type": "info",
             }
 
@@ -135,7 +136,7 @@ class FileManager:
                     regex = FILE_TYPE_EXTENSION_PATTERNS[type][extension]
                     fileListPerTypePerExtension = []
                     for filePath in glob(import_directory + regex, recursive=True):
-                        pathSplit = filePath.split("/")
+                        pathSplit = filePath.split("/")[1:]
                         basePathLength = len(
                             [x for x in import_directory.split("/") if x != ""]
                         )
@@ -177,7 +178,7 @@ class FileManager:
             "type": "error",
         }
 
-        path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
+        path = f"{BASE_PATH_TO_IMPORT}{mainFile}"
         if not exists(path):
             return 0, {
                 "label": "Error",
@@ -186,9 +187,9 @@ class FileManager:
             }
 
         if additionalFiles:
-            additionalFilesPath = f"{BASE_PATH_TO_UPLOAD}{additionalFiles}/"
+            additionalFilesPath = f"{BASE_PATH_TO_IMPORT}{additionalFiles}/"
 
-            if additionalFilesPath != BASE_PATH_TO_UPLOAD:
+            if additionalFilesPath != BASE_PATH_TO_IMPORT:
                 if not exists(additionalFilesPath):
                     return 0, {
                         "label": "Error",
@@ -245,52 +246,52 @@ class FileManager:
                     )
                 except:
                     self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-                    self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+                    # self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
                     return 0, {
                         "label": "Error",
                         "message": "Error copying additional files!",
                         "type": "error",
                     }
 
-            try:
-                run(["samtools", "faidx", newPath])
-                run(["ln", "-rs", newPath, f"{BASE_PATH_TO_JBROWSE}{name}/"])
-                run(["ln", "-rs", f"{newPath}.fai", f"{BASE_PATH_TO_JBROWSE}{name}/"])
-            except:
-                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
-                return 0, {
-                    "label": "Error",
-                    "message": "Error creating symlink to jbrowse data!",
-                    "type": "error",
-                }
+            # try:
+            #     run(["samtools", "faidx", newPath])
+            #     run(["ln", "-rs", newPath, f"{BASE_PATH_TO_JBROWSE}{name}/"])
+            #     run(["ln", "-rs", f"{newPath}.fai", f"{BASE_PATH_TO_JBROWSE}{name}/"])
+            # except:
+            #     self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+            #     self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error creating symlink to jbrowse data!",
+            #         "type": "error",
+            #     }
 
-            try:
-                with open(f"{BASE_PATH_TO_JBROWSE}{name}/tracks.conf", "a") as conf:
-                    template = f"[GENERAL]\nrefSeqs={name}_assembly.fasta.fai\n[tracks.Reference]\nurlTemplate={name}_assembly.fasta\nstoreClass=JBrowse/Store/SeqFeature/IndexedFasta\ntype=Sequence\n"
-                    conf.write(template)
-                    conf.close()
-            except:
-                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
-                return 0, {
-                    "label": "Error",
-                    "message": "Error while creating jbrowse tracks.conf.",
-                    "type": "error",
-                }
+            # try:
+            #     with open(f"{BASE_PATH_TO_JBROWSE}{name}/tracks.conf", "a") as conf:
+            #         template = f"[GENERAL]\nrefSeqs={name}_assembly.fasta.fai\n[tracks.Reference]\nurlTemplate={name}_assembly.fasta\nstoreClass=JBrowse/Store/SeqFeature/IndexedFasta\ntype=Sequence\n"
+            #         conf.write(template)
+            #         conf.close()
+            # except:
+            #     self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+            #     self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error while creating jbrowse tracks.conf.",
+            #         "type": "error",
+            #     }
 
-            try:
-                run(
-                    [JBROWSEGENERATENAMESCALL, "-out", f"{BASE_PATH_TO_JBROWSE}{name}/"]
-                )
-            except:
-                self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-                self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
-                return 0, {
-                    "label": "Error",
-                    "message": "Error while running jbrowse generate-names.pl scipt. Run manually!",
-                    "type": "error",
-                }
+            # try:
+            #     run(
+            #         [JBROWSEGENERATENAMESCALL, "-out", f"{BASE_PATH_TO_JBROWSE}{name}/"]
+            #     )
+            # except:
+            #     self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
+            #     self.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}{name}/")
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error while running jbrowse generate-names.pl scipt. Run manually!",
+            #         "type": "error",
+            #     }
 
         elif type == "annotation":
             try:
@@ -326,86 +327,86 @@ class FileManager:
                         "type": "error",
                     }
 
-            try:
-                newPathSorted = newPath.replace(".gff3", ".sorted.gff3")
-                run(
-                    f'(grep ^"#" {newPath}; grep -v ^"#" {newPath} | grep -v "^$" | grep "\t" | sort -k1,1 -k4,4n) > {newPathSorted}',
-                    shell=True,
-                )
-                # TODO: Check why no track data is visible on low coverage annotation tracks when using gt
-                # run(
-                #     [
-                #         "gt",
-                #         "gff3",
-                #         "-sortlines",
-                #         "-tidy",
-                #         "-retainids",
-                #         "-o",
-                #         newPathSorted,
-                #         newPath,
-                #     ]
-                # )
-                self.deleteFile(newPath)
-                run(["bgzip", newPathSorted])
-                run(["tabix", "-p", "gff", f"{newPathSorted}.gz"])
-                run(
-                    [
-                        "ln",
-                        "-rs",
-                        f"{newPathSorted}.gz",
-                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                    ]
-                )
-                run(
-                    [
-                        "ln",
-                        "-rs",
-                        f"{newPathSorted}.gz.tbi",
-                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                    ]
-                )
-            except:
-                self.deleteDirectories(fullPathToAnnoation)
-                return 0, {
-                    "label": "Error",
-                    "message": "Error formatting gff3 for jbrowse!",
-                    "type": "error",
-                }
+            # try:
+            #     newPathSorted = newPath.replace(".gff3", ".sorted.gff3")
+            #     run(
+            #         f'(grep ^"#" {newPath}; grep -v ^"#" {newPath} | grep -v "^$" | grep "\t" | sort -k1,1 -k4,4n) > {newPathSorted}',
+            #         shell=True,
+            #     )
+            #     # TODO: Check why no track data is visible on low coverage annotation tracks when using gt
+            #     # run(
+            #     #     [
+            #     #         "gt",
+            #     #         "gff3",
+            #     #         "-sortlines",
+            #     #         "-tidy",
+            #     #         "-retainids",
+            #     #         "-o",
+            #     #         newPathSorted,
+            #     #         newPath,
+            #     #     ]
+            #     # )
+            #     self.deleteFile(newPath)
+            #     run(["bgzip", newPathSorted])
+            #     run(["tabix", "-p", "gff", f"{newPathSorted}.gz"])
+            #     run(
+            #         [
+            #             "ln",
+            #             "-rs",
+            #             f"{newPathSorted}.gz",
+            #             f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+            #         ]
+            #     )
+            #     run(
+            #         [
+            #             "ln",
+            #             "-rs",
+            #             f"{newPathSorted}.gz.tbi",
+            #             f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+            #         ]
+            #     )
+            # except:
+            #     self.deleteDirectories(fullPathToAnnoation)
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error formatting gff3 for jbrowse!",
+            #         "type": "error",
+            #     }
 
-            try:
-                fileNameSorted = newPathSorted.split("/")[-1]
-                name = name.replace(".", "_")
-                with open(
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
-                ) as conf:
-                    template = f"[tracks.Annotation_{name}]\nurlTemplate={fileNameSorted}.gz\nstoreClass=JBrowse/Store/SeqFeature/GFF3Tabix\ntype=CanvasFeatures\n"
-                    conf.write(template)
-                    conf.close()
-            except:
-                self.deleteDirectories(fullPathToAnnoation)
-                return 0, {
-                    "label": "Error",
-                    "message": "Error while creating jbrowse tracks.conf.",
-                    "type": "error",
-                }
+            # try:
+            #     fileNameSorted = newPathSorted.split("/")[-1]
+            #     name = name.replace(".", "_")
+            #     with open(
+            #         f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
+            #     ) as conf:
+            #         template = f"[tracks.Annotation_{name}]\nurlTemplate={fileNameSorted}.gz\nstoreClass=JBrowse/Store/SeqFeature/GFF3Tabix\ntype=CanvasFeatures\n"
+            #         conf.write(template)
+            #         conf.close()
+            # except:
+            #     self.deleteDirectories(fullPathToAnnoation)
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error while creating jbrowse tracks.conf.",
+            #         "type": "error",
+            #     }
 
-            try:
-                run(
-                    [
-                        JBROWSEGENERATENAMESCALL,
-                        "-out",
-                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                    ]
-                )
-            except:
-                self.deleteDirectories(fullPathToAnnoation)
-                return 0, {
-                    "label": "Error",
-                    "message": "Error while running jbrowse generate-names.pl script. Run manually!",
-                    "type": "error",
-                }
+            # try:
+            #     run(
+            #         [
+            #             JBROWSEGENERATENAMESCALL,
+            #             "-out",
+            #             f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+            #         ]
+            #     )
+            # except:
+            #     self.deleteDirectories(fullPathToAnnoation)
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error while running jbrowse generate-names.pl script. Run manually!",
+            #         "type": "error",
+            #     }
 
-            newPath = newPathSorted
+            # newPath = newPathSorted
 
         elif type == "mapping":
             try:
@@ -441,49 +442,49 @@ class FileManager:
                         "type": "error",
                     }
 
-            try:
-                run(["samtools", "index", newPath])
-                run(
-                    [
-                        "ln",
-                        "-rs",
-                        newPath,
-                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                    ]
-                )
-                run(
-                    [
-                        "ln",
-                        "-rs",
-                        f"{newPath}.bai",
-                        f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                    ]
-                )
+            # try:
+            #     run(["samtools", "index", newPath])
+            #     run(
+            #         [
+            #             "ln",
+            #             "-rs",
+            #             newPath,
+            #             f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+            #         ]
+            #     )
+            #     run(
+            #         [
+            #             "ln",
+            #             "-rs",
+            #             f"{newPath}.bai",
+            #             f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
+            #         ]
+            #     )
 
-            except:
-                self.deleteDirectories(fullPathToMapping)
-                return 0, {
-                    "label": "Error",
-                    "message": "Error indexing .bam for jbrowse!",
-                    "type": "error",
-                }
+            # except:
+            #     self.deleteDirectories(fullPathToMapping)
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error indexing .bam for jbrowse!",
+            #         "type": "error",
+            #     }
 
-            try:
-                fileName = newPath.split("/")[-1]
-                name = name.replace(".", "_")
-                with open(
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
-                ) as conf:
-                    template = f"[tracks.Mapping_{name}]\nurlTemplate={fileName}\nstoreClass=JBrowse/Store/SeqFeature/BAM\ntype=Alignments2\n"
-                    conf.write(template)
-                    conf.close()
-            except:
-                self.deleteDirectories(fullPathToMapping)
-                return 0, {
-                    "label": "Error",
-                    "message": "Error while creating jbrowse tracks.conf.",
-                    "type": "error",
-                }
+            # try:
+            #     fileName = newPath.split("/")[-1]
+            #     name = name.replace(".", "_")
+            #     with open(
+            #         f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
+            #     ) as conf:
+            #         template = f"[tracks.Mapping_{name}]\nurlTemplate={fileName}\nstoreClass=JBrowse/Store/SeqFeature/BAM\ntype=Alignments2\n"
+            #         conf.write(template)
+            #         conf.close()
+            # except:
+            #     self.deleteDirectories(fullPathToMapping)
+            #     return 0, {
+            #         "label": "Error",
+            #         "message": "Error while creating jbrowse tracks.conf.",
+            #         "type": "error",
+            #     }
 
         elif (
             type == "milts"
@@ -632,7 +633,7 @@ class FileManager:
                         if "3D_plot_files" in line:
                             lines[index] = line.replace(
                                 "3D_plot_files",
-                                "../../../../../additionalFiles/3D_plot_files",
+                                "../../../../../dependencies/3D_plot_files",
                             )
                         elif '"title":"taxonomic assignment",' in line:
                             lines[index] = line.replace(
@@ -687,39 +688,40 @@ class FileManager:
                 "type": "error",
             }
 
-        try:
-            for file in listdir(f"{BASE_PATH_TO_JBROWSE}{assemblyName}"):
-                if file.startswith(fileLabel):
-                    run(["rm", f"{BASE_PATH_TO_JBROWSE}{assemblyName}/{file}"])
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Error while removing from jbrowse track file!",
-                "type": "error",
-            }
+        # try:
+        #     for file in listdir(f"{BASE_PATH_TO_JBROWSE}{assemblyName}"):
+        #         if file.startswith(fileLabel):
+        #             run(["rm", f"{BASE_PATH_TO_JBROWSE}{assemblyName}/{file}"])
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Error while removing from jbrowse track file!",
+        #         "type": "error",
+        #     }
 
-        try:
-            with open(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "r") as conf:
-                lines = conf.readlines()
-                conf.close()
+        # try:
+        #     with open(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "r") as conf:
+        #         lines = conf.readlines()
+        #         conf.close()
 
-            for index, line in enumerate(lines):
-                if line == trackStart:
-                    lines.pop(index)
-                    lines.pop(index)
-                    lines.pop(index)
-                    lines.pop(index)
-                    break
+        #     for index, line in enumerate(lines):
+        #         if line == trackStart:
+        #             lines.pop(index)
+        #             lines.pop(index)
+        #             lines.pop(index)
+        #             lines.pop(index)
+        #             break
 
-            with open(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "w") as conf:
-                conf.writelines(lines)
-                conf.close()
-        except:
-            return 0, {
-                "label": "Error",
-                "message": "Error while removing from jbrowse track file!",
-                "type": "error",
-            }
+        #     with open(f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "w") as conf:
+        #         conf.writelines(lines)
+        #         conf.close()
+        # except:
+        #     return 0, {
+        #         "label": "Error",
+        #         "message": "Error while removing from jbrowse track file!",
+        #         "type": "error",
+        #     }
+
         return 1, {
             "label": "Success",
             "message": "Successfully removed track from jbrowse!",
@@ -851,8 +853,8 @@ class FileManager:
             # milts
             makedirs(f"{pathToSpeciesDirectory}/milts/", exist_ok=True)
 
-            # jbrowse
-            makedirs(f"{BASE_PATH_TO_JBROWSE}{assemblyDirName}", exist_ok=True)
+            # # jbrowse
+            # makedirs(f"{BASE_PATH_TO_JBROWSE}{assemblyDirName}", exist_ok=True)
         except:
             return 0, {
                 "label": "Error",

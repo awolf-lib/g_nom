@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# kill screen sessions
-export SCREENDIR=$HOME/.screen
-killall screen
-
 # stop docker container
 MYSQL_CONTAINER_NAME=$(grep "MYSQL_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-docker stop $MYSQL_CONTAINER_NAME
-
-# stop React Docker container
+NEXTCLOUD_CONTAINER_NAME=$(grep "NEXTCLOUD_CONTAINER_NAME" config.txt | cut -f2 -d "=")
 REACTAPP_CONTAINER_NAME=$(grep "REACTAPP_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-docker stop $REACTAPP_CONTAINER_NAME
+FLASK_CONTAINER_NAME=$(grep "FLASK_CONTAINER_NAME" config.txt | cut -f2 -d "=")
+
+docker stop $MYSQL_CONTAINER_NAME $NEXTCLOUD_CONTAINER_NAME $REACTAPP_CONTAINER_NAME $FLASK_CONTAINER_NAME
