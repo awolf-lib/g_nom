@@ -1366,9 +1366,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "annotation", path, name, additionalFilesPath, assemblyName
-        )
+        path, notification = fileManager.moveAnnotationToStorage(path, assemblyName, name, additionalFilesPath)
 
         if not path:
             return 0, notification
@@ -1545,9 +1543,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "mapping", path, name, additionalFilesPath, assemblyName
-        )
+        path, notification = fileManager.moveMappingToStorage(path, assemblyName, name, additionalFilesPath)
 
         fileManager.notify_mapping(assemblyID, assemblyName, name, path)
 

@@ -251,7 +251,33 @@ class FileManager:
         payload = {"assembly": { "name": name, "id": assemblyId}, "storage_path": path, "type": "Assembly", "action": "Added" }
         pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
 
-    def moveAnnotationToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile):
+    def moveAnnotationToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
+        path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
+        if not exists(path):
+            return 0, {
+                "label": "Error",
+                "message": "Path to file not found!",
+                "type": "error",
+            }
+
+        if additionalFiles:
+            additionalFilesPath = f"{BASE_PATH_TO_UPLOAD}{additionalFiles}/"
+
+            if additionalFilesPath != BASE_PATH_TO_UPLOAD:
+                if not exists(additionalFilesPath):
+                    return 0, {
+                        "label": "Error",
+                        "message": "Path to additional files not found!",
+                        "type": "error",
+                    }
+            else:
+                return 0, {
+                    "label": "Error",
+                    "message": "Import of complete Upload directory is not allowed!",
+                    "type": "error",
+                }
+
+        newPath = ""
         try:
             fullPathToAnnoation = (
                 f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{name}/"
@@ -320,7 +346,33 @@ class FileManager:
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
         pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
 
-    def moveMappingToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath):
+    def moveMappingToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
+        path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
+        if not exists(path):
+            return 0, {
+                "label": "Error",
+                "message": "Path to file not found!",
+                "type": "error",
+            }
+
+        if additionalFiles:
+            additionalFilesPath = f"{BASE_PATH_TO_UPLOAD}{additionalFiles}/"
+
+            if additionalFilesPath != BASE_PATH_TO_UPLOAD:
+                if not exists(additionalFilesPath):
+                    return 0, {
+                        "label": "Error",
+                        "message": "Path to additional files not found!",
+                        "type": "error",
+                    }
+            else:
+                return 0, {
+                    "label": "Error",
+                    "message": "Import of complete Upload directory is not allowed!",
+                    "type": "error",
+                }
+
+        newPath = ""
         try:
             fullPathToMapping = (
                 f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{name}/"
@@ -401,12 +453,6 @@ class FileManager:
         newPath = ""
         if type == "image":
             return self.moveImageToStorage(path, name)
-
-        elif type == "annotation":
-            return self.moveAnnotationToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile)
-
-        elif type == "mapping":
-            return self.moveMappingToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath)
 
         elif (
             type == "milts"
