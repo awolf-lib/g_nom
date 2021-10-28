@@ -191,13 +191,7 @@ class FileManager:
         return newPath, {}
 
     def moveAssemblyToStorage(self, mainFile, name="", additionalFiles=""):
-        STORAGEERROR = {
-            "label": "Error",
-            "message": "Something went wrong while formatting or moving it to storage!",
-            "type": "error",
-        }
-
-        path = f"{BASE_PATH_TO_IMPORT}{mainFile}"
+        path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
         if not exists(path):
             return 0, {
                 "label": "Error",
