@@ -27,11 +27,58 @@ fn handle_new_assembly(message: &message::AssemblyMessage) -> Result<ExitStatus,
         .arg("symlink")
         .arg("--name")
         .arg(&message.assembly.name)
-        .arg("--target")
-        .arg(format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name))
         .status();
 
     samtolls.and(mkdir).and(jbrowse)
+}
+
+fn handle_new_mapping(message: &message::MappingMessage) -> Result<ExitStatus, std::io::Error> {
+    let storage_bam = format!("{}{}", STORAGE_ROOT, &message.storage_path);
+    let jbrowse_assembly_path = format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name);
+
+    let samtools = Command::new("samtools")
+        .arg("index")
+        .arg(&storage_bam)
+        .status();
+
+    let jbrowse = Command::new("jbrowse")
+        .current_dir(&jbrowse_assembly_path)
+        .arg("add-track")
+        .arg(&storage_bam)
+        .arg("--category")
+        .arg("mapping")
+        .arg("--load")
+        .arg("symlink")
+        .status();
+
+    samtools.and(jbrowse)
+}
+
+fn handle_new_annotation(message: &message::AnnotationMessage) -> Result<ExitStatus, std::io::Error> {
+    let storage_gff = format!("{}{}", STORAGE_ROOT, &message.storage_path);
+    let jbrowse_assembly_path = format!("{}/assemblies/{}", &JBROWSE_PATH, &message.assembly.name);
+
+    let bgzip = Command::new("bgzip")
+        .arg(&storage_gff)
+        .status();
+
+    let tabix = Command::new("tabix")
+        .arg("-p")
+        .arg("gff")
+        .arg(format!("{}.gz", storage_gff))
+        .status();
+
+    let jbrowse = Command::new("jbrowse")
+        .current_dir(&jbrowse_assembly_path)
+        .arg("add-track")
+        .arg(format!("{}.gz", &storage_gff))
+        .arg("--category")
+        .arg("annotation")
+        .arg("--load")
+        .arg("symlink")
+        .status();
+
+    bgzip.and(tabix).and(jbrowse)
 }
 
 fn main() -> Result<()> {
@@ -51,8 +98,8 @@ fn main() -> Result<()> {
                     println!("{:?}", message);
                     let output = match &message {
                         message::ResourceMessage::Assembly(a) => handle_new_assembly(a),
-                        message::ResourceMessage::Mapping(_m) => Err(std::io::Error::new(std::io::ErrorKind::Other, "Mapping not handled yet...")),
-                        message::ResourceMessage::Annotation(_a) => Err(std::io::Error::new(std::io::ErrorKind::Other, "Annotation not handled yet...")),
+                        message::ResourceMessage::Mapping(m) => handle_new_mapping(m),
+                        message::ResourceMessage::Annotation(a) => handle_new_annotation(a),
                     };
                     match output {
                         Ok(_) => {
