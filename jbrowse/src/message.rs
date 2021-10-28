@@ -24,6 +24,7 @@ pub struct AssemblyMessage{
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct MappingMessage{
     pub assembly: Assembly,
+    pub mapping_name: String,
     pub storage_path: String,
     pub action: Action,
 }
@@ -32,6 +33,7 @@ pub struct MappingMessage{
 #[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct AnnotationMessage{
     pub assembly: Assembly,
+    pub annotation_name: String,
     pub storage_path: String,
     pub action: Action,
 }
@@ -53,7 +55,7 @@ fn test_message(){
             "name": "TestName",
             "id": 15125
         },
-        "storage_path": "Waaah",
+        "storage_path": "path_to_file.fasta",
         "action": "Added",
         "type": "Assembly"
     }"#;

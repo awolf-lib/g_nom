@@ -18,6 +18,12 @@ from .Paths import BASE_PATH_TO_JBROWSE, JBROWSEGENERATENAMESCALL, BASE_PATH_TO_
 # images
 SIZE = 256, 256
 
+STORAGEERROR = {
+    "label": "Error",
+    "message": "Something went wrong while formatting or moving it to storage!",
+    "type": "error",
+}
+
 RABBIT_MQ_QUEUE_RESOURCE="resource"
 
 pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672))
@@ -165,7 +171,7 @@ class FileManager:
             "type": "info",
         }
 
-    def moveImageToStorage(path, name, STORAGEERROR):
+    def moveImageToStorage(path, name):
         try:
             with Image.open(path) as image:
                 image.thumbnail(SIZE)
@@ -182,6 +188,7 @@ class FileManager:
                 image.save(newPath, "JPEG")
         except:
             return 0, STORAGEERROR
+        return newPath, {}
 
     def moveAssemblyToStorage(self, mainFile, name="", additionalFiles=""):
         STORAGEERROR = {
@@ -250,7 +257,7 @@ class FileManager:
         payload = {"assembly": { "name": name, "id": assemblyId}, "storage_path": path, "type": "Assembly", "action": "Added" }
         pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
 
-    def moveAnnotationToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile, STORAGEERROR):
+    def moveAnnotationToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile):
         try:
             fullPathToAnnoation = (
                 f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{name}/"
@@ -304,70 +311,22 @@ class FileManager:
             #     ]
             # )
             self.deleteFile(newPath)
-            run(["bgzip", newPathSorted])
-            # start replace
-            # jbrowse add-track
-            run(["tabix", "-p", "gff", f"{newPathSorted}.gz"])
-            run(
-                [
-                    "ln",
-                    "-rs",
-                    f"{newPathSorted}.gz",
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                ]
-            )
-            run(
-                [
-                    "ln",
-                    "-rs",
-                    f"{newPathSorted}.gz.tbi",
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                ]
-            )
         except:
             self.deleteDirectories(fullPathToAnnoation)
             return 0, {
                 "label": "Error",
-                "message": "Error formatting gff3 for jbrowse!",
+                "message": "Error sorting gff3 by grep!",
                 "type": "error",
             }
-
-        try:
-            fileNameSorted = newPathSorted.split("/")[-1]
-            name = name.replace(".", "_")
-            with open(
-                f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
-            ) as conf:
-                template = f"[tracks.Annotation_{name}]\nurlTemplate={fileNameSorted}.gz\nstoreClass=JBrowse/Store/SeqFeature/GFF3Tabix\ntype=CanvasFeatures\n"
-                conf.write(template)
-                conf.close()
-        except:
-            self.deleteDirectories(fullPathToAnnoation)
-            return 0, {
-                "label": "Error",
-                "message": "Error while creating jbrowse tracks.conf.",
-                "type": "error",
-            }
-
-        try:
-            run(
-                [
-                    JBROWSEGENERATENAMESCALL,
-                    "-out",
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                ]
-            )
-        except:
-            self.deleteDirectories(fullPathToAnnoation)
-            return 0, {
-                "label": "Error",
-                "message": "Error while running jbrowse generate-names.pl script. Run manually!",
-                "type": "error",
-            }
-            # end replace
+        
         newPath = newPathSorted
+        return newPath, {}
 
-    def moveMappingToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath, STORAGEERROR):
+    def notify_annotation(self, assemblyId, assemblyName, name, path):
+        payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
+        pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
+
+    def moveMappingToStorage(self, assemblyName, name, path, additionalFiles, additionalFilesPath):
         try:
             fullPathToMapping = (
                 f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{name}/"
@@ -400,54 +359,13 @@ class FileManager:
                     "message": "Error copying additional files!",
                     "type": "error",
                 }
+        
+        return newPath, {}
 
-        try:
-            # replace start
-            # jbrowse add-track path .bam --load symlink
-            run(["samtools", "index", newPath])
-            run(
-                [
-                    "ln",
-                    "-rs",
-                    newPath,
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                ]
-            )
-            run(
-                [
-                    "ln",
-                    "-rs",
-                    f"{newPath}.bai",
-                    f"{BASE_PATH_TO_JBROWSE}{assemblyName}/",
-                ]
-            )
-
-        except:
-            self.deleteDirectories(fullPathToMapping)
-            return 0, {
-                "label": "Error",
-                "message": "Error indexing .bam for jbrowse!",
-                "type": "error",
-            }
-
-        try:
-            fileName = newPath.split("/")[-1]
-            name = name.replace(".", "_")
-            with open(
-                f"{BASE_PATH_TO_JBROWSE}{assemblyName}/tracks.conf", "a"
-            ) as conf:
-                template = f"[tracks.Mapping_{name}]\nurlTemplate={fileName}\nstoreClass=JBrowse/Store/SeqFeature/BAM\ntype=Alignments2\n"
-                conf.write(template)
-                conf.close()
-        except:
-            self.deleteDirectories(fullPathToMapping)
-            return 0, {
-                "label": "Error",
-                "message": "Error while creating jbrowse tracks.conf.",
-                "type": "error",
-            }
-            # replacce end
-
+    def notify_mapping(self, assemblyId, assemblyName, name, path):
+        payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "mapping_name": name, "type": "Mapping", "action": "Added" }
+        pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
+    
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
         self,
@@ -460,12 +378,6 @@ class FileManager:
         """
         Moves selected file to proper storage location
         """
-
-        STORAGEERROR = {
-            "label": "Error",
-            "message": "Something went wrong while formatting or moving it to storage!",
-            "type": "error",
-        }
 
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
         if not exists(path):
@@ -494,13 +406,13 @@ class FileManager:
 
         newPath = ""
         if type == "image":
-            return self.moveImageToStorage(path, name, STORAGEERROR)
+            return self.moveImageToStorage(path, name)
 
         elif type == "annotation":
-            return self.moveAnnotationToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile, STORAGEERROR)
+            return self.moveAnnotationToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath, mainFile)
 
         elif type == "mapping":
-            return self.moveMappingToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath, STORAGEERROR)
+            return self.moveMappingToStorage(assemblyName, name, path, additionalFiles, additionalFilesPath)
 
         elif (
             type == "milts"
