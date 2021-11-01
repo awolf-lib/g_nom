@@ -191,6 +191,18 @@ def removeImageByTaxonID():
         return REQUESTMETHODERROR
 
 
+# FETCH ONE TAXON BY TAXON ID
+@db.route("/fetchSpeciesProfilePictureTaxonID", methods=["GET"])
+def fetchSpeciesProfilePictureTaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        data = api.fetchSpeciesProfilePictureTaxonID(taxonID)
+
+        return data
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== ASSEMBLY ================== #
 # FETCH ALL ASSEMBLIES
 @db.route("/fetchAllAssemblies", methods=["GET"])

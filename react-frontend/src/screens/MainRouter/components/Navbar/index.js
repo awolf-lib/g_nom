@@ -57,6 +57,7 @@ class Navbar extends Component {
                   <a
                     href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
                     target="_blank"
+                    rel="noreferrer"
                   >
                     <Button label="Downloads" color="nav" />
                   </a>
@@ -186,6 +187,7 @@ class Navbar extends Component {
               <a
                 href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
                 target="_blank"
+                rel="noreferrer"
               >
                 <Link to="/g-nom/download">
                   <Button label="Downloads" color="nav" />
