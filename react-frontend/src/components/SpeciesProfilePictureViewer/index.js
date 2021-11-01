@@ -2,36 +2,19 @@ import { useEffect, useState } from "react";
 import "../../App.css";
 import PropTypes from "prop-types";
 import picPlacerholder from "../../images/blankProfilePicture.png";
+import { fetchSpeciesProfilePictureTaxonID } from "../../api";
 
 const SpeciesProfilePictureViewer = ({ taxonID, imageStatus }) => {
-  const [mounted, setMounted] = useState(true);
-  const [url, setUrl] = useState(undefined);
-
-  useEffect(() => {
-    fetchImage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchImage = async () => {
-    let url = "";
-    if (taxonID && imageStatus) {
-      url = process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS + "";
-    }
-
-    if (mounted) {
-      setUrl(url);
-    }
-  };
-
-  useEffect(() => {
-    return setMounted(false);
-  }, []);
-
   return (
     <img
       className="w-full h-full object-fill"
       alt="Species profile"
-      src={url || picPlacerholder}
+      src={
+        imageStatus
+          ? "http://localhost:3002/fetchSpeciesProfilePictureTaxonID?taxonID=" +
+            taxonID
+          : picPlacerholder
+      }
     />
   );
 };

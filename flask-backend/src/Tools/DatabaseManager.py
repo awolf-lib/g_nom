@@ -1,3 +1,5 @@
+from genericpath import isfile
+from flask.helpers import send_file
 import mysql.connector
 from hashlib import sha512
 from math import ceil
@@ -545,6 +547,23 @@ class DatabaseManager:
             "message": f"Successfully removed image of taxon with NCBI taxon ID {taxonID}!",
             "type": "success",
         }
+
+    # FETCH TAXON IMAGE
+    def fetchSpeciesProfilePictureTaxonID(self, taxonID):
+        """
+        send image to frontend
+        """
+
+        if not isfile(
+            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg"
+        ):
+            return {
+                "label": "Error",
+                "message": f"Error loading profile picture for species {taxonID}. No such file!",
+                "type": "success",
+            }
+
+        return send_file(f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg", "image/jpg")
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
