@@ -5,6 +5,7 @@ from shutil import copy, rmtree, copytree
 from glob import glob
 from PIL import Image
 from subprocess import run
+from re import compile
 
 # defaults
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
@@ -626,24 +627,37 @@ class FileManager:
             if type == "milts":
                 try:
                     with open(newPath, "r") as plotFile:
-                        lines = plotFile.readlines()
+                        plot_data = "".join(plotFile.readlines()).replace("\n", "")
+                        plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{name}"')
                         plotFile.close()
 
-                    for index, line in enumerate(lines):
-                        if "3D_plot_files" in line:
-                            lines[index] = line.replace(
-                                "3D_plot_files",
-                                "../../../../../dependencies/3D_plot_files",
-                            )
-                        elif '"title":"taxonomic assignment",' in line:
-                            lines[index] = line.replace(
-                                '"title":"taxonomic assignment",', f'"title":"{name}",'
-                            )
+                    with open(
+                        "src/Tools/templates/milts_head_template.html", "r"
+                    ) as milts_template_file:
+                        milts_template = milts_template_file.readlines()
+                        milts_template_file.close()
+
+                    body_regex = compile(r"<body>.*</body>")
+                    body_match = body_regex.findall(plot_data)
+                    if len(body_match) != 1:
+                        return 0, {
+                            "label": "Error",
+                            "message": "Error using template html!",
+                            "type": "error",
+                        }
+
+                    for i in range(len(milts_template)-1, len(milts_template)-5, -1):
+                        if ("<body>REPLACE_BODY</body>" in milts_template[i]):
+                            milts_template[i] = milts_template[i].replace("<body>REPLACE_BODY</body>", body_match[0])
+                        elif ("<title>REPLACE_TITLE</title>" in milts_template[i]):
+                            milts_template[i] = milts_template[i].replace("REPLACE_TITLE", name)
+                            break
 
                     with open(newPath, "w") as plotFile:
-                        lines = plotFile.writelines(lines)
+                        plotFile.writelines(milts_template)
                         plotFile.close()
-                except:
+                except Exception as err:
+                    print(str(err))
                     self.deleteDirectories(fullPathToAnalysis)
                     return 0, STORAGEERROR
 

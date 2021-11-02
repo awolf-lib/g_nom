@@ -560,10 +560,13 @@ class DatabaseManager:
             return {
                 "label": "Error",
                 "message": f"Error loading profile picture for species {taxonID}. No such file!",
-                "type": "success",
+                "type": "error",
             }
 
-        return send_file(f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg", "image/jpg")
+        return send_file(
+            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg",
+            "image/jpg",
+        )
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
@@ -1694,7 +1697,7 @@ class DatabaseManager:
 
         fileName = path.split("/")[-1]
 
-        if fileName == "3D_plot.html":
+        if "3D_plot.html" in fileName and fileName.endswith(".html"):
             type = "milts"
         elif "short_summary" in fileName and fileName.endswith(".txt"):
             type = "busco"
@@ -1709,6 +1712,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
+        print(type, path, name, additionalFilesPath, assemblyName)
         path, notification = fileManager.moveFileToStorage(
             type, path, name, additionalFilesPath, assemblyName
         )
@@ -1815,6 +1819,22 @@ class DatabaseManager:
             "message": f"Successfully removed analysis '{analysisName}'!",
             "type": "success",
         }
+
+        # FETCH MILTS 3D PLOT
+
+    def fetchMiltsPlotByPath(self, path):
+        """
+        send milts plot to frontend
+        """
+
+        if not isfile(path):
+            return {
+                "label": "Error",
+                "message": f"Error loading MILTS 3D plot. No such file!",
+                "type": "error",
+            }
+
+        return send_file(path, "text/html")
 
     def importBusco(self, analysisID, buscoData):
         """

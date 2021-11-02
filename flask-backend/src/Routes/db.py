@@ -531,6 +531,17 @@ def removeAnalysisByAnalysisID():
         return REQUESTMETHODERROR
 
 
+# FETCH MILTS PLOT BY PATH
+@db.route("/fetchMiltsPlotByPath", methods=["GET"])
+def fetchMiltsPlotByPath():
+    if request.method == "GET":
+        path = request.args.get("path")
+        data = api.fetchMiltsPlotByPath(path)
+        return data
+    else:
+        return REQUESTMETHODERROR
+
+
 # ================== BOOKMARK ================== #
 # ADD NEW BOOKMARK
 @db.route("/addNewBookmark", methods=["GET"])

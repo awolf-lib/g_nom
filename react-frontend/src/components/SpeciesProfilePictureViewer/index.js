@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import "../../App.css";
 import PropTypes from "prop-types";
 import picPlacerholder from "../../images/blankProfilePicture.png";
-import { fetchSpeciesProfilePictureTaxonID } from "../../api";
 
 const SpeciesProfilePictureViewer = ({ taxonID, imageStatus }) => {
   return (
@@ -11,7 +9,8 @@ const SpeciesProfilePictureViewer = ({ taxonID, imageStatus }) => {
       alt="Species profile"
       src={
         imageStatus
-          ? "http://localhost:3002/fetchSpeciesProfilePictureTaxonID?taxonID=" +
+          ? process.env.REACT_APP_API_ADRESS +
+            "/fetchSpeciesProfilePictureTaxonID?taxonID=" +
             taxonID
           : picPlacerholder
       }

@@ -93,7 +93,7 @@ docker build --no-cache -t gnom/reactapp .
 # start
 echo "Start ${REACTAPP_CONTAINER_NAME} container..."
 # docker run --name $REACTAPP_CONTAINER_NAME --network gnom_app -d -p 5000:5000 gnom/reactapp
-docker run --name $REACTAPP_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/react-frontend/src:/react-frontend/src --network gnom_app -d -p 3000:5000 gnom/reactapp npm start
+docker run --name $REACTAPP_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/react-frontend/src:/react-frontend/src --network gnom_app -d -p 3000:3000 gnom/reactapp npm start
 cd ..
 
 # ============================================ #
