@@ -14,7 +14,11 @@ const TaxonomicAssignmentViewer = ({
           onLoad={() => setTaxonomicAssignmentLoading(false)}
           title="MiltsPlot"
           className="w-full h-screen"
-          src={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+          src={
+            process.env.REACT_APP_API_ADRESS +
+            "/fetchMiltsPlotByPath?path=" +
+            assemblyInformation.analyses.milts[index].path
+          }
         />
       </div>
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
@@ -30,7 +34,7 @@ const TaxonomicAssignmentViewer = ({
         </a>
       </div>
       {assemblyInformation.analyses.milts.length > 1 && (
-        <div className="absolute bottom-0 left-0 z-10 opacity-50 flex items-center mx-4 my-1">
+        <div className="absolute bottom-0 left-0 opacity-50 flex items-center mx-4 my-1 z-10">
           <Button
             color="link"
             onClick={() =>

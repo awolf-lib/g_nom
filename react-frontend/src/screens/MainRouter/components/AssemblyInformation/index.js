@@ -211,7 +211,7 @@ const AssemblyInformation = () => {
               </div>
             )}
 
-          {/* {assemblyInformation.analyses &&
+          {assemblyInformation.analyses &&
             assemblyInformation.analyses.milts &&
             assemblyInformation.analyses.milts.length > 0 && (
               <div>
@@ -245,7 +245,7 @@ const AssemblyInformation = () => {
                 </div>
                 <hr className="shadow my-8 mx-8" />
               </div>
-            )} */}
+            )}
 
           {assemblyInformation.analyses &&
             assemblyInformation.analyses.busco &&
