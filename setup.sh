@@ -92,8 +92,8 @@ cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
 # start
 echo "Start ${REACTAPP_CONTAINER_NAME} container..."
-# docker run --name $REACTAPP_CONTAINER_NAME --network gnom_app -d -p 5000:5000 gnom/reactapp
-docker run --name $REACTAPP_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/react-frontend/src:/react-frontend/src --network gnom_app -d -p 3000:3000 gnom/reactapp npm start
+docker run --name $REACTAPP_CONTAINER_NAME --network gnom_app -d -p 5000:5000 gnom/reactapp
+# docker run --name $REACTAPP_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/react-frontend/src:/react-frontend/src --network gnom_app -d -p 3000:3000 gnom/reactapp npm start
 cd ..
 
 # ============================================ #
@@ -105,8 +105,8 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${FLASK_CONTAINER_NAME} container..."
-# docker run --name $FLASK_CONTAINER_NAME -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network gnom_app -dp 3002:3002 gnom/flask
-docker run --name $FLASK_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/flask-backend/src:/flask-backend/src -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network gnom_app -dp 3002:3002 gnom/flask
+docker run --name $FLASK_CONTAINER_NAME -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network gnom_app -dp 3002:3002 gnom/flask
+# docker run --name $FLASK_CONTAINER_NAME -v /home/andywolf/workspace/g-nom/flask-backend/src:/flask-backend/src -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network gnom_app -dp 3002:3002 gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
