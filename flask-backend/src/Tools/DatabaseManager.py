@@ -19,7 +19,7 @@ BASE_PATH_TO_JBROWSE = ""  # outsourced
 
 class DatabaseManager:
     def __init__(self):
-        self.hostURL = "mysql_gnom"
+        self.hostURL = "gnom_mysql"
 
     # ====== GENERAL ====== #
     # reconnect to get updates

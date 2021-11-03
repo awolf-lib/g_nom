@@ -1,9 +1,7 @@
 #!/bin/bash
 
 # stop docker container
-MYSQL_CONTAINER_NAME=$(grep "MYSQL_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-NEXTCLOUD_CONTAINER_NAME=$(grep "NEXTCLOUD_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-REACTAPP_CONTAINER_NAME=$(grep "REACTAPP_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-FLASK_CONTAINER_NAME=$(grep "FLASK_CONTAINER_NAME" config.txt | cut -f2 -d "=")
+source ./default.config
+source ./local.config
 
 docker stop $MYSQL_CONTAINER_NAME $NEXTCLOUD_CONTAINER_NAME $REACTAPP_CONTAINER_NAME $FLASK_CONTAINER_NAME
