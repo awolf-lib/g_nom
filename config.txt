@@ -4,21 +4,21 @@ NEXTCLOUD_DOWNLOAD_ADRESS=http://localhost:8080/apps/files/?dir=/assemblies
 JBROWSE_ADRESS=http://localhost:8082
 
 # STORAGE
-DATA_DIR=/home/andywolf/data
-JBROWSE_DIR=/home/andywolf/jbrowse_data
-IMPORT_DIR=/home/andywolf/import
+DATA_DIR=
+JBROWSE_DIR=
+IMPORT_DIR=
 
 # Docker
 ## MYSQL
 MYSQL_HOST_ADRESS=172.18.0.1
 MYSQL_ROOT_PASSWORD=JaghRMI104
-MYSQL_CONTAINER_NAME=mysql_gnom
+MYSQL_CONTAINER_NAME=gnom_mysql
 
 ## REACTAPP
-REACTAPP_CONTAINER_NAME=reactapp_gnom
+REACTAPP_CONTAINER_NAME=gnom_react
 
 ## FLASK SERVER
-FLASK_CONTAINER_NAME=flask_gnom
+FLASK_CONTAINER_NAME=gnom_flask
 
 ## NEXTCLOUD SERVER
-NEXTCLOUD_CONTAINER_NAME=nextcloud_gnom
+NEXTCLOUD_CONTAINER_NAME=gnom_nextcloud

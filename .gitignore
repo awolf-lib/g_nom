@@ -11,6 +11,9 @@
 **/.pnp
 **/.pnp.js
 
+# config
+**/local.conf
+
 # production
 **/build
 
