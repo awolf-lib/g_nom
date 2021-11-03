@@ -7,22 +7,8 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 ## get config
-DATA_DIR=$(grep "DATA_DIR" config.txt | cut -f2 -d "=")
-IMPORT_DIR=$(grep "IMPORT_DIR" config.txt | cut -f2 -d "=")
-
-MYSQL_CONTAINER_NAME=$(grep "MYSQL_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-MYSQL_ROOT_PASSWORD=$(grep "MYSQL_ROOT_PASSWORD" config.txt | cut -f2 -d "=")
-MYSQL_HOST_ADRESS=$(grep "MYSQL_HOST_ADRESS" config.txt | cut -f2 -d "=")
-
-NEXTCLOUD_CONTAINER_NAME=$(grep "NEXTCLOUD_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-NEXTCLOUD_DOWNLOAD_ADRESS=$(grep "NEXTCLOUD_DOWNLOAD_ADRESS" config.txt | cut -f2 -d "=")
-
-REACTAPP_CONTAINER_NAME=$(grep "REACTAPP_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-
-FLASK_CONTAINER_NAME=$(grep "FLASK_CONTAINER_NAME" config.txt | cut -f2 -d "=")
-API_ADRESS=$(grep "API_ADRESS" config.txt | cut -f2 -d "=")
-JBROWSE_ADRESS=$(grep "JBROWSE_ADRESS" config.txt | cut -f2 -d "=")
-JBROWSE_DIR=$(grep "JBROWSE_DIR" config.txt | cut -f2 -d "=")
+source ./default.config
+source ./local.config
 
 # ============================================ #
 
