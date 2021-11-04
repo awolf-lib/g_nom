@@ -1,6 +1,7 @@
 FROM node:latest
 WORKDIR /react-frontend
-COPY package.json ./
-RUN npm install
 COPY . .
-CMD [ "npm", "run", "start"]
+RUN npm install -g serve
+RUN npm install
+RUN npm run build
+CMD [ "serve", "-s", "build" ]

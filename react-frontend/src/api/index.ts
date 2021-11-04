@@ -1,18 +1,21 @@
-import { Observable, of, pipe, UnaryFunction } from 'rxjs';
-import { fromFetch } from 'rxjs/fetch';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { Observable, of, pipe, UnaryFunction } from "rxjs";
+import { fromFetch } from "rxjs/fetch";
+import { catchError, map, switchMap } from "rxjs/operators";
 
 // USER AUTHENTIFCATION
-export function login(username: string, password: string): Observable<IResponse> {
-  return fromFetch("http://localhost:3002/login", {
+export function login(
+  username: string,
+  password: string
+): Observable<IResponse> {
+  return fromFetch(process.env.REACT_APP_API_ADRESS + "/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ username: username, password: password }),
   }).pipe(
-    switchMap(request => request.json()),
-    catchError(error => {
+    switchMap((request) => request.json()),
+    catchError((error) => {
       console.error(error);
       return of(error);
     })
@@ -20,8 +23,12 @@ export function login(username: string, password: string): Observable<IResponse>
 }
 
 // ADD NEW USER
-export async function addUser(username: string, password: string, role: string): Promise<IResponse> {
-  return fetch("http://localhost:3002/addUser", {
+export async function addUser(
+  username: string,
+  password: string,
+  role: string
+): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/addUser", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -41,7 +48,7 @@ export async function addUser(username: string, password: string, role: string):
 
 // ===== FETCH ALL USERS ===== //
 export async function fetchAllUsers() {
-  return fetch("http://localhost:3002/fetchAllUsers")
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchAllUsers")
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -51,7 +58,9 @@ export async function fetchAllUsers() {
 
 // ===== DELETE USER BY USER ID ===== //
 export async function deleteUserByUserID(userID: number) {
-  return fetch("http://localhost:3002/deleteUserByUserID?userID=" + userID)
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/deleteUserByUserID?userID=" + userID
+  )
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -62,7 +71,8 @@ export async function deleteUserByUserID(userID: number) {
 // ===== UPDATE USER ROLE BY USER ID ===== //
 export async function updateUserRoleByUserID(userID: number, role: string) {
   return fetch(
-    "http://localhost:3002/updateUserRoleByUserID?userID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/updateUserRoleByUserID?userID=" +
       userID +
       "&role=" +
       role
@@ -91,7 +101,8 @@ export async function fetchAllAssemblies(
       });
   }
   return fetch(
-    "http://localhost:3002/fetchAllAssemblies?page=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAllAssemblies?page=" +
       page +
       "&range=" +
       range +
@@ -108,9 +119,13 @@ export async function fetchAllAssemblies(
 }
 
 // ===== FETCH ONE ASSEMBLY ===== //
-export async function fetchAssemblyInformationByAssemblyID(id: string, userID: string) {
+export async function fetchAssemblyInformationByAssemblyID(
+  id: string,
+  userID: string
+) {
   return fetch(
-    "http://localhost:3002/fetchAssemblyInformationByAssemblyID?id=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssemblyInformationByAssemblyID?id=" +
       id +
       "&userID=" +
       userID
@@ -123,8 +138,12 @@ export async function fetchAssemblyInformationByAssemblyID(id: string, userID: s
 }
 
 // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
-export async function fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"analysis")[] | undefined = undefined): Promise<IResponse<IPossibleImports>> {
-  return fetch("http://localhost:3002/fetchPossibleImports", {
+export async function fetchPossibleImports(
+  types:
+    | ("image" | "fasta" | "gff" | "bam" | "analysis")[]
+    | undefined = undefined
+): Promise<IResponse<IPossibleImports>> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchPossibleImports", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -138,21 +157,23 @@ export async function fetchPossibleImports(types: ("image"|"fasta"|"gff"|"bam"|"
     });
 }
 
-export interface IPossibleImports{
-  'fasta': {[key: string]: string[][]};
-  'gff': {[key: string]: string[][]};
-  'bam': {[key: string]: string[][]};
-  'analysis': {[key: string]: string[][]};
+export interface IPossibleImports {
+  fasta: { [key: string]: string[][] };
+  gff: { [key: string]: string[][] };
+  bam: { [key: string]: string[][] };
+  analysis: { [key: string]: string[][] };
 }
 
 // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
 export function fetchTaxonByNCBITaxonID(ncbiTaxonID: number) {
   return fromFetch(
-    "http://localhost:3002/fetchTaxonByNCBITaxonID?taxonID=" + ncbiTaxonID
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaxonByNCBITaxonID?taxonID=" +
+      ncbiTaxonID
   ).pipe(mapError<ReadonlyArray<INcbiTaxon>>());
 }
 
-export interface INcbiTaxon{
+export interface INcbiTaxon {
   commonName: string;
   id: number; // taxonId
   imageStatus: number;
@@ -167,7 +188,9 @@ export interface INcbiTaxon{
 // ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
 export async function fetchAssembliesByTaxonIDs(taxonIDs: number[]) {
   return fetch(
-    "http://localhost:3002/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssembliesByTaxonIDs?taxonIDs=" +
+      taxonIDs
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -177,9 +200,14 @@ export async function fetchAssembliesByTaxonIDs(taxonIDs: number[]) {
 }
 
 // ===== UPDATE TAXON IMAGE ===== //
-export async function updateImageByTaxonID(taxonID: number, path: string, userID: number) {
+export async function updateImageByTaxonID(
+  taxonID: number,
+  path: string,
+  userID: number
+) {
   return fetch(
-    "http://localhost:3002/updateImageByTaxonID?taxonID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/updateImageByTaxonID?taxonID=" +
       taxonID +
       "&path=" +
       path +
@@ -196,7 +224,8 @@ export async function updateImageByTaxonID(taxonID: number, path: string, userID
 // ===== DELETE TAXON IMAGE ===== //
 export async function removeImageByTaxonID(taxonID: number, userID: number) {
   return fetch(
-    "http://localhost:3002/removeImageByTaxonID?taxonID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/removeImageByTaxonID?taxonID=" +
       taxonID +
       "&userID=" +
       userID
@@ -211,7 +240,11 @@ export async function removeImageByTaxonID(taxonID: number, userID: number) {
 // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
 export async function fetchGeneralInfosByID(level: number, id: number) {
   return fetch(
-    "http://localhost:3002/fetchGeneralInfosByID?level=" + level + "&id=" + id
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchGeneralInfosByID?level=" +
+      level +
+      "&id=" +
+      id
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -221,9 +254,15 @@ export async function fetchGeneralInfosByID(level: number, id: number) {
 }
 
 // ===== ADD GENERAL INFO ===== //
-export async function addGeneralInfo(level: number, id: number, key: string, value: string) {
+export async function addGeneralInfo(
+  level: number,
+  id: number,
+  key: string,
+  value: string
+) {
   return fetch(
-    "http://localhost:3002/addGeneralInfo?level=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addGeneralInfo?level=" +
       level +
       "&id=" +
       id +
@@ -240,9 +279,15 @@ export async function addGeneralInfo(level: number, id: number, key: string, val
 }
 
 // =====  UPDATE GENERAL INFO ===== //
-export async function updateGeneralInfoByID(level: number, id: number, key: string, value: string) {
+export async function updateGeneralInfoByID(
+  level: number,
+  id: number,
+  key: string,
+  value: string
+) {
   return fetch(
-    "http://localhost:3002/updateGeneralInfoByID?level=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/updateGeneralInfoByID?level=" +
       level +
       "&id=" +
       id +
@@ -261,7 +306,11 @@ export async function updateGeneralInfoByID(level: number, id: number, key: stri
 // ===== DELETE GENERAL INFO ===== //
 export async function removeGeneralInfoByID(level: number, id: number) {
   return fetch(
-    "http://localhost:3002/removeGeneralInfoByID?level=" + level + "&id=" + id
+    process.env.REACT_APP_API_ADRESS +
+      "/removeGeneralInfoByID?level=" +
+      level +
+      "&id=" +
+      id
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -271,9 +320,16 @@ export async function removeGeneralInfoByID(level: number, id: number) {
 }
 
 // ===== IMPORT NEW ASSEMBLY ===== //
-export function addNewAssembly(taxonID: number, name: string, path: string[], userID: number, additionalFilesPath: string[]) {
+export function addNewAssembly(
+  taxonID: number,
+  name: string,
+  path: string[],
+  userID: number,
+  additionalFilesPath: string[]
+) {
   return fromFetch(
-    "http://localhost:3002/addNewAssembly?taxonID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addNewAssembly?taxonID=" +
       taxonID +
       "&name=" +
       name +
@@ -282,14 +338,11 @@ export function addNewAssembly(taxonID: number, name: string, path: string[], us
       "&userID=" +
       userID +
       "&additionalFilesPath=" +
-      additionalFilesPath.join("/") ?? ''
-  )
-    .pipe(
-      mapError<IAssemblyAdded>()
-    );
+      additionalFilesPath.join("/") ?? ""
+  ).pipe(mapError<IAssemblyAdded>());
 }
 
-export interface IAssemblyAdded{
+export interface IAssemblyAdded {
   assemblyId: number;
   taxonID: number;
   name: string;
@@ -299,7 +352,9 @@ export interface IAssemblyAdded{
 
 // ===== REMOVE ASSEMBLY ===== //
 export async function removeAssemblyByAssemblyID(id: number) {
-  return fetch("http://localhost:3002/removeAssemblyByAssemblyID?id=" + id)
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/removeAssemblyByAssemblyID?id=" + id
+  )
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -310,30 +365,31 @@ export async function removeAssemblyByAssemblyID(id: number) {
 // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
 export function fetchAssembliesByTaxonID(taxonID: number) {
   return fromFetch(
-    "http://localhost:3002/fetchAssembliesByTaxonID?taxonID=" + taxonID
-  ).pipe(
-    mapError<IAssemblyByTaxon[]>()
-  );
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssembliesByTaxonID?taxonID=" +
+      taxonID
+  ).pipe(mapError<IAssemblyByTaxon[]>());
 }
 
-export interface IAssemblyByTaxon{
-  addedBy: number, // user_id
-  addedByUsername: string,
-  addedOn: string, // Date
-  additionalFilesPath: null,
-  id: number,
-  lastUpdatedBy: 1, //user_id
-  lastUpdatedByUsername: string,
-  lastUpdatedOn: string, // Date
-  name: string,
-  path: string,
-  taxonID: number
+export interface IAssemblyByTaxon {
+  addedBy: number; // user_id
+  addedByUsername: string;
+  addedOn: string; // Date
+  additionalFilesPath: null;
+  id: number;
+  lastUpdatedBy: 1; //user_id
+  lastUpdatedByUsername: string;
+  lastUpdatedOn: string; // Date
+  name: string;
+  path: string;
+  taxonID: number;
 }
 
 // // ===== RENAME ASSEMBLY ===== //
 export async function renameAssembly(id: number, name: string, userID: number) {
   return fetch(
-    "http://localhost:3002/renameAssembly?id=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/renameAssembly?id=" +
       id +
       "&name=" +
       name +
@@ -348,9 +404,16 @@ export async function renameAssembly(id: number, name: string, userID: number) {
 }
 
 // ===== ADD NEW ANNOTATION ===== //
-export function addNewAnnotation(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
+export function addNewAnnotation(
+  assemblyId: number,
+  name: string,
+  path: string,
+  userID: number,
+  additionalFilesPath = ""
+) {
   return fromFetch(
-    "http://localhost:3002/addNewAnnotation?id=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addNewAnnotation?id=" +
       assemblyId +
       "&name=" +
       name +
@@ -360,12 +423,10 @@ export function addNewAnnotation(assemblyId: number, name: string, path: string,
       userID +
       "&additionalFilesPath=" +
       additionalFilesPath
-  ).pipe(
-    mapError<IAnnotionationAdded>()
-  );
+  ).pipe(mapError<IAnnotionationAdded>());
 }
 
-export interface IAnnotionationAdded{
+export interface IAnnotionationAdded {
   assemblyID: number;
   name: string;
   path: string;
@@ -373,9 +434,16 @@ export interface IAnnotionationAdded{
 }
 
 // ===== ADD NEW MAPPING ===== //
-export async function addNewMapping(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
+export async function addNewMapping(
+  assemblyId: number,
+  name: string,
+  path: string,
+  userID: number,
+  additionalFilesPath = ""
+) {
   return fromFetch(
-    "http://localhost:3002/addNewMapping?id=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addNewMapping?id=" +
       assemblyId +
       "&name=" +
       name +
@@ -385,12 +453,10 @@ export async function addNewMapping(assemblyId: number, name: string, path: stri
       userID +
       "&additionalFilesPath=" +
       additionalFilesPath
-  ).pipe(
-    mapError<IMappingAdded>()
-  );
+  ).pipe(mapError<IMappingAdded>());
 }
 
-export interface IMappingAdded{
+export interface IMappingAdded {
   assemblyID: number;
   name: string;
   path: string;
@@ -400,7 +466,9 @@ export interface IMappingAdded{
 // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
 export async function fetchMappingsByAssemblyID(assemblyID: number) {
   return fetch(
-    "http://localhost:3002/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchMappingsByAssemblyID?assemblyID=" +
+      assemblyID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -412,7 +480,8 @@ export async function fetchMappingsByAssemblyID(assemblyID: number) {
 // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
 export async function fetchAnnotationsByAssemblyID(assemblyID: number) {
   return fetch(
-    "http://localhost:3002/fetchAnnotationsByAssemblyID?assemblyID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAnnotationsByAssemblyID?assemblyID=" +
       assemblyID
   )
     .then((request) => request.json())
@@ -425,7 +494,9 @@ export async function fetchAnnotationsByAssemblyID(assemblyID: number) {
 // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(assemblyID: number) {
   return fetch(
-    "http://localhost:3002/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAnalysesByAssemblyID?assemblyID=" +
+      assemblyID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -435,9 +506,16 @@ export async function fetchAnalysesByAssemblyID(assemblyID: number) {
 }
 
 // ===== ADD NEW ANALYSIS ===== //
-export function addNewAnalysis(assemblyId: number, name: string, path: string, userID: number, additionalFilesPath = "") {
+export function addNewAnalysis(
+  assemblyId: number,
+  name: string,
+  path: string,
+  userID: number,
+  additionalFilesPath = ""
+) {
   return fromFetch(
-    "http://localhost:3002/addNewAnalysis?id=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addNewAnalysis?id=" +
       assemblyId +
       "&name=" +
       name +
@@ -447,12 +525,10 @@ export function addNewAnalysis(assemblyId: number, name: string, path: string, u
       userID +
       "&additionalFilesPath=" +
       additionalFilesPath
-  ).pipe(
-    mapError<IAnalysisAdded>()
-  );
+  ).pipe(mapError<IAnalysisAdded>());
 }
 
-interface IAnalysisAdded{
+interface IAnalysisAdded {
   assemblyID: number;
   name: string;
   path: string;
@@ -462,7 +538,9 @@ interface IAnalysisAdded{
 // ===== REMOVE ANNOTATION BY ID ===== //
 export async function removeAnnotationByAnnotationID(id: number) {
   return fetch(
-    "http://localhost:3002/removeAnnotationByAnnotationID?id=" + id
+    process.env.REACT_APP_API_ADRESS +
+      "/removeAnnotationByAnnotationID?id=" +
+      id
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -473,7 +551,9 @@ export async function removeAnnotationByAnnotationID(id: number) {
 
 // ===== REMOVE MAPPING BY ID ===== //
 export async function removeMappingByMappingID(id: number) {
-  return fetch("http://localhost:3002/removeMappingByMappingID?id=" + id)
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/removeMappingByMappingID?id=" + id
+  )
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -483,7 +563,9 @@ export async function removeMappingByMappingID(id: number) {
 
 // ===== REMOVE ANALYSIS BY ID ===== //
 export async function removeAnalysisByAnalysisID(id: number) {
-  return fetch("http://localhost:3002/removeAnalysisByAnalysisID?id=" + id)
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/removeAnalysisByAnalysisID?id=" + id
+  )
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -494,7 +576,8 @@ export async function removeAnalysisByAnalysisID(id: number) {
 // ===== ADD NEW BOOKMARK ===== //
 export async function addNewBookmark(userID: number, assemblyID: number) {
   return fetch(
-    "http://localhost:3002/addNewBookmark?userID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/addNewBookmark?userID=" +
       userID +
       "&assemblyID=" +
       assemblyID
@@ -509,7 +592,8 @@ export async function addNewBookmark(userID: number, assemblyID: number) {
 // ===== REMOVE BOOKMARK ===== //
 export async function removeBookmark(userID: number, assemblyID: number) {
   return fetch(
-    "http://localhost:3002/removeBookmark?userID=" +
+    process.env.REACT_APP_API_ADRESS +
+      "/removeBookmark?userID=" +
       userID +
       "&assemblyID=" +
       assemblyID
@@ -524,7 +608,9 @@ export async function removeBookmark(userID: number, assemblyID: number) {
 // ===== RELOAD TAXA DATABASE ===== //
 export async function reloadTaxonIDsFromFile(userID: number) {
   return fetch(
-    "http://localhost:3002/reloadTaxonIDsFromFile?userID=" + userID
+    process.env.REACT_APP_API_ADRESS +
+      "/reloadTaxonIDsFromFile?userID=" +
+      userID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -535,7 +621,7 @@ export async function reloadTaxonIDsFromFile(userID: number) {
 
 // ===== UPDATE TAXA TREE ===== //
 export async function updateTaxonTree() {
-  return fetch("http://localhost:3002/updateTaxonTree")
+  return fetch(process.env.REACT_APP_API_ADRESS + "/updateTaxonTree")
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -545,7 +631,7 @@ export async function updateTaxonTree() {
 
 // ===== FETCH TAXA TREE ===== //
 export async function fetchTaxonTree() {
-  return fetch("http://localhost:3002/fetchTaxonTree")
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchTaxonTree")
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -553,40 +639,52 @@ export async function fetchTaxonTree() {
     });
 }
 
-function mapError<T>(): UnaryFunction<Observable<globalThis.Response>, Observable<IResponse<T>>> {
+function mapError<T>(): UnaryFunction<
+  Observable<globalThis.Response>,
+  Observable<IResponse<T>>
+> {
   return pipe(
-    switchMap(request => request.json() as Promise<Response<T>>),
-    map(output => { if(output.notification.type === "error") {throw output.notification} else {return output as IResponse<T>} })
+    switchMap((request) => request.json() as Promise<Response<T>>),
+    map((output) => {
+      if (output.notification.type === "error") {
+        throw output.notification;
+      } else {
+        return output as IResponse<T>;
+      }
+    })
   );
 }
 
 export type Response<T = unknown> = IResponse<T> | IErrorResponse;
 
-interface IResponse<T = unknown>{
+interface IResponse<T = unknown> {
   payload: T;
   notification: IInfoNotification | ISuccessNotification;
 }
 
-interface IErrorResponse{
+interface IErrorResponse {
   payload: 0;
   notification: IErrorNotification;
 }
 
-interface INotification{
+interface INotification {
   label: string;
   message: string;
 }
 
-export type Notification = IInfoNotification | ISuccessNotification | IErrorNotification;
+export type Notification =
+  | IInfoNotification
+  | ISuccessNotification
+  | IErrorNotification;
 
-interface IInfoNotification extends INotification{
+interface IInfoNotification extends INotification {
   type: "info";
 }
 
-interface ISuccessNotification extends INotification{
+interface ISuccessNotification extends INotification {
   type: "success";
 }
 
-interface IErrorNotification extends INotification{
+interface IErrorNotification extends INotification {
   type: "error";
 }

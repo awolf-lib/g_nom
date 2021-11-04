@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
 import "../../App.css";
-import { useNotification } from "../../components/NotificationProvider";
-import {fetchAssembliesByTaxonIDs, fetchTaxonTree} from "../../api";
-import SpeciesProfilePictureViewer from "../../components/SpeciesProfilePictureViewer";
+import { useNotification } from "../NotificationProvider";
+import { fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../api";
+import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
 import Tree from "react-d3-tree";

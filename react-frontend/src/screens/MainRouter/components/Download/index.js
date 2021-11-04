@@ -4,7 +4,7 @@ const Download = () => {
       <iframe
         title="download"
         className="w-full h-75"
-        src={process.env.REACT_APP_FTP_ADRESS + "/g-nom/portal/"}
+        src={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
       />
     </div>
   );
