@@ -39,7 +39,10 @@ echo "Start ${NEXTCLOUD_CONTAINER_NAME} container..."
 docker run --name ${NEXTCLOUD_CONTAINER_NAME} --network gnom_app -v ${DATA_DIR}:/var/www/html/data -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=admin -e NEXTCLOUD_ADMIN_PASSWORD=admin -e NEXTCLOUD_DATA_DIR=/var/www/html/data -d -p 8080:80 nextcloud 
 
 echo "Waiting for nextcloud installation..."
-sleep 30;
+until $(curl --output /dev/null --silent --head --fail http://localhost:8080); do
+  printf '.'
+  sleep 5
+done
 
 # setup nexloud defaults
 echo "Remove default nextcloud files and setup group folders..."
