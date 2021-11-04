@@ -7,6 +7,8 @@ from PIL import Image
 from subprocess import run
 from re import compile
 
+from .Mysql import HOST_URL as MYSQL_HOST_URL
+
 # defaults
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
 BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
@@ -21,7 +23,7 @@ SIZE = 256, 256
 
 class FileManager:
     def __init__(self):
-        self.hostURL = "mysql_gnom"
+        self.hostURL = MYSQL_HOST_URL
 
     # ====== GENERAL ====== #
     # reconnect to get updates

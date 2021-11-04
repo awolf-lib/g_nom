@@ -3,10 +3,11 @@ from secrets import token_hex
 from hashlib import sha512
 from json import dumps
 
+from .Mysql import HOST_URL as MYSQL_HOST_URL
 
 class Auth:
     def __init__(self):
-        self.hostURL = "mysql_gnom"
+        self.hostURL = MYSQL_HOST_URL
 
     # ====== GENERAL ====== #
     # reconnect to get updates

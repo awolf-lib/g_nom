@@ -1,0 +1,1 @@
+HOST_URL = "gnom_mysql"

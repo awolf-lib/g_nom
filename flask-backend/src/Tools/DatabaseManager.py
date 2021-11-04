@@ -8,6 +8,7 @@ from os import getenv
 
 from .FileManager import FileManager
 from .Parsers import Parsers
+from .Mysql import HOST_URL as MYSQL_HOST_URL
 
 fileManager = FileManager()
 parsers = Parsers()
@@ -19,7 +20,7 @@ BASE_PATH_TO_JBROWSE = ""  # outsourced
 
 class DatabaseManager:
     def __init__(self):
-        self.hostURL = "gnom_mysql"
+        self.hostURL = MYSQL_HOST_URL
 
     # ====== GENERAL ====== #
     # reconnect to get updates
