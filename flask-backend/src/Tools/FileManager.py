@@ -1,5 +1,5 @@
 import mysql.connector
-from os import makedirs, remove, listdir
+from os import makedirs, remove
 from os.path import exists, isdir, isfile
 from shutil import copy, rmtree, copytree
 from glob import glob
