@@ -434,7 +434,7 @@ export interface IAnnotionationAdded {
 }
 
 // ===== ADD NEW MAPPING ===== //
-export async function addNewMapping(
+export function addNewMapping(
   assemblyId: number,
   name: string,
   path: string,
