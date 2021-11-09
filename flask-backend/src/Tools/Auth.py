@@ -5,6 +5,7 @@ from json import dumps
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 
+
 class Auth:
     def __init__(self):
         self.hostURL = MYSQL_HOST_URL
