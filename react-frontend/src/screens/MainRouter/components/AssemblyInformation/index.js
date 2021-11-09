@@ -2,7 +2,11 @@ import { Book, Bookmark, Close } from "grommet-icons";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import {addNewBookmark, fetchAssemblyInformationByAssemblyID, removeBookmark} from "../../../../api";
+import {
+  addNewBookmark,
+  fetchAssemblyInformationByAssemblyID,
+  removeBookmark,
+} from "../../../../api";
 import Button from "../../../../components/Button";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
 
@@ -19,31 +23,24 @@ const AssemblyInformation = () => {
   const [fetchingAll, setFetchingAll] = useState(false);
   const [hoverBookmark, setHoverBookmark] = useState(false);
 
-  const [toggleGeneralInfoSection, setToggleGeneralInfoSection] = useState(
-    true
-  );
+  const [toggleGeneralInfoSection, setToggleGeneralInfoSection] =
+    useState(true);
 
-  const [toggleAssemblyStatistics, setToggleAssemblyStatistics] = useState(
-    true
-  );
+  const [toggleAssemblyStatistics, setToggleAssemblyStatistics] =
+    useState(true);
 
   const [toggleMaskings, setToggleMaskings] = useState(false);
 
-  const [toggleTaxonomicAssignment, setToggleTaxonomicAssignment] = useState(
-    false
-  );
-  const [taxonomicAssignmentLoading, setTaxonomicAssignmentLoading] = useState(
-    false
-  );
+  const [toggleTaxonomicAssignment, setToggleTaxonomicAssignment] =
+    useState(false);
+  const [taxonomicAssignmentLoading, setTaxonomicAssignmentLoading] =
+    useState(false);
 
-  const [
-    toggleAnnotationCompleteness,
-    setToggleAnnotationCompleteness,
-  ] = useState(false);
+  const [toggleAnnotationCompleteness, setToggleAnnotationCompleteness] =
+    useState(false);
 
-  const [toggleGenomeViewerSection, setToggleGenomeViewerSection] = useState(
-    false
-  );
+  const [toggleGenomeViewerSection, setToggleGenomeViewerSection] =
+    useState(false);
 
   const { id } = useParams();
   const userID = sessionStorage.getItem("userID");
@@ -281,7 +278,7 @@ const AssemblyInformation = () => {
               </div>
             )}
 
-          <div>
+          {/* <div>
             <div className="animate-grow-y">
               <div
                 className="m-8 select-none"
@@ -298,7 +295,7 @@ const AssemblyInformation = () => {
               )}
             </div>
             <hr className="shadow my-8 mx-8" />
-          </div>
+          </div> */}
         </div>
       )}
     </div>

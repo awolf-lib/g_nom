@@ -1,8 +1,6 @@
 # Prerequisites
 
     1. Docker
-    2. Node.js & npm
-    3. Python
 
     All other requirements will automatically be installed during the setup process.
 
@@ -12,12 +10,9 @@
 
    git clone https://github.com/awolf-lib/g_nom.git
 
-2. Enter the project directory:
-   cd .../g_nom/
+2. Change config.conf to match your environment.
 
-3. Change config.txt to match your environment.
-
-4. Start setup:
+3. Start setup in the project directory:
    ./setup.sh
 
 # Start
@@ -29,3 +24,5 @@ Start services:
 
 Stop services:
 ./shutdown.sh
+
+# remove Container

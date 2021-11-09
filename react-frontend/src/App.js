@@ -1,7 +1,7 @@
 import "./App.css";
 import "tailwindcss/tailwind.css";
 
-import MainRouter from "./screens/MainRouter/";
+import MainRouter from "./screens/MainRouter";
 
 export default function App() {
   return (

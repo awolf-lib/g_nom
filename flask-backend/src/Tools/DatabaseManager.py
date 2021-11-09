@@ -1,34 +1,33 @@
+from genericpath import isfile
+from flask.helpers import send_file
 import mysql.connector
 from hashlib import sha512
 from math import ceil
 from json import dumps, loads
-from os import getenv
-
-from mysql.connector.errors import Error
 
 from .FileManager import FileManager
 from .Parsers import Parsers
+from .Mysql import HOST_URL as MYSQL_HOST_URL
 
 fileManager = FileManager()
 parsers = Parsers()
 
-BASE_PATH_TO_UPLOAD = "storage/files/upload/"
-BASE_PATH_TO_STORAGE = "storage/files/download/"
-
-BASE_PATH_TO_JBROWSE = "storage/externalTools/jbrowse/data/"
+BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
+BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
+BASE_PATH_TO_JBROWSE = ""  # outsourced
 
 
 class DatabaseManager:
     def __init__(self):
-        self.hostURL = "0.0.0.0"
+        self.hostURL = MYSQL_HOST_URL
 
     # ====== GENERAL ====== #
     # reconnect to get updates
     def updateConnection(self, database="g-nom_dev"):
         connection = mysql.connector.connect(
             host=self.hostURL,
-            user="gnom",
-            password="G-nom_BOT#0",
+            user="root",
+            password="JaghRMI104",
             database=database,
             auth_plugin="mysql_native_password",
         )
@@ -270,14 +269,14 @@ class DatabaseManager:
             sql = f"INSERT INTO taxon (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES {values}"
             cursor.execute(sql)
             connection.commit()
-        except:
+        except Exception as err:
             cursor.execute("DELETE FROM taxon")
             connection.commit()
             cursor.execute("ALTER TABLE taxon AUTO_INCREMENT = 1")
             connection.commit()
             return 0, {
                 "label": "Error",
-                "message": "Error while inserting taxa!",
+                "message": "Error while inserting taxa into database!",
                 "type": "error",
             }
 
@@ -358,7 +357,7 @@ class DatabaseManager:
             taxa = list(taxa)
 
             if len(taxa) == 0:
-                with open("storage/files/download/taxa/tree.json", "w") as treeFile:
+                with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "w") as treeFile:
                     treeFile.write("")
                     treeFile.close()
                 return 1, {
@@ -454,7 +453,7 @@ class DatabaseManager:
                         lineageDict[id]["children"][index] = childNode
             currentLevel += 1
 
-        with open("storage/files/download/taxa/tree.json", "w") as treeFile:
+        with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "w") as treeFile:
             treeFile.write(dumps(lineageDict[1]))
             treeFile.close()
 
@@ -468,7 +467,7 @@ class DatabaseManager:
         connection, cursor = self.updateConnection()
 
         try:
-            with open("storage/files/download/taxa/tree.json", "r") as treeFile:
+            with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "r") as treeFile:
                 treeData = treeFile.readline()
                 treeData = loads(treeData)
                 treeFile.close()
@@ -548,6 +547,26 @@ class DatabaseManager:
             "message": f"Successfully removed image of taxon with NCBI taxon ID {taxonID}!",
             "type": "success",
         }
+
+    # FETCH TAXON IMAGE
+    def fetchSpeciesProfilePictureTaxonID(self, taxonID):
+        """
+        send image to frontend
+        """
+
+        if not isfile(
+            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg"
+        ):
+            return {
+                "label": "Error",
+                "message": f"Error loading profile picture for species {taxonID}. No such file!",
+                "type": "error",
+            }
+
+        return send_file(
+            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg",
+            "image/jpg",
+        )
 
     # ================== ASSEMBLY ================== #
     # FETCH ALL ASSEMBLIES
@@ -942,7 +961,14 @@ class DatabaseManager:
             }
 
     # ADD NEW ASSEMBLY
-    def addNewAssembly(self, taxonID: int, name: str, path: str, userID: int, additionalFilesPath: str=""):
+    def addNewAssembly(
+        self,
+        taxonID: int,
+        name: str,
+        path: str,
+        userID: int,
+        additionalFilesPath: str = "",
+    ):
         """
         add new assembly
         """
@@ -978,7 +1004,7 @@ class DatabaseManager:
 
         if not path:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, notification
 
         try:
@@ -995,7 +1021,7 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, {
                 "label": "Error",
                 "message": "Something went wrong while inserting assembly into database!",
@@ -1006,7 +1032,7 @@ class DatabaseManager:
 
         if not data:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             cursor.execute(f"DELETE FROM assembly WHERE id={lastID}")
             connection.commit()
             return 0, notification
@@ -1030,7 +1056,7 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             self.removeAssemblyByAssemblyID(lastID)
             return 0, {
                 "label": "Error",
@@ -1068,7 +1094,7 @@ class DatabaseManager:
             connection.commit()
 
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
 
             status, notification = self.updateTaxonTree()
             if not status:
@@ -1671,7 +1697,7 @@ class DatabaseManager:
 
         fileName = path.split("/")[-1]
 
-        if fileName == "3D_plot.html":
+        if "3D_plot.html" in fileName and fileName.endswith(".html"):
             type = "milts"
         elif "short_summary" in fileName and fileName.endswith(".txt"):
             type = "busco"
@@ -1686,6 +1712,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
+        print(type, path, name, additionalFilesPath, assemblyName)
         path, notification = fileManager.moveFileToStorage(
             type, path, name, additionalFilesPath, assemblyName
         )
@@ -1792,6 +1819,22 @@ class DatabaseManager:
             "message": f"Successfully removed analysis '{analysisName}'!",
             "type": "success",
         }
+
+        # FETCH MILTS 3D PLOT
+
+    def fetchMiltsPlotByPath(self, path):
+        """
+        send milts plot to frontend
+        """
+
+        if not isfile(path):
+            return {
+                "label": "Error",
+                "message": f"Error loading MILTS 3D plot. No such file!",
+                "type": "error",
+            }
+
+        return send_file(path, "text/html")
 
     def importBusco(self, analysisID, buscoData):
         """

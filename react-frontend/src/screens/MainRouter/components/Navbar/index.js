@@ -15,9 +15,8 @@ class Navbar extends Component {
     };
 
     this.setProfileDropdownVisible = this.setProfileDropdownVisible.bind(this);
-    this.setMobileMenuDropdownVisible = this.setMobileMenuDropdownVisible.bind(
-      this
-    );
+    this.setMobileMenuDropdownVisible =
+      this.setMobileMenuDropdownVisible.bind(this);
   }
 
   setProfileDropdownVisible() {
@@ -55,9 +54,13 @@ class Navbar extends Component {
                   <Link to="/g-nom/tools">
                     <Button label="Tools" color="nav" />
                   </Link>
-                  <Link to="/g-nom/download">
+                  <a
+                    href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     <Button label="Downloads" color="nav" />
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -181,9 +184,15 @@ class Navbar extends Component {
               <Link to="/g-nom/tools">
                 <Button label="Tools" color="nav" />
               </Link>
-              <Link to="/g-nom/tools">
-                <Button label="Downloads" color="nav" />
-              </Link>
+              <a
+                href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Link to="/g-nom/download">
+                  <Button label="Downloads" color="nav" />
+                </Link>
+              </a>
             </div>
           )}
 

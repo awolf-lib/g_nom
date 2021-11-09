@@ -350,12 +350,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
           </div>
           <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
-              href={
-                process.env.REACT_APP_FTP_ADRESS +
-                "/g-nom/portal/fs/download/assemblies/" +
-                assemblyName +
-                "/busco/"
-              }
+              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
               target="_blank"
               rel="noopener noreferrer"
               className="flex justify-center items-center"
@@ -396,12 +391,7 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
           </div>
           <div className="absolute bottom-0 right-0 mx-4 my-1 z-10 opacity-50 flex items-center">
             <a
-              href={
-                process.env.REACT_APP_FTP_ADRESS +
-                "/g-nom/portal/fs/download/assemblies/" +
-                assemblyName +
-                "/fcat/"
-              }
+              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
               target="_blank"
               rel="noopener noreferrer"
               className="flex justify-center items-center"

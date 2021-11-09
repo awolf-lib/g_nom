@@ -1,9 +1,7 @@
 # FLASK
 **/__pycache__
 **/venv
-**/files/download/
-**/files/upload/
-**/jbrowse
+**/storage/*
 
 # REACT
 **/.env
@@ -12,6 +10,9 @@
 **/node_modules
 **/.pnp
 **/.pnp.js
+
+# config
+**/local.conf
 
 # production
 **/build
@@ -27,3 +28,4 @@
 
 # VS CODE
 **/.vscode
+local.config

@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import classNames from "classnames";
 
-import {addNewMapping, fetchPossibleImports} from "../../../../../../../../api";
+import {
+  addNewMapping,
+  fetchPossibleImports,
+} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -90,21 +93,22 @@ const AddMappingForm = (props) => {
       return;
     }
     setImporting(true);
-    const response = await addNewMapping(
+    addNewMapping(
       props.object.id,
       newAnalysisName.replace(/ /g, "_"),
       selectedPath.join("/"),
       userID,
       additionalFiles.join("/")
-    );
-    if (response && response.payload) {
-      setShowConfirmationForm(false);
-    }
-    if (response && response.notification) {
-      handleNewNotification(response.notification);
-    }
-    setImporting(false);
-    handleModeChange("");
+    ).subscribe((response) => {
+      if (response && response.payload) {
+        setShowConfirmationForm(false);
+      }
+      if (response && response.notification) {
+        handleNewNotification(response.notification);
+      }
+      setImporting(false);
+      handleModeChange("");
+    });
   };
 
   const handleChangeSelectedPath = (inputPathArray) => {

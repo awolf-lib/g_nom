@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import classNames from "classnames";
 
-import {addNewAnalysis, fetchPossibleImports} from "../../../../../../../../api";
+import {
+  addNewAnalysis,
+  fetchPossibleImports,
+} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
@@ -96,7 +99,7 @@ const AddAnalysisForm = (props) => {
       selectedPath.join("/"),
       userID,
       additionalFiles.join("/")
-    ).subscribe(response => {
+    ).subscribe((response) => {
       if (response && response.payload) {
         setShowConfirmationForm(false);
       }

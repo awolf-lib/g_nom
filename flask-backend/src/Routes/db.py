@@ -20,6 +20,11 @@ REQUESTMETHODERROR = {
     },
 }
 
+@db.route("/connectionTest", methods=["GET"])
+def connectionTest():
+        response = jsonify({"payload": "Success"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
 # ================== USER ================== #
 # ADD NEW USER
@@ -90,7 +95,7 @@ def updateUserRoleByUserID():
 def reloadTaxonIDsFromFile():
     if request.method == "GET":
         userID = request.args.get("userID")
-        data, notification = api.reloadTaxonIDsFromFile(userID)
+        data, notification = api.reloadTaxonIDsFromFile(userID, False)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -187,6 +192,18 @@ def removeImageByTaxonID():
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ONE TAXON BY TAXON ID
+@db.route("/fetchSpeciesProfilePictureTaxonID", methods=["GET"])
+def fetchSpeciesProfilePictureTaxonID():
+    if request.method == "GET":
+        taxonID = request.args.get("taxonID")
+        data = api.fetchSpeciesProfilePictureTaxonID(taxonID)
+
+        return data
     else:
         return REQUESTMETHODERROR
 
@@ -515,6 +532,17 @@ def removeAnalysisByAnalysisID():
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH MILTS PLOT BY PATH
+@db.route("/fetchMiltsPlotByPath", methods=["GET"])
+def fetchMiltsPlotByPath():
+    if request.method == "GET":
+        path = request.args.get("path")
+        data = api.fetchMiltsPlotByPath(path)
+        return data
     else:
         return REQUESTMETHODERROR
 
