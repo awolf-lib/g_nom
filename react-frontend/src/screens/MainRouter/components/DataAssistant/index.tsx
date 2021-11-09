@@ -1,21 +1,9 @@
-import { useEffect, useState } from "react";
-import { fetchImportDirectory } from "../../../../api";
+import { useState } from "react";
 import FileTree from "./components/FileTree/index";
 
 const DataAssistant = () => {
-  const [files, setFiles] = useState<any>({});
-
-  useEffect(() => {
-    loadFiles();
-  }, []);
-
-  const loadFiles = async () => {
-    const response = await fetchImportDirectory();
-    setFiles(response.payload);
-  };
-
   return (
-    <div className="mb-64">
+    <div className="mb-4">
       <header className="bg-indigo-100 shadow">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
@@ -25,12 +13,16 @@ const DataAssistant = () => {
           </div>
         </div>
       </header>
-      <div className="grid grid-rows-3 grid-cols-2 gap-8">
-        <div className="max-h-75 overflow-auto row-span-3">
-          {files && <FileTree data={files} />}
+
+      <div className="grid grid-rows-7 grid-cols-3 gap-4 h-75">
+        <div
+          className="px-4 py-2 col-span-2"
+          style={{ gridRow: "span 7 / span 7" }}
+        >
+          <FileTree />
         </div>
         <div
-          className="bg-black text-white"
+          className="flex justify-center items-center border rounded-lg shadow m-2"
           onDragOver={(e) => {
             e.preventDefault();
           }}
@@ -38,9 +30,74 @@ const DataAssistant = () => {
             console.log(JSON.parse(e.dataTransfer.getData("text")));
           }}
         >
-          Test
+          Assembly
         </div>
-        <div>Test2</div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Annotation
+        </div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Mapping
+        </div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Taxonomic assignment (Milts)
+        </div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Annotation completeness (Busco)
+        </div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Annotation completeness (fCat)
+        </div>
+        <div
+          className="flex justify-center items-center border rounded-lg shadow m-2"
+          onDragOver={(e) => {
+            e.preventDefault();
+          }}
+          onDrop={(e) => {
+            console.log(JSON.parse(e.dataTransfer.getData("text")));
+          }}
+        >
+          Repeat masking (Repeatmasker)
+        </div>
       </div>
     </div>
   );

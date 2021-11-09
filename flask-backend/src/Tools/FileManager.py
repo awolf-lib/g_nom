@@ -8,6 +8,7 @@ from subprocess import run
 from re import compile
 import pika
 import json
+from uuid import uuid1
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 from .Payload import AnnotationPayload, Assembly, AssemblyPayload, MappingPayload, Payload
@@ -192,6 +193,7 @@ class FileManager:
         except:
             return 0, STORAGEERROR
         return newPath, {}
+
 
     def moveAssemblyToStorage(self, mainFile, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
@@ -859,7 +861,7 @@ class FileManager:
 
     # FETCH IMPORT DIRECTORY IN JSON FORMAT
     def fetchImportDirectory(self, path=BASE_PATH_TO_IMPORT):
-        def pathToJson(path):
+        def pathToJson(path, parent=0):
             image_regex = compile(r"^(.*\.jpg$)|(.*\.jpeg$)|(.*\.png$)|(.*\.jfif$)")
             sequence_regex = compile(r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)")
             annotation_regex = compile(r"^(.*\.gff$)|(.*\.gff3$)")
@@ -870,13 +872,13 @@ class FileManager:
             repeat_masking_regex = compile(r"^(.*\.tbl$)")
 
             d = {
-                "id": id,
+                "id": uuid1(),
                 "name": basename(path),
                 "path": path[len(BASE_PATH_TO_IMPORT) :],
             }
             if isdir(path):
                 d["children"] = [
-                    pathToJson(join(path, x), id + 1) for x in listdir(path)
+                    pathToJson(join(path, x), d["id"]) for x in listdir(path)
                 ]
             else:
                 if image_regex.match(d["name"]):
