@@ -93,7 +93,6 @@ docker build --no-cache -t gnom/reactapp .
 # start
 echo "Start ${REACTAPP_CONTAINER_NAME} container..."
 docker run --name $REACTAPP_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} -d -p 5000:5000 gnom/reactapp
-# docker run --name $REACTAPP_CONTAINER_NAME -v PATH/TO/LOCAL/SRC:/react-frontend/src --network ${DOCKER_NETWORK_NAME} -d -p 3000:3000 gnom/reactapp npm start
 cd ..
 
 # ============================================ #
@@ -106,7 +105,6 @@ docker build -t gnom/flask .
 # start
 echo "Start ${FLASK_CONTAINER_NAME} container..."
 docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
-# docker run --name $FLASK_CONTAINER_NAME -v PATH/TO/LOCAL/SRC:/flask-backend/src -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
