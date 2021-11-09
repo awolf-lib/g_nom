@@ -16,7 +16,7 @@ import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import Download from "./components/Download";
 import AssembliesTable from "../../components/AssembliesTable";
-import DataAssistant from "./components/DataAssistant";
+import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
 
 const MainRouter = () => {

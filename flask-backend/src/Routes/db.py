@@ -20,11 +20,13 @@ REQUESTMETHODERROR = {
     },
 }
 
+
 @db.route("/connectionTest", methods=["GET"])
 def connectionTest():
-        response = jsonify({"payload": "Success"})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-        return response
+    response = jsonify({"payload": "Success"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
+
 
 # ================== USER ================== #
 # ADD NEW USER

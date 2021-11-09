@@ -1,6 +1,6 @@
 import mysql.connector
-from os import makedirs, remove
-from os.path import exists, isdir, isfile
+from os import makedirs, remove, listdir
+from os.path import exists, isdir, isfile, basename, join
 from shutil import copy, rmtree, copytree
 from glob import glob
 from PIL import Image
@@ -161,6 +161,53 @@ class FileManager:
             "message": f"{possibleImportsCount} possible files were detected!",
             "type": "info",
         }
+
+    # FETCH IMPORT DIRECTORY IN JSON FORMAT
+    def fetchImportDirectory(self, path=BASE_PATH_TO_IMPORT):
+        def pathToJson(path):
+            image_regex = compile(r"^(.*\.jpg$)|(.*\.jpeg$)|(.*\.png$)|(.*\.jfif$)")
+            sequence_regex = compile(r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)")
+            annotation_regex = compile(r"^(.*\.gff$)|(.*\.gff3$)")
+            mapping_regex = compile(r"^(.*\.sam$)|(.*\.bam$)")
+            taxonomic_assignment_regex = compile(r"^(.*3D_plot.*\.html$)")
+            annotation_completeness_busco_regex = compile(r"^(.*short_summary.*\.txt$)")
+            annotation_completeness_fCat_regex = compile(r"^(.*report_summary.*\.txt$)")
+            repeat_masking_regex = compile(r"^(.*\.tbl$)")
+
+            d = {
+                "id": id,
+                "name": basename(path),
+                "path": path[len(BASE_PATH_TO_IMPORT) :],
+            }
+            if isdir(path):
+                d["children"] = [
+                    pathToJson(join(path, x), id + 1) for x in listdir(path)
+                ]
+            else:
+                if image_regex.match(d["name"]):
+                    d["type"] = "image"
+                elif sequence_regex.match(d["name"]):
+                    d["type"] = "sequence"
+                elif annotation_regex.match(d["name"]):
+                    d["type"] = "annotation"
+                elif mapping_regex.match(d["name"]):
+                    d["type"] = "mapping"
+                elif taxonomic_assignment_regex.match(d["name"]):
+                    d["type"] = "taxonomic assignment (Milts)"
+                elif annotation_completeness_busco_regex.match(d["name"]):
+                    d["type"] = "annotation completeness (Busco)"
+                elif annotation_completeness_fCat_regex.match(d["name"]):
+                    d["type"] = "annotation completeness (fCat)"
+                elif repeat_masking_regex.match(d["name"]):
+                    d["type"] = "repeat masking (Repeatmasker)"
+                else:
+                    pass
+            return d
+
+        if path[-1] == "/":
+            path = path[:-1]
+
+        return pathToJson(path), {}
 
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
@@ -630,7 +677,9 @@ class FileManager:
                 try:
                     with open(newPath, "r") as plotFile:
                         plot_data = "".join(plotFile.readlines()).replace("\n", "")
-                        plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{name}"')
+                        plot_data = plot_data.replace(
+                            '"title":"taxonomic assignment"', f'"title":"{name}"'
+                        )
                         plotFile.close()
 
                     with open(
@@ -648,11 +697,17 @@ class FileManager:
                             "type": "error",
                         }
 
-                    for i in range(len(milts_template)-1, len(milts_template)-5, -1):
-                        if ("<body>REPLACE_BODY</body>" in milts_template[i]):
-                            milts_template[i] = milts_template[i].replace("<body>REPLACE_BODY</body>", body_match[0])
-                        elif ("<title>REPLACE_TITLE</title>" in milts_template[i]):
-                            milts_template[i] = milts_template[i].replace("REPLACE_TITLE", name)
+                    for i in range(
+                        len(milts_template) - 1, len(milts_template) - 5, -1
+                    ):
+                        if "<body>REPLACE_BODY</body>" in milts_template[i]:
+                            milts_template[i] = milts_template[i].replace(
+                                "<body>REPLACE_BODY</body>", body_match[0]
+                            )
+                        elif "<title>REPLACE_TITLE</title>" in milts_template[i]:
+                            milts_template[i] = milts_template[i].replace(
+                                "REPLACE_TITLE", name
+                            )
                             break
 
                     with open(newPath, "w") as plotFile:

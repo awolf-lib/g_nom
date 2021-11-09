@@ -42,3 +42,16 @@ def fetchPossibleImports():
                 "type": "error",
             },
         }
+
+
+@files.route("/fetchImportDirectory", methods=["GET"])
+def fetchImportDirectory():
+    if request.method == "GET":
+        data, notification = api.fetchImportDirectory()
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR

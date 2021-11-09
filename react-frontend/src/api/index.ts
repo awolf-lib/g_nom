@@ -164,6 +164,16 @@ export interface IPossibleImports {
   analysis: { [key: string]: string[][] };
 }
 
+// ===== FETCH IMPORT DIRECTORY ===== //
+export async function fetchImportDirectory() {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchImportDirectory")
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
 export function fetchTaxonByNCBITaxonID(ncbiTaxonID: number) {
   return fromFetch(
