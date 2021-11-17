@@ -2094,3 +2094,42 @@ class DatabaseManager:
             "message": f"Successfully removed bookmark!",
             "type": "success",
         }
+
+    def importFiles(self, importSpecifications):
+        """
+        start import from object
+        """
+        if not importSpecifications:
+            return 0, {
+                "label": "Error",
+                "message": f"No data!",
+                "type": "error",
+            }
+
+        if not importSpecifications["taxon"]:
+            return 0, {
+                "label": "Error",
+                "message": f"No target taxon specified!",
+                "type": "error",
+            }
+        taxon = importSpecifications["taxon"]
+
+        if not importSpecifications["assembly"]:
+            return 0, {
+                "label": "Error",
+                "message": f"No target assembly specified!",
+                "type": "error",
+            }
+        assembly = importSpecifications["assembly"]
+
+        genericAssemblyName = taxon["scientificName"] + "_" + assembly["id"]
+        pathToAssembly = BASE_PATH_TO_IMPORT + assembly["path"]
+        print(pathToAssembly)
+
+        if importSpecifications["assembly"]["new"]:
+            a, b = self.addNewAssembly(taxon["id"], genericAssemblyName, pathToAssembly, 1)
+
+        print(a)
+        print(b)
+
+        return 0, {}

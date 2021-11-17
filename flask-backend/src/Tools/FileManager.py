@@ -165,11 +165,17 @@ class FileManager:
 
     # FETCH IMPORT DIRECTORY IN JSON FORMAT
     def fetchImportDirectory(self, path=BASE_PATH_TO_IMPORT):
-        def pathToJson(path, parent=0):
+        def pathToJson(path):
             image_regex = compile(r"^(.*\.jpg$)|(.*\.jpeg$)|(.*\.png$)|(.*\.jfif$)")
-            sequence_regex = compile(r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)")
-            annotation_regex = compile(r"^(.*\.gff$)|(.*\.gff3$)")
-            mapping_regex = compile(r"^(.*\.sam$)|(.*\.bam$)")
+            sequence_regex = compile(
+                r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)|(.*\.fasta.gz$)|(.*\.fa.gz$)|(.*\.faa.gz$)|(.*\.fna.gz$)"
+            )
+            annotation_regex = compile(
+                r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff.gz$)|(.*\.gff3.gz$)"
+            )
+            mapping_regex = compile(
+                r"^(.*\.sam$)|(.*\.bam$)|(.*\.sam.gz$)|(.*\.bam.gz$)"
+            )
             taxonomic_assignment_regex = compile(r"^(.*3D_plot.*\.html$)")
             annotation_completeness_busco_regex = compile(r"^(.*short_summary.*\.txt$)")
             annotation_completeness_fCat_regex = compile(r"^(.*report_summary.*\.txt$)")
@@ -181,9 +187,35 @@ class FileManager:
                 "path": path[len(BASE_PATH_TO_IMPORT) :],
             }
             if isdir(path):
-                d["children"] = [
-                    pathToJson(join(path, x), d["id"]) for x in listdir(path)
-                ]
+                dir_type = []
+                for file in listdir(path):
+                    if image_regex.match(file):
+                        dir_type.append("image")
+                    elif sequence_regex.match(file):
+                        dir_type.append("sequence")
+                    elif annotation_regex.match(file):
+                        dir_type.append("annotation")
+                    elif mapping_regex.match(file):
+                        dir_type.append("mapping")
+                    elif taxonomic_assignment_regex.match(file):
+                        dir_type.append("milts")
+                    elif annotation_completeness_busco_regex.match(file):
+                        dir_type.append("busco")
+                    elif annotation_completeness_fCat_regex.match(file):
+                        dir_type.append("fcat")
+                    elif repeat_masking_regex.match(file):
+                        dir_type.append("repeatmasker")
+                    else:
+                        pass
+
+                dir_type = list(set(dir_type))
+                if len(dir_type) == 1:
+                    d["dirType"] = dir_type[0]
+                elif len(dir_type) > 1:
+                    d["dirType"] = ", ".join(dir_type)
+
+                d["children"] = [pathToJson(join(path, x)) for x in listdir(path)]
+
             else:
                 if image_regex.match(d["name"]):
                     d["type"] = "image"
@@ -194,13 +226,13 @@ class FileManager:
                 elif mapping_regex.match(d["name"]):
                     d["type"] = "mapping"
                 elif taxonomic_assignment_regex.match(d["name"]):
-                    d["type"] = "taxonomic assignment (Milts)"
+                    d["type"] = "milts"
                 elif annotation_completeness_busco_regex.match(d["name"]):
-                    d["type"] = "annotation completeness (Busco)"
+                    d["type"] = "busco"
                 elif annotation_completeness_fCat_regex.match(d["name"]):
-                    d["type"] = "annotation completeness (fCat)"
+                    d["type"] = "fcat"
                 elif repeat_masking_regex.match(d["name"]):
-                    d["type"] = "repeat masking (Repeatmasker)"
+                    d["type"] = "repeatmasker"
                 else:
                     pass
             return d
@@ -229,7 +261,10 @@ class FileManager:
             "type": "error",
         }
 
-        path = f"{BASE_PATH_TO_IMPORT}{mainFile}"
+        if not BASE_PATH_TO_IMPORT in mainFile:
+            path = f"{BASE_PATH_TO_IMPORT}{mainFile}"
+        else:
+            path = mainFile
         if not exists(path):
             return 0, {
                 "label": "Error",
