@@ -649,6 +649,22 @@ export async function fetchTaxonTree() {
     });
 }
 
+// IMPORT
+export async function importFiles(importInformation: any): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/importFiles", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ importJson: importInformation }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 function mapError<T>(): UnaryFunction<
   Observable<globalThis.Response>,
   Observable<IResponse<T>>

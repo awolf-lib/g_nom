@@ -580,3 +580,19 @@ def removeBookmark():
         return response
     else:
         return REQUESTMETHODERROR
+
+
+# ================== NEW IMPORT ================== #
+# IMPORT
+@db.route("/importFiles", methods=["GET", "POST"])
+def importFiles():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        data, notification = api.importFiles(req.get("importJson", None))
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR

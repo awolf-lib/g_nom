@@ -26,17 +26,20 @@ STORAGEERROR = {
     "type": "error",
 }
 
-RABBIT_MQ_QUEUE_RESOURCE="resource"
+RABBIT_MQ_QUEUE_RESOURCE = "resource"
+
 
 class FileManager:
     def __init__(self):
         self.hostURL = MYSQL_HOST_URL
 
     def __notify(self, payload: Payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
-        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
+        pika_connection = pika.BlockingConnection(
+            pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672)
+        )
         pika_channel = pika_connection.channel()
         pika_channel.queue_declare(queue=route, durable=True)
-        pika_channel.basic_publish(exchange='', routing_key=route, body=json.dumps(payload))
+        pika_channel.basic_publish(exchange="", routing_key=route, body=json.dumps(payload))
         pika_connection.close()
 
     # ====== GENERAL ====== #
@@ -154,15 +157,11 @@ class FileManager:
                     fileListPerTypePerExtension = []
                     for filePath in glob(import_directory + regex, recursive=True):
                         pathSplit = filePath.split("/")[1:]
-                        basePathLength = len(
-                            [x for x in import_directory.split("/") if x != ""]
-                        )
+                        basePathLength = len([x for x in import_directory.split("/") if x != ""])
                         fileListPerTypePerExtension.append(pathSplit[basePathLength:])
                         possibleImportsCount += 1
 
-                    possibleImports[type].update(
-                        {extension: fileListPerTypePerExtension}
-                    )
+                    possibleImports[type].update({extension: fileListPerTypePerExtension})
             else:
                 return 0, {
                     "label": "Error",
@@ -186,17 +185,19 @@ class FileManager:
                         "message": "No NCBI taxonID for renaming thumbnail was provided!",
                         "type": "error",
                     }
-                newPath = (
-                    f"{BASE_PATH_TO_STORAGE}taxa/images/" + name + ".thumbnail.jpg"
-                )
+                newPath = f"{BASE_PATH_TO_STORAGE}taxa/images/" + name + ".thumbnail.jpg"
                 image.save(newPath, "JPEG")
         except:
             return 0, STORAGEERROR
         return newPath, {}
 
-
     def moveAssemblyToStorage(self, mainFile, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
+        if not BASE_PATH_TO_IMPORT in mainFile:
+            path = f"{BASE_PATH_TO_IMPORT}{mainFile}"
+        else:
+            path = mainFile
+
         if not exists(path):
             return 0, {
                 "label": "Error",
@@ -236,13 +237,11 @@ class FileManager:
         if additionalFiles:
             try:
                 additionalFilesDir = additionalFiles.split("/")[-1]
-                newAdditionalFilesPath = f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{additionalFilesDir}"
-                copytree(
-                    additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
+                newAdditionalFilesPath = (
+                    f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{additionalFilesDir}"
                 )
-                self.deleteFile(
-                    f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{mainFile}"
-                )
+                copytree(additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True)
+                self.deleteFile(f"{BASE_PATH_TO_STORAGE}assemblies/{name}/fasta/dna/additionalFiles/{mainFile}")
             except:
                 self.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
                 return 0, {
@@ -284,9 +283,7 @@ class FileManager:
 
         newPath = ""
         try:
-            fullPathToAnnoation = (
-                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{name}/"
-            )
+            fullPathToAnnoation = f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{name}/"
 
             makedirs(
                 fullPathToAnnoation,
@@ -301,12 +298,8 @@ class FileManager:
         if additionalFiles:
             try:
                 additionalFilesDir = additionalFiles.split("/")[-1]
-                newAdditionalFilesPath = (
-                    f"{fullPathToAnnoation}additionalFiles/{additionalFilesDir}"
-                )
-                copytree(
-                    additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
-                )
+                newAdditionalFilesPath = f"{fullPathToAnnoation}additionalFiles/{additionalFilesDir}"
+                copytree(additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True)
                 self.deleteFile(f"{fullPathToAnnoation}/additionalFiles/{mainFile}")
             except:
                 self.deleteDirectories(fullPathToAnnoation)
@@ -343,7 +336,7 @@ class FileManager:
                 "message": "Error sorting gff3 by grep!",
                 "type": "error",
             }
-        
+
         newPath = newPathSorted
         return newPath, {}
 
@@ -379,9 +372,7 @@ class FileManager:
 
         newPath = ""
         try:
-            fullPathToMapping = (
-                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{name}/"
-            )
+            fullPathToMapping = f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{name}/"
 
             makedirs(
                 fullPathToMapping,
@@ -396,12 +387,8 @@ class FileManager:
         if additionalFiles:
             try:
                 additionalFilesDir = additionalFiles.split("/")[-1]
-                newAdditionalFilesPath = (
-                    f"{fullPathToMapping}additionalFiles/{additionalFilesDir}"
-                )
-                copytree(
-                    additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
-                )
+                newAdditionalFilesPath = f"{fullPathToMapping}additionalFiles/{additionalFilesDir}"
+                copytree(additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True)
                 self.deleteFile(f"{fullPathToMapping}/additionalFiles/{mainFile}")
             except:
                 self.deleteDirectories(fullPathToMapping)
@@ -410,13 +397,13 @@ class FileManager:
                     "message": "Error copying additional files!",
                     "type": "error",
                 }
-        
+
         return newPath, {}
 
     def notify_mapping(self, assemblyId: int, assemblyName, name, path):
-        payload = MappingPayload(name, Assembly(assemblyName, assemblyId), path, 'Added')
+        payload = MappingPayload(name, Assembly(assemblyName, assemblyId), path, "Added")
         self.__notify(payload)
-    
+
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
         self,
@@ -459,24 +446,15 @@ class FileManager:
         if type == "image":
             return self.moveImageToStorage(path, name)
 
-        elif (
-            type == "milts"
-            or type == "busco"
-            or type == "fcat"
-            or type == "repeatmasker"
-        ):
+        elif type == "milts" or type == "busco" or type == "fcat" or type == "repeatmasker":
             try:
-                fullPathToAnalysis = (
-                    f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{type}/{name}/"
-                )
+                fullPathToAnalysis = f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/{type}/{name}/"
                 makedirs(
                     fullPathToAnalysis,
                     exist_ok=True,
                 )
                 if type == "milts":
-                    newPath = (
-                        f"{fullPathToAnalysis}milts_taxonomic_assignment_plot.html"
-                    )
+                    newPath = f"{fullPathToAnalysis}milts_taxonomic_assignment_plot.html"
                     oldPathToParentDir = "/".join(path.split("/")[:-2])
                     gene_table = glob(
                         f"{oldPathToParentDir}/**/gene_table_taxon_assignment.csv",
@@ -489,9 +467,7 @@ class FileManager:
                             gene_table,
                             f"{fullPathToAnalysis}milts_{gene_table_filename}",
                         )
-                    pca_clustering = glob(
-                        f"{oldPathToParentDir}/**/pca_summary.csv", recursive=True
-                    )
+                    pca_clustering = glob(f"{oldPathToParentDir}/**/pca_summary.csv", recursive=True)
                     if len(pca_clustering) == 1:
                         pca_clustering = pca_clustering[0]
                         pca_clustering_filename = pca_clustering.split("/")[-1]
@@ -499,9 +475,7 @@ class FileManager:
                             pca_clustering,
                             f"{fullPathToAnalysis}milts_{pca_clustering_filename}",
                         )
-                    pca_loadings = glob(
-                        f"{oldPathToParentDir}/**/pca_loadings.csv", recursive=True
-                    )
+                    pca_loadings = glob(f"{oldPathToParentDir}/**/pca_loadings.csv", recursive=True)
                     if len(pca_loadings) == 1:
                         pca_loadings = pca_loadings[0]
                         pca_loadings_filename = pca_loadings.split("/")[-1]
@@ -600,14 +574,10 @@ class FileManager:
                 try:
                     with open(newPath, "r") as plotFile:
                         plot_data = "".join(plotFile.readlines()).replace("\n", "")
-                        plot_data = plot_data.replace(
-                            '"title":"taxonomic assignment"', f'"title":"{name}"'
-                        )
+                        plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{name}"')
                         plotFile.close()
 
-                    with open(
-                        "src/Tools/templates/milts_head_template.html", "r"
-                    ) as milts_template_file:
+                    with open("src/Tools/templates/milts_head_template.html", "r") as milts_template_file:
                         milts_template = milts_template_file.readlines()
                         milts_template_file.close()
 
@@ -620,17 +590,11 @@ class FileManager:
                             "type": "error",
                         }
 
-                    for i in range(
-                        len(milts_template) - 1, len(milts_template) - 5, -1
-                    ):
+                    for i in range(len(milts_template) - 1, len(milts_template) - 5, -1):
                         if "<body>REPLACE_BODY</body>" in milts_template[i]:
-                            milts_template[i] = milts_template[i].replace(
-                                "<body>REPLACE_BODY</body>", body_match[0]
-                            )
+                            milts_template[i] = milts_template[i].replace("<body>REPLACE_BODY</body>", body_match[0])
                         elif "<title>REPLACE_TITLE</title>" in milts_template[i]:
-                            milts_template[i] = milts_template[i].replace(
-                                "REPLACE_TITLE", name
-                            )
+                            milts_template[i] = milts_template[i].replace("REPLACE_TITLE", name)
                             break
 
                     with open(newPath, "w") as plotFile:
@@ -644,12 +608,8 @@ class FileManager:
             if additionalFiles:
                 try:
                     additionalFilesDir = additionalFiles.split("/")[-1]
-                    newAdditionalFilesPath = (
-                        f"{fullPathToAnalysis}additionalFiles/{additionalFilesDir}"
-                    )
-                    copytree(
-                        additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True
-                    )
+                    newAdditionalFilesPath = f"{fullPathToAnalysis}additionalFiles/{additionalFilesDir}"
+                    copytree(additionalFilesPath, newAdditionalFilesPath, dirs_exist_ok=True)
                     self.deleteFile(f"{fullPathToAnalysis}/additionalFiles/{mainFile}")
                 except:
                     self.deleteDirectories(fullPathToAnalysis)
@@ -777,9 +737,7 @@ class FileManager:
                     line.replace(f"{oldName}_assembly", f"{newName}_assembly")
                 elif type == "annotation":
                     line.replace(f"Annotation_{oldName}", f"Annotation_{newName}")
-                    line.replace(
-                        f"{oldName}_genomic_annotation", f"{newName}_genomic_annotation"
-                    )
+                    line.replace(f"{oldName}_genomic_annotation", f"{newName}_genomic_annotation")
                 elif type == "mapping":
                     line.replace(f"{oldName}_assembly", f"{newName}_assembly")
         except:
@@ -819,12 +777,8 @@ class FileManager:
 
         try:
             # fasta
-            makedirs(
-                f"{pathToSpeciesDirectory}/fasta/pep/additionalFiles/", exist_ok=True
-            )
-            makedirs(
-                f"{pathToSpeciesDirectory}/fasta/dna/additionalFiles/", exist_ok=True
-            )
+            makedirs(f"{pathToSpeciesDirectory}/fasta/pep/additionalFiles/", exist_ok=True)
+            makedirs(f"{pathToSpeciesDirectory}/fasta/dna/additionalFiles/", exist_ok=True)
 
             # gff3
             makedirs(f"{pathToSpeciesDirectory}/gff3/", exist_ok=True)
@@ -858,7 +812,6 @@ class FileManager:
 
         return 1, {}
 
-
     # FETCH IMPORT DIRECTORY IN JSON FORMAT
     def fetchImportDirectory(self, path=BASE_PATH_TO_IMPORT):
         def pathToJson(path, parent=0):
@@ -877,9 +830,7 @@ class FileManager:
                 "path": path[len(BASE_PATH_TO_IMPORT) :],
             }
             if isdir(path):
-                d["children"] = [
-                    pathToJson(join(path, x), d["id"]) for x in listdir(path)
-                ]
+                d["children"] = [pathToJson(join(path, x), d["id"]) for x in listdir(path)]
             else:
                 if image_regex.match(d["name"]):
                     d["type"] = "image"

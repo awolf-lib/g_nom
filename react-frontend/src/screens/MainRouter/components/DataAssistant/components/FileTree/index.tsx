@@ -1,15 +1,16 @@
-import { Document, Folder, Refresh } from "grommet-icons";
+import { Contract, Document, Expand, Folder, Refresh } from "grommet-icons";
 import { useEffect, useState } from "react";
 import { fetchImportDirectory } from "../../../../../../api";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
 const FileTree = () => {
   const [fileTree, setFileTree] = useState<any>({});
+  const [expandTree, setExpandTree] = useState<boolean>(false);
   const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
 
   useEffect(() => {
     loadFiles();
-  }, []);
+  }, [expandTree]);
 
   const loadFiles = async () => {
     setLoadingFiles(true);
@@ -28,10 +29,10 @@ const FileTree = () => {
         return addFileTreeAttributes(child);
       });
 
-      return { ...node, children: children, isOpen: false };
+      return { ...node, children: children, isOpen: expandTree };
     }
 
-    return { ...node, isOpen: false };
+    return { ...node, isOpen: expandTree };
   };
 
   const toggleChildren = (node: any, id: any) => {
@@ -45,7 +46,6 @@ const FileTree = () => {
         isOpen: id === node.id ? !node.isOpen : node.isOpen,
       };
     }
-
     return { ...node, isOpen: id === node.id ? !node.isOpen : node.isOpen };
   };
 
@@ -53,7 +53,7 @@ const FileTree = () => {
     <div>
       {data &&
         data.map((item: any) => (
-          <div key={item.id} className="py-1">
+          <div key={item.id} className="py-px">
             <label
               className="flex items-center cursor-pointer hover:text-blue-500 w-full"
               onClick={() => setFileTree(toggleChildren(fileTree, item.id))}
@@ -63,7 +63,7 @@ const FileTree = () => {
               }}
             >
               <div className="h-px w-4 bg-gray-400" />
-              <div className="flex items-center py-px justify-between w-full">
+              <div className="flex items-center justify-between w-full">
                 <div>
                   {item.children ? (
                     <Folder
@@ -80,23 +80,17 @@ const FileTree = () => {
                   )}
                   <span
                     className={
-                      item.type
-                        ? "px-2 font-bold truncate select-none text-sm"
-                        : "px-2 truncate select-none text-sm"
+                      item.type || item.dirType
+                        ? "px-2 font-bold truncate select-none text-xs"
+                        : "px-2 truncate select-none text-xs"
                     }
                   >
                     {item.name && item.name}
                   </span>
                 </div>
-                {item.children && (
-                  <span
-                    className={
-                      item.type
-                        ? "px-1 font-bold truncate select-none text-xs"
-                        : "px-1 truncate select-none text-xs"
-                    }
-                  >
-                    {"(" + item.children.length + ")"}
+                {item.dirType && (
+                  <span className="px-1 truncate select-none text-xs font-bold">
+                    {item.dirType}
                   </span>
                 )}
               </div>
@@ -112,18 +106,32 @@ const FileTree = () => {
   );
 
   return (
-    <div className="overflow-hidden">
-      <div className="flex items-center col-span-2">
+    <div className="overflow-hidden m-4">
+      <div className="flex justify-between mb-1">
         <h1 className="font-bold text-xl mx-4">Files</h1>
-        <div
-          className="bg-indigo-200 shadow-lg text-white text-xs cursor-pointer px-1 py-1 flex justify-center items-center rounded-lg transition duration-200"
-          onClick={() => loadFiles()}
-        >
-          <Refresh className="stroke-current" size="small" color="blank" />
+        <div className="flex justify-between w-16 items-center">
+          <div
+            className="bg-indigo-200 shadow text-white text-xs cursor-pointer px-1 py-1 flex justify-center items-center rounded-lg transition duration-200 hover:bg-indigo-300"
+            onClick={() => setExpandTree((prevState: any) => !prevState)}
+          >
+            {!expandTree ? (
+              <Expand className="stroke-current" size="small" color="blank" />
+            ) : (
+              <Contract className="stroke-current" size="small" color="blank" />
+            )}
+          </div>
+          <div
+            className="bg-indigo-200 shadow text-white text-xs cursor-pointer px-1 py-1 flex justify-center items-center rounded-lg transition duration-200 hover:bg-indigo-300"
+            onClick={() => loadFiles()}
+          >
+            <Refresh className="stroke-current" size="small" color="blank" />
+          </div>
         </div>
       </div>
       {loadingFiles ? (
-        <LoadingSpinner />
+        <div className="ml-4">
+          <LoadingSpinner />
+        </div>
       ) : (
         <div>
           {fileTree && fileTree.children && (
