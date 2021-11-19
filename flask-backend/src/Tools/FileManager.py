@@ -30,6 +30,13 @@ class FileManager:
     def __init__(self):
         self.hostURL = MYSQL_HOST_URL
 
+    def __notify(payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
+        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
+        pika_channel = pika_connection.channel()
+        pika_channel.queue_declare(queue=route, durable=True)
+        pika_channel.basic_publish(exchange='', routing_key=route, body=json.dumps(payload))
+        pika_connection.close()
+
     # ====== GENERAL ====== #
     # reconnect to get updates
     def updateConnection(self, database="g-nom_dev"):
@@ -244,12 +251,8 @@ class FileManager:
         return newPath, {}
 
     def notify_assembly(self, assemblyId, name, path):
-        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
-        pika_channel = pika_connection.channel()
         payload = {"assembly": { "name": name, "id": assemblyId}, "storage_path": path, "type": "Assembly", "action": "Added" }
-        pika_channel.queue_declare(queue=RABBIT_MQ_QUEUE_RESOURCE, durable=True)
-        pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
-        pika_connection.close()
+        self.__notify(payload)
 
     def moveAnnotationToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
@@ -343,12 +346,8 @@ class FileManager:
         return newPath, {}
 
     def notify_annotation(self, assemblyId, assemblyName, name, path):
-        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
-        pika_channel = pika_connection.channel()
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
-        pika_channel.queue_declare(queue=RABBIT_MQ_QUEUE_RESOURCE, durable=True)
-        pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
-        pika_connection.close()
+        self.__notify(payload)
 
     def moveMappingToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
@@ -414,7 +413,7 @@ class FileManager:
 
     def notify_mapping(self, assemblyId, assemblyName, name, path):
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "mapping_name": name, "type": "Mapping", "action": "Added" }
-        pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
+        self.__notify(payload)
     
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
     def moveFileToStorage(
