@@ -3,7 +3,7 @@ use std::process::{Command, ExitStatus};
 
 mod message;
 
-const STORAGE_ROOT: &str = "/";
+const STORAGE_ROOT: &str = "";
 const JBROWSE_PATH: &str = "/usr/local/apache2/htdocs";
 
 fn handle_new_assembly(message: &message::AssemblyMessage) -> Result<ExitStatus, std::io::Error>{

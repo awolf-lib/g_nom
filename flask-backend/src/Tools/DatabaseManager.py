@@ -1,4 +1,5 @@
 from genericpath import isfile
+from os import getenv
 from flask.helpers import send_file
 import mysql.connector
 from hashlib import sha512
@@ -1086,7 +1087,7 @@ class DatabaseManager:
             connection.commit()
 
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # TODO signal deletion + handle in jbrowse
 
             status, notification = self.updateTaxonTree()
             if not status:

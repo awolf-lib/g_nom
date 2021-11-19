@@ -1,5 +1,5 @@
-BASE_PATH_TO_UPLOAD = "storage/files/upload/"
-BASE_PATH_TO_STORAGE = "storage/files/download/"
+BASE_PATH_TO_UPLOAD = "/flask-backend/data/import/"
+BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
 
 BASE_PATH_TO_JBROWSE = "../jbrowse_data/"
 

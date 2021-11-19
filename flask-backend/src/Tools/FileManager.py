@@ -1,5 +1,5 @@
 import mysql.connector
-from os import makedirs, remove
+from os import getenv, makedirs, remove
 from os.path import exists, isdir, isfile
 from shutil import copy, rmtree, copytree
 from glob import glob
@@ -25,10 +25,6 @@ STORAGEERROR = {
 }
 
 RABBIT_MQ_QUEUE_RESOURCE="resource"
-
-pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port=5672))
-pika_channel = pika_connection.channel()
-pika_channel.queue_declare(queue=RABBIT_MQ_QUEUE_RESOURCE, durable=True)
 
 class FileManager:
     def __init__(self):
@@ -248,8 +244,12 @@ class FileManager:
         return newPath, {}
 
     def notify_assembly(self, assemblyId, name, path):
+        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
+        pika_channel = pika_connection.channel()
         payload = {"assembly": { "name": name, "id": assemblyId}, "storage_path": path, "type": "Assembly", "action": "Added" }
+        pika_channel.queue_declare(queue=RABBIT_MQ_QUEUE_RESOURCE, durable=True)
         pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
+        pika_connection.close()
 
     def moveAnnotationToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
@@ -343,8 +343,12 @@ class FileManager:
         return newPath, {}
 
     def notify_annotation(self, assemblyId, assemblyName, name, path):
+        pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
+        pika_channel = pika_connection.channel()
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
+        pika_channel.queue_declare(queue=RABBIT_MQ_QUEUE_RESOURCE, durable=True)
         pika_channel.basic_publish(exchange='', routing_key=RABBIT_MQ_QUEUE_RESOURCE, body=json.dumps(payload))
+        pika_connection.close()
 
     def moveMappingToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
         path = f"{BASE_PATH_TO_UPLOAD}{mainFile}"
