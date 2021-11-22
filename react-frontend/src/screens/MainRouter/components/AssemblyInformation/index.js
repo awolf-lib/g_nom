@@ -278,7 +278,7 @@ const AssemblyInformation = () => {
               </div>
             )}
 
-          {/* <div>
+          <div>
             <div className="animate-grow-y">
               <div
                 className="m-8 select-none"
@@ -295,7 +295,7 @@ const AssemblyInformation = () => {
               )}
             </div>
             <hr className="shadow my-8 mx-8" />
-          </div> */}
+          </div>
         </div>
       )}
     </div>
