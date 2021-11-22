@@ -1,5 +1,5 @@
 use amiquip::{Connection, ConsumerMessage, ConsumerOptions, QueueDeclareOptions, Result};
-use std::process::{Command, ExitStatus};
+use std::{env, process::{Command, ExitStatus}};
 
 mod message;
 
@@ -86,7 +86,7 @@ fn handle_new_annotation(message: &message::AnnotationMessage) -> Result<ExitSta
 }
 
 fn main() -> Result<()> {
-    let rabbit_host = "amqp://guest:guest@gnom_rabbit:5672";
+    let rabbit_host = format!("amqp://guest:guest@{}:5672", env::var("RABBIT_CONTAINER_NAME").unwrap_or("gnom_rabbit".into()));
     let mut connection = Connection::insecure_open(&rabbit_host).expect("RabbitMQ Connection not established");
     let channel = connection.open_channel(None).expect("RabbitMQ cannot access channel");
     let queue = channel.queue_declare("resource", QueueDeclareOptions{
