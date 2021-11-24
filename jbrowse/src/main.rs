@@ -115,7 +115,7 @@ fn main() -> Result<()> {
                         },
                     }
                 } else {
-                    println!("Received none-NewAssembly message");
+                    println!("Received none-NewAssembly message: {:?}", std::str::from_utf8(&delivery.body));
                     consumer.reject(delivery, false).expect("Couldn't reject.");
                 }
             },
