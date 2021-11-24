@@ -47,7 +47,7 @@ const AddAnnotationForm = (props) => {
     setFetchingAll(false);
   };
 
-  const handleSubmitImport = async () => {
+  const handleSubmitImport = () => {
     if (importing) {
       handleNewNotification({
         label: "Info",
@@ -90,21 +90,22 @@ const AddAnnotationForm = (props) => {
       return;
     }
     setImporting(true);
-    const response = await addNewAnnotation(
+    addNewAnnotation(
       props.object.id,
       newAnalysisName.replace(/ /g, "_"),
       selectedPath.join("/"),
       userID,
       additionalFiles.join("/")
-    );
-    if (response && response.payload) {
-      setShowConfirmationForm(false);
-    }
-    if (response && response.notification) {
-      handleNewNotification(response.notification);
-    }
-    setImporting(false);
-    handleModeChange("");
+    ).subscribe(response => {
+      if (response && response.payload) {
+        setShowConfirmationForm(false);
+      }
+      if (response && response.notification) {
+        handleNewNotification(response.notification);
+      }
+      setImporting(false);
+      handleModeChange("");
+    });
   };
 
   const handleChangeSelectedPath = (inputPathArray) => {
