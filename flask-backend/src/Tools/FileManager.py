@@ -30,7 +30,7 @@ class FileManager:
     def __init__(self):
         self.hostURL = MYSQL_HOST_URL
 
-    def __notify(payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
+    def __notify(self, payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
         pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
         pika_channel = pika_connection.channel()
         pika_channel.queue_declare(queue=route, durable=True)
@@ -345,7 +345,7 @@ class FileManager:
         newPath = newPathSorted
         return newPath, {}
 
-    def notify_annotation(self, assemblyId, assemblyName, name, path):
+    def notify_annotation(self, assemblyId: int, assemblyName, name, path):
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
         self.__notify(payload)
 
@@ -411,7 +411,7 @@ class FileManager:
         
         return newPath, {}
 
-    def notify_mapping(self, assemblyId, assemblyName, name, path):
+    def notify_mapping(self, assemblyId: int, assemblyName, name, path):
         payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "mapping_name": name, "type": "Mapping", "action": "Added" }
         self.__notify(payload)
     

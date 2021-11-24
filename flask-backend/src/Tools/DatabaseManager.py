@@ -1391,7 +1391,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        fileManager.notify_annotation(assemblyID, assemblyName, name, path)
+        fileManager.notify_annotation(int(assemblyID), assemblyName, name, path)
 
         # TODO: ADD TABLE TO MYSQL DATABASE
         # data, notification = parsers.parseGff(path)
@@ -1546,7 +1546,7 @@ class DatabaseManager:
 
         path, notification = fileManager.moveMappingToStorage(path, assemblyName, name, additionalFilesPath)
 
-        fileManager.notify_mapping(assemblyID, assemblyName, name, path)
+        fileManager.notify_mapping(int(assemblyID), assemblyName, name, path)
 
         if not path:
             return 0, notification
