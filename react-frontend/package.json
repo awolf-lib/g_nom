@@ -94,6 +94,7 @@
     "eslint": "^7.32.0",
     "postcss": "^7.0.35",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.4",
-    "ts-migrate": "^0.1.22"
+    "ts-migrate": "^0.1.22",
+    "typescript": "^4.4.4"
   }
 }
