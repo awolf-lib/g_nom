@@ -124,7 +124,6 @@ echo ""
 echo "Build jbrowse docker container"
 cd ./jbrowse
 docker volume create gnom-jbrowse-vol
-cargo build --release && docker build -t gnom/jbrowse .
 docker stop $JBROWSE_CONTAINER_NAME && docker rm $JBROWSE_CONTAINER_NAME
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
 docker run --name $JBROWSE_CONTAINER_NAME -dp 8082:80 --env-file .env --network $DOCKER_NETWORK_NAME -v gnom-jbrowse-vol:/usr/local/apache2/htdocs/assemblies --mount type=bind,source="${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}",target=/flask-backend/data/storage/assemblies gnom/jbrowse
