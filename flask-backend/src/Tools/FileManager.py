@@ -10,6 +10,7 @@ import pika
 import json
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
+from .Payload import AnnotationPayload, Assembly, AssemblyPayload, MappingPayload, Payload
 
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
 
@@ -30,7 +31,7 @@ class FileManager:
     def __init__(self):
         self.hostURL = MYSQL_HOST_URL
 
-    def __notify(self, payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
+    def __notify(self, payload: Payload, route: str = RABBIT_MQ_QUEUE_RESOURCE):
         pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
         pika_channel = pika_connection.channel()
         pika_channel.queue_declare(queue=route, durable=True)
@@ -250,8 +251,8 @@ class FileManager:
                 }
         return newPath, {}
 
-    def notify_assembly(self, assemblyId, name, path):
-        payload = {"assembly": { "name": name, "id": assemblyId}, "storage_path": path, "type": "Assembly", "action": "Added" }
+    def notify_assembly(self, assemblyId: int, name: str, path: str):
+        payload = AssemblyPayload(Assembly(name, assemblyId), path, "Added")
         self.__notify(payload)
 
     def moveAnnotationToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
@@ -346,7 +347,7 @@ class FileManager:
         return newPath, {}
 
     def notify_annotation(self, assemblyId: int, assemblyName, name, path):
-        payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "annotation_name": name, "type": "Annotation", "action": "Added" }
+        payload = AnnotationPayload(name, Assembly(assemblyName, assemblyId), path, "Added")
         self.__notify(payload)
 
     def moveMappingToStorage(self, mainFile, assemblyName, name="", additionalFiles=""):
@@ -412,7 +413,7 @@ class FileManager:
         return newPath, {}
 
     def notify_mapping(self, assemblyId: int, assemblyName, name, path):
-        payload = {"assembly": { "name": assemblyName, "id": assemblyId}, "storage_path": path, "mapping_name": name, "type": "Mapping", "action": "Added" }
+        payload = MappingPayload(name, Assembly(assemblyName, assemblyId), path, 'Added')
         self.__notify(payload)
     
     # MOVE FILES IN IMPORT DIRECTORY TO STORAGE DIRECTORY
