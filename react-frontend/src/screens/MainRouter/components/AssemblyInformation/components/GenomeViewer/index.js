@@ -9,13 +9,7 @@ const GenomeViewer = ({ assemblyInformation }) => {
 
   const configureSource = () => {
     return (
-      process.env.REACT_APP_JBROWSE_ADRESS +
-      "/index.html?data=data%2F" +
-      assemblyInformation.name +
-      "&nav=" +
-      showNav +
-      "&tracklist=" +
-      showTracklist
+      `${process.env.REACT_APP_JBROWSE_ADRESS}/index.html?config=assemblies%2F${assemblyInformation.name}%2Fconfig.json&session=undefined`
     );
   };
   return (

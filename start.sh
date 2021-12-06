@@ -9,6 +9,9 @@ fi
 source ./default.config
 source ./local.config
 
+#start RabbitMQ Docker container
+docker start $RABBIT_CONTAINER_NAME
+
 # start MySQL Docker container
 docker start $MYSQL_CONTAINER_NAME
 
@@ -20,3 +23,6 @@ docker start $REACTAPP_CONTAINER_NAME
 
 # start Flask Docker container
 docker start $FLASK_CONTAINER_NAME
+
+# start jBrowse Docker container
+docker start $JBROWSE_CONTAINER_NAME

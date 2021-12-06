@@ -81,12 +81,18 @@ docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
 
 # ============================================ #
 
+docker run -d --network ${DOCKER_NETWORK_NAME} --hostname gnom_rabbit_host --name ${RABBIT_CONTAINER_NAME} -p 15672:15672 -p 5672:5672 rabbitmq:3-management-alpine
+
 ## Reactapp
 echo "Build reactapp docker container and install dependencies..."
 # envs
-grep "API_ADRESS" default.config | awk '{print "REACT_APP_"$1}' > ./react-frontend/.env
-grep "NEXTCLOUD_DOWNLOAD_ADRESS" default.config | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
-grep "JBROWSE_ADRESS" default.config | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
+# grep "API_ADRESS" default.config | awk '{print "REACT_APP_"$1}' > ./react-frontend/.env
+# grep "NEXTCLOUD_DOWNLOAD_ADRESS" default.config | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
+# grep "JBROWSE_ADRESS" default.config | awk '{print "REACT_APP_"$1}' >> ./react-frontend/.env
+echo "REACT_APP_API_ADRESS=${API_ADRESS}" > ./react-frontend/.env
+echo "REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" >> ./react-frontend/.env
+echo "REACT_APP_JBROWSE_ADRESS=${JBROWSE_ADRESS}" >> ./react-frontend/.env
+
 # build
 cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
@@ -104,7 +110,7 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${FLASK_CONTAINER_NAME} container..."
-docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
+docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
@@ -113,6 +119,15 @@ until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${API_ADR
   sleep 3;
 done;
 echo ""
+
+# JBrowse container
+echo "Build jbrowse docker container"
+cd ./jbrowse
+docker volume create gnom-jbrowse-vol
+docker stop $JBROWSE_CONTAINER_NAME && docker rm $JBROWSE_CONTAINER_NAME
+echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
+docker run --name $JBROWSE_CONTAINER_NAME -dp 8082:80 --env-file .env --network $DOCKER_NETWORK_NAME -v gnom-jbrowse-vol:/usr/local/apache2/htdocs/assemblies --mount type=bind,source="${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}",target=/flask-backend/data/storage/assemblies gnom/jbrowse
+cd ..
 
 # setup missing directories
 docker exec $FLASK_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/assemblies"

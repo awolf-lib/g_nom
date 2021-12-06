@@ -410,7 +410,7 @@ export function addNewAnnotation(
   path: string,
   userID: number,
   additionalFilesPath = ""
-) {
+): Observable<IResponse<IAnnotionationAdded>> {
   return fromFetch(
     process.env.REACT_APP_API_ADRESS +
       "/addNewAnnotation?id=" +
@@ -440,7 +440,7 @@ export function addNewMapping(
   path: string,
   userID: number,
   additionalFilesPath = ""
-) {
+): Observable<IResponse<IMappingAdded>> {
   return fromFetch(
     process.env.REACT_APP_API_ADRESS +
       "/addNewMapping?id=" +
@@ -512,7 +512,7 @@ export function addNewAnalysis(
   path: string,
   userID: number,
   additionalFilesPath = ""
-) {
+): Observable<IResponse<IAnalysisAdded>> {
   return fromFetch(
     process.env.REACT_APP_API_ADRESS +
       "/addNewAnalysis?id=" +

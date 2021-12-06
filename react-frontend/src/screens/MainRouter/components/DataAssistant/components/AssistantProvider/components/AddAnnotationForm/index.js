@@ -50,7 +50,7 @@ const AddAnnotationForm = (props) => {
     setFetchingAll(false);
   };
 
-  const handleSubmitImport = async () => {
+  const handleSubmitImport = () => {
     if (importing) {
       handleNewNotification({
         label: "Info",

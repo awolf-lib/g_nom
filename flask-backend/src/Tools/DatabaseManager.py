@@ -1,4 +1,5 @@
 from genericpath import isfile
+from os import getenv
 from flask.helpers import send_file
 import mysql.connector
 from hashlib import sha512
@@ -8,14 +9,10 @@ from json import dumps, loads
 from .FileManager import FileManager
 from .Parsers import Parsers
 from .Mysql import HOST_URL as MYSQL_HOST_URL
+from .Paths import BASE_PATH_TO_JBROWSE, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD
 
 fileManager = FileManager()
 parsers = Parsers()
-
-BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
-BASE_PATH_TO_STORAGE = "/flask-backend/data/storage/"
-BASE_PATH_TO_JBROWSE = ""  # outsourced
-
 
 class DatabaseManager:
     def __init__(self):
@@ -998,13 +995,10 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "assembly", path, name, additionalFilesPath
-        )
+        path, notification = fileManager.moveAssemblyToStorage(path, name, additionalFilesPath)
 
         if not path:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, notification
 
         try:
@@ -1021,18 +1015,18 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             return 0, {
                 "label": "Error",
                 "message": "Something went wrong while inserting assembly into database!",
                 "type": "error",
             }
 
+        fileManager.notify_assembly(lastID, name, path)
+
         data, notification = parsers.parseFasta(path)
 
         if not data:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             cursor.execute(f"DELETE FROM assembly WHERE id={lastID}")
             connection.commit()
             return 0, notification
@@ -1056,7 +1050,6 @@ class DatabaseManager:
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
             self.removeAssemblyByAssemblyID(lastID)
             return 0, {
                 "label": "Error",
@@ -1094,7 +1087,7 @@ class DatabaseManager:
             connection.commit()
 
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
-            # fileManager.deleteDirectories(f"{BASE_PATH_TO_JBROWSE}/{name}")
+            # TODO signal deletion + handle in jbrowse
 
             status, notification = self.updateTaxonTree()
             if not status:
@@ -1374,9 +1367,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "annotation", path, name, additionalFilesPath, assemblyName
-        )
+        path, notification = fileManager.moveAnnotationToStorage(path, assemblyName, name, additionalFilesPath)
 
         if not path:
             return 0, notification
@@ -1399,6 +1390,8 @@ class DatabaseManager:
                 "message": "Something went wrong while inserting annotation into database!",
                 "type": "error",
             }
+
+        fileManager.notify_annotation(int(assemblyID), assemblyName, name, path)
 
         # TODO: ADD TABLE TO MYSQL DATABASE
         # data, notification = parsers.parseGff(path)
@@ -1551,9 +1544,9 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        path, notification = fileManager.moveFileToStorage(
-            "mapping", path, name, additionalFilesPath, assemblyName
-        )
+        path, notification = fileManager.moveMappingToStorage(path, assemblyName, name, additionalFilesPath)
+
+        fileManager.notify_mapping(int(assemblyID), assemblyName, name, path)
 
         if not path:
             return 0, notification
