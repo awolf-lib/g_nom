@@ -7,6 +7,7 @@ from PIL import Image
 from subprocess import run
 from re import compile
 from uuid import uuid1
+from collections import defaultdict
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 
@@ -181,34 +182,38 @@ class FileManager:
             annotation_completeness_fCat_regex = compile(r"^(.*report_summary.*\.txt$)")
             repeat_masking_regex = compile(r"^(.*\.tbl$)")
 
+            dir_path = path[len(BASE_PATH_TO_IMPORT) :]
+
             d = {
                 "id": uuid1(),
                 "name": basename(path),
-                "path": path[len(BASE_PATH_TO_IMPORT) :],
+                "path": dir_path,
             }
             if isdir(path):
-                dir_type = []
+                dir_type = defaultdict(list)
                 for file in listdir(path):
                     if image_regex.match(file):
-                        dir_type.append("image")
+                        dir_type["image"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif sequence_regex.match(file):
-                        dir_type.append("sequence")
+                        dir_type["sequence"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif annotation_regex.match(file):
-                        dir_type.append("annotation")
+                        dir_type["annotation"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif mapping_regex.match(file):
-                        dir_type.append("mapping")
+                        dir_type["mapping"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif taxonomic_assignment_regex.match(file):
-                        dir_type.append("milts")
+                        dir_type["milts"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif annotation_completeness_busco_regex.match(file):
-                        dir_type.append("busco")
+                        dir_type["busco"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif annotation_completeness_fCat_regex.match(file):
-                        dir_type.append("fcat")
+                        dir_type["fcat"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     elif repeat_masking_regex.match(file):
-                        dir_type.append("repeatmasker")
+                        dir_type["repeatmasker"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
                     else:
                         pass
 
-                dir_type = list(set(dir_type))
+                d["mainFiles"] = dir_type
+
+                dir_type = list(set(dir_type.keys()))
                 if len(dir_type) == 1:
                     d["dirType"] = dir_type[0]
                 elif len(dir_type) > 1:

@@ -34,9 +34,9 @@ Input.propTypes = {
   type: PropTypes.string,
   placeholder: PropTypes.string,
   size: PropTypes.string,
-  value: PropTypes.arrayOf(PropTypes.string),
+  value: PropTypes.arrayOf(PropTypes.string) | PropTypes.string | PropTypes.number,
   onChange: PropTypes.func,
-  checked: PropTypes.bool
+  checked: PropTypes.bool,
 };
 
 export default Input;
