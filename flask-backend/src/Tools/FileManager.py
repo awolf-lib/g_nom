@@ -9,6 +9,7 @@ from re import compile
 import pika
 import json
 from uuid import uuid1
+from collections import defaultdict
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 from .Payload import AnnotationPayload, Assembly, AssemblyPayload, MappingPayload, Payload
@@ -814,23 +815,57 @@ class FileManager:
 
     # FETCH IMPORT DIRECTORY IN JSON FORMAT
     def fetchImportDirectory(self, path=BASE_PATH_TO_IMPORT):
-        def pathToJson(path, parent=0):
+        def pathToJson(path):
             image_regex = compile(r"^(.*\.jpg$)|(.*\.jpeg$)|(.*\.png$)|(.*\.jfif$)")
-            sequence_regex = compile(r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)")
-            annotation_regex = compile(r"^(.*\.gff$)|(.*\.gff3$)")
-            mapping_regex = compile(r"^(.*\.sam$)|(.*\.bam$)")
+            sequence_regex = compile(
+                r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)|(.*\.fasta.gz$)|(.*\.fa.gz$)|(.*\.faa.gz$)|(.*\.fna.gz$)"
+            )
+            annotation_regex = compile(r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff.gz$)|(.*\.gff3.gz$)")
+            mapping_regex = compile(r"^(.*\.sam$)|(.*\.bam$)|(.*\.sam.gz$)|(.*\.bam.gz$)")
             taxonomic_assignment_regex = compile(r"^(.*3D_plot.*\.html$)")
             annotation_completeness_busco_regex = compile(r"^(.*short_summary.*\.txt$)")
             annotation_completeness_fCat_regex = compile(r"^(.*report_summary.*\.txt$)")
             repeat_masking_regex = compile(r"^(.*\.tbl$)")
 
+            dir_path = path[len(BASE_PATH_TO_IMPORT) :]
+
             d = {
                 "id": uuid1(),
                 "name": basename(path),
-                "path": path[len(BASE_PATH_TO_IMPORT) :],
+                "path": dir_path,
             }
             if isdir(path):
-                d["children"] = [pathToJson(join(path, x), d["id"]) for x in listdir(path)]
+                dir_type = defaultdict(list)
+                for file in listdir(path):
+                    if image_regex.match(file):
+                        dir_type["image"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif sequence_regex.match(file):
+                        dir_type["sequence"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif annotation_regex.match(file):
+                        dir_type["annotation"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif mapping_regex.match(file):
+                        dir_type["mapping"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif taxonomic_assignment_regex.match(file):
+                        dir_type["milts"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif annotation_completeness_busco_regex.match(file):
+                        dir_type["busco"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif annotation_completeness_fCat_regex.match(file):
+                        dir_type["fcat"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    elif repeat_masking_regex.match(file):
+                        dir_type["repeatmasker"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                    else:
+                        pass
+
+                d["mainFiles"] = dir_type
+
+                dir_type = list(set(dir_type.keys()))
+                if len(dir_type) == 1:
+                    d["dirType"] = dir_type[0]
+                elif len(dir_type) > 1:
+                    d["dirType"] = ", ".join(dir_type)
+
+                d["children"] = [pathToJson(join(path, x)) for x in listdir(path)]
+
             else:
                 if image_regex.match(d["name"]):
                     d["type"] = "image"
@@ -841,13 +876,13 @@ class FileManager:
                 elif mapping_regex.match(d["name"]):
                     d["type"] = "mapping"
                 elif taxonomic_assignment_regex.match(d["name"]):
-                    d["type"] = "taxonomic assignment (Milts)"
+                    d["type"] = "milts"
                 elif annotation_completeness_busco_regex.match(d["name"]):
-                    d["type"] = "annotation completeness (Busco)"
+                    d["type"] = "busco"
                 elif annotation_completeness_fCat_regex.match(d["name"]):
-                    d["type"] = "annotation completeness (fCat)"
+                    d["type"] = "fcat"
                 elif repeat_masking_regex.match(d["name"]):
-                    d["type"] = "repeat masking (Repeatmasker)"
+                    d["type"] = "repeatmasker"
                 else:
                     pass
             return d

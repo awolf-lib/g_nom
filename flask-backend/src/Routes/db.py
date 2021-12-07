@@ -34,9 +34,7 @@ def connectionTest():
 def addUser():
     if request.method == "POST":
         req = request.get_json(force=True)
-        data, notification = api.addUser(
-            req.get("username", None), req.get("password", None), req.get("role", None)
-        )
+        data, notification = api.addUser(req.get("username", None), req.get("password", None), req.get("role", None))
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -93,18 +91,18 @@ def updateUserRoleByUserID():
 
 # ================== TAXON ================== #
 # IMPORT ALL FROM TAXDUMP FILE
-@db.route("/reloadTaxonIDsFromFile", methods=["GET"])
-def reloadTaxonIDsFromFile():
-    if request.method == "GET":
-        userID = request.args.get("userID")
-        data, notification = api.reloadTaxonIDsFromFile(userID, False)
+# @db.route("/reloadTaxonIDsFromFile", methods=["GET"])
+# def reloadTaxonIDsFromFile():
+#     if request.method == "GET":
+#         userID = request.args.get("userID")
+#         data, notification = api.reloadTaxonIDsFromFile(userID, False)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
 # UPDATE TAXON TREE
@@ -136,7 +134,7 @@ def fetchTaxonTree():
 
 
 # FETCH ONE TAXON BY TAXON ID
-@db.route("/fetchTaxonByNCBITaxonID", methods=["GET"])
+@db.route("/fetchTaxonByNCBITaxonID_old", methods=["GET"])
 def fetchTaxonByNCBITaxonID():
     if request.method == "GET":
         taxonID = request.args.get("taxonID")
@@ -219,13 +217,9 @@ def fetchAllAssemblies():
         range = request.args.get("range")
         search = request.args.get("search")
         userID = request.args.get("userID")
-        data, pagination, notification = api.fetchAllAssemblies(
-            page, range, search, userID
-        )
+        data, pagination, notification = api.fetchAllAssemblies(page, range, search, userID)
 
-        response = jsonify(
-            {"payload": data, "pagination": pagination, "notification": notification}
-        )
+        response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
@@ -234,11 +228,11 @@ def fetchAllAssemblies():
 
 
 # FETCH ASSEMBLY BY NCBI TAXON ID
-@db.route("/fetchAssembliesByTaxonID", methods=["GET"])
-def fetchAssembliesByTaxonID():
+@db.route("/fetchAssembliesByTaxonID_old", methods=["GET"])
+def fetchAssembliesByTaxonID_old():
     if request.method == "GET":
         taxonID = request.args.get("taxonID")
-        data, notification = api.fetchAssembliesByTaxonID(taxonID)
+        data, notification = fetchAssembliesByTaxonID_old(taxonID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -273,9 +267,7 @@ def addNewAssembly():
         path = request.args.get("path")
         userID = request.args.get("userID")
         additionalFiles = request.args.get("additionalFilesPath")
-        data, notification = api.addNewAssembly(
-            taxonID, name, path, userID, additionalFiles
-        )
+        data, notification = api.addNewAssembly(taxonID, name, path, userID, additionalFiles)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -411,9 +403,7 @@ def addNewAnnotation():
         path = request.args.get("path")
         userID = request.args.get("userID")
         additionalFiles = request.args.get("additionalFilesPath")
-        data, notification = api.addNewAnnotation(
-            id, name, path, userID, additionalFiles
-        )
+        data, notification = api.addNewAnnotation(id, name, path, userID, additionalFiles)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

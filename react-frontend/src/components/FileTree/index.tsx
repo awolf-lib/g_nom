@@ -1,10 +1,10 @@
 import { Contract, Document, Expand, Folder, Refresh } from "grommet-icons";
 import { useEffect, useState } from "react";
-import { fetchImportDirectory } from "../../../../../../api";
-import LoadingSpinner from "../../../../../../components/LoadingSpinner";
+import { fetchImportDirectory, IImportFileInformation } from "../../api";
+import LoadingSpinner from "../LoadingSpinner";
 
 const FileTree = () => {
-  const [fileTree, setFileTree] = useState<any>({});
+  const [fileTree, setFileTree] = useState<IImportFileInformation>();
   const [expandTree, setExpandTree] = useState<boolean>(false);
   const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
 
@@ -18,7 +18,7 @@ const FileTree = () => {
     if (response && response.payload) {
       setFileTree(addFileTreeAttributes(response.payload));
     } else {
-      setFileTree({});
+      setFileTree(undefined);
     }
     setLoadingFiles(false);
   };
@@ -59,24 +59,16 @@ const FileTree = () => {
               onClick={() => setFileTree(toggleChildren(fileTree, item.id))}
               draggable
               onDragStart={(e) => {
-                e.dataTransfer.setData("text", JSON.stringify(item));
+                e.dataTransfer.setData("fileInfos", JSON.stringify(item));
               }}
             >
               <div className="h-px w-4 bg-gray-400" />
               <div className="flex items-center justify-between w-full">
                 <div>
                   {item.children ? (
-                    <Folder
-                      className="stroke-current mx-2"
-                      color="blank"
-                      size="small"
-                    />
+                    <Folder className="stroke-current mx-2" color="blank" size="small" />
                   ) : (
-                    <Document
-                      className="stroke-current mx-2"
-                      color="blank"
-                      size="small"
-                    />
+                    <Document className="stroke-current mx-2" color="blank" size="small" />
                   )}
                   <span
                     className={
@@ -106,7 +98,7 @@ const FileTree = () => {
   );
 
   return (
-    <div className="overflow-hidden m-4">
+    <div className="m-4">
       <div className="flex justify-between mb-1">
         <h1 className="font-bold text-xl mx-4">Files</h1>
         <div className="flex justify-between w-16 items-center">
@@ -134,9 +126,7 @@ const FileTree = () => {
         </div>
       ) : (
         <div>
-          {fileTree && fileTree.children && (
-            <FileTreeConstructor data={fileTree.children} />
-          )}
+          {fileTree && fileTree.children && <FileTreeConstructor data={fileTree.children} />}
         </div>
       )}
     </div>

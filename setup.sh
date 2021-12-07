@@ -36,8 +36,8 @@ docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_P
 docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"GRANT ALL PRIVILEGES ON * . * TO 'root'@'%' WITH GRANT OPTION;\"; exit;"
 docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"FLUSH PRIVILEGES;\"; exit;"
 
-echo "Create database schema by template..."
-cat ./mysql/create_g-nom_dev.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/mysql -u root --password=$MYSQL_ROOT_PASSWORD
+echo "Create base database schemas by template..."
+cat ./mysql/create_gnom_db.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/mysql -u root --password=$MYSQL_ROOT_PASSWORD
 
 # ============================================ #
 
@@ -152,7 +152,7 @@ docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
 
 # initial taxa import into database
 echo "Initial taxa import..."
-curl -v ${API_ADRESS}/reloadTaxonIDsFromFile?userID=1
+docker exec $FLASK_CONTAINER_NAME bash -c "cd src/ && python3 -m modules.taxa reloadTaxonIDsFromFile && cd .."
 
 # ============================================ #
 

@@ -94,6 +94,7 @@ module.exports = {
       display: ["responsive", "hover"],
       ringWidth: ["responsive", "hover", "focus"],
       animation: ["responsive", "hover", "focus"],
+      maxHeight: ["responsive", "hover"],
     },
   },
   plugins: [],

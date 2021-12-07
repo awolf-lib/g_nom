@@ -2,11 +2,9 @@ import { Observable, of, pipe, UnaryFunction } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { catchError, map, switchMap } from "rxjs/operators";
 
+// =============================== users =============================== //
 // USER AUTHENTIFCATION
-export function login(
-  username: string,
-  password: string
-): Observable<IResponse> {
+export function login(username: string, password: string): Observable<IResponse> {
   return fromFetch(process.env.REACT_APP_API_ADRESS + "/login", {
     method: "POST",
     headers: {
@@ -21,6 +19,233 @@ export function login(
     })
   );
 }
+
+// =============================== assemblies =============================== //
+// ===== IMPORT NEW ASSEMBLY ===== //
+export async function importAssembly(
+  taxon: number,
+  file_path: string,
+  userID: number,
+  token: string
+) {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_assembly", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ taxon: taxon, filePath: file_path, userID: userID, token: token }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ASSEMBLIES ===== //
+export async function fetchAssemblies(search = "", offset = 0, range = 10, userID = 0, token = "") {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssemblies?search=" +
+      search +
+      "&offset=" +
+      offset +
+      "&range=" +
+      range +
+      "&userID=" +
+      userID
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ASSEMBLIES ===== //
+export async function fetchAssembliesByTaxonID(taxonID: number, userID: number, token: string) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssembliesByTaxonID?taxonID=" +
+      taxonID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// =============================== taxa =============================== //
+// ===== RELOAD TAXA DATABASE ===== //
+export async function reloadTaxonIDsFromFile(userID: number, token: string) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/reloadTaxonIDsFromFile?userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
+export function fetchTaxonByNCBITaxonID(userID: number, token: string, ncbiTaxonID: number) {
+  return fromFetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaxonByNCBITaxonID?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&taxonID=" +
+      ncbiTaxonID
+  ).pipe(mapError<ReadonlyArray<INcbiTaxon>>());
+}
+
+export interface INcbiTaxon {
+  commonName: string;
+  id: number; // taxonId
+  imageStatus: number;
+  lastUpdatedBy: number;
+  lastUpdatedOn: string; // TimeString
+  ncbiTaxonID: number;
+  parentNcbiTaxonID: number;
+  scientificName: string;
+  taxonRank: "species";
+}
+
+// ===== FETCH ALL GENERAL INFORMATION FOR SPECIFIC TAXON ===== //
+export async function fetchTaxonGeneralInformationByTaxonID(
+  id: number,
+  userID: number,
+  token: string
+) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaxonGeneralInformationByTaxonID?id=" +
+      id +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== ADD TAXON GENERAL INFORMATION ===== //
+export async function addTaxonGeneralInformation(
+  id: number,
+  key: string,
+  value: string,
+  userID: number,
+  token: string
+) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/addTaxonGeneralInformation?id=" +
+      id +
+      "&key=" +
+      key +
+      "&value=" +
+      value +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// =====  UPDATE TAXON GENERAL INFORMATION ===== //
+export async function updateTaxonGeneralInformationByID(
+  id: number,
+  key: string,
+  value: string,
+  userID: number,
+  token: string
+) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateTaxonGeneralInformationByID?id=" +
+      id +
+      "&key=" +
+      key +
+      "&value=" +
+      value +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== DELETE TAXON GENERAL INFORMATION ===== //
+export async function deleteTaxonGeneralInformationByID(id: number, userID: number, token: string) {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/deleteTaxonGeneralInformationByID?id=" +
+      id +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IGeneralInformation {
+  id: number;
+  generalInfoLabel: string;
+  generalInfoDescription: string;
+}
+
+// =============================== IMPORTS =============================== //
+// ===== FETCH IMPORT DIRECTORY ===== //
+export async function fetchImportDirectory() {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchImportDirectory")
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IImportFileInformation {
+  id: string;
+  children?: IImportFileInformation[];
+  dirType?: string;
+  type?: string;
+  mainFiles: string[];
+  name: string;
+  path: string;
+}
+
+// old ---------------------------------------------------------------------
 
 // ADD NEW USER
 export async function addUser(
@@ -58,9 +283,7 @@ export async function fetchAllUsers() {
 
 // ===== DELETE USER BY USER ID ===== //
 export async function deleteUserByUserID(userID: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/deleteUserByUserID?userID=" + userID
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/deleteUserByUserID?userID=" + userID)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -71,11 +294,7 @@ export async function deleteUserByUserID(userID: number) {
 // ===== UPDATE USER ROLE BY USER ID ===== //
 export async function updateUserRoleByUserID(userID: number, role: string) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/updateUserRoleByUserID?userID=" +
-      userID +
-      "&role=" +
-      role
+    process.env.REACT_APP_API_ADRESS + "/updateUserRoleByUserID?userID=" + userID + "&role=" + role
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -85,13 +304,7 @@ export async function updateUserRoleByUserID(userID: number, role: string) {
 }
 
 // ===== FETCH ALL ASSEMBLIES ===== //
-export async function fetchAllAssemblies(
-  page = 1,
-  range = 10,
-  search = "",
-  link = "",
-  userID = 0
-) {
+export async function fetchAllAssemblies(page = 1, range = 10, search = "", link = "", userID = 0) {
   if (link) {
     return fetch(link)
       .then((request) => request.json())
@@ -119,10 +332,7 @@ export async function fetchAllAssemblies(
 }
 
 // ===== FETCH ONE ASSEMBLY ===== //
-export async function fetchAssemblyInformationByAssemblyID(
-  id: string,
-  userID: string
-) {
+export async function fetchAssemblyInformationByAssemblyID(id: string, userID: string) {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAssemblyInformationByAssemblyID?id=" +
@@ -139,9 +349,7 @@ export async function fetchAssemblyInformationByAssemblyID(
 
 // ===== FETCH POSSIBLE IMPORT IN IMPORT DIRECTORY ===== //
 export async function fetchPossibleImports(
-  types:
-    | ("image" | "fasta" | "gff" | "bam" | "analysis")[]
-    | undefined = undefined
+  types: ("image" | "fasta" | "gff" | "bam" | "analysis")[] | undefined = undefined
 ): Promise<IResponse<IPossibleImports>> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/fetchPossibleImports", {
     method: "POST",
@@ -164,22 +372,10 @@ export interface IPossibleImports {
   analysis: { [key: string]: string[][] };
 }
 
-// ===== FETCH IMPORT DIRECTORY ===== //
-export async function fetchImportDirectory() {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchImportDirectory")
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
 // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
-export function fetchTaxonByNCBITaxonID(ncbiTaxonID: number) {
+export function fetchTaxonByNCBITaxonID_old(ncbiTaxonID: number) {
   return fromFetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchTaxonByNCBITaxonID?taxonID=" +
-      ncbiTaxonID
+    process.env.REACT_APP_API_ADRESS + "/fetchTaxonByNCBITaxonID?taxonID=" + ncbiTaxonID
   ).pipe(mapError<ReadonlyArray<INcbiTaxon>>());
 }
 
@@ -197,11 +393,7 @@ export interface INcbiTaxon {
 
 // ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
 export async function fetchAssembliesByTaxonIDs(taxonIDs: number[]) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchAssembliesByTaxonIDs?taxonIDs=" +
-      taxonIDs
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchAssembliesByTaxonIDs?taxonIDs=" + taxonIDs)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -210,11 +402,7 @@ export async function fetchAssembliesByTaxonIDs(taxonIDs: number[]) {
 }
 
 // ===== UPDATE TAXON IMAGE ===== //
-export async function updateImageByTaxonID(
-  taxonID: number,
-  path: string,
-  userID: number
-) {
+export async function updateImageByTaxonID(taxonID: number, path: string, userID: number) {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/updateImageByTaxonID?taxonID=" +
@@ -250,11 +438,7 @@ export async function removeImageByTaxonID(taxonID: number, userID: number) {
 // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
 export async function fetchGeneralInfosByID(level: number, id: number) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchGeneralInfosByID?level=" +
-      level +
-      "&id=" +
-      id
+    process.env.REACT_APP_API_ADRESS + "/fetchGeneralInfosByID?level=" + level + "&id=" + id
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -264,12 +448,7 @@ export async function fetchGeneralInfosByID(level: number, id: number) {
 }
 
 // ===== ADD GENERAL INFO ===== //
-export async function addGeneralInfo(
-  level: number,
-  id: number,
-  key: string,
-  value: string
-) {
+export async function addGeneralInfo(level: number, id: number, key: string, value: string) {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/addGeneralInfo?level=" +
@@ -289,12 +468,7 @@ export async function addGeneralInfo(
 }
 
 // =====  UPDATE GENERAL INFO ===== //
-export async function updateGeneralInfoByID(
-  level: number,
-  id: number,
-  key: string,
-  value: string
-) {
+export async function updateGeneralInfoByID(level: number, id: number, key: string, value: string) {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/updateGeneralInfoByID?level=" +
@@ -316,11 +490,7 @@ export async function updateGeneralInfoByID(
 // ===== DELETE GENERAL INFO ===== //
 export async function removeGeneralInfoByID(level: number, id: number) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/removeGeneralInfoByID?level=" +
-      level +
-      "&id=" +
-      id
+    process.env.REACT_APP_API_ADRESS + "/removeGeneralInfoByID?level=" + level + "&id=" + id
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -362,9 +532,7 @@ export interface IAssemblyAdded {
 
 // ===== REMOVE ASSEMBLY ===== //
 export async function removeAssemblyByAssemblyID(id: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/removeAssemblyByAssemblyID?id=" + id
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/removeAssemblyByAssemblyID?id=" + id)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -373,11 +541,9 @@ export async function removeAssemblyByAssemblyID(id: number) {
 }
 
 // ===== FETCH ASSEMBLIES BY TAXON ID ===== //
-export function fetchAssembliesByTaxonID(taxonID: number) {
+export function fetchAssembliesByTaxonID_old(taxonID: number) {
   return fromFetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchAssembliesByTaxonID?taxonID=" +
-      taxonID
+    process.env.REACT_APP_API_ADRESS + "/fetchAssembliesByTaxonID_old?taxonID=" + taxonID
   ).pipe(mapError<IAssemblyByTaxon[]>());
 }
 
@@ -476,9 +642,7 @@ export interface IMappingAdded {
 // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
 export async function fetchMappingsByAssemblyID(assemblyID: number) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchMappingsByAssemblyID?assemblyID=" +
-      assemblyID
+    process.env.REACT_APP_API_ADRESS + "/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -490,9 +654,7 @@ export async function fetchMappingsByAssemblyID(assemblyID: number) {
 // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
 export async function fetchAnnotationsByAssemblyID(assemblyID: number) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchAnnotationsByAssemblyID?assemblyID=" +
-      assemblyID
+    process.env.REACT_APP_API_ADRESS + "/fetchAnnotationsByAssemblyID?assemblyID=" + assemblyID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -504,9 +666,7 @@ export async function fetchAnnotationsByAssemblyID(assemblyID: number) {
 // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(assemblyID: number) {
   return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchAnalysesByAssemblyID?assemblyID=" +
-      assemblyID
+    process.env.REACT_APP_API_ADRESS + "/fetchAnalysesByAssemblyID?assemblyID=" + assemblyID
   )
     .then((request) => request.json())
     .then((data) => data)
@@ -547,11 +707,7 @@ interface IAnalysisAdded {
 
 // ===== REMOVE ANNOTATION BY ID ===== //
 export async function removeAnnotationByAnnotationID(id: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/removeAnnotationByAnnotationID?id=" +
-      id
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/removeAnnotationByAnnotationID?id=" + id)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -561,9 +717,7 @@ export async function removeAnnotationByAnnotationID(id: number) {
 
 // ===== REMOVE MAPPING BY ID ===== //
 export async function removeMappingByMappingID(id: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/removeMappingByMappingID?id=" + id
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/removeMappingByMappingID?id=" + id)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -573,9 +727,7 @@ export async function removeMappingByMappingID(id: number) {
 
 // ===== REMOVE ANALYSIS BY ID ===== //
 export async function removeAnalysisByAnalysisID(id: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/removeAnalysisByAnalysisID?id=" + id
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/removeAnalysisByAnalysisID?id=" + id)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -616,12 +768,8 @@ export async function removeBookmark(userID: number, assemblyID: number) {
 }
 
 // ===== RELOAD TAXA DATABASE ===== //
-export async function reloadTaxonIDsFromFile(userID: number) {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/reloadTaxonIDsFromFile?userID=" +
-      userID
-  )
+export async function reloadTaxonIDsFromFile_old(userID: number) {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/reloadTaxonIDsFromFile?userID=" + userID)
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {
@@ -665,10 +813,7 @@ export async function importFiles(importInformation: any): Promise<IResponse> {
     });
 }
 
-function mapError<T>(): UnaryFunction<
-  Observable<globalThis.Response>,
-  Observable<IResponse<T>>
-> {
+function mapError<T>(): UnaryFunction<Observable<globalThis.Response>, Observable<IResponse<T>>> {
   return pipe(
     switchMap((request) => request.json() as Promise<Response<T>>),
     map((output) => {
@@ -698,10 +843,7 @@ interface INotification {
   message: string;
 }
 
-export type Notification =
-  | IInfoNotification
-  | ISuccessNotification
-  | IErrorNotification;
+export type Notification = IInfoNotification | ISuccessNotification | IErrorNotification;
 
 interface IInfoNotification extends INotification {
   type: "info";
