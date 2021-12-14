@@ -1,3 +1,4 @@
+import dataclasses
 import mysql.connector
 from os import getenv, makedirs, remove
 from os.path import exists, isdir, isfile
@@ -35,7 +36,7 @@ class FileManager:
         pika_connection = pika.BlockingConnection(pika.ConnectionParameters(host=getenv("RABBIT_CONTAINER_NAME"), port=5672))
         pika_channel = pika_connection.channel()
         pika_channel.queue_declare(queue=route, durable=True)
-        pika_channel.basic_publish(exchange='', routing_key=route, body=json.dumps(payload))
+        pika_channel.basic_publish(exchange='', routing_key=route, body=json.dumps(dataclasses.asdict(payload)))
         pika_connection.close()
 
     # ====== GENERAL ====== #

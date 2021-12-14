@@ -123,6 +123,7 @@ echo ""
 # JBrowse container
 echo "Build jbrowse docker container"
 cd ./jbrowse
+docker build -t gnom/jbrowse .
 docker volume create gnom-jbrowse-vol
 docker stop $JBROWSE_CONTAINER_NAME && docker rm $JBROWSE_CONTAINER_NAME
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
