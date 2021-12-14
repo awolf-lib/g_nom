@@ -590,7 +590,7 @@ export interface IImportFileInformation {
   children?: IImportFileInformation[];
   dirType?: string;
   type?: string;
-  mainFiles: string[];
+  mainFiles: any;
   name: string;
   path: string;
 }

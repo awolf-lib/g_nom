@@ -1,3 +1,4 @@
+import { Previous } from "grommet-icons";
 import { useState } from "react";
 import { INcbiTaxon } from "../../../../api";
 import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
@@ -7,7 +8,7 @@ import TaxonPicker from "./components/TaxonPicker";
 
 const DataAssistant: React.FC = () => {
   const [taxon, setTaxon] = useState<INcbiTaxon>();
-  const [assembly, setAssembly] = useState<AssemblyInterface>();
+  const [assembly, setAssembly] = useState<AssemblyInterface | undefined>();
 
   return (
     <div className="mb-16">
@@ -27,18 +28,28 @@ const DataAssistant: React.FC = () => {
         </div>
       </header>
 
-      <div className="p-2">
+      <div className="mt-2 px-2">
         <TaxonPicker getTaxon={setTaxon} />
       </div>
 
+      <hr className="shadow my-4" />
+
       {taxon && taxon.id && !assembly && (
-        <div className="p-2">
+        <div className="px-2">
           <TaxonEditor taxon={taxon} getAssembly={setAssembly} />
         </div>
       )}
 
       {taxon && taxon.id && assembly && assembly.id && (
-        <div className="p-2">
+        <div className="px-2">
+          <div
+            className="max-w-max flex items-center bg-gray-500 text-white text-sm rounded-lg px-2 py-1 cursor-pointer hover:bg-gray-400"
+            onClick={() => setAssembly(undefined)}
+          >
+            <Previous className="stroke-current" color="blank" size="small" />
+            <span className="px-4">Back to taxon level...</span>
+          </div>
+          <hr className="shadow my-4" />
           <AssemblyEditor taxon={taxon} assembly={assembly} />
         </div>
       )}

@@ -32,6 +32,9 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   const [fetchingDeleteGeneralInformation, setFetchingDeleteGeneralInformation] =
     useState<boolean>(false);
 
+  const [toggleAddNewGeneralInforamtion, setToggleAddNewGeneralInforamtion] =
+    useState<boolean>(false);
+
   useEffect(() => {
     loadGeneralInformation(taxon.id);
     topRef.current?.scrollIntoView();
@@ -261,58 +264,6 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   return (
     <div className="animate-grow-y">
-      {/* Create new GIs */}
-      <div className="bg-indigo-100">
-        <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
-          <div>Add new general information...</div>
-        </div>
-        <div className="flex px-2">
-          <div className="w-1/5 text-sm py-4 px-4 font-semibold">Label</div>
-          <div className="w-4/5 text-sm py-4 px-4 font-semibold">Description</div>
-        </div>
-        <div className="bg-gray-100 py-4 px-2">
-          <div className="flex">
-            <div className="w-1/5 mx-1">
-              <Input
-                type="textarea"
-                placeholder="Max. 50 characters..."
-                onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                  handleChangeNewGeneralInformationLabel(e.currentTarget.value)
-                }
-                value={newGeneralInformationLabel}
-              />
-              <div className="flex justify-around py-2">
-                <div className="w-24" onClick={() => handleSubmitNewGeneralInformation()}>
-                  <Button
-                    label={!fetchingNewGeneralInformation ? "Create" : "Creating..."}
-                    color="confirm"
-                  />
-                </div>
-                <div className="w-24">
-                  <Button
-                    label="Reset"
-                    color="cancel"
-                    onClick={() => handleResetNewGeneralInformationForm()}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="w-4/5 mx-1">
-              <Input
-                type="textarea"
-                placeholder="Max. 2000 characters..."
-                onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                  handleChangeNewGeneralInformationDescription(e.currentTarget.value)
-                }
-                value={newGeneralInformationDescription}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr className="my-4" />
-
       {/* Update existing GIs */}
       <div>
         <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
@@ -327,12 +278,12 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
           <div className="w-1/5 py-4 px-4 text-sm font-semibold">Label</div>
           <div className="w-4/5 py-4 px-4 text-sm font-semibold">Description</div>
         </div>
-        <div className="animate-grow-y">
+        <div className="animate-grow-y min-h-1/4 max-h-1/2">
           {generalInfos && generalInfos.length > 0 ? (
             generalInfos.slice(listOffset, listOffset + 5).map((gi) => (
               <div
                 key={gi.id}
-                className="hover:text-blue-600 cursor-pointer odd:bg-gray-100 even:bg-white border-t py-2 px-2"
+                className="hover:text-blue-600 cursor-pointer odd:bg-gray-100 even:bg-white border-t py-2 px-2 shadow"
               >
                 {gi.id !== editing ? (
                   <div className="flex" onClick={() => handleSetEditing(gi)}>
@@ -440,7 +391,70 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
             </div>
           </div>
         )}
+        <div className="flex my-4 justify-center">
+          <div className="w-72">
+            <Button
+              size="sm"
+              label="Toggle add new General Information..."
+              onClick={() => setToggleAddNewGeneralInforamtion((prevState) => !prevState)}
+            />
+          </div>
+        </div>
       </div>
+
+      <hr className="my-4" />
+
+      {/* Create new GIs */}
+      {toggleAddNewGeneralInforamtion && (
+        <div className="bg-indigo-100 animate-grow-y">
+          <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
+            <div>Add new general information...</div>
+          </div>
+          <div className="flex px-2">
+            <div className="w-1/5 text-sm py-4 px-4 font-semibold">Label</div>
+            <div className="w-4/5 text-sm py-4 px-4 font-semibold">Description</div>
+          </div>
+          <div className="bg-gray-100 py-4 px-2">
+            <div className="flex">
+              <div className="w-1/5 mx-1">
+                <Input
+                  type="textarea"
+                  placeholder="Max. 50 characters..."
+                  onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                    handleChangeNewGeneralInformationLabel(e.currentTarget.value)
+                  }
+                  value={newGeneralInformationLabel}
+                />
+                <div className="flex justify-around py-2">
+                  <div className="w-24" onClick={() => handleSubmitNewGeneralInformation()}>
+                    <Button
+                      label={!fetchingNewGeneralInformation ? "Create" : "Creating..."}
+                      color="confirm"
+                    />
+                  </div>
+                  <div className="w-24">
+                    <Button
+                      label="Reset"
+                      color="cancel"
+                      onClick={() => handleResetNewGeneralInformationForm()}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="w-4/5 mx-1">
+                <Input
+                  type="textarea"
+                  placeholder="Max. 2000 characters..."
+                  onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                    handleChangeNewGeneralInformationDescription(e.currentTarget.value)
+                  }
+                  value={newGeneralInformationDescription}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

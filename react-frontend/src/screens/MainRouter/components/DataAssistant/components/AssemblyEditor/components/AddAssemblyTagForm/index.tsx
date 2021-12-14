@@ -132,12 +132,13 @@ const AddAssemblyTagForm = ({
   return (
     <div className="animate-grow-y">
       <div>
-        <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 justify-around py-2 border rounded mt-2 max-w-screen">
+        <div className="relative grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 justify-around py-2 border rounded mt-2 max-w-screen">
           {tags && tags.length > 0 ? (
             tags.map((tag, index) => (
               <div
+                key={tag.id}
                 style={{ backgroundColor: tag.color }}
-                className="text-white flex justify-center items-center py-1 rounded-lg uppercase font-semibold ring-1 ring-gray-400 ring-offset-1"
+                className="relative text-white flex justify-center items-center py-1 rounded-lg uppercase ring-1 ring-gray-400 ring-offset-1"
                 onMouseEnter={() => setHoverTag(index)}
                 onMouseLeave={() => {
                   setRemoveTagConfirmation(false);
@@ -145,16 +146,16 @@ const AddAssemblyTagForm = ({
                 }}
                 onClick={() => setRemoveTagConfirmation(true)}
               >
+                <span className="truncate w-full text-center text-sm">
+                  {!removeTagConfirmation ? tag.tag : "DELETE?"}
+                </span>
                 {hoverTag === index && !removeTagConfirmation && (
-                  <div className="mr-4 flex items-center">
+                  <div className="absolute right-0 mx-4 flex items-center animate-grow-y">
                     <Trash className="stroke-current" color="blank" size="small" />
                   </div>
                 )}
-                <span className="truncate w-24 text-center">
-                  {!removeTagConfirmation ? tag.tag : "DELETE?"}
-                </span>
                 {hoverTag === index && removeTagConfirmation && (
-                  <div className="flex items-center ml-8">
+                  <div className="absolute right-0 flex items-center mx-4 animate-grow-y">
                     <div className="bg-green-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-green-400">
                       <Checkmark
                         className="stroke-current"

@@ -94,12 +94,12 @@ const AssemblyPicker = ({
 
   return (
     <div className="animate-grow-y">
-      <div className="flex justify-between border-t border-b py-2 px-4 text-sm font-semibold text-white bg-gray-500 border-white">
-        <div className="w-1/12">ID</div>
-        <div className="w-1/5">Name</div>
+      <div className="flex border-t border-b text-center py-2 text-sm font-semibold text-white bg-gray-500 border-white">
+        <div className="w-16">ID</div>
+        <div className="w-2/5">Name</div>
         <div className="w-1/5">Added by</div>
         <div className="w-2/5">Added on</div>
-        <div className="w-1/12" />
+        <div className="w-64" />
       </div>
       <div className="min-h-1/4 max-h-1/2">
         {assemblies && assemblies.length > 0 ? (
@@ -108,23 +108,23 @@ const AssemblyPicker = ({
               key={assembly.id}
               className={
                 toggleStatistics === assembly.id
-                  ? "border-t border-b odd:bg-indigo-50 font-semibold"
-                  : "border-t border-b odd:bg-indigo-50"
+                  ? "border-t border-b odd:bg-indigo-50 font-semibold shadow"
+                  : "border-t border-b odd:bg-indigo-50 shadow"
               }
             >
               <div
-                className="flex justify-between px-4 py-4"
+                className="flex py-4 text-center"
                 onClick={() => handleToggleStatistics(assembly.id)}
               >
-                <div className="w-1/12">{assembly.id}</div>
-                <div className="w-1/5">{assembly.name}</div>
+                <div className="w-16">{assembly.id}</div>
+                <div className="w-2/5">{assembly.name}</div>
                 <div className="w-1/5">{assembly.username}</div>
                 <div className="w-2/5">{assembly.addedOn}</div>
-                <div className="w-64 flex justify-around items-center ">
+                <div className="flex justify-around items-center w-64">
                   {toggleConfirmDeletion !== assembly.id ? (
                     <div className="flex justify-between items-center">
-                      <div className="w-32 flex items-center justify-center">
-                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg">
+                      <div className="flex items-center justify-center">
+                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
                           <Trash
                             className="stroke-current"
                             color="blank"
@@ -136,11 +136,13 @@ const AssemblyPicker = ({
                           />
                         </div>
                       </div>
-                      <div className="w-8" />
                     </div>
                   ) : (
                     <div className="flex justify-between items-center">
-                      <div className="w-32 flex items-center justify-center">
+                      <div
+                        className="w-32 flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <Input
                           size="sm"
                           placeholder="Type REMOVE..."
@@ -148,7 +150,7 @@ const AssemblyPicker = ({
                         />
                       </div>
                       <div className="w-8 flex items-center justify-center">
-                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg">
+                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
                           <Close
                             className="stroke-current"
                             color="blank"
@@ -163,7 +165,7 @@ const AssemblyPicker = ({
                       </div>
                     </div>
                   )}
-                  <div className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 mx-1 rounded-lg">
+                  <div className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 rounded-lg transform scale-125">
                     <Edit
                       className="stroke-current"
                       color="blank"
@@ -197,16 +199,17 @@ const AssemblyPicker = ({
         ) : (
           <div className="flex justify-center items-center py-4 border-t border-b">No items!</div>
         )}
-        <div className="flex my-2">
-          <div className="w-56">
+        <div className="flex my-4 justify-center">
+          <div className="w-72">
             <Button
               size="sm"
-              label="Add new assembly..."
-              onClick={() => setToggleNewAssemblyImportForm(true)}
+              label="Toggle add new assembly..."
+              onClick={() => setToggleNewAssemblyImportForm((prevState) => !prevState)}
             />
           </div>
         </div>
       </div>
+      <hr className="shadow my-4" />
       {toggleNewAssemblyImportForm && <NewAssemblyImportForm taxon={taxon} />}
     </div>
   );

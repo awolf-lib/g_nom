@@ -835,25 +835,25 @@ class FileManager:
                 dir_type = defaultdict(list)
                 for file in listdir(path):
                     if image_regex.match(file):
-                        dir_type["image"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["image"].append(dir_path + "/" + file)
                     elif sequence_regex.match(file):
-                        dir_type["sequence"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["sequence"].append(dir_path + "/" + file)
                     elif annotation_regex.match(file):
-                        dir_type["annotation"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["annotation"].append(dir_path + "/" + file)
                     elif mapping_regex.match(file):
-                        dir_type["mapping"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["mapping"].append(dir_path + "/" + file)
                     elif taxonomic_assignment_regex.match(file):
-                        dir_type["milts"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["milts"].append(dir_path + "/" + file)
                     elif annotation_completeness_busco_regex.match(file):
-                        dir_type["busco"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["busco"].append(dir_path + "/" + file)
                     elif annotation_completeness_fCat_regex.match(file):
-                        dir_type["fcat"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["fcat"].append(dir_path + "/" + file)
                     elif repeat_masking_regex.match(file):
-                        dir_type["repeatmasker"].append(BASE_PATH_TO_IMPORT + dir_path + "/" + file)
+                        dir_type["repeatmasker"].append(dir_path + "/" + file)
                     else:
                         pass
 
-                d["mainFiles"] = dir_type
+                d["mainFiles"] = dict(dir_type)
 
                 dir_type = list(set(dir_type.keys()))
                 if len(dir_type) == 1:
