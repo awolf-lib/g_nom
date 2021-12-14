@@ -7,6 +7,7 @@ from modules.taxa import (
     addTaxonGeneralInformation,
     deleteTaxonGeneralInformationByID,
     fetchTaxonByNCBITaxonID,
+    fetchTaxonBySearch,
     fetchTaxonByTaxonID,
     fetchTaxonGeneralInformationByTaxonID,
     fetchTaxonTree,
@@ -67,6 +68,31 @@ def taxa_bp_fetchTaxonByTaxonID():
 
         taxonID = request.args.get("taxonID")
         data, notification = fetchTaxonByTaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH TAXA BY TAXON ID
+@taxa_bp.route("/fetchTaxonBySearch", methods=["GET"])
+def taxa_bp_fetchTaxonBySearch():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        search = request.args.get("search")
+        data, notification = fetchTaxonBySearch(search)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

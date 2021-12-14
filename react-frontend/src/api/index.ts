@@ -406,6 +406,28 @@ export function fetchTaxonByTaxonID(
     });
 }
 
+// ===== FETCH ONE TAXON BY TAXON ID ===== //
+export function fetchTaxonBySearch(
+  search: string,
+  userID: number,
+  token: string
+): Promise<IResponse<INcbiTaxon[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaxonBySearch?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&search=" +
+      search
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ONE TAXON BY NCBI TAXON ID ===== //
 export function fetchTaxonByNCBITaxonID(
   userID: number,

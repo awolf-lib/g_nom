@@ -256,6 +256,28 @@ def fetchTaxonByTaxonID(taxonID):
     return dict(zip(row_headers, taxa)), {}
 
 
+# FETCH TAXA BY SEARCH STRING
+def fetchTaxonBySearch(search):
+    """
+    Fetches taxon by taxon ID
+    """
+    connection, cursor, error = connect()
+
+    try:
+        cursor.execute(f"SELECT * FROM taxa WHERE taxa.scientificName LIKE '%{search}%' OR taxa.commonName LIKE '%{search}%'")
+        row_headers = [x[0] for x in cursor.description]
+        taxa = cursor.fetchall()
+        sorted_taxa = sorted([dict(zip(row_headers, x)) for x in taxa], key=lambda x: x["scientificName"])
+
+    except Exception as err:
+        return [], createNotification(message=str(err))
+
+    if not len(taxa):
+        return [], createNotification("Info", f"No taxon for search '{search}' found!", "info")
+
+    return sorted_taxa, {}
+
+
 # FETCH ONE TAXON BY NCBI TAXON ID
 def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     """

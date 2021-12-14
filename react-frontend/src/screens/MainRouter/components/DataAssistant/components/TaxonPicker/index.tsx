@@ -1,6 +1,5 @@
-import { Down, Up } from "grommet-icons";
-import { SetStateAction, useEffect, useRef, useState } from "react";
-import { fetchTaxonByNCBITaxonID, INcbiTaxon } from "../../../../../../api";
+import { SetStateAction, useState } from "react";
+import { fetchTaxonByNCBITaxonID, fetchTaxonBySearch, INcbiTaxon } from "../../../../../../api";
 import Input from "../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
@@ -22,7 +21,7 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
     });
   };
 
-  const fetchTaxa = (id: number | undefined) => {
+  const fetchTaxaByID = (id: number | undefined) => {
     clearTimeout(requestTimeoutTaxonID);
     setTaxa([]);
     getTaxon(undefined);
@@ -35,13 +34,21 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
 
           if (userID && token) {
             fetchTaxonByNCBITaxonID(parseInt(userID), token, id).then((response) => {
-              if (response.payload) {
-                setTaxa(response.payload);
+              if (response.payload.length <= 1000) {
+                if (response.payload) {
+                  setTaxa(response.payload);
 
-                if (response.payload.length === 1) {
-                  setTaxon(response.payload[0]);
-                  getTaxon(response.payload[0]);
+                  if (response.payload.length === 1) {
+                    setTaxon(response.payload[0]);
+                    getTaxon(response.payload[0]);
+                  }
                 }
+              } else {
+                handleNewNotification({
+                  label: "Error",
+                  message: "Too many results. Specify name!",
+                  type: "error",
+                });
               }
 
               if (response.notification && response.notification.length) {
@@ -61,8 +68,55 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
     }
   };
 
-  const handleChangeTaxon = (taxonID: string) => {
-    const targetTaxon = taxa.find((obj: INcbiTaxon) => obj.id + "" === taxonID);
+  const fetchTaxaBySearch = (search: string | undefined) => {
+    clearTimeout(requestTimeoutTaxonID);
+    setTaxa([]);
+    getTaxon(undefined);
+    if (search) {
+      setRequestTimeoutTaxonID(
+        setTimeout(() => {
+          setLoadingTaxa(true);
+          const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+          const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+          if (userID && token) {
+            fetchTaxonBySearch(search, parseInt(userID), token).then((response) => {
+              if (response.payload.length <= 1000) {
+                if (response && response.payload) {
+                  setTaxa(response.payload);
+
+                  if (response.payload.length === 1) {
+                    setTaxon(response.payload[0]);
+                    getTaxon(response.payload[0]);
+                  }
+                }
+              } else {
+                handleNewNotification({
+                  label: "Error",
+                  message: "Too many results. Specify name!",
+                  type: "error",
+                });
+              }
+
+              if (response.notification && response.notification.length) {
+                response.notification.map((not: any) => handleNewNotification(not));
+              }
+            });
+          } else {
+            handleNewNotification({
+              label: "Error",
+              message: "UserID and/or userToken deleted from storage. Relog necessary!",
+              type: "error",
+            });
+          }
+          setLoadingTaxa(false);
+        }, 3000)
+      );
+    }
+  };
+
+  const handleChangeTaxon = (taxonID: number) => {
+    const targetTaxon = taxa.find((obj: INcbiTaxon) => obj.id === taxonID);
     setTaxon(targetTaxon);
     getTaxon(targetTaxon);
   };
@@ -71,7 +125,7 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
     <div className="text-gray-700">
       <div className="xl:flex justify-center animate-grow-y">
         {taxon && taxon.id && (
-          <div className="flex justify-around items-center w-full border p-2 rounded shadow bg-gray-100">
+          <div className="flex justify-around items-center w-full border p-2 xl:rounded-xl shadow bg-gray-100">
             <div>
               <div className="w-32 rounded-lg overflow-hidden border-2 border-dotted border-white">
                 <SpeciesProfilePictureViewer taxonID={taxon.id} imageStatus={taxon.imageStatus} />
@@ -114,44 +168,63 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
           <div className="w-px bg-gray-200 animate-fade-in mx-4 hidden xl:block" />
         )}
 
-        <div className="bg-gray-200 flex justify-around w-full xl:w-2/3 mb-2 xl:mb-0 items-center border py-6 rounded shadow">
-          <label className="w-full px-4">
-            <div className="w-full flex justify-between items-center">
-              <div className="w-full text-center font-semibold truncate">Specify target taxon:</div>
-              {loadingTaxa && <LoadingSpinner label="Loading..." />}
-            </div>
-            <hr className="shadow my-4" />
-            <div className="shadow-lg">
-              <Input
-                type="number"
-                onChange={(e) => fetchTaxa(e.target.value)}
-                placeholder={taxon && taxon.ncbiTaxonID ? taxon.ncbiTaxonID + "" : "NCBI ID"}
-              />
-            </div>
-          </label>
-
-          {taxa && taxa.length > 1 && (
-            <label className="w-full px-4 animate-fade-in">
-              <div className="text-center text-xs font-semibold truncate">
-                Multiple entries detected:
+        <div className="bg-gray-200 flex justify-around w-full my-2 text-sm xl:my-0 items-center border py-6 xl:rounded-lg shadow">
+          <div className="flex">
+            <label className="w-2/5 px-4">
+              <div className="w-full flex justify-between items-center">
+                <div className="w-full text-center font-semibold truncate">NCBI ID</div>
+                {loadingTaxa && <LoadingSpinner label="Loading..." />}
               </div>
-              <hr className="shadow my-4" />
+              <hr className="shadow my-2" />
+              <div className="shadow rounded-lg">
+                <Input
+                  type="number"
+                  onChange={(e) => fetchTaxaByID(e.target.value)}
+                  placeholder={taxon && taxon.ncbiTaxonID ? taxon.ncbiTaxonID + "" : "NCBI ID"}
+                />
+              </div>
+            </label>
+            <div>or</div>
+            <label className="w-full px-4">
+              <div className="w-full flex justify-between items-center">
+                <div className="w-full text-center font-semibold truncate">Search by name</div>
+                {loadingTaxa && <LoadingSpinner label="Loading..." />}
+              </div>
+              <hr className="shadow my-2" />
+              <div className="shadow rounded-lg">
+                <Input
+                  onChange={(e) => fetchTaxaBySearch(e.target.value)}
+                  placeholder={taxon && taxon.scientificName ? taxon.scientificName + "" : "Name"}
+                />
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {taxa && taxa.length > 1 && (
+          <div className="w-px bg-gray-200 animate-fade-in mx-4 hidden xl:block" />
+        )}
+
+        {taxa && taxa.length > 1 && (
+          <div className="bg-gray-200 flex justify-around w-full xl:w-1/2 my-2 text-sm xl:my-0 items-center border py-6 xl:rounded-lg shadow">
+            <label className="w-full px-4 animate-fade-in">
+              <div className="text-center font-semibold truncate">Multiple entries detected:</div>
+              <hr className="shadow my-2" />
               <div className="w-full px-4">
                 <select
-                  className="text-sm p-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 ring-offset-1 transition duration-300"
-                  onChange={(e) => handleChangeTaxon(e.target.value)}
+                  className="text-sm text-center mt-1 shadow h-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 ring-offset-1 transition duration-300"
+                  onChange={(e) => handleChangeTaxon(parseInt(e.target.value))}
                 >
                   {taxa.map((tx: INcbiTaxon) => (
                     <option value={tx.id}>
-                      {"ID: " + tx.id + " - " + tx.scientificName}{" "}
-                      {tx.commonName && " (" + tx.commonName + ")"}
+                      {tx.scientificName} {tx.commonName && " (" + tx.commonName + ")"}
                     </option>
                   ))}
                 </select>
               </div>
             </label>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
