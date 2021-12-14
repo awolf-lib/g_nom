@@ -572,7 +572,9 @@ class FileManager:
                 try:
                     with open(newPath, "r") as plotFile:
                         plot_data = "".join(plotFile.readlines()).replace("\n", "")
-                        plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{name}"')
+                        plot_data = plot_data.replace(
+                            '"title":"taxonomic assignment"', f'"title":"{name}"'
+                        )
                         plotFile.close()
 
                     with open("src/Tools/templates/milts_head_template.html", "r") as milts_template_file:

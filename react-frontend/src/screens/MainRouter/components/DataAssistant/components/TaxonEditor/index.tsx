@@ -1,5 +1,3 @@
-import classNames from "classnames";
-import { Down, Up } from "grommet-icons";
 import { SetStateAction } from "react";
 import { INcbiTaxon } from "../../../../../../api";
 import TabWorkspace from "../../../../../../components/TabWorkspace";

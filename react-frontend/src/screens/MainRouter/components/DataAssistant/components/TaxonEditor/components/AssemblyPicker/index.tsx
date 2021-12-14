@@ -8,7 +8,6 @@ import {
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
-import AssemblyEditor from "../../../AssemblyEditor";
 import NewAssemblyImportForm from "./components/NewAssemblyImportForm";
 
 const AssemblyPicker = ({

@@ -111,7 +111,6 @@ def assemblies_bp_fetchAssemblies():
     else:
         return REQUESTMETHODERROR
 
-
 # FETCH ALL ASSEMBLIES FOR SPECIFIC TAXON
 @assemblies_bp.route("/fetchAssembliesByTaxonID", methods=["GET"])
 def assemblies_bp_fetchAssembliesByTaxonID():

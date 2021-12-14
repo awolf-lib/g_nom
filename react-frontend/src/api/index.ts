@@ -4,23 +4,6 @@
 
 import { AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
-// =============================== users =============================== //
-// USER AUTHENTIFCATION
-export function login(username: string, password: string): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username: username, password: password }),
-  })
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
 // ADD NEW USER
 export async function addUser(
   username: string,

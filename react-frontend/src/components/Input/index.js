@@ -34,11 +34,15 @@ Input.propTypes = {
   type: PropTypes.string,
   placeholder: PropTypes.string,
   size: PropTypes.string,
+<<<<<<< HEAD
   value: PropTypes.oneOfType([
     PropTypes.arrayOf(PropTypes.string),
     PropTypes.string,
     PropTypes.number,
   ]),
+=======
+  value: PropTypes.arrayOf(PropTypes.string) | PropTypes.string | PropTypes.number,
+>>>>>>> 9011f9ea9c0480bdef134573575aa268dae3af21
   onChange: PropTypes.func,
   checked: PropTypes.bool,
 };

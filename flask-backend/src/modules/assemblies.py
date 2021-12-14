@@ -336,7 +336,6 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
 
         if search:
             filtered_assemblies = []
-
             for x in assemblies:
                 if len([s for s in x.values() if search == str(s) or search in str(s)]):
                     filtered_assemblies.append(x)
