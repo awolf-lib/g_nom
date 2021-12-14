@@ -94,6 +94,7 @@ echo "REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" >> ./rea
 echo "REACT_APP_JBROWSE_ADRESS=${JBROWSE_ADRESS}" >> ./react-frontend/.env
 
 # build
+mkdir -p ${IMPORT_DIR}
 cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
 # start
@@ -110,11 +111,7 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${FLASK_CONTAINER_NAME} container..."
-<<<<<<< HEAD
-docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
-=======
-docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
->>>>>>> start on filetree viewer
+docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
@@ -127,8 +124,8 @@ echo ""
 # JBrowse container
 echo "Build jbrowse docker container"
 cd ./jbrowse
+docker build -t gnom/jbrowse .
 docker volume create gnom-jbrowse-vol
-docker stop $JBROWSE_CONTAINER_NAME && docker rm $JBROWSE_CONTAINER_NAME
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
 docker run --name $JBROWSE_CONTAINER_NAME -dp 8082:80 --env-file .env --network $DOCKER_NETWORK_NAME -v gnom-jbrowse-vol:/usr/local/apache2/htdocs/assemblies --mount type=bind,source="${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}",target=/flask-backend/data/storage/assemblies gnom/jbrowse
 cd ..
@@ -155,7 +152,5 @@ echo "Initial taxa import..."
 docker exec $FLASK_CONTAINER_NAME bash -c "cd src/ && python3 -m modules.taxa reloadTaxonIDsFromFile && cd .."
 
 # ============================================ #
-
-mkdir -p ${IMPORT_DIR}
 
 echo "Successfully setup G-nom!"

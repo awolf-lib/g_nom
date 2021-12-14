@@ -1,25 +1,36 @@
-import { Edit } from "grommet-icons";
-import { useEffect, useState } from "react";
-import { fetchAssembliesByTaxonID, INcbiTaxon } from "../../../../../../../../api";
+import { Close, Edit, Trash } from "grommet-icons";
+import { SetStateAction, useEffect, useState } from "react";
+import {
+  deleteAssemblyByAssemblyID,
+  fetchAssembliesByTaxonID,
+  INcbiTaxon,
+} from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
+import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
-import NewAssemblyImportForm from "./components/ImportForm";
+import AssemblyEditor from "../../../AssemblyEditor";
+import NewAssemblyImportForm from "./components/NewAssemblyImportForm";
 
-const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
+const AssemblyPicker = ({
+  taxon,
+  getAssembly,
+}: {
+  taxon: INcbiTaxon;
+  getAssembly: SetStateAction<any>;
+}) => {
   const [assemblies, setAssemblies] = useState<any>([]);
   const [toggleStatistics, setToggleStatistics] = useState<number>(-1);
-  const [toggleFileTree, setToggleFileTree] = useState<boolean>(false);
+  const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
+  const [confirmDeletion, setConfirmDeletion] = useState<string>("");
 
-  const [newAssembly, setNewAssembly] = useState<any>({});
-  const [newAnnotations, setNewAnnotations] = useState<any>([]);
-  const [newMappings, setNewMappings] = useState<any>([]);
-  const [newBuscos, setNewBuscos] = useState<any>([]);
-  const [newFcats, setNewFcats] = useState<any>([]);
-  const [newMilts, setNewMilts] = useState<any>([]);
-  const [newRepeatmaskers, setNewRepeatmaskers] = useState<any>([]);
+  const [targetAssembly, setTargetAssembly] = useState<any>();
+
+  const [toggleNewAssemblyImportForm, setToggleNewAssemblyImportForm] = useState<boolean>(false);
 
   useEffect(() => {
     loadAssemblies();
+    const interval = setInterval(() => loadAssemblies(), 60000);
+    return clearInterval(interval);
   }, []);
 
   // notifications
@@ -34,19 +45,17 @@ const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
   };
 
   const loadAssemblies = async () => {
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
-    if (userID && token) {
+    if (taxon && taxon.id && userID && token) {
       const response = await fetchAssembliesByTaxonID(taxon.id, parseInt(userID), token);
       if (response) {
         if (response.payload) {
           setAssemblies(response.payload);
         }
         if (response.notification && response.notification.length) {
-          response.notification.map((notification: Notification) =>
-            handleNewNotification(notification)
-          );
+          response.notification.map((notification: any) => handleNewNotification(notification));
         }
       }
     }
@@ -60,6 +69,29 @@ const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
     }
   };
 
+  const handleDeleteAssembly = async (assemblyID: number, confirmation: string) => {
+    if (toggleConfirmDeletion !== assemblyID) {
+      setToggleConfirmDeletion(assemblyID);
+    } else {
+      setConfirmDeletion(confirmation);
+
+      if (confirmation === "REMOVE") {
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+        if (userID && token) {
+          const response = await deleteAssemblyByAssemblyID(assemblyID, parseInt(userID), token);
+          setToggleConfirmDeletion(-1);
+          setConfirmDeletion("");
+
+          if (response.notification && response.notification.length > 0) {
+            response.notification.map((n: any) => handleNewNotification(n));
+          }
+        }
+      }
+    }
+  };
+
   return (
     <div className="animate-grow-y">
       <div className="flex justify-between border-t border-b py-2 px-4 text-sm font-semibold text-white bg-gray-500 border-white">
@@ -69,9 +101,8 @@ const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
         <div className="w-2/5">Added on</div>
         <div className="w-1/12" />
       </div>
-      <div>
-        {assemblies &&
-          assemblies.length > 0 &&
+      <div className="min-h-1/4 max-h-1/2">
+        {assemblies && assemblies.length > 0 ? (
           assemblies.map((assembly: any) => (
             <div
               key={assembly.id}
@@ -89,8 +120,61 @@ const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
                 <div className="w-1/5">{assembly.name}</div>
                 <div className="w-1/5">{assembly.username}</div>
                 <div className="w-2/5">{assembly.addedOn}</div>
-                <div className="w-1/12">
-                  <Edit className="stroke-current" color="blank" size="small" />
+                <div className="w-64 flex justify-around items-center ">
+                  {toggleConfirmDeletion !== assembly.id ? (
+                    <div className="flex justify-between items-center">
+                      <div className="w-32 flex items-center justify-center">
+                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg">
+                          <Trash
+                            className="stroke-current"
+                            color="blank"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteAssembly(assembly.id, "");
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <div className="w-8" />
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <div className="w-32 flex items-center justify-center">
+                        <Input
+                          size="sm"
+                          placeholder="Type REMOVE..."
+                          onChange={(e) => handleDeleteAssembly(assembly.id, e.target.value)}
+                        />
+                      </div>
+                      <div className="w-8 flex items-center justify-center">
+                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg">
+                          <Close
+                            className="stroke-current"
+                            color="blank"
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfirmDeletion("");
+                              setToggleConfirmDeletion(-1);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 mx-1 rounded-lg">
+                    <Edit
+                      className="stroke-current"
+                      color="blank"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTargetAssembly(assembly);
+                        getAssembly(assembly);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
               <div>
@@ -109,17 +193,21 @@ const AssemblyPicker = ({ taxon }: { taxon: INcbiTaxon }) => {
                 )}
               </div>
             </div>
-          ))}
-      </div>
-      <hr className="my-4 shadow" />
-      {!toggleFileTree && (
-        <div className="flex justify-center">
-          <div className="w-96">
-            <Button label="Add new assembly..." onClick={() => setToggleFileTree(true)} />
+          ))
+        ) : (
+          <div className="flex justify-center items-center py-4 border-t border-b">No items!</div>
+        )}
+        <div className="flex my-2">
+          <div className="w-56">
+            <Button
+              size="sm"
+              label="Add new assembly..."
+              onClick={() => setToggleNewAssemblyImportForm(true)}
+            />
           </div>
         </div>
-      )}
-      {toggleFileTree && <NewAssemblyImportForm taxon={taxon} />}
+      </div>
+      {toggleNewAssemblyImportForm && <NewAssemblyImportForm taxon={taxon} />}
     </div>
   );
 };

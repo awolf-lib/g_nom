@@ -534,9 +534,7 @@ class Parsers:
                     data["ltr_elements_length"] = length_occupied
                     sequence_length -= length_occupied
 
-                elif (
-                    "dna transposons" in line.lower() or "dna elements" in line.lower()
-                ):
+                elif "dna transposons" in line.lower() or "dna elements" in line.lower():
                     length_occupied = int(values[1])
                     data["dna_elements"] = int(values[0])
                     data["dna_elements_length"] = length_occupied

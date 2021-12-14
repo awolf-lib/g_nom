@@ -26,15 +26,15 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    login(username, password).subscribe((response) => {
+    login(username, password).then((response) => {
       if (response) {
         if (response.payload?.token) {
           setToken(response.payload.token);
           setUserID(response.payload.userID);
           setUserRole(response.payload.role);
         }
-        if (response.notification) {
-          handleNewNotification(response.notification);
+        if (response && response.notification && response.notification.length > 0) {
+          response.notification.map((not) => handleNewNotification(not));
         }
       } else {
         handleNewNotification({
@@ -62,10 +62,7 @@ const Login = ({ setToken, setUserID, setUserRole }) => {
           <div className="mr-8 font-semibold text-center lg:text-left py-2 lg:py-0 w-32">
             Username:
           </div>
-          <Input
-            placeholder="Username..."
-            onChange={(e) => setUserName(e.target.value)}
-          />
+          <Input placeholder="Username..." onChange={(e) => setUserName(e.target.value)} />
         </div>
         <div className="flex justify-between items-center pt-4">
           <div className="mr-8 font-semibold text-center lg:text-left py-2 lg:py-0 w-32">

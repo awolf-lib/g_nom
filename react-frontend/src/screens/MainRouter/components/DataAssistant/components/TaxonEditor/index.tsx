@@ -1,46 +1,32 @@
 import classNames from "classnames";
-import { useState } from "react";
+import { Down, Up } from "grommet-icons";
+import { SetStateAction } from "react";
 import { INcbiTaxon } from "../../../../../../api";
+import TabWorkspace from "../../../../../../components/TabWorkspace";
 import AssemblyPicker from "./components/AssemblyPicker";
 import TaxonGeneralInformationEditor from "./components/TaxonGeneralInformationEditor";
 
-const TaxonEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
-  const [activeTab, setActiveTab] = useState<"assemblies" | "generalInformation">("assemblies");
-  const activeTabClass = (tab: "assemblies" | "generalInformation") =>
-    classNames(
-      "px-8 py-1 text-xs rounded-t-lg mx-3 transition duration-300 text-white select-none shadow z-10",
-      {
-        "bg-gray-400 hover:bg-gray-500 cursor-pointer": activeTab !== tab,
-        "transform scale-110 bg-gray-500 -translate-y-px": activeTab === tab,
-      }
-    );
+const TaxonEditor = ({
+  taxon,
+  getAssembly,
+}: {
+  taxon: INcbiTaxon;
+  getAssembly: SetStateAction<any>;
+}) => {
   return (
     <div className="animate-grow-y">
-      <div className="">
-        <div className="flex">
-          <div onClick={() => setActiveTab("assemblies")} className={activeTabClass("assemblies")}>
-            Assemblies
-          </div>
-          <div
-            onClick={() => setActiveTab("generalInformation")}
-            className={activeTabClass("generalInformation")}
-          >
-            General information
-          </div>
-        </div>
-        <div className="border-t-2 border-gray-500">
-          {activeTab === "assemblies" && (
-            <div className="animate-grow-y">
-              <AssemblyPicker taxon={taxon} />
-            </div>
-          )}
-          {activeTab === "generalInformation" && (
-            <div className="animate-grow-y">
-              <TaxonGeneralInformationEditor taxon={taxon} />
-            </div>
-          )}
-        </div>
-      </div>
+      <TabWorkspace
+        tabs={[
+          {
+            label: "Assemblies",
+            content: <AssemblyPicker taxon={taxon} getAssembly={getAssembly} />,
+          },
+          {
+            label: "General information (Taxon)",
+            content: <TaxonGeneralInformationEditor taxon={taxon} />,
+          },
+        ]}
+      />
     </div>
   );
 };

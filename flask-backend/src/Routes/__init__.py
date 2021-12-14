@@ -12,6 +12,7 @@ def create_app():
     from .taxa import taxa_bp
     from .users import users_bp
     from .assemblies import assemblies_bp
+    from .analyses import analyses_bp
 
     app.register_blueprint(auth, url_prefix="/")
     app.register_blueprint(db, url_prefix="/")
@@ -19,6 +20,7 @@ def create_app():
     app.register_blueprint(taxa_bp, url_prefix="/")
     app.register_blueprint(users_bp, url_prefix="/")
     app.register_blueprint(assemblies_bp, url_prefix="/")
+    app.register_blueprint(analyses_bp, url_prefix="/")
 
     CORS(app)
     return app

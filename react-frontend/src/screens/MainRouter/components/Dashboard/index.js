@@ -10,11 +10,7 @@ const Dashboard = () => {
     setUserID(parseInt(sessionStorage.getItem("userID")));
   }, []);
 
-  return userID ? (
-    <AssembliesTable label="Dashboard" userID={userID} />
-  ) : (
-    <div />
-  );
+  return userID ? <AssembliesTable label="Dashboard" bookmarksUserID={userID} /> : <div />;
 };
 
 export default Dashboard;

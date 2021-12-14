@@ -1,5 +1,5 @@
 from sys import argv
-from re import sub
+from json import dumps, loads
 
 from modules.environment import BASE_PATH_TO_STORAGE
 from modules.db_connection import connect
@@ -14,7 +14,7 @@ def reloadTaxonIDsFromFile(userID):
 
     print("Start importing taxa...")
 
-    connection, cursor = connect()
+    connection, cursor, error = connect()
 
     taxonData = []
     try:
@@ -115,12 +115,153 @@ def reloadTaxonIDsFromFile(userID):
         return 0, createNotification("Info", "No taxa imported!", "info")
 
 
+# UPDATE TAXON TREE
+def updateTaxonTree():
+    """
+    Update existing tree
+    """
+    lineageDict = {}
+    taxonInfo = {}
+    level = 0
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(
+            f"SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imageStatus FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
+        )
+        taxa = [x for x in cursor.fetchall()]
+        taxa = set(taxa)
+        taxa = list(taxa)
+
+        if len(taxa) == 0:
+            with open(f"{BASE_PATH_TO_STORAGE}taxa/tree.json", "w") as treeFile:
+                treeFile.write("")
+                treeFile.close()
+            return {}, createNotification("Info", "No assemblies in database!", "info")
+
+        taxonSqlString = "(" + ",".join([str(x[2]) for x in taxa]) + ")"
+
+        for taxon in taxa:
+            taxonInfo.update(
+                {
+                    taxon[1]: {
+                        "name": taxon[3],
+                        "rank": taxon[4],
+                        "level": level,
+                        "id": taxon[0],
+                        "ncbiID": taxon[1],
+                        "imageStatus": taxon[5],
+                    }
+                }
+            )
+            if taxon[2] not in lineageDict:
+                lineageDict.update({taxon[2]: {"children": [taxon[1]]}})
+            else:
+                children = lineageDict[taxon[2]]["children"]
+                children.append(taxon[1])
+
+    except Exception as err:
+        return {}, createNotification(message=str(err))
+
+    try:
+        connection, cursor, error = connect()
+        safetyCounter = 0
+        while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
+            level += 1
+            cursor.execute(
+                f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imageStatus FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
+            )
+            taxa = cursor.fetchall()
+            taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
+            safetyCounter += 1
+
+            for taxon in taxa:
+                taxonInfo.update(
+                    {
+                        taxon[0]: {
+                            "name": taxon[2],
+                            "rank": taxon[3],
+                            "level": level,
+                            "id": taxon[4],
+                            "ncbiID": taxon[0],
+                            "imageStatus": taxon[5],
+                        }
+                    }
+                )
+                if taxon[1] not in lineageDict:
+                    lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
+                else:
+                    if taxon[0] not in lineageDict[taxon[1]]["children"] and taxon[0] != 1:
+                        children = lineageDict[taxon[1]]["children"]
+                        children.append(taxon[0])
+
+    except Exception as err:
+        return {}, createNotification(message=str(err))
+
+    for id in taxonInfo:
+        if id in lineageDict:
+            lineageDict[id].update(taxonInfo[id])
+        else:
+            lineageDict[id] = taxonInfo[id]
+
+    currentLevel = 1
+    while currentLevel <= level:
+        for id in lineageDict:
+            if lineageDict[id]["level"] == currentLevel:
+                for index, child in enumerate(lineageDict[id]["children"]):
+                    childNode = lineageDict[child]
+                    lineageDict[id]["children"][index] = childNode
+        currentLevel += 1
+
+    with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "w") as treeFile:
+        treeFile.write(dumps(lineageDict[1], separators=(",", ":")))
+        treeFile.close()
+
+    return lineageDict[1], {}
+
+
+# FETCH TAXON TREE
+def fetchTaxonTree():
+    """
+    Fetch taxon tree from file
+    """
+    try:
+        with open(f"{BASE_PATH_TO_STORAGE}taxa/tree.json", "r") as treeFile:
+            treeData = treeFile.readline()
+            treeData = loads(treeData)
+            treeFile.close()
+
+        return treeData, {}
+    except Exception as err:
+        return {}, createNotification(message=str(err))
+
+
+# FETCH ONE TAXON BY NCBI TAXON ID
+def fetchTaxonByTaxonID(taxonID):
+    """
+    Fetches taxon by taxon ID
+    """
+    connection, cursor, error = connect()
+
+    try:
+        cursor.execute(f"SELECT * FROM taxa WHERE id = {taxonID}")
+        row_headers = [x[0] for x in cursor.description]
+        taxa = cursor.fetchone()
+
+    except Exception as err:
+        return [], createNotification(message=str(err))
+
+    if not len(taxa):
+        return [], createNotification("Info", f"No taxon for ID {taxonID} found!", "info")
+
+    return dict(zip(row_headers, taxa)), {}
+
+
 # FETCH ONE TAXON BY NCBI TAXON ID
 def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     """
     Fetches taxon by NCBI taxon id
     """
-    connection, cursor = connect()
+    connection, cursor, error = connect()
 
     try:
         cursor.execute(f"SELECT * FROM taxa WHERE ncbiTaxonID = {ncbiTaxonID}")
@@ -144,7 +285,7 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
 
     generalInfos = []
     try:
-        connection, cursor = connect()
+        connection, cursor, error = connect()
         cursor.execute(f"SELECT * from taxaGeneralInfo WHERE taxonID={taxonID}")
 
         row_headers = [x[0] for x in cursor.description]
@@ -165,7 +306,7 @@ def addTaxonGeneralInformation(taxonID, key, value):
     """
 
     try:
-        connection, cursor = connect()
+        connection, cursor, error = connect()
 
         # TODO: validate string
 
@@ -188,7 +329,7 @@ def updateTaxonGeneralInformationByID(id, key, value):
     """
 
     try:
-        connection, cursor = connect()
+        connection, cursor, error = connect()
 
         # TODO: validate string
 
@@ -209,7 +350,7 @@ def deleteTaxonGeneralInformationByID(id):
     """
 
     try:
-        connection, cursor = connect()
+        connection, cursor, error = connect()
         cursor.execute(f"DELETE FROM taxaGeneralInfo WHERE id={id}")
         connection.commit()
     except Exception as err:

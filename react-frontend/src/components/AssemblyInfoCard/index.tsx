@@ -12,26 +12,16 @@ export function AssemblyInfoCard({
   imageStatus,
 }: IAssemblyInfoCardProps): JSX.Element {
   const analysisClass = (analysisDone: boolean) =>
-    classNames(
-      "my-2 rounded-full px-1 text-center text-xs text-white py-px shadow",
-      {
-        "bg-red-600": !analysisDone,
-        "bg-green-600": analysisDone,
-      }
-    );
+    classNames("my-2 rounded-full px-1 text-center text-xs text-white py-px shadow", {
+      "bg-red-600": !analysisDone,
+      "bg-green-600": analysisDone,
+    });
   return (
-    <Link
-      className="flex justify-center"
-      to={"/g-nom/assemblies/assembly:" + id}
-      key={id}
-    >
+    <Link className="flex justify-center" to={"/g-nom/assemblies/assembly:" + id} key={id}>
       <div className="h-36 my-4 lg:my-0 border border-outset border-gray-400 w-full max-w-lg transition duration-500 ease-in-out bg-gradient-to-b from-gray-600 to-gray-400 transform hover:-translate-y-1 hover:scale-110 flex overflow-hidden rounded-r-lg shadow-lg">
         {taxonID && (
           <div className="w-64 p-1">
-            <SpeciesProfilePictureViewer
-              taxonID={taxonID}
-              imageStatus={imageStatus}
-            />
+            <SpeciesProfilePictureViewer taxonID={taxonID} imageStatus={imageStatus} />
           </div>
         )}
         <div className="w-full px-3 py-2 mr-12">
@@ -44,9 +34,7 @@ export function AssemblyInfoCard({
 
             {taxonID && (
               <div className="pt-1 text-xs lg:text-normal text-white hover:text-gray-300">
-                <span className="border-b border-dashed border-gray-400 mb-1">
-                  {taxonID}
-                </span>
+                <span className="border-b border-dashed border-gray-400 mb-1">{taxonID}</span>
               </div>
             )}
 
@@ -61,9 +49,7 @@ export function AssemblyInfoCard({
                 <div className="text-white text-xs">Status</div>
                 <div className={analysisClass(types.includes("busco"))}>B</div>
                 <div className={analysisClass(types.includes("fcat"))}>F</div>
-                <div className={analysisClass(types.includes("repeatmasker"))}>
-                  R
-                </div>
+                <div className={analysisClass(types.includes("repeatmasker"))}>R</div>
                 <div className={analysisClass(types.includes("milts"))}>M</div>
               </div>
             )}
@@ -76,13 +62,13 @@ export function AssemblyInfoCard({
 
 export default AssemblyInfoCard;
 
-export interface IAssemblyInfoCardProps{
+export interface IAssemblyInfoCardProps {
   id: number;
   scientificName: string;
   taxonID: number;
   assemblyName: string;
   types: string[];
-  imageStatus: any;
+  imageStatus: boolean;
 }
 
 AssemblyInfoCard.defaultProps = {

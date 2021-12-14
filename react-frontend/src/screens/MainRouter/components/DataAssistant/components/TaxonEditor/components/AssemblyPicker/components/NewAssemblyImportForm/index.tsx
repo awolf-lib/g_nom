@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { IImportFileInformation, INcbiTaxon } from "../../../../../../../../../../api";
+import {
+  IImportFileInformation,
+  importAssembly,
+  INcbiTaxon,
+  NotificationObject,
+} from "../../../../../../../../../../api";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import FileTree from "../../../../../../../../../../components/FileTree";
+import Button from "../../../../../../../../../../components/Button";
 
 const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
   const [newAssembly, setNewAssembly] = useState<IImportFileInformation>();
@@ -12,10 +18,12 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
   const [newMilts, setNewMilts] = useState<IImportFileInformation[]>([]);
   const [newRepeatmaskers, setNewRepeatmaskers] = useState<IImportFileInformation[]>([]);
 
+  const [importing, setImporting] = useState<boolean>(false);
+
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -23,56 +31,62 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     });
   };
 
-  const handleDropFileInformation = (fileInformation: IImportFileInformation) => {
-    console.log(fileInformation);
-    if (fileInformation.type) {
-      switch (fileInformation.type) {
-        case "sequence":
-          setNewAssembly(fileInformation);
-          break;
-        case "annotation":
-          setNewAnnotations((prevState) => [...prevState, fileInformation]);
-          break;
-        case "mapping":
-          setNewMappings((prevState) => [...prevState, fileInformation]);
-          break;
-        case "busco":
-          setNewBuscos((prevState) => [...prevState, fileInformation]);
-          break;
-        case "fcat":
-          setNewFcats((prevState) => [...prevState, fileInformation]);
-          break;
-        case "milts":
-          setNewMilts((prevState) => [...prevState, fileInformation]);
-          break;
-        case "repeatmasker":
-          setNewRepeatmaskers((prevState) => [...prevState, fileInformation]);
-          break;
-        default:
-          break;
+  const alreadyMarkedForImport = (f: IImportFileInformation, fList: IImportFileInformation[]) => {
+    const isDuplicate = fList.some((marked_file) => {
+      if (marked_file.id === f.id) {
+        return true;
       }
-    } else if (fileInformation.dirType) {
-      switch (fileInformation.dirType) {
+      if (marked_file.children && marked_file.children.length > 0) {
+        const found = marked_file.children.find((child) => child.id === f.id);
+        if (found) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (isDuplicate) {
+      handleNewNotification({
+        label: "Info",
+        message: "File already marked for import!",
+        type: "info",
+      });
+    }
+    return isDuplicate;
+  };
+
+  const handleDropFileInformation = (fileInformation: IImportFileInformation) => {
+    const fileInformationType = fileInformation.type || fileInformation.dirType || "";
+
+    if (fileInformationType) {
+      switch (fileInformationType) {
         case "sequence":
           setNewAssembly(fileInformation);
           break;
         case "annotation":
-          setNewAnnotations((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newAnnotations) &&
+            setNewAnnotations((prevState) => [...prevState, fileInformation]);
           break;
         case "mapping":
-          setNewMappings((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newMappings) &&
+            setNewMappings((prevState) => [...prevState, fileInformation]);
           break;
         case "busco":
-          setNewBuscos((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newBuscos) &&
+            setNewBuscos((prevState) => [...prevState, fileInformation]);
           break;
         case "fcat":
-          setNewFcats((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newFcats) &&
+            setNewFcats((prevState) => [...prevState, fileInformation]);
           break;
         case "milts":
-          setNewMilts((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newMilts) &&
+            setNewMilts((prevState) => [...prevState, fileInformation]);
           break;
         case "repeatmasker":
-          setNewRepeatmaskers((prevState) => [...prevState, fileInformation]);
+          !alreadyMarkedForImport(fileInformation, newRepeatmaskers) &&
+            setNewRepeatmaskers((prevState) => [...prevState, fileInformation]);
           break;
         default:
           break;
@@ -80,9 +94,33 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     }
   };
 
+  const handleSubmitImport = async () => {
+    setImporting(true);
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+    if (taxon.id && newAssembly && newAssembly.path && userID && token) {
+      const response = await importAssembly(taxon, newAssembly.path, parseInt(userID), token);
+
+      if (response && response.notification?.length > 0) {
+        response.notification.map((notification: any) => handleNewNotification(notification));
+      }
+    } else {
+      handleNewNotification({
+        label: "Error",
+        message: "Mising input!",
+        type: "error",
+      });
+    }
+    setImporting(false);
+  };
+
   return (
     <div className="animate-grow-y">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
+        Add new assembly...
+      </div>
+      <div className="grid grid-cols-2 gap-4 mt-4">
         <div
           className="border rounded-lg p-2"
           onDragOver={(e) => {
@@ -214,6 +252,19 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
                     ))}
                 </div>
               ))}
+          </div>
+          <hr className="my-4" />
+          <div className="flex justify-around items-center py-2">
+            <div className="w-28">
+              <Button
+                color="confirm"
+                label={!importing ? "Submit" : "Importing..."}
+                onClick={() => handleSubmitImport()}
+              />
+            </div>
+            <div className="w-28">
+              <Button color="cancel" label="Reset" />
+            </div>
           </div>
         </div>
         <div className="max-h-75 min-h-1/2 border rounded-lg">

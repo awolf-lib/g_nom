@@ -3,13 +3,7 @@ import "../../App.css";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 
-import {
-  Alert,
-  CircleInformation,
-  StatusCritical,
-  Validate,
-  FormClose,
-} from "grommet-icons";
+import { Alert, CircleInformation, StatusCritical, Validate, FormClose } from "grommet-icons";
 
 const Notification = ({ id, label, message, type, dispatch }) => {
   const [width, setWidth] = useState(0);
@@ -80,14 +74,14 @@ const Notification = ({ id, label, message, type, dispatch }) => {
     });
 
   const timeBarClass = (type) =>
-    classNames("h-1 bg-red-600 mt-2 mb-4 rounded-full animate-pulse", {
+    classNames("h-1 bg-red-600 mt-4 mb-4 rounded-full animate-pulse", {
       "bg-red-600": type === "error",
       "bg-yellow-600": type === "warning",
       "bg-green-600": type === "success",
       "bg-blue-600": type === "info",
     });
 
-  const messageClass = classNames("px-4 hover:flex lg:block text-xs", {
+  const messageClass = classNames("mt-1 px-4 hover:flex lg:block text-xs", {
     /* prettier-ignore */
     "hidden": !viewDetails,
   });
@@ -128,16 +122,10 @@ const Notification = ({ id, label, message, type, dispatch }) => {
               <div className="px-4 font-semibold">{label}</div>
               <div className={messageClass}>{message}</div>
             </div>
-            <FormClose
-              className="cursor-pointer"
-              onClick={() => setExit(true)}
-            />
+            <FormClose className="cursor-pointer" onClick={() => setExit(true)} />
           </div>
         </div>
-        <div
-          className={timeBarClass(type)}
-          style={{ width: `${width}%` }}
-        ></div>
+        <div className={timeBarClass(type)} style={{ width: `${width}%` }}></div>
       </div>
     </div>
   );

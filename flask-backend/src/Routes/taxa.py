@@ -7,7 +7,9 @@ from modules.taxa import (
     addTaxonGeneralInformation,
     deleteTaxonGeneralInformationByID,
     fetchTaxonByNCBITaxonID,
+    fetchTaxonByTaxonID,
     fetchTaxonGeneralInformationByTaxonID,
+    fetchTaxonTree,
     updateTaxonGeneralInformationByID,
 )
 
@@ -23,6 +25,55 @@ REQUESTMETHODERROR = {
         "type": "error",
     },
 }
+
+
+# FETCH TAXON TREE
+@taxa_bp.route("/fetchTaxonTree", methods=["GET"])
+def taxa_bp_fetchTaxonTree():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = fetchTaxonTree()
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH TAXA BY TAXON ID
+@taxa_bp.route("/fetchTaxonByTaxonID", methods=["GET"])
+def taxa_bp_fetchTaxonByTaxonID():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        taxonID = request.args.get("taxonID")
+        data, notification = fetchTaxonByTaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
 
 
 # IMPORT TAXA BY NCBI TAXON ID
@@ -81,8 +132,6 @@ def taxa_bp_addTaxonGeneralInformation():
     if request.method == "GET":
         userID = request.args.get("userID")
         token = request.args.get("token")
-
-        print(userID, token)
 
         # token still active?
         valid_token, error = validateActiveToken(userID, token)

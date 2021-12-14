@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
 import "../../App.css";
 import { useNotification } from "../NotificationProvider";
-import { fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../api";
+import { fetchAssembliesByTaxonID, fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../api";
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
@@ -44,7 +44,9 @@ const AssembliesTreeViewer = () => {
 
   const loadTree = async () => {
     setLoadingTree(true);
-    const response = await fetchTaxonTree();
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const response = await fetchTaxonTree(userID, token);
 
     if (response && response.payload) {
       setFullTree(response.payload);
@@ -58,8 +60,8 @@ const AssembliesTreeViewer = () => {
       setTree(collapsedTree);
     }
 
-    if (response && response.notification && response.notification.message) {
-      handleNewNotification(response.notification);
+    if (response && response.notification && response.notification.length > 0) {
+      response.notification.map((not) => handleNewNotification(not));
     }
     setLoadingTree(false);
   };
@@ -81,16 +83,17 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTaxa = async (nodeDatum) => {
-    const response = await fetchAssembliesByTaxonIDs(
-      getChildrenTaxIds(nodeDatum)
-    );
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+    const response = await fetchAssembliesByTaxonIDs(getChildrenTaxIds(nodeDatum), userID, token);
 
     if (response && response.payload) {
       setTaxa(response.payload);
     }
 
-    if (response && response.notification && response.notification.message) {
-      handleNewNotification(response.notification);
+    if (response && response.notification && response.notification.length > 0) {
+      response.notification.map((not) => handleNewNotification(not));
     }
   };
 
@@ -124,11 +127,7 @@ const AssembliesTreeViewer = () => {
       }
     );
   };
-  const renderForeignObjectNode = ({
-    nodeDatum,
-    toggleNode,
-    foreignObjectProps,
-  }) => {
+  const renderForeignObjectNode = ({ nodeDatum, toggleNode, foreignObjectProps }) => {
     return (
       <foreignObject
         {...foreignObjectProps}
@@ -162,9 +161,7 @@ const AssembliesTreeViewer = () => {
           <div>
             <div className="mt-2">
               <div className="text-xs font-bold">{nodeDatum.name}</div>
-              {nodeDatum.rank && (
-                <div className="text-xs">{nodeDatum.rank}</div>
-              )}
+              {nodeDatum.rank && <div className="text-xs">{nodeDatum.rank}</div>}
             </div>
           </div>
         </div>
@@ -248,11 +245,7 @@ const AssembliesTreeViewer = () => {
             Results:
           </div>
           <div className="w-32 ml-4">
-            <Button
-              label="Scroll to top"
-              color="secondary"
-              onClick={() => executeScrollTree()}
-            />
+            <Button label="Scroll to top" color="secondary" onClick={() => executeScrollTree()} />
           </div>
         </div>
         {taxa && taxa.length > 0 ? (
@@ -292,9 +285,7 @@ const AssembliesTreeViewer = () => {
                       <Button
                         color="nav"
                         label="View less..."
-                        onClick={() =>
-                          setShowElements((prevState) => prevState - 10)
-                        }
+                        onClick={() => setShowElements((prevState) => prevState - 10)}
                       />
                     </div>
                   </div>
@@ -307,9 +298,7 @@ const AssembliesTreeViewer = () => {
                       <Button
                         color="nav"
                         label="View more..."
-                        onClick={() =>
-                          setShowElements((prevState) => prevState + 10)
-                        }
+                        onClick={() => setShowElements((prevState) => prevState + 10)}
                       />
                     </div>
                   </div>

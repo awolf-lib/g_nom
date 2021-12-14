@@ -13,10 +13,7 @@ from collections import defaultdict
 
 from .Mysql import HOST_URL as MYSQL_HOST_URL
 from .Payload import AnnotationPayload, Assembly, AssemblyPayload, MappingPayload, Payload
-
-BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
-
-from .Paths import BASE_PATH_TO_JBROWSE, JBROWSEGENERATENAMESCALL, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD
+from .Paths import BASE_PATH_TO_JBROWSE, BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD
 
 # images
 SIZE = 256, 256

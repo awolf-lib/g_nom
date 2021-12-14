@@ -5,7 +5,7 @@ const Input = (props) => {
   const inputClass = classNames(
     "px-2 py-1 border border-gray-300 bg-white text-black rounded-lg focus:outline-none transition duration-300",
     {
-      "max-w-min text-xs h-5": props.size === "sm",
+      "w-full text-xs h-6": props.size === "sm",
       "w-full text-base h-10": props.size === "md",
       "w-full text-lg h-12": props.size === "lg",
       "w-full text-xl h-14": props.size === "xl",
@@ -18,9 +18,9 @@ const Input = (props) => {
     }
   );
   if (props.type !== "textarea") {
-    return <input {...props} className={inputClass} />;
+    return <input {...props} className={inputClass} autoFocus />;
   } else {
-    return <textarea {...props} className={inputClass} />;
+    return <textarea {...props} className={inputClass} autoFocus />;
   }
 };
 
@@ -34,7 +34,11 @@ Input.propTypes = {
   type: PropTypes.string,
   placeholder: PropTypes.string,
   size: PropTypes.string,
-  value: PropTypes.arrayOf(PropTypes.string) | PropTypes.string | PropTypes.number,
+  value: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.string,
+    PropTypes.number,
+  ]),
   onChange: PropTypes.func,
   checked: PropTypes.bool,
 };

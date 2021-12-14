@@ -3,7 +3,7 @@ import "../../App.css";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import { Add, Next, Previous } from "grommet-icons";
+import { Next, Previous } from "grommet-icons";
 
 import { fetchAssemblies } from "../../api";
 
@@ -15,7 +15,7 @@ import AssemblyInfoListItem from "../AssemblyInfoListItem";
 import Input from "../Input";
 import AssembliesTreeViewer from "../AssembliesTreeViewer";
 
-const AssembliesTable = ({ label, userID }) => {
+const AssembliesTable = ({ label, bookmarksUserID }) => {
   const [assemblies, setAssemblies] = useState([]);
   const [fetching, setFetching] = useState(false);
   const [search, setSearch] = useState("");
@@ -33,7 +33,7 @@ const AssembliesTable = ({ label, userID }) => {
     previous: "",
     currentPage: 1,
   });
-  const [viewType, setViewType] = useState(userID ? "grid" : "list");
+  const [viewType, setViewType] = useState(bookmarksUserID ? "grid" : "list");
 
   useEffect(() => {
     loadData();
@@ -61,11 +61,18 @@ const AssembliesTable = ({ label, userID }) => {
   const loadData = async (page = 1, range = 10, search = "", link = "") => {
     setFetching(true);
 
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (userID && token) {
-      const response = await fetchAssemblies(search, page - 1, range, userID, token);
+      const response = await fetchAssemblies(
+        search,
+        page - 1,
+        range,
+        userID,
+        token,
+        bookmarksUserID ? 1 : 0
+      );
 
       if (response && response.payload) {
         setAssemblies(response.payload);
@@ -77,8 +84,8 @@ const AssembliesTable = ({ label, userID }) => {
         setPage(response.pagination.currentPage);
       }
 
-      if (response && response.notification) {
-        handleNewNotification(response.notification);
+      if (response && response.notification && response.notification.length > 0) {
+        response.notification.map((not) => handleNewNotification(not));
       }
     }
     setFetching(false);
@@ -138,13 +145,6 @@ const AssembliesTable = ({ label, userID }) => {
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
             <h1 className="text-xl md:text-3xl font-bold text-gray-900 mr-4">{label}</h1>
-            {!userID && (
-              <Link to={"/g-nom/assemblies/manage"}>
-                <div className="ml-2 md:ml-8 p-1 bg-gray-600 text-white flex items-center rounded-lg hover:bg-gray-500 cursor-pointer transition duration-300 hover:animate-wiggle">
-                  <Add color="blank" className="stroke-current" />
-                </div>
-              </Link>
-            )}
           </div>
           <div className="w-48 lg:w-1/4 lg:flex justify-end">
             <select
@@ -179,7 +179,7 @@ const AssembliesTable = ({ label, userID }) => {
               <div className="text-xs md:text-base bg-indigo-200 my-2 py-8 flex shadow font-semibold items-center rounded-lg text-center">
                 <div className="hidden sm:block w-1/12 px-4 truncate">Image</div>
                 <div className="w-3/12 sm:w-3/12 px-4 truncate">Sc. name</div>
-                <div className="w-3/12 sm:w-2/12 px-4 truncate">Taxon ID</div>
+                <div className="w-3/12 sm:w-2/12 px-4 truncate">NCBI ID</div>
                 <div className="w-3/12 sm:w-3/12 px-4 truncate">Asmbl. name</div>
                 <div className="w-3/12 sm:w-3/12 px-4 truncate">Analysis</div>
               </div>
@@ -270,7 +270,7 @@ const AssembliesTable = ({ label, userID }) => {
                     <span className="mr-2 text-sm">{pagination.pages || 0}</span>
                   </div>
                   <hr className="shadow -mx-4 my-1" />
-                  <label>
+                  <label className="flex items-center">
                     <span className="mr-2 text-sm">Assemblies/page:</span>
                     <Input
                       type="number"

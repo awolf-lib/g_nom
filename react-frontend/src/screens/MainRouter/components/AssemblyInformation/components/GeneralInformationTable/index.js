@@ -14,18 +14,9 @@ import {
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import Button from "../../../../../../components/Button";
 
-const GeneralInformationCarousel = ({
-  generalInfos,
-  ncbiTaxonID,
-  imageStatus,
-}) => {
-  const [
-    taxonGeneralInfoCarouselIndex,
-    setTaxonGeneralInfoCarouselIndex,
-  ] = useState(0);
-  const [taxonGeneralInfoInterval, setTaxonGeneralInfoInterval] = useState(
-    undefined
-  );
+const GeneralInformationCarousel = ({ generalInfos, ncbiTaxonID, imageStatus }) => {
+  const [taxonGeneralInfoCarouselIndex, setTaxonGeneralInfoCarouselIndex] = useState(0);
+  const [taxonGeneralInfoInterval, setTaxonGeneralInfoInterval] = useState(undefined);
 
   useEffect(() => {
     setTaxonGeneralInfoInterval(
@@ -76,26 +67,21 @@ const GeneralInformationCarousel = ({
         <div className="lg:p-4">
           <div className="flex justify-center lg:justify-start overflow-hidden rounded-lg">
             <div className="w-32 lg:w-64 rounded-lg overflow-hidden object-contain shadow-lg">
-              <SpeciesProfilePictureViewer
-                taxonID={ncbiTaxonID}
-                imageStatus={imageStatus}
-              />
+              <SpeciesProfilePictureViewer taxonID={ncbiTaxonID} imageStatus={imageStatus} />
             </div>
           </div>
         </div>
         <div className="w-full">
           {generalInfos && generalInfos.length > 0 ? (
             generalInfos
-              .sort((a, b) =>
-                a.generalInfoLabel < b.generalInfoLabel ? -1 : 0
-              )
+              .sort((a, b) => (a.generalInfoLabel < b.generalInfoLabel ? -1 : 0))
               .map((generalInfo, index) => {
                 if (
                   index === taxonGeneralInfoCarouselIndex ||
                   taxonGeneralInfoCarouselIndex === -1
                 ) {
                   return (
-                    <div className="animate-fade-in-fast">
+                    <div className="animate-fade-in-fast" key={generalInfo.id}>
                       <div
                         key={generalInfo.generalInfoLabel + index}
                         className="lg:flex lg:px-4 py-4 rounded-lg w-full bg-white lg:shadow-lg my-4 items-center animate-slide-left"
@@ -119,8 +105,8 @@ const GeneralInformationCarousel = ({
                 Empty
               </div>
               <div className="flex items-center lg:w-5/6 text-justify text-xs lg:text-sm lg:border-l-4 px-8 py-4 rounded-lg lg:border-t lg:border-b lg:min-h-48">
-                There is currently no general information for this taxon! You
-                can add general information as admin in the data assistant!
+                There is currently no general information for this taxon! You can add general
+                information as admin in the data assistant!
               </div>
             </div>
           )}
@@ -135,6 +121,7 @@ const GeneralInformationCarousel = ({
                   ) {
                     return (
                       <div
+                        key={element.id}
                         className="opacity-25 transition transform duration-300 px-1 scale-90 hover:scale-110 cursor-pointer"
                         onClick={() => {
                           setTaxonGeneralInfoCarouselIndex(index);
@@ -142,24 +129,22 @@ const GeneralInformationCarousel = ({
                           setTaxonGeneralInfoInterval(
                             setInterval(() => {
                               setTaxonGeneralInfoCarouselIndex((prevState) =>
-                                prevState + 1 < generalInfos.length
-                                  ? prevState + 1
-                                  : 0
+                                prevState + 1 < generalInfos.length ? prevState + 1 : 0
                               );
                             }, 10000)
                           );
                         }}
                       >
-                        <Radial color="blank" className="stroke-current" />
+                        <Radial color="blank" className="stroke-current" size="small" />
                       </div>
                     );
                   } else {
                     return (
-                      <div className="opacity-50 transition transform duration-300 px-1 scale-110 cursor-pointer">
-                        <RadialSelected
-                          color="blank"
-                          className="stroke-current"
-                        />
+                      <div
+                        key={element.id}
+                        className="opacity-50 transition transform duration-300 px-1 scale-110 cursor-pointer"
+                      >
+                        <RadialSelected color="blank" className="stroke-current" size="small" />
                       </div>
                     );
                   }
@@ -172,27 +157,19 @@ const GeneralInformationCarousel = ({
                   size="sm"
                   onClick={() => {
                     setTaxonGeneralInfoCarouselIndex((prevState) =>
-                      prevState - 1 >= 0
-                        ? prevState - 1
-                        : generalInfos.length - 1
+                      prevState - 1 >= 0 ? prevState - 1 : generalInfos.length - 1
                     );
                     clearInterval(taxonGeneralInfoInterval);
                     setTaxonGeneralInfoInterval(
                       setInterval(() => {
                         setTaxonGeneralInfoCarouselIndex((prevState) =>
-                          prevState + 1 < generalInfos.length
-                            ? prevState + 1
-                            : 0
+                          prevState + 1 < generalInfos.length ? prevState + 1 : 0
                         );
                       }, 10000)
                     );
                   }}
                 >
-                  <CaretPrevious
-                    size="small"
-                    color="blank"
-                    className="stroke-current"
-                  />
+                  <CaretPrevious size="small" color="blank" className="stroke-current" />
                 </Button>
               </div>
               <div className="px-2">
@@ -202,17 +179,9 @@ const GeneralInformationCarousel = ({
                   onClick={() => handlePauseTaxonGeneralInfoInterval()}
                 >
                   {taxonGeneralInfoInterval ? (
-                    <Pause
-                      size="small"
-                      color="blank"
-                      className="stroke-current animate-grow-y"
-                    />
+                    <Pause size="small" color="blank" className="stroke-current animate-grow-y" />
                   ) : (
-                    <Play
-                      size="small"
-                      color="blank"
-                      className="stroke-current animate-grow-y"
-                    />
+                    <Play size="small" color="blank" className="stroke-current animate-grow-y" />
                   )}
                 </Button>
               </div>
@@ -228,19 +197,13 @@ const GeneralInformationCarousel = ({
                     setTaxonGeneralInfoInterval(
                       setInterval(() => {
                         setTaxonGeneralInfoCarouselIndex((prevState) =>
-                          prevState + 1 < generalInfos.length
-                            ? prevState + 1
-                            : 0
+                          prevState + 1 < generalInfos.length ? prevState + 1 : 0
                         );
                       }, 10000)
                     );
                   }}
                 >
-                  <CaretNext
-                    size="small"
-                    color="blank"
-                    className="stroke-current"
-                  />
+                  <CaretNext size="small" color="blank" className="stroke-current" />
                 </Button>
               </div>
             </div>

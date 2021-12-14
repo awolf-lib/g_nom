@@ -2,23 +2,21 @@ import Plot from "react-plotly.js";
 import propTypes from "prop-types";
 
 const StaticAssemblyStatisticsViewer = ({ statistics }) => {
+  const length_distribution = JSON.parse(statistics.lengthDistributionString);
+  const sequence_length = length_distribution[0]["l"];
   const getData = () => {
     let cumulativeLengths = [];
     let x1 = [];
     let y1 = [];
-    Object.keys(statistics).forEach((key) => {
-      if (key.includes("cumulativeSequenceLengthSequencesLarger")) {
-        cumulativeLengths.push({
-          y1: statistics[key],
-          x1: parseInt(
-            key.replace("cumulativeSequenceLengthSequencesLarger", "")
-          ),
-        });
-      }
+    Object.keys(length_distribution).forEach((key) => {
+      cumulativeLengths.push({
+        y1: parseInt(length_distribution[key]["l"]),
+        x1: parseInt(key),
+      });
     });
 
     let cumulative = 0;
-    cumulativeLengths
+    cumulativeLengths = cumulativeLengths
       .sort((a, b) => {
         if (a["x1"] > b["x1"]) {
           return 1;
@@ -29,26 +27,19 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
         return 0;
       })
       .forEach((element) => {
-        cumulative = cumulative + element["y1"];
-        x1.push(
-          ">" +
-            (element["x1"] / 1000)
-              .toString()
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        cumulative = sequence_length - element["y1"];
+        x1.push(">" + (element["x1"] / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         y1.push(cumulative);
       });
 
     let numbersequences = [];
     let x2 = [];
     let y2 = [];
-    Object.keys(statistics).forEach((key) => {
-      if (key.includes("sequencesLarger")) {
-        numbersequences.push({
-          y2: statistics[key],
-          x2: parseInt(key.replace("sequencesLarger", "")),
-        });
-      }
+    Object.keys(length_distribution).forEach((key) => {
+      numbersequences.push({
+        y2: length_distribution[key]["n"],
+        x2: parseInt(key),
+      });
     });
 
     numbersequences
@@ -56,12 +47,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
         return a["x2"] > b["x2"] ? 0 : -1;
       })
       .forEach((element) => {
-        x2.push(
-          ">" +
-            (element["x2"] / 1000)
-              .toString()
-              .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        x2.push(">" + (element["x2"] / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         y2.push(element["y2"]);
       });
 
@@ -140,12 +126,8 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
           <table className="w-full bg-white table-fixed">
             <tbody>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  # of sequences
-                </td>
-                <td className="text-center">
-                  {formatNumbers(statistics["numberOfSequences"])}
-                </td>
+                <td className="px-4 py-3 text-sm lg:text-base font-semibold"># of sequences</td>
+                <td className="text-center">{formatNumbers(statistics["numberOfSequences"])}</td>
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
@@ -159,78 +141,24 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
                   Largest sequence (bp)
                 </td>
-                <td className="text-center">
-                  {formatNumbers(statistics["largestSequence"])}
-                </td>
+                <td className="text-center">{formatNumbers(statistics["largestSequence"])}</td>
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  N50 (bp)
-                </td>
-                <td className="text-center">
-                  {formatNumbers(statistics["n50"])}
-                </td>
+                <td className="px-4 py-3 text-sm lg:text-base font-semibold">N50 (bp)</td>
+                <td className="text-center">{formatNumbers(statistics["n50"])}</td>
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  N90 (bp)
-                </td>
-                <td className="text-center">
-                  {formatNumbers(statistics["n90"])}
-                </td>
+                <td className="px-4 py-3 text-sm lg:text-base font-semibold">N90 (bp)</td>
+                <td className="text-center">{formatNumbers(statistics["n90"])}</td>
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Type
-                </td>
-                <td className="text-center">
-                  {statistics["types"].toUpperCase()}
-                </td>
+                <td className="px-4 py-3 text-sm lg:text-base font-semibold">Type</td>
+                <td className="text-center">{statistics["sequenceType"].toUpperCase()}</td>
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  GC (%)
-                </td>
+                <td className="px-4 py-3 text-sm lg:text-base font-semibold">GC (%)</td>
                 <td className="text-center">{statistics["gcPercent"]}</td>
               </tr>
-              {statistics["gcPercentMasked"] !== statistics["gcPercent"] && (
-                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                  <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                    GC (%; with masked)
-                  </td>
-                  <td className="text-center">
-                    {statistics["gcPercentMasked"]}
-                  </td>
-                </tr>
-              )}
-              <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Masking
-                </td>
-                <td className="text-center">
-                  {formatNumbers(statistics["maskings"].toUpperCase())}
-                </td>
-              </tr>
-              {statistics["hardmaskedBases"] > 0 && (
-                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                  <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                    Masked (N)
-                  </td>
-                  <td className="text-center">
-                    {formatNumbers(statistics["hardmaskedBases"])}
-                  </td>
-                </tr>
-              )}
-              {statistics["softmaskedBases"] > 0 && (
-                <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
-                  <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                    Masked (atgc)
-                  </td>
-                  <td className="text-center">
-                    {formatNumbers(statistics["softmaskedBases"])}
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>

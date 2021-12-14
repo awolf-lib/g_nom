@@ -1,7 +1,12 @@
 import classNames from "classnames";
 import { Save, Trash, Edit, FormClose } from "grommet-icons";
 import { useEffect, useState } from "react";
-import {deleteUserByUserID, fetchAllUsers, updateUserRoleByUserID} from "../../../../../../api";
+import {
+  deleteUserByUserID,
+  fetchAllUsers,
+  fetchUsers,
+  updateUserRoleByUserID,
+} from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
@@ -11,10 +16,7 @@ const ManageUserForm = () => {
   const [users, setUsers] = useState();
   const [toggleSelectRole, setToggleSelectRole] = useState(false);
   const [userRole, setUserRole] = useState(false);
-  const [
-    toggleDeleteUserConfirmation,
-    setToggleDeleteUserConfirmation,
-  ] = useState(false);
+  const [toggleDeleteUserConfirmation, setToggleDeleteUserConfirmation] = useState(false);
   const [deleteUserConfirmation, setDeleteUserConfirmation] = useState("");
   const [fetching, setFetching] = useState(false);
 
@@ -25,29 +27,30 @@ const ManageUserForm = () => {
 
   const loadData = async () => {
     setFetching(true);
-    const response = await fetchAllUsers();
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+    const response = await fetchUsers(userID, token);
 
     if (response && response.payload) {
       setUsers(response.payload);
     }
 
-    if (
-      response &&
-      response.notification &&
-      response.notification.type === "error"
-    ) {
-      handleNewNotification(response.notification);
+    if (response && response.notification && response.notification.length > 0) {
+      response.notification.map((not) => handleNewNotification(not));
     }
     setTimeout(() => setFetching(false), 750);
   };
 
-  const handleDeleteUser = async (userID, confirmation) => {
-    if (userID !== loggedInUserID) {
+  const handleDeleteUser = async (id, confirmation) => {
+    if (id !== loggedInUserID) {
       if (confirmation === "REMOVE") {
-        const response = await deleteUserByUserID(userID);
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+        const response = await deleteUserByUserID(id, userID, token);
 
-        if (response && response.notification) {
-          handleNewNotification(response.notification);
+        if (response && response.notification && response.notification.length > 0) {
+          response.notification.map((not) => handleNewNotification(not));
         }
 
         setToggleDeleteUserConfirmation(0);
@@ -56,12 +59,14 @@ const ManageUserForm = () => {
     }
   };
 
-  const handleSaveNewUserRole = async (userID) => {
-    if (userID !== loggedInUserID) {
-      const response = await updateUserRoleByUserID(userID, userRole);
+  const handleSaveNewUserRole = async (id) => {
+    if (id !== loggedInUserID) {
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+      const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+      const response = await updateUserRoleByUserID(id, userRole, userID, token);
 
-      if (response && response.notification) {
-        handleNewNotification(response.notification);
+      if (response && response.notification && response.notification.length > 0) {
+        response.notification.map((not) => handleNewNotification(not));
       }
 
       loadData();
@@ -78,9 +83,7 @@ const ManageUserForm = () => {
     });
   };
 
-  const rowClass = classNames(
-    "border hover:text-blue-500 transition duration-300"
-  );
+  const rowClass = classNames("border hover:text-blue-500 transition duration-300");
   const elementClass = classNames("h-20 truncate");
 
   const inputClass = classNames(
@@ -113,18 +116,14 @@ const ManageUserForm = () => {
             users.map((user) => {
               return (
                 <tr key={user.id} className={rowClass}>
-                  <td className={"hidden md:table-cell w-16 " + elementClass}>
-                    {user.id}
-                  </td>
-                  <td className={"pl-4 md:pl-0 " + elementClass}>
-                    {user.username}
-                  </td>
+                  <td className={"hidden md:table-cell w-16 " + elementClass}>{user.id}</td>
+                  <td className={"pl-4 md:pl-0 " + elementClass}>{user.username}</td>
                   <td className={elementClass}>
                     {toggleSelectRole ? (
                       <div className="flex justify-center items-center">
                         <select
                           onChange={(e) => setUserRole(e.target.value)}
-                          value={userRole || user.role}
+                          value={userRole || user.userRole}
                           className={inputClass}
                         >
                           <option value="admin">Admin</option>
@@ -137,23 +136,18 @@ const ManageUserForm = () => {
                             } else {
                               handleNewNotification({
                                 label: "Error",
-                                message:
-                                  "You cannot update the role of the current user!",
+                                message: "You cannot update the role of the current user!",
                                 type: "error",
                               });
                             }
                           }}
                           className="flex bg-green-100 hover:bg-green-600 p-2 rounded-full justify-center items-center text-green-600 hover:text-green-200 cursor-pointer ml-4 transition duration-500"
                         >
-                          <Save
-                            size="small"
-                            color="blank"
-                            className="stroke-current"
-                          />
+                          <Save size="small" color="blank" className="stroke-current" />
                         </div>
                       </div>
                     ) : (
-                      <div>{user.role}</div>
+                      <div>{user.userRole}</div>
                     )}
                   </td>
                   <td className={elementClass}>
@@ -167,19 +161,14 @@ const ManageUserForm = () => {
                               } else {
                                 handleNewNotification({
                                   label: "Error",
-                                  message:
-                                    "You cannot delete the current user!",
+                                  message: "You cannot delete the current user!",
                                   type: "error",
                                 });
                               }
                             }}
                             className="p-2 bg-red-100 text-red-600 flex items-center rounded-full hover:bg-red-600 hover:text-white cursor-pointer transition duration-500"
                           >
-                            <Trash
-                              size="small"
-                              color="blank"
-                              className="stroke-current"
-                            />
+                            <Trash size="small" color="blank" className="stroke-current" />
                           </div>
                         </div>
                       </div>

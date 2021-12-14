@@ -40,13 +40,7 @@ class Auth:
             row_headers = [x[0] for x in cursor.description]
             user = cursor.fetchone()
         except:
-            return {
-                "userID": "",
-                "role": "",
-                "userName": "",
-                "passwordHash": "",
-                "token": "",
-            }, {
+            return {"userID": "", "role": "", "userName": "", "passwordHash": "", "token": "",}, {
                 "label": "Error",
                 "message": "Something went wrong while fetching from db!",
                 "type": "error",
@@ -55,12 +49,7 @@ class Auth:
         if user:
             user = dict(zip(row_headers, user))
             username = user["username"]
-            return {
-                "userID": user["id"],
-                "role": user["role"],
-                "userName": username,
-                "token": token_hex(16),
-            }, {
+            return {"userID": user["id"], "role": user["role"], "userName": username, "token": token_hex(16),}, {
                 "label": f"Welcome {username}!",
                 "message": "You successfully logged in!",
                 "type": "success",

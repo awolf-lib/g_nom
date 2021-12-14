@@ -33,9 +33,11 @@ const AddUserForm = () => {
       password === confirmPassword &&
       (role === "admin" || role === "user")
     ) {
-      const response = await addUser(username, password, role);
-      if (response?.notification) {
-        handleNewNotification(response.notification);
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+      const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+      const response = await addUser(username, password, role, userID, token);
+      if (response && response.notification && response.notification.length > 0) {
+        response.notification.map((not) => handleNewNotification(not));
       }
     } else {
       if (!username) {
@@ -90,16 +92,14 @@ const AddUserForm = () => {
             <Button
               label="Submit"
               size="sm"
-              onClick={() =>
-                handleSubmitNewUser(username, password, confirmPassword, role)
-              }
+              onClick={() => handleSubmitNewUser(username, password, confirmPassword, role)}
             />
           </div>
         </div>
         <hr className="mt-2 mb-8 shadow" />
         <div className="">
           <div className={fieldClass}>
-            <label for="username" className={labelClass}>
+            <label htmlFor="username" className={labelClass}>
               Username
             </label>
             <input
@@ -112,7 +112,7 @@ const AddUserForm = () => {
             />
           </div>
           <div className={fieldClass}>
-            <label for="role" className={labelClass}>
+            <label htmlFor="role" className={labelClass}>
               Role
             </label>
             <select
@@ -129,7 +129,7 @@ const AddUserForm = () => {
             </select>
           </div>
           <div className={fieldClass}>
-            <label for="password" className={labelClass}>
+            <label htmlFor="password" className={labelClass}>
               Password
             </label>
             <input
@@ -138,15 +138,12 @@ const AddUserForm = () => {
                 setSubmitted(false);
                 setPassword(e.target.value);
               }}
-              className={inputClass(
-                submitted,
-                password === "" || password !== confirmPassword
-              )}
+              className={inputClass(submitted, password === "" || password !== confirmPassword)}
               type="password"
             />
           </div>
           <div className={fieldClass}>
-            <label for="confirmPassword" className={labelClass}>
+            <label htmlFor="confirmPassword" className={labelClass}>
               Confirm password
             </label>
             <input

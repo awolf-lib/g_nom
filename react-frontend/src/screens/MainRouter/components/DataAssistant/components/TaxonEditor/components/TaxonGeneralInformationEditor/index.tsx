@@ -14,7 +14,7 @@ import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 
 const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
-  const [generalInfos, setGeneralInfos] = useState<Array<IGeneralInformation>>([]);
+  const [generalInfos, setGeneralInfos] = useState<Array<any>>([]);
   const [editing, setEditing] = useState<number>(-1);
   const [listOffset, setListOffset] = useState<number>(0);
   const [newGeneralInformationLabel, setNewGeneralInformationLabel] = useState<string>("");
@@ -58,15 +58,15 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const loadGeneralInformation = async (id: number) => {
     setFetchingGeneralInformation(true);
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (userID && token) {
       const response = await fetchTaxonGeneralInformationByTaxonID(id, parseInt(userID), token);
       if (response && response.payload) {
         setGeneralInfos(response.payload);
         if (response.notification && response.notification.length) {
-          response.notification.map((not: Notification) => {
+          response.notification.map((not: any) => {
             handleNewNotification(not);
           });
         }
@@ -113,34 +113,46 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const updateGeneralInformation = async (id: any) => {
     setFetchingUpdateGeneralInformation(true);
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (userID && token) {
       if (updatedGeneralInformationLabel && updatedGeneralInformationDescription) {
+        const regex = /^([\w ]+)$/g;
         if (
-          updatedGeneralInformationLabel.length <= 50 ||
-          updatedGeneralInformationDescription.length <= 2000
+          !newGeneralInformationLabel.match(regex) ||
+          !newGeneralInformationDescription.match(regex)
         ) {
-          const response = await updateTaxonGeneralInformationByID(
-            id,
-            updatedGeneralInformationLabel,
-            updatedGeneralInformationDescription,
-            parseInt(userID),
-            token
-          );
-
-          if (response && response.notification && response.notification.length) {
-            response.notification.map((element: any) => {
-              handleNewNotification(element);
-            });
-          }
-        } else {
           handleNewNotification({
             label: "Error",
-            message: "Input too long!",
+            message: "Invalid input. No special characters allowed!",
             type: "error",
           });
+        } else {
+          if (
+            updatedGeneralInformationLabel.length <= 50 ||
+            updatedGeneralInformationDescription.length <= 2000
+          ) {
+            const response = await updateTaxonGeneralInformationByID(
+              id,
+              updatedGeneralInformationLabel,
+              updatedGeneralInformationDescription,
+              parseInt(userID),
+              token
+            );
+
+            if (response && response.notification && response.notification.length) {
+              response.notification.map((element: any) => {
+                handleNewNotification(element);
+              });
+            }
+          } else {
+            handleNewNotification({
+              label: "Error",
+              message: "Input too long!",
+              type: "error",
+            });
+          }
         }
       } else {
         handleNewNotification({
@@ -166,12 +178,12 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const handleSubmitNewGeneralInformation = async () => {
     setFetchingNewGeneralInformation(true);
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (userID && token) {
       if (newGeneralInformationLabel && newGeneralInformationDescription) {
-        const regex = /^(\w+)$/g;
+        const regex = /^([,.A-Za-z0-9_ ]+)$/g;
         if (
           !newGeneralInformationLabel.match(regex) ||
           !newGeneralInformationDescription.match(regex)
@@ -230,8 +242,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const handleDeleteGeneralInformation = async (id: number) => {
     setFetchingDeleteGeneralInformation(true);
-    const userID = sessionStorage.getItem("userID");
-    const token = sessionStorage.getItem("token");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (userID && token) {
       const response = await deleteTaxonGeneralInformationByID(id, parseInt(userID), token);
@@ -250,7 +262,7 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   return (
     <div className="animate-grow-y">
       {/* Create new GIs */}
-      <div className="bg-indigo-200">
+      <div className="bg-indigo-100">
         <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
           <div>Add new general information...</div>
         </div>
@@ -311,13 +323,12 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
             </div>
           )}
         </div>
-        <div className="flex bg-indigo-200 px-2">
+        <div className="flex bg-indigo-100 px-2">
           <div className="w-1/5 py-4 px-4 text-sm font-semibold">Label</div>
           <div className="w-4/5 py-4 px-4 text-sm font-semibold">Description</div>
         </div>
         <div className="animate-grow-y">
-          {generalInfos &&
-            generalInfos.length > 0 &&
+          {generalInfos && generalInfos.length > 0 ? (
             generalInfos.slice(listOffset, listOffset + 5).map((gi) => (
               <div
                 key={gi.id}
@@ -382,7 +393,10 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
                   </div>
                 )}
               </div>
-            ))}
+            ))
+          ) : (
+            <div className="flex justify-center items-center py-4 border-b border-t">No items!</div>
+          )}
         </div>
         {/* Pagination */}
         {generalInfos && generalInfos.length > 5 && (

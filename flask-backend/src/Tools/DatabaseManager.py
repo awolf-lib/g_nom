@@ -9,10 +9,11 @@ from json import dumps, loads
 from .FileManager import FileManager
 from .Parsers import Parsers
 from .Mysql import HOST_URL as MYSQL_HOST_URL
-from .Paths import BASE_PATH_TO_JBROWSE, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD
+from .Paths import BASE_PATH_TO_JBROWSE, BASE_PATH_TO_STORAGE, BASE_PATH_TO_UPLOAD, BASE_PATH_TO_IMPORT
 
 fileManager = FileManager()
 parsers = Parsers()
+
 
 class DatabaseManager:
     def __init__(self):
@@ -59,9 +60,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
-            cursor.execute(
-                f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')"
-            )
+            cursor.execute(f"INSERT INTO user (username, password, role) VALUES ('{username}', '{password}', '{role}')")
             connection.commit()
             checkpoint = True
         except:
@@ -177,9 +176,7 @@ class DatabaseManager:
 
         taxonData = []
         try:
-            with open(
-                f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/names.dmp", "r"
-            ) as taxonFile, open(
+            with open(f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/names.dmp", "r") as taxonFile, open(
                 f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/nodes.dmp", "r"
             ) as nodeFile:
                 taxonData = taxonFile.readlines()
@@ -221,10 +218,7 @@ class DatabaseManager:
                 if "genbank common name" in line:
                     commonName = taxonSplit[2].replace("'", "")
 
-                if (
-                    index < len(taxonData) - 1
-                    and int(taxonData[index + 1].split("\t")[0]) != taxonID
-                ):
+                if index < len(taxonData) - 1 and int(taxonData[index + 1].split("\t")[0]) != taxonID:
                     if not scientificName or not taxonID:
                         cursor.execute("DELETE FROM taxon")
                         connection.commit()
@@ -249,7 +243,9 @@ class DatabaseManager:
                     parentTaxonID = int(nodeSplit[2])
                     rank = nodeSplit[4].replace("'", "")
 
-                    values += f"({taxonID}, {parentTaxonID}, '{scientificName}', '{rank}', {userID}, NOW(), '{commonName}'),"
+                    values += (
+                        f"({taxonID}, {parentTaxonID}, '{scientificName}', '{rank}', {userID}, NOW(), '{commonName}'),"
+                    )
                     counter += 1
                     taxonID = None
                     scientificName = ""
@@ -394,9 +390,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             safetyCounter = 0
-            while (
-                len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa
-            ) and safetyCounter < 100:
+            while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
                 level += 1
                 cursor.execute(
                     f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imageStatus FROM taxon WHERE ncbiTaxonID IN {taxonSqlString}"
@@ -421,10 +415,7 @@ class DatabaseManager:
                     if taxon[1] not in lineageDict:
                         lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
                     else:
-                        if (
-                            taxon[0] not in lineageDict[taxon[1]]["children"]
-                            and taxon[0] != 1
-                        ):
+                        if taxon[0] not in lineageDict[taxon[1]]["children"] and taxon[0] != 1:
                             children = lineageDict[taxon[1]]["children"]
                             children.append(taxon[0])
 
@@ -551,9 +542,7 @@ class DatabaseManager:
         send image to frontend
         """
 
-        if not isfile(
-            f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg"
-        ):
+        if not isfile(f"{BASE_PATH_TO_STORAGE}taxa/images/" + taxonID + ".thumbnail.jpg"):
             return {
                 "label": "Error",
                 "message": f"Error loading profile picture for species {taxonID}. No such file!",
@@ -769,9 +758,7 @@ class DatabaseManager:
                 cursor.execute(f"SELECT username from user where id={lastUpdatedByID}")
                 lastUpdatedBy = cursor.fetchone()[0]
 
-                assembly.update(
-                    {"addedByUsername": addedBy, "lastUpdatedByUsername": lastUpdatedBy}
-                )
+                assembly.update({"addedByUsername": addedBy, "lastUpdatedByUsername": lastUpdatedBy})
         except:
             return [], f"Error while fetching user information from DB."
 
@@ -823,9 +810,7 @@ class DatabaseManager:
 
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT * FROM assembly, taxon WHERE assembly.id={id} AND assembly.taxonID=taxon.id"
-            )
+            cursor.execute(f"SELECT * FROM assembly, taxon WHERE assembly.id={id} AND assembly.taxonID=taxon.id")
 
             row_headers = [x[0] for x in cursor.description]
             assembly = cursor.fetchone()
@@ -861,9 +846,7 @@ class DatabaseManager:
 
             row_headers = [x[0] for x in cursor.description]
             assemblyStatistics = cursor.fetchone()
-            assemblyInformation.update(
-                {"assemblyStatistics": dict(zip(row_headers, assemblyStatistics))}
-            )
+            assemblyInformation.update({"assemblyStatistics": dict(zip(row_headers, assemblyStatistics))})
         except:
             return [], {
                 "label": "Error",
@@ -916,9 +899,7 @@ class DatabaseManager:
             repeatmasker = cursor.fetchall()
 
             if len(repeatmasker):
-                analyses.update(
-                    {"repeatmasker": [dict(zip(row_headers, x)) for x in repeatmasker]}
-                )
+                analyses.update({"repeatmasker": [dict(zip(row_headers, x)) for x in repeatmasker]})
             else:
                 analyses.update({"repeatmasker": []})
 
@@ -932,9 +913,7 @@ class DatabaseManager:
 
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"SELECT * FROM bookmark WHERE assemblyID={id} AND userID={userID}"
-            )
+            cursor.execute(f"SELECT * FROM bookmark WHERE assemblyID={id} AND userID={userID}")
             bookmark = cursor.fetchone()
 
             if bookmark:
@@ -1044,9 +1023,7 @@ class DatabaseManager:
                     values += f"'{value}', "
             fields = fields[:-2]
             values = values[:-2]
-            cursor.execute(
-                f"INSERT INTO assemblyStatistics ({fields}) VALUES ({values})"
-            )
+            cursor.execute(f"INSERT INTO assemblyStatistics ({fields}) VALUES ({values})")
             connection.commit()
         except:
             fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{name}")
@@ -1230,9 +1207,7 @@ class DatabaseManager:
         }
 
     # UPDATE GENERAL INFO
-    def updateGeneralInfoByID(
-        self, level, id, generalInfoLabel, generalInfoDescription
-    ):
+    def updateGeneralInfoByID(self, level, id, generalInfoLabel, generalInfoDescription):
         """
         update general info by level and id
         """
@@ -1425,12 +1400,7 @@ class DatabaseManager:
         #         "type": "error",
         #     }
 
-        return {
-            "assemblyID": assemblyID,
-            "name": name,
-            "path": path,
-            "additionalFilesPath": additionalFilesPath,
-        }, {
+        return {"assemblyID": assemblyID, "name": name, "path": path, "additionalFilesPath": additionalFilesPath,}, {
             "label": "Success",
             "message": f"Successfully imported annotation!",
             "type": "success",
@@ -1450,12 +1420,8 @@ class DatabaseManager:
             assemblyName, annotationName = cursor.fetchone()
             cursor.execute(f"DELETE FROM annotation WHERE id={id}")
 
-            fileManager.deleteDirectories(
-                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{annotationName}"
-            )
-            status, notification = fileManager.removeTrackFromJbrowse(
-                assemblyName, annotationName, "annotation"
-            )
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/gff3/{annotationName}")
+            status, notification = fileManager.removeTrackFromJbrowse(assemblyName, annotationName, "annotation")
 
             if not status:
                 return 0, notification
@@ -1569,12 +1535,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        return {
-            "assemblyID": assemblyID,
-            "name": name,
-            "path": path,
-            "additionalFilesPath": additionalFilesPath,
-        }, {
+        return {"assemblyID": assemblyID, "name": name, "path": path, "additionalFilesPath": additionalFilesPath,}, {
             "label": "Success",
             "message": f"Successfully imported mapping!",
             "type": "success",
@@ -1594,12 +1555,8 @@ class DatabaseManager:
             assemblyName, mappingName = cursor.fetchone()
             cursor.execute(f"DELETE FROM mapping WHERE id={id}")
 
-            fileManager.deleteDirectories(
-                f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{mappingName}"
-            )
-            status, notification = fileManager.removeTrackFromJbrowse(
-                assemblyName, mappingName, "mapping"
-            )
+            fileManager.deleteDirectories(f"{BASE_PATH_TO_STORAGE}assemblies/{assemblyName}/mappings/{mappingName}")
+            status, notification = fileManager.removeTrackFromJbrowse(assemblyName, mappingName, "mapping")
 
             if not status:
                 return 0, notification
@@ -1706,9 +1663,7 @@ class DatabaseManager:
             }
 
         print(type, path, name, additionalFilesPath, assemblyName)
-        path, notification = fileManager.moveFileToStorage(
-            type, path, name, additionalFilesPath, assemblyName
-        )
+        path, notification = fileManager.moveFileToStorage(type, path, name, additionalFilesPath, assemblyName)
 
         if not path:
             return 0, notification
@@ -1755,9 +1710,7 @@ class DatabaseManager:
                 if not repeatmaskerData:
                     return 0, notification
 
-                importStatus, notification = self.importRepeatmasker(
-                    lastID, repeatmaskerData
-                )
+                importStatus, notification = self.importRepeatmasker(lastID, repeatmaskerData)
 
                 if not importStatus:
                     return 0, notification
@@ -1771,12 +1724,7 @@ class DatabaseManager:
                 "type": "error",
             }
 
-        return {
-            "assemblyID": assemblyID,
-            "name": name,
-            "path": path,
-            "additionalFilesPath": additionalFilesPath,
-        }, {
+        return {"assemblyID": assemblyID, "name": name, "path": path, "additionalFilesPath": additionalFilesPath,}, {
             "label": "Success",
             "message": f"Successfully imported analysis!",
             "type": "success",
@@ -2009,9 +1957,7 @@ class DatabaseManager:
         if "low_complexity_length" in repeatmaskerData:
             low_complexity_length = repeatmaskerData["low_complexity_length"]
         if "total_non_repetitive_length" in repeatmaskerData:
-            total_non_repetitive_length = repeatmaskerData[
-                "total_non_repetitive_length"
-            ]
+            total_non_repetitive_length = repeatmaskerData["total_non_repetitive_length"]
         if "total_repetitive_length" in repeatmaskerData:
             total_repetitive_length = repeatmaskerData["total_repetitive_length"]
         if "numberN" in repeatmaskerData:
@@ -2045,9 +1991,7 @@ class DatabaseManager:
 
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})"
-            )
+            cursor.execute(f"INSERT INTO bookmark (userID, assemblyID) VALUES ({userID}, {assemblyID})")
             connection.commit()
         except:
             return 0, {
@@ -2070,9 +2014,7 @@ class DatabaseManager:
 
         try:
             connection, cursor = self.updateConnection()
-            cursor.execute(
-                f"DELETE FROM bookmark WHERE userID={userID} AND assemblyID={assemblyID}"
-            )
+            cursor.execute(f"DELETE FROM bookmark WHERE userID={userID} AND assemblyID={assemblyID}")
             connection.commit()
         except:
             return 0, {
