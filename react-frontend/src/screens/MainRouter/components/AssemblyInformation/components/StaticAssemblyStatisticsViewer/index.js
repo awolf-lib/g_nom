@@ -35,7 +35,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
     let numbersequences = [];
     let x2 = [];
     let y2 = [];
-    Object.keys(length_distribution).forEach((key) => {
+    Object.keys(length_distribution).forEach((key, index) => {
       numbersequences.push({
         y2: length_distribution[key]["n"],
         x2: parseInt(key),
@@ -131,7 +131,7 @@ const StaticAssemblyStatisticsViewer = ({ statistics }) => {
               </tr>
               <tr className="border hover:bg-gray-400 hover:text-white transition duration-300 hover:border-gray-400">
                 <td className="px-4 py-3 text-sm lg:text-base font-semibold">
-                  Cumulative sequence length (kbp)
+                  Cumulative sequence length (bp)
                 </td>
                 <td className="text-center">
                   {formatNumbers(statistics["cumulativeSequenceLength"])}

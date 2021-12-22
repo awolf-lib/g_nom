@@ -93,6 +93,7 @@ def validateActiveToken(userID, token):
 
     return 1, {}
 
+
 # ADD NEW USER
 def addUser(username, password, role):
     """
@@ -110,12 +111,17 @@ def addUser(username, password, role):
     try:
         connection, cursor, error = connect()
         password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
-        cursor.execute(f"INSERT INTO users (username, password, userRole) VALUES ('{username}', '{password}', '{role}')")
+        cursor.execute(
+            f"INSERT INTO users (username, password, userRole) VALUES ('{username}', '{password}', '{role}')"
+        )
         connection.commit()
     except Exception as err:
         return {}, createNotification(message=str(err))
 
-    return {"username": username, "role": role}, createNotification("Success", f"User '{username}' with role '{role}' added to database!", "success")
+    return {"username": username, "role": role}, createNotification(
+        "Success", f"User '{username}' with role '{role}' added to database!", "success"
+    )
+
 
 # FETCH ALL USERS
 def fetchUsers():
@@ -137,6 +143,7 @@ def fetchUsers():
     else:
         return [], createNotification("Info", "No users in database!", "info")
 
+
 # DELETE USER BY USER ID
 def deleteUserByUserID(userID):
     """
@@ -150,6 +157,7 @@ def deleteUserByUserID(userID):
         return 0, createNotification(message=str(err))
 
     return userID, createNotification("Success", f"Successfully deleted user with ID {userID}!", "success")
+
 
 # UPDATE USER ROLE BY USER ID
 def updateUserRoleByUserID(userID, role):
@@ -166,7 +174,9 @@ def updateUserRoleByUserID(userID, role):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return userID, createNotification("Success", f"Successfully updated user role of user ID {userID} to '{role}'!", "success")
+    return userID, createNotification(
+        "Success", f"Successfully updated user role of user ID {userID} to '{role}'!", "success"
+    )
 
 
 # ADD NEW BOOKMARK
@@ -184,6 +194,7 @@ def addBookmark(userID, assemblyID):
 
     return 1, createNotification("Success", f"Successfully bookmarked assembly{assemblyID}!", "success")
 
+
 # REMOVE BOOKMARK
 def removeBookmark(userID, assemblyID):
     """
@@ -198,6 +209,7 @@ def removeBookmark(userID, assemblyID):
         return 0, createNotification(message=str(err))
 
     return 1, createNotification("Success", f"Successfully removed bookmark (assembly{assemblyID})!", "success")
+
 
 # Main
 if __name__ == "__main__":

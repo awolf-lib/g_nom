@@ -1,34 +1,29 @@
 import { Contract, Document, Expand, Folder, Refresh } from "grommet-icons";
 import { useEffect, useState } from "react";
-import { fetchImportDirectory, IImportFileInformation } from "../../api";
+import { IImportFileInformation, TreeNode } from "../../api";
 import LoadingSpinner from "../LoadingSpinner";
 
-const FileTree: React.FC = () => {
+const FileTree = ({
+  label,
+  files,
+  reloadFiles,
+  loadingFiles,
+}: {
+  label?: string;
+  files: IImportFileInformation;
+  reloadFiles?: any;
+  loadingFiles?: boolean;
+}) => {
   const [fileTree, setFileTree] = useState<TreeNode>();
-  const [expandTree, setExpandTree] = useState<boolean>(false);
-  const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
 
   useEffect(() => {
-    loadFiles();
+    setFileTree(addFileTreeAttributes(files));
+  }, [files]);
+
+  useEffect(() => {
+    reloadFiles && reloadFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expandTree]);
-
-  const loadFiles = async () => {
-    setLoadingFiles(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
-    const response = await fetchImportDirectory(userID, token);
-    if (response && response.payload) {
-      setFileTree(addFileTreeAttributes(response.payload));
-    } else {
-      setFileTree(undefined);
-    }
-    setLoadingFiles(false);
-  };
-
-  interface TreeNode extends IImportFileInformation {
-    isOpen?: boolean;
-  }
+  }, []);
 
   const addFileTreeAttributes = (node: TreeNode): TreeNode => {
     if (node.children) {
@@ -36,10 +31,10 @@ const FileTree: React.FC = () => {
         return addFileTreeAttributes(child);
       });
 
-      return { ...node, children: children, isOpen: expandTree };
+      return { ...node, children: children, isOpen: false };
     }
 
-    return { ...node, isOpen: expandTree };
+    return { ...node, isOpen: false };
   };
 
   const toggleChildren = (node: TreeNode, id: string): TreeNode => {
@@ -79,7 +74,7 @@ const FileTree: React.FC = () => {
                   )}
                   <span
                     className={
-                      item.type || item.dirType
+                      item.type || item.dirType || item.additionalFilesType
                         ? "px-2 font-bold truncate select-none text-xs"
                         : "px-2 truncate select-none text-xs"
                     }
@@ -90,6 +85,13 @@ const FileTree: React.FC = () => {
                 {item.dirType && (
                   <span className="px-1 truncate select-none text-xs font-bold">
                     {item.dirType}
+                  </span>
+                )}
+                {Object.keys(item).includes("size") && (
+                  <span className="px-1 truncate select-none text-xs">
+                    {item.size! > 0
+                      ? "(" + item.size!.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " mb)"
+                      : "(<1 mb)"}
                   </span>
                 )}
               </div>
@@ -105,36 +107,24 @@ const FileTree: React.FC = () => {
   );
 
   return (
-    <div className="m-4">
+    <div>
       <div className="flex justify-between mb-1">
-        <h1 className="font-bold text-xl mx-4">Files</h1>
-        <div className="flex justify-between w-16 items-center">
+        <div>{label && <h1 className="font-bold text-xl">{label}</h1>}</div>
+        {reloadFiles && (
           <div
             className="bg-indigo-200 shadow text-white text-xs cursor-pointer px-1 py-1 flex justify-center items-center rounded-lg transition duration-200 hover:bg-indigo-300"
-            onClick={() => setExpandTree((prevState) => !prevState)}
-          >
-            {!expandTree ? (
-              <Expand className="stroke-current" size="small" color="blank" />
-            ) : (
-              <Contract className="stroke-current" size="small" color="blank" />
-            )}
-          </div>
-          <div
-            className="bg-indigo-200 shadow text-white text-xs cursor-pointer px-1 py-1 flex justify-center items-center rounded-lg transition duration-200 hover:bg-indigo-300"
-            onClick={() => loadFiles()}
+            onClick={() => reloadFiles && reloadFiles()}
           >
             <Refresh className="stroke-current" size="small" color="blank" />
           </div>
-        </div>
+        )}
       </div>
       {loadingFiles ? (
         <div className="ml-4">
           <LoadingSpinner />
         </div>
       ) : (
-        <div>
-          {fileTree && fileTree.children && <FileTreeConstructor data={fileTree.children} />}
-        </div>
+        <div>{fileTree && <FileTreeConstructor data={[fileTree]} />}</div>
       )}
     </div>
   );

@@ -30,3 +30,6 @@
 
 # VS CODE
 **/.vscode
+
+
+**/setup_dev.sh

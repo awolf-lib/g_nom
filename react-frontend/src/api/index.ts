@@ -153,13 +153,66 @@ export async function removeBookmark(
 }
 
 // =============================== assemblies =============================== //
+
+// ===== IMPORT NEW ASSEMBLY ===== //
+export async function validateFileInfo(
+  fileInfo: IImportFileInformation,
+  userID: number,
+  token: string
+): Promise<IResponse<IImportValidation>> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/validateFileInfo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileInfo: fileInfo,
+      userID: userID,
+      token: token,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IImportValidation {
+  sequence?: Dataset[];
+  annotation?: Dataset[];
+  mapping?: Dataset[];
+  busco?: Dataset[];
+  fcat?: Dataset[];
+  milts: Dataset[];
+  repeatmasker?: Dataset[];
+}
+
+export type DatasetTypes =
+  | "sequence"
+  | "annotation"
+  | "mapping"
+  | "busco"
+  | "fcat"
+  | "milts"
+  | "repeatmasker";
+
+export interface Dataset {
+  main_file: IImportFileInformation;
+  additional_files: IImportFileInformation[];
+}
+
+export interface TreeNode extends IImportFileInformation {
+  isOpen?: boolean;
+}
+
 // ===== IMPORT NEW ASSEMBLY ===== //
 export async function importAssembly(
   taxon: INcbiTaxon,
-  file_path: string,
+  dataset: Dataset,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<number>> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/import_assembly", {
     method: "POST",
     headers: {
@@ -167,7 +220,7 @@ export async function importAssembly(
     },
     body: JSON.stringify({
       taxon: taxon,
-      filePath: file_path,
+      dataset: dataset,
       userID: userID,
       token: token,
     }),
@@ -568,6 +621,57 @@ export interface IGeneralInformation {
   generalInfoDescription: string;
 }
 
+// =============================== annotations =============================== //
+// ===== IMPORT NEW ANNOTATION ===== //
+export async function importAnnotation(
+  taxon: INcbiTaxon,
+  dataset: Dataset,
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_annotation", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      taxon: taxon,
+      dataset: dataset,
+      assemblyID: assemblyID,
+      userID: userID,
+      token: token,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
+export async function fetchAnnotationsByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAnnotationsByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // =============================== ANALYSES =============================== //
 // ===== FETCH BUSCO ANALYSES BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(
@@ -611,10 +715,51 @@ export interface IImportFileInformation {
   id: string;
   children?: IImportFileInformation[];
   dirType?: string;
+  additionalFilesType?: string;
   type?: string;
-  mainFiles: any;
+  mainFile?: string;
+  additionalFiles?: string[];
   name: string;
   path: string;
+  size?: number;
+}
+
+// ===== IMPORT COMBINED ===== //
+export async function importDataset(
+  taxon: INcbiTaxon,
+  assembly: IImportFileInformation,
+  annotations: IImportFileInformation[],
+  mappings: IImportFileInformation[],
+  buscos: IImportFileInformation[],
+  fcats: IImportFileInformation[],
+  milts: IImportFileInformation[],
+  repeatmaskers: IImportFileInformation[],
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_dataset", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      taxon: taxon,
+      assembly: assembly,
+      annotations: annotations,
+      mappings: mappings,
+      buscos: buscos,
+      fcats: fcats,
+      milts: milts,
+      repeatmaskers: repeatmaskers,
+      userID: userID,
+      token: token,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
 }
 
 // old ---------------------------------------------------------------------
@@ -1025,17 +1170,17 @@ export async function fetchMappingsByAssemblyID(assemblyID: number): Promise<IRe
     });
 }
 
-// ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
-export async function fetchAnnotationsByAssemblyID(assemblyID: number): Promise<IResponse> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/fetchAnnotationsByAssemblyID?assemblyID=" + assemblyID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
+// // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
+// export async function fetchAnnotationsByAssemblyID(assemblyID: number): Promise<IResponse> {
+//   return fetch(
+//     process.env.REACT_APP_API_ADRESS + "/fetchAnnotationsByAssemblyID?assemblyID=" + assemblyID
+//   )
+//     .then((request) => request.json())
+//     .then((data) => data)
+//     .catch((error) => {
+//       console.error(error);
+//     });
+// }
 
 // // ===== FETCH ALL ANALYSIS BY ASSEMBLY ID ===== //
 // export async function fetchAnalysesByAssemblyID(assemblyID: number) {

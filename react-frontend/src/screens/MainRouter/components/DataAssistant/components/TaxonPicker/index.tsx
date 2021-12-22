@@ -216,7 +216,7 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
                   onChange={(e) => handleChangeTaxon(parseInt(e.target.value))}
                 >
                   {taxa.map((tx: INcbiTaxon) => (
-                    <option value={tx.id}>
+                    <option value={tx.id} key={tx.id}>
                       {tx.scientificName} {tx.commonName && " (" + tx.commonName + ")"}
                     </option>
                   ))}

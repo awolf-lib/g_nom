@@ -1273,34 +1273,34 @@ class DatabaseManager:
             "type": "success",
         }
 
-    # ================== ANNOTATION ================== #
-    # FETCH ALL ANNOTATIONS BY ASSEMBLY ID
-    def fetchAnnotationsByAssemblyID(self, id):
-        """
-        Gets all annotations by assembly ID
-        """
+    # # ================== ANNOTATION ================== #
+    # # FETCH ALL ANNOTATIONS BY ASSEMBLY ID
+    # def fetchAnnotationsByAssemblyID(self, id):
+    #     """
+    #     Gets all annotations by assembly ID
+    #     """
 
-        annotations = []
-        try:
-            connection, cursor = self.updateConnection()
-            cursor.execute(f"SELECT * from annotation WHERE assemblyID={id}")
+    #     annotations = []
+    #     try:
+    #         connection, cursor = self.updateConnection()
+    #         cursor.execute(f"SELECT * from annotation WHERE assemblyID={id}")
 
-            row_headers = [x[0] for x in cursor.description]
-            annotations = cursor.fetchall()
-        except:
-            return (
-                [],
-                f"Error while fetching annotations from DB. Check database connection!",
-            )
+    #         row_headers = [x[0] for x in cursor.description]
+    #         annotations = cursor.fetchall()
+    #     except:
+    #         return (
+    #             [],
+    #             f"Error while fetching annotations from DB. Check database connection!",
+    #         )
 
-        if len(annotations):
-            return [dict(zip(row_headers, x)) for x in annotations], {}
-        else:
-            return [], {
-                "label": "Info",
-                "message": "No annotations for given assembly in database!",
-                "type": "info",
-            }
+    #     if len(annotations):
+    #         return [dict(zip(row_headers, x)) for x in annotations], {}
+    #     else:
+    #         return [], {
+    #             "label": "Info",
+    #             "message": "No annotations for given assembly in database!",
+    #             "type": "info",
+    #         }
 
     # ADD NEW ANNOTATION
     def addNewAnnotation(self, assemblyID, name, path, userID, additionalFilesPath=""):

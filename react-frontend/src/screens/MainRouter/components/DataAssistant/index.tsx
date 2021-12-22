@@ -12,7 +12,7 @@ const DataAssistant: React.FC = () => {
 
   return (
     <div className="mb-16">
-      <header className="bg-indigo-100 shadow">
+      <header className="bg-indigo-100 shadow sticky z-20 top-10">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
             <h1 className="text-xl md:text-3xl font-bold text-gray-900 mr-4">

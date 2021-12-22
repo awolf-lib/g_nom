@@ -39,13 +39,9 @@ const Navbar = () => {
                 <Link to="/g-nom/assemblies">
                   <Button label="Assemblies" color="nav" />
                 </Link>
-                <a
-                  href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <Link to={"/g-nom/download"}>
                   <Button label="Downloads" color="nav" />
-                </a>
+                </Link>
                 {userRole === "admin" && (
                   <Link to={"/g-nom/assemblies/manage"}>
                     <Button label="Import" color="nav" />

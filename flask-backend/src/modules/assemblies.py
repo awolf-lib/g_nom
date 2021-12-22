@@ -1,74 +1,92 @@
 from genericpath import isdir, isfile
-from sys import argv
-from time import time
 from os import listdir
-from os.path import exists
+from os.path import exists, basename, getsize
 from subprocess import run
 from json import dumps
 from filecmp import cmp
+from re import compile, sub
+from sys import argv
+from time import time
 
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
-from .bioparsers import parseFasta, FASTA_PATTERN
 from .db_connection import DB_NAME, connect
 from .notifications import createNotification, notify_assembly
 from .taxa import updateTaxonTree
 
+FASTA_FILE_PATTERN = {
+    "main_file": compile(
+        r"^(.*\.fasta$)|(.*\.fa$)|(.*\.faa$)|(.*\.fna$)|(.*\.fasta\.gz$)|(.*\.fa\.gz$)|(.*\.faa\.gz$)|(.*\.fna\.gz$)"
+    ),
+    "default_parent_dir": None,
+    "additional_files": [],
+}
+
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of .fasta
-def import_assembly(taxon, file_path, userID):
+def import_assembly(taxon, dataset, userID):
     """
     Import workflow for new assemblies.
     """
-    if not taxon:
-        return 0, createNotification(message="Missing taxon data!")
+    # Check input parameters and get new ID
+    try:
+        if not taxon:
+            return 0, createNotification(message="Missing taxon data!")
 
-    if not file_path:
-        return 0, createNotification(message="Missing file path!")
+        if not dataset or not dataset["main_file"] or not dataset["main_file"]["path"]:
+            return 0, createNotification(message="Missing new file information!")
 
-    if not userID:
-        return 0, createNotification(message="Missing user ID!")
+        if not userID:
+            return 0, createNotification(message="Missing user ID!")
 
-    assembly_name, assembly_id, error = __generate_assembly_name()
+        assembly_id, error = __get_new_assembly_ID()
+        if not assembly_id:
+            return 0, error
 
-    if not assembly_name:
-        return 0, error
+    except Exception as err:
+        return 0, createNotification(message=f"AssemblyImportError1: {str(err)}")
 
-    new_file_path, error = __store_assembly(file_path, taxon, assembly_name)
+    try:
+        main_file_path, assembly_name, error = __store_assembly(dataset, taxon, assembly_id)
 
-    if not new_file_path or not exists(new_file_path):
-        __deleteAssemblyFolder(taxon, assembly_name)
-        return 0, error
+        if not main_file_path or not exists(main_file_path):
+            deleteAssemblyByAssemblyID(assembly_id)
+            return 0, error
 
-    fasta_content, error = parseFasta(new_file_path)
+        fasta_content, error = parseFasta(main_file_path)
 
-    if not fasta_content:
-        __deleteAssemblyFolder(taxon, assembly_name)
-        return 0, error
+        if not fasta_content:
+            deleteAssemblyByAssemblyID(assembly_id)
+            return 0, error
 
-    imported_status, error = __importDB(taxon, assembly_name, new_file_path, userID, fasta_content)
+        try:
+            run(args=["bgzip", main_file_path])
+            main_file_path += ".gz"
+        except Exception as err:
+            pass
 
-    if not imported_status:
-        __deleteAssemblyEntryByAssemblyID(assembly_id)
-        __deleteAssemblyFolder(taxon, assembly_name)
-        return 0, error
+        notify_assembly(assembly_id, assembly_name, main_file_path, "Added")
 
-    tree, error = updateTaxonTree()
-    if not tree:
-        __deleteAssemblyEntryByAssemblyID(assembly_id)
-        __deleteAssemblyFolder(taxon, assembly_name)
-        return 0, error
+        imported_status, error = __importDB(taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content)
 
-    # TODO: send info to jbrowse container
-    # notify_assembly(assembly_id, assembly_name, new_file_path)
+        if not imported_status:
+            deleteAssemblyByAssemblyID(assembly_id)
+            return 0, error
 
-    print(f"New assembly {assembly_name} added!")
-    return 1, createNotification("Success", f"New assembly {assembly_name} added!", "success")
+        # tree, error = updateTaxonTree()
+
+        print(f"New assembly ({basename(main_file_path)}) added!")
+        return assembly_id, createNotification(
+            "Success", f"Successfully imported {basename(main_file_path)}!", "success"
+        )
+    except Exception as err:
+        deleteAssemblyByAssemblyID(assembly_id)
+        return 0, createNotification(message=f"AssemblyImportError2: {str(err)}")
 
 
-# generate assembly name (Scientific_name_TaxonID_assembly_newAssemblyID)
-def __generate_assembly_name():
+# get assembly name
+def __get_new_assembly_ID():
     """
-    Generates new assembly name.
+    Gets new assembly ID.
     """
     try:
         connection, cursor, error = connect()
@@ -82,30 +100,27 @@ def __generate_assembly_name():
         else:
             next_id = auto_increment_counter[0]
     except Exception as err:
-        return 0, createNotification(message=str(err))
+        return 0, createNotification(message=f"AssemblyCreationError: {str(err)}")
 
-    return f"assembly{next_id}", next_id, {}
+    return next_id, {}
 
 
 # moves .fasta into storage
-def __store_assembly(file_path, taxon, assembly_name, forceIdentical=False):
+def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
     """
     Moves assembly data to storage directory.
     """
     try:
         # check if path exists
-        old_file_path = BASE_PATH_TO_IMPORT + file_path
+        old_file_path = BASE_PATH_TO_IMPORT + dataset["main_file"]["path"]
         if not exists(old_file_path):
-            return 0, createNotification(message="Import path not found!")
+            return 0, "", createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
             run(
-                f"gunzip {old_file_path}",
-                shell=True,
+                ["gunzip", old_file_path]
             )
             old_file_path = old_file_path[:-3]
-
-        scientificName = taxon["scientificName"].replace(" ", "_")
 
         # check if file exists already in db
         if not forceIdentical:
@@ -119,63 +134,123 @@ def __store_assembly(file_path, taxon, assembly_name, forceIdentical=False):
         for file in assembly_paths:
             if cmp(old_file_path, file["path"]):
                 same_assembly = file["name"]
-                return 0, createNotification(
-                    message=f"New assembly seems to be identical to assembly with ID {same_assembly}"
-                )
+                return 0, "", createNotification(message=f"New assembly seems to be identical to {same_assembly}")
 
         # move to storage
-        new_file_path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/sequences/dna/"
+        scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
+        new_assembly_name = f"{scientificName}_id{assembly_id}"
+        new_file_path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{new_assembly_name}/sequences/dna/"
         run(
-            f"mkdir -p {new_file_path}",
-            shell=True,
+            ["mkdir", "-p", new_file_path],
         )
 
-        if isdir(old_file_path):
-            run(
-                f"cp -r {old_file_path}/* {new_file_path}",
-                shell=True,
-            )
+        if not isdir(new_file_path):
+            return 0, "", createNotification(message="Creation of new directory failed!")
 
-            for file in listdir(new_file_path):
-                if FASTA_PATTERN.match(file):
-                    new_file_name = f"{assembly_name}.fasta"
-                    new_file_path_main_file = f"{new_file_path}/{new_file_name}"
-                else:
-                    new_file_name = f"{assembly_name}_{file}"
-
-                run(
-                    f"mv {new_file_path}/{file} {new_file_path}/{new_file_name}",
-                    shell=True,
-                )
-
-        elif isfile(old_file_path):
-            new_file_name = f"{assembly_name}.fasta"
+        if isfile(old_file_path):
+            new_file_name = f"{new_assembly_name}.fasta"
             new_file_path_main_file = f"{new_file_path}{new_file_name}"
             run(
-                f"cp {old_file_path} {new_file_path_main_file}",
-                shell=True,
+                ["cp", old_file_path, new_file_path_main_file]
             )
         else:
-            return 0, createNotification(message="Moving assembly to storage failed!")
+            return 0, "", createNotification(message="Invalid path to .fasta!")
 
         # check if main file was moved
-        if not exists(f"{new_file_path}/{assembly_name}.fasta"):
-            return 0, createNotification(message="Moving assembly to storage failed!")
+        if not exists(new_file_path_main_file):
+            return 0, "", createNotification(message="Moving assembly to storage failed!")
         else:
             pass
+            # TODO: enable rm on success
             # run(
-            #     f"rm -r {old_file_path}",
-            #     shell=True,
+            #     ["rm", "-r", old_file_path]
             # )
 
-        print(f"Assembly ({assembly_name}) moved to storage!")
+        for additional_file in dataset["additional_files"]:
+            old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
+            if exists(old_additional_file_path):
+                run(
+                    ["cp", "-r", old_additional_file_path, new_file_path]
+                )
+
+        print(f"Assembly ({new_file_name}) moved to storage!")
+        return new_file_path_main_file, new_assembly_name, {}
+
     except Exception as err:
-        return 0, createNotification(message=str(err))
-    return new_file_path_main_file, {}
+        return 0, "", createNotification(message=f"AssemblyStorageError: {str(err)}")
+
+
+# fully deletes assembly by its ID
+def deleteAssemblyByAssemblyID(assembly_id):
+    """
+    Deletes directory and datatbase entry for specific assembly by assembly ID.
+    """
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
+        assembly_name = cursor.fetchone()[0]
+
+        cursor.execute(
+            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+        )
+
+        row_headers = [x[0] for x in cursor.description]
+        taxon = cursor.fetchone()
+        taxon = dict(zip(row_headers, taxon))
+
+        if assembly_id:
+            status, error = __deleteAssemblyEntryByAssemblyID(assembly_id)
+
+        if status and taxon and assembly_name:
+            status, error = __deleteAssemblyFolder(taxon, assembly_name)
+        else:
+            return 0, error
+
+        if not status:
+            return 0, error
+
+        notify_assembly(assembly_id, assembly_name, "", "Remove")
+
+        tree, error = updateTaxonTree()
+        if not tree:
+            return 0, error
+
+        return 1, []
+    except Exception as err:
+        return 0, createNotification(message=f"AssemblyDeletionError1: {str(err)}")
+
+
+# deletes folder for assembly
+def __deleteAssemblyFolder(taxon, assembly_name):
+    """
+    Deletes data for specific assemblies.
+    """
+    try:
+        scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
+        path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}"
+        if len(listdir(path)) == 1:
+            run(
+                ["rm", "-r", path]
+            )
+        else:
+            run(
+                ["rm", "-r", f"{path}/{assembly_name}"]
+            )
+
+        return 1, {}
+    except Exception as err:
+        return 0, createNotification(message=f"AssemblyDelitionError2: {str(err)}")
+
+
+def __deleteAssemblyEntryByAssemblyID(id):
+    connection, cursor, error = connect()
+    cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
+    connection.commit()
+    return 1, {}
 
 
 # database import
-def __importDB(taxon, assembly_name, path, userID, file_content):
+def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
     """
     G-nom database import (tables: assemblies, assembliesSequences)
     """
@@ -201,10 +276,7 @@ def __importDB(taxon, assembly_name, path, userID, file_content):
         )
         assemblyID = cursor.lastrowid
         connection.commit()
-    except Exception as err:
-        return 0, createNotification(message=str(err))
 
-    try:
         connection, cursor, error = connect()
         counter = 0
         values = ""
@@ -231,78 +303,273 @@ def __importDB(taxon, assembly_name, path, userID, file_content):
         cursor.execute(sql)
         connection.commit()
     except Exception as err:
-        return 0, createNotification(message=str(err))
+        return 0, createNotification(message=f"AssemblyImportDbError: {str(err)}")
 
     return 1, {}
 
 
-# fully deletes assembly by its ID
-def deleteAssemblyByAssemblyID(assemblyID):
+# parse fasta
+def parseFasta(path):
     """
-    Deletes directory and datatbase entry for specific assembly by assembly ID.
+    Reads content of .fa/.fasta/.faa/.fna
     """
-    try:
-        connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assemblyID}")
-        assembly_name = cursor.fetchone()[0]
 
-        cursor.execute(
-            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assemblyID} AND assemblies.taxonID=taxa.id"
+    __TYPE_AUTO_DETECT_ATGCU_THRESHOLD = 65
+
+    if not exists(path):
+        return 0, {
+            "label": "Error",
+            "message": "Path not found.",
+            "type": "error",
+        }
+
+    filename = basename(path)
+    print(f"Parsing {filename}...")
+
+    extensionMatch = FASTA_FILE_PATTERN["main_file"].match(filename)
+    if not extensionMatch:
+        return (
+            0,
+            {
+                "label": "Error",
+                "message": "Uncorrect filetype! Only files of type .fa/.fasta/.faa/.fna are allowed.",
+                "type": "error",
+            },
         )
 
-        row_headers = [x[0] for x in cursor.description]
-        taxon = cursor.fetchone()
-        taxon = dict(zip(row_headers, taxon))
-
-        if assemblyID:
-            status, error = __deleteAssemblyEntryByAssemblyID(assemblyID)
-
-        if status and taxon and assembly_name:
-            status, error = __deleteAssemblyFolder(taxon, assembly_name)
-        else:
-            return 0, error
-
-        if not status:
-            return 0, error
-
-        tree, error = updateTaxonTree()
-        if not tree:
-            return 0, error
-
-        return 1, []
-    except Exception as err:
-        return 0, createNotification(message=str(err))
-
-
-# deletes folder for assembly
-def __deleteAssemblyFolder(taxon, assembly_name):
-    """
-    Deletes data for specific assemblies.
-    """
+    lines = []
     try:
-        scientificName = taxon["scientificName"].replace(" ", "_")
-        path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}"
-        if len(listdir(path)) == 1:
-            run(
-                f"rm -r {path}",
-                shell=True,
-            )
+        with open(path, "r") as fa:
+            lines = fa.readlines()
+            fa.close()
+    except:
+        return 0, {
+            "label": "Error",
+            "message": f"Error while opening {filename}.",
+            "type": "error",
+        }
+
+    if not len(lines):
+        return 0, {
+            "label": "Error",
+            "message": f"{filename} is empty!",
+            "type": "error",
+        }
+
+    # header and sequences
+    try:
+        sequences = []
+        cumulative_char_counts = {}
+        cumulative_sequence_length = 0
+        length_distribution = {
+            0: {},
+            1000: {},
+            2500: {},
+            5000: {},
+            10000: {},
+            25000: {},
+            50000: {},
+            100000: {},
+            250000: {},
+            500000: {},
+            1000000: {},
+            2500000: {},
+            5000000: {},
+            10000000: {},
+            25000000: {},
+            50000000: {},
+        }
+
+        for idx, line in enumerate(lines):
+            lines[idx] = line.replace("\n", "")
+            # header
+            if line[0] == ">":
+                sequence_header = lines[idx]
+                sequence_header_idx = idx
+                sequence = ""
+                sequence_length = 0
+                char_counts = {}
+            # sequences
+            else:
+                sequence = sequence + lines[idx]
+                sequence_length = sequence_length + len(lines[idx])
+
+                for char in lines[idx]:
+                    if char in cumulative_char_counts:
+                        cumulative_char_counts[char] = cumulative_char_counts[char] + 1
+                    else:
+                        cumulative_char_counts[char] = 1
+
+                    if char in char_counts:
+                        char_counts[char] = char_counts[char] + 1
+                    else:
+                        char_counts[char] = 1
+
+            if (idx + 1 < len(lines) - 1 and lines[idx + 1][0] == ">") or idx == len(lines) - 1:
+                # length distribution
+                for length in length_distribution:
+                    if sequence_length >= length:
+                        if "n" in length_distribution[length]:
+                            length_distribution[length]["n"] = length_distribution[length]["n"] + 1
+                            length_distribution[length]["l"] = length_distribution[length]["l"] + sequence_length
+                        else:
+                            length_distribution[length]["n"] = 1
+                            length_distribution[length]["l"] = sequence_length
+
+                # local GC
+                local_gc = 0
+                local_gc_masked = 0
+                if "G" in char_counts:
+                    local_gc += char_counts["G"]
+                if "g" in char_counts:
+                    local_gc += char_counts["g"]
+                    local_gc_masked += char_counts["g"]
+                if "C" in char_counts:
+                    local_gc += char_counts["C"]
+                if "c" in char_counts:
+                    local_gc += char_counts["c"]
+                    local_gc_masked += char_counts["c"]
+
+                local_gc /= sequence_length
+                local_gc_masked /= sequence_length
+                sequences.append(
+                    {
+                        "header": sequence_header,
+                        "header_idx": sequence_header_idx,
+                        "sequence": sequence,
+                        "statistics": {
+                            "sequence_length": sequence_length,
+                            "char_counts": char_counts,
+                            "GC_local": local_gc,
+                            "GC_local_masked": local_gc_masked,
+                        },
+                    }
+                )
+                cumulative_sequence_length += sequence_length
+
+                # print progress status
+                progress = ((idx + 1) * 100) // len(lines)
+                print(f"{progress}% done", end="\r")
+
+        # sequence type auto detection
+        DNA_RNA_ALPHABET = ["A", "a", "C", "c", "G", "g", "T", "t", "U", "u", "N", "n"]
+        dna_rna_char_sum = 0
+        for char in DNA_RNA_ALPHABET:
+            if char in cumulative_char_counts:
+                dna_rna_char_sum += cumulative_char_counts[char]
+
+        if dna_rna_char_sum * 100 // cumulative_sequence_length <= __TYPE_AUTO_DETECT_ATGCU_THRESHOLD:
+            sequence_type = "protein"
         else:
-            run(
-                f"rm -r {path}/{assembly_name}",
-                shell=True,
-            )
+            Ts = 0
+            Us = 0
+            if "T" in cumulative_char_counts:
+                Ts += cumulative_char_counts["T"]
+            if "U" in cumulative_char_counts:
+                Us += cumulative_char_counts["U"]
 
-        return 1, {}
-    except Exception as err:
-        return 0, createNotification(message=str(err))
+            if Ts > Us:
+                sequence_type = "dna"
+            elif Ts < Us:
+                sequence_type = "rna"
+            else:
+                sequence_type = ""
 
+        print(f"Sequence type detected: {sequence_type.upper()}")
 
-def __deleteAssemblyEntryByAssemblyID(id):
-    connection, cursor, error = connect()
-    cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
-    connection.commit()
-    return 1, {}
+        if sequence_type == "dna" or sequence_type == "rna":
+            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} bp)")
+        elif sequence_type == "protein":
+            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} aa)")
+        else:
+            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} chars)")
+
+        # sorting
+        print("Sorting sequences by sequence length...")
+        sequences.sort(key=lambda x: x["statistics"]["sequence_length"], reverse=True)
+        print("Sequences sorted!")
+
+        # additional statistics
+        print("Calculating additional statistics!")
+        number_of_sequences = len(sequences)
+
+        # mean sequence length
+        mean_sequence_length = cumulative_sequence_length / number_of_sequences
+
+        # median sequence length
+        index = (number_of_sequences - 1) // 2
+        if number_of_sequences % 2:
+            median_sequence_length = sequences[index]["statistics"]["sequence_length"]
+        else:
+            median_sequence_length = (
+                sequences[index]["statistics"]["sequence_length"]
+                + sequences[index + 1]["statistics"]["sequence_length"]
+            ) / 2
+
+        # N50 / N90
+        seq_length_sum = 0
+        n50 = 0
+        n90 = 0
+        for seq in sequences:
+            seq_length_sum += seq["statistics"]["sequence_length"]
+            if seq_length_sum * 100 // cumulative_sequence_length >= 50 and not n50:
+                n50 = seq["statistics"]["sequence_length"]
+            if seq_length_sum * 100 // cumulative_sequence_length >= 90 and not n90:
+                n90 = seq["statistics"]["sequence_length"]
+
+        # GC
+        gc_count = 0
+        gc_count_masked = 0
+        if "G" in cumulative_char_counts:
+            gc_count += cumulative_char_counts["G"]
+        if "g" in cumulative_char_counts:
+            gc_count_masked += cumulative_char_counts["g"]
+        if "C" in cumulative_char_counts:
+            gc_count += cumulative_char_counts["C"]
+        if "c" in cumulative_char_counts:
+            gc_count_masked += cumulative_char_counts["c"]
+        gc_count_masked += gc_count
+
+        gc = gc_count / cumulative_sequence_length
+        gc_masked = gc_count_masked / cumulative_sequence_length
+
+        print("\nLength distribution:")
+        for key in length_distribution:
+            print("{:10s}".format(str(key)) + f": {length_distribution[key]}")
+        print("")
+
+        statistics = {
+            "cumulative_sequence_length": cumulative_sequence_length,
+            "cumulative_char_counts": cumulative_char_counts,
+            "number_of_sequences": number_of_sequences,
+            "min_sequence_length": sequences[-1]["statistics"]["sequence_length"],
+            "max_sequence_length": sequences[0]["statistics"]["sequence_length"],
+            "mean_sequence_length": mean_sequence_length,
+            "median_sequence_length": median_sequence_length,
+            "N50": n50,
+            "N90": n90,
+            "GC": gc,
+            "GC_masked": gc_masked,
+            "length_distribution": length_distribution,
+        }
+
+        print("\nSequence statistics:")
+        for key in statistics:
+            print("{:30s}".format(" ".join(key.split("_"))) + f": {statistics[key]}")
+        print("")
+
+        print(f"Done parsing {filename}!")
+
+        return {
+            "filename": filename,
+            "filesize": getsize(path),
+            "sequences": sequences,
+            "type": sequence_type,
+            "statistics": statistics,
+        }, {}
+
+    except:
+        return 0, createNotification(message=f"Something went wrong while parsing {filename}!")
 
 
 ## ============================ FETCH ============================ ##
@@ -350,7 +617,7 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
             {},
         )
     except Exception as err:
-        return [], {}, createNotification(message=str(err))
+        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # fetches all assemblies for specific taxon
@@ -374,7 +641,7 @@ def fetchAssembliesByTaxonID(taxonID):
             {},
         )
     except Exception as err:
-        return [], {}, createNotification(message=str(err))
+        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
@@ -393,7 +660,7 @@ def fetchAssembliesByTaxonIDs(taxonIDsString):
         assemblies = cursor.fetchall()
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
     if len(assemblies):
         return [dict(zip(row_headers, x)) for x in assemblies], {}
@@ -430,7 +697,7 @@ def fetchAssemblyByAssemblyID(id, userID):
         return assembly, {}
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # ADDS A NEW ASSEMBLY TAG
@@ -442,15 +709,15 @@ def addAssemblyTag(assemblyID, tag):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(
-            f"INSERT INTO tags (assemblyID, tag) VALUES ({assemblyID}, '{tag}')"
-        )
+        cursor.execute(f"INSERT INTO tags (assemblyID, tag) VALUES ({assemblyID}, '{tag}')")
         connection.commit()
 
-        return tag, createNotification("Success", f"Successfully added tag '{tag}' to assembly{assemblyID}", "success")
+        return tag, createNotification(
+            "Success", f"Successfully added tag '{tag}' to assembly with ID {assemblyID}", "success"
+        )
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"AssemblyTagCreationError: {str(err)}")
 
 
 # REMOVES AN ASSEMBLY TAG BY ID
@@ -462,15 +729,13 @@ def removeAssemblyTagbyTagID(tagID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(
-            f"DELETE FROM tags WHERE id={tagID}"
-        )
+        cursor.execute(f"DELETE FROM tags WHERE id={tagID}")
         connection.commit()
 
         return 1, createNotification("Success", f"Successfully removed tag!", "success")
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"AssemblyTagDelitionError: {str(err)}")
 
 
 # FETCHES ALL ASSEMBLY TAGS BY ID
@@ -482,9 +747,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(
-            f"SELECT * FROM tags WHERE assemblyID={assemblyID}"
-        )
+        cursor.execute(f"SELECT * FROM tags WHERE assemblyID={assemblyID}")
 
         row_headers = [x[0] for x in cursor.description]
         tags = cursor.fetchall()
@@ -496,4 +759,4 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
             return tags, {}
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")

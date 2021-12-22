@@ -12,4 +12,5 @@ EXPOSE 80
 
 # COPY target/release/jbrowselistener /usr/local/j_listener/jbrowselistener
 COPY src/main.py /usr/local/j_listener/main.py
+COPY httpd.conf /usr/local/apache2/conf/httpd.conf
 CMD httpd-foreground & cd /usr/local/j_listener && python3 ./main.py

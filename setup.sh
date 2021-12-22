@@ -41,46 +41,47 @@ cat ./mysql/create_gnom_db.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/m
 
 # ============================================ #
 
-## Nextcloud server
-echo "Build nextcloud docker container..."
-mkdir -p ${DATA_DIR}
-# start
-echo "Start ${NEXTCLOUD_CONTAINER_NAME} container..."
-docker run --name ${NEXTCLOUD_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} -v ${DATA_DIR}:/var/www/html/data -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=admin -e NEXTCLOUD_ADMIN_PASSWORD=admin -e NEXTCLOUD_DATA_DIR=/var/www/html/data -d -p 8080:80 nextcloud
+# ## Nextcloud server
+# echo "Build nextcloud docker container..."
+# mkdir -p ${DATA_DIR}
+# # start
+# echo "Start ${NEXTCLOUD_CONTAINER_NAME} container..."
+# docker run --name ${NEXTCLOUD_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} -v ${DATA_DIR}:/var/www/html/data -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=admin -e NEXTCLOUD_ADMIN_PASSWORD=admin -e NEXTCLOUD_DATA_DIR=/var/www/html/data -d -p 8080:80 nextcloud
 
-echo "Waiting for nextcloud installation..."
-until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${NEXTCLOUD_DOWNLOAD_ADRESS}/login) -eq 200 ]; do
-  printf "."
-  sleep 3;
-done;
-echo ""
+# echo "Waiting for nextcloud installation..."
+# until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${NEXTCLOUD_DOWNLOAD_ADRESS}/login) -eq 200 ]; do
+#   printf "."
+#   sleep 3;
+# done;
+# echo ""
 
-# setup nexloud defaults
-echo "Remove default nextcloud files and setup group folders..."
-docker exec $NEXTCLOUD_CONTAINER_NAME bash -c "rm -r /var/www/html/core/skeleton/*"
-docker exec $NEXTCLOUD_CONTAINER_NAME bash -c "rm -r /var/www/html/data/admin/files/*"
-# group folders
-echo "Install group folders addon..."
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ app:install groupfolders
-echo "Setup nextcloud groups..."
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ group:add all
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ group:adduser all admin
+# # setup nexloud defaults
+# echo "Remove default nextcloud files and setup group folders..."
+# docker exec $NEXTCLOUD_CONTAINER_NAME bash -c "rm -r /var/www/html/core/skeleton/*"
+# docker exec $NEXTCLOUD_CONTAINER_NAME bash -c "rm -r /var/www/html/data/admin/files/*"
+# # group folders
+# echo "Install group folders addon..."
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ app:install groupfolders
+# echo "Setup nextcloud groups..."
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ group:add all
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ group:adduser all admin
 
-echo "Setup nextcloud group directories..."
-# assemblies directory
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:create assemblies
-ASSEMBLIES_FOLDER_ID=$(docker exec -u www-data ${NEXTCLOUD_CONTAINER_NAME} php occ groupfolders:list | grep -m 1 "assemblies" | cut -d '|' -f 2 | tr -d " \t\n\r")
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:group ${ASSEMBLIES_FOLDER_ID} all share
-# taxa directory
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:create taxa
-TAXA_FOLDER_ID=$(docker exec -u www-data ${NEXTCLOUD_CONTAINER_NAME} php occ groupfolders:list | grep -m 1 "taxa" | cut -d '|' -f 2 | tr -d " \t\n\r")
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:group ${TAXA_FOLDER_ID} all share
-# reindex
-echo "Reindex nextcloud directories..."
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
+# echo "Setup nextcloud group directories..."
+# # assemblies directory
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:create assemblies
+# ASSEMBLIES_FOLDER_ID=$(docker exec -u www-data ${NEXTCLOUD_CONTAINER_NAME} php occ groupfolders:list | grep -m 1 "assemblies" | cut -d '|' -f 2 | tr -d " \t\n\r")
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:group ${ASSEMBLIES_FOLDER_ID} all share
+# # taxa directory
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:create taxa
+# TAXA_FOLDER_ID=$(docker exec -u www-data ${NEXTCLOUD_CONTAINER_NAME} php occ groupfolders:list | grep -m 1 "taxa" | cut -d '|' -f 2 | tr -d " \t\n\r")
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ groupfolders:group ${TAXA_FOLDER_ID} all share
+# # reindex
+# echo "Reindex nextcloud directories..."
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
 
 # ============================================ #
 
+## RabbitMQ
 docker run -d --network ${DOCKER_NETWORK_NAME} --hostname gnom_rabbit_host --name ${RABBIT_CONTAINER_NAME} -p 15672:15672 -p 5672:5672 rabbitmq:3-management-alpine
 
 ## Reactapp
@@ -111,7 +112,7 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${FLASK_CONTAINER_NAME} container..."
-docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" -v ${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}:/flask-backend/data/storage/assemblies -v ${DATA_DIR}/__groupfolders/${TAXA_FOLDER_ID}:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
+docker run --name $FLASK_CONTAINER_NAME -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" -e "API_ADRESS=${API_ADRESS}" -e "NEXTCLOUD_DOWNLOAD_ADRESS=${NEXTCLOUD_DOWNLOAD_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import --network ${DOCKER_NETWORK_NAME} -dp 3002:3002 gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
@@ -125,9 +126,8 @@ echo ""
 echo "Build jbrowse docker container"
 cd ./jbrowse
 docker build -t gnom/jbrowse .
-docker volume create gnom-jbrowse-vol
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
-docker run --name $JBROWSE_CONTAINER_NAME -dp 8082:80 --env-file .env --network $DOCKER_NETWORK_NAME -v gnom-jbrowse-vol:/usr/local/apache2/htdocs/assemblies --mount type=bind,source="${DATA_DIR}/__groupfolders/${ASSEMBLIES_FOLDER_ID}",target=/flask-backend/data/storage/assemblies gnom/jbrowse
+docker run --name $JBROWSE_CONTAINER_NAME -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -dp 8082:80 --env-file .env --network $DOCKER_NETWORK_NAME gnom/jbrowse
 cd ..
 
 # setup missing directories
@@ -143,7 +143,7 @@ docker exec $FLASK_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/stora
 docker exec $FLASK_CONTAINER_NAME bash -c "wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
 docker exec $FLASK_CONTAINER_NAME bash -c "rm -r /flask-backend/data/storage/taxa/taxdmp.zip"
 
-docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
+# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
 
 # ============================================ #
 

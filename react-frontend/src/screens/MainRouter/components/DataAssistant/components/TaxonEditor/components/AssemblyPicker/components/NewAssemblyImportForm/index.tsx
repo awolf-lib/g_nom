@@ -1,24 +1,45 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   IImportFileInformation,
-  importAssembly,
+  importDataset,
   INcbiTaxon,
   NotificationObject,
+  fetchImportDirectory,
+  validateFileInfo,
+  Dataset,
+  DatasetTypes,
+  TreeNode,
+  importAssembly,
+  importAnnotation,
 } from "../../../../../../../../../../api";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import FileTree from "../../../../../../../../../../components/FileTree";
 import Button from "../../../../../../../../../../components/Button";
+import { Trash } from "grommet-icons";
 
-const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
-  const [newAssembly, setNewAssembly] = useState<IImportFileInformation>();
-  const [newAnnotations, setNewAnnotations] = useState<IImportFileInformation[]>([]);
-  const [newMappings, setNewMappings] = useState<IImportFileInformation[]>([]);
-  const [newBuscos, setNewBuscos] = useState<IImportFileInformation[]>([]);
-  const [newFcats, setNewFcats] = useState<IImportFileInformation[]>([]);
-  const [newMilts, setNewMilts] = useState<IImportFileInformation[]>([]);
-  const [newRepeatmaskers, setNewRepeatmaskers] = useState<IImportFileInformation[]>([]);
+const NewAssemblyImportForm = ({
+  taxon,
+  loadAssemblies,
+}: {
+  taxon: INcbiTaxon;
+  loadAssemblies: any;
+}) => {
+  const [importDir, setImportDir] = useState<IImportFileInformation>();
+
+  const [newAssembly, setNewAssembly] = useState<Dataset[]>([]);
+  const [newAnnotations, setNewAnnotations] = useState<Dataset[]>([]);
+  const [newMappings, setNewMappings] = useState<Dataset[]>([]);
+  const [newBuscos, setNewBuscos] = useState<Dataset[]>([]);
+  const [newFcats, setNewFcats] = useState<Dataset[]>([]);
+  const [newMilts, setNewMilts] = useState<Dataset[]>([]);
+  const [newRepeatmaskers, setNewRepeatmaskers] = useState<Dataset[]>([]);
 
   const [importing, setImporting] = useState<boolean>(false);
+  const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
+
+  const [dropHover, setDropHover] = useState<boolean>(false);
+
+  const newAssemblyFormRef = useRef<HTMLDivElement>(null);
 
   // notifications
   const dispatch = useNotification();
@@ -31,16 +52,37 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     });
   };
 
-  const alreadyMarkedForImport = (f: IImportFileInformation, fList: IImportFileInformation[]) => {
+  useEffect(() => {
+    loadImportDir();
+    const interval = setInterval(() => {
+      loadImportDir();
+    }, 30000);
+
+    return clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    newAssemblyFormRef.current?.scrollIntoView();
+  }, [newAssemblyFormRef]);
+
+  const loadImportDir = async () => {
+    setLoadingFiles(true);
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const response = await fetchImportDirectory(userID, token);
+    if (response && response.payload) {
+      setImportDir(response.payload);
+    } else {
+      setImportDir(undefined);
+    }
+    setLoadingFiles(false);
+  };
+
+  const alreadyMarkedForImport = (f: IImportFileInformation, fList: Dataset[]) => {
     const isDuplicate = fList.some((marked_file) => {
-      if (marked_file.id === f.id) {
+      if (marked_file["main_file"].id === f.id) {
         return true;
-      }
-      if (marked_file.children && marked_file.children.length > 0) {
-        const found = marked_file.children.find((child) => child.id === f.id);
-        if (found) {
-          return true;
-        }
       }
 
       return false;
@@ -49,59 +91,164 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     if (isDuplicate) {
       handleNewNotification({
         label: "Info",
-        message: "File already marked for import!",
+        message: "File '" + f["name"] + "' already marked for import!",
         type: "info",
       });
     }
     return isDuplicate;
   };
 
-  const handleDropFileInformation = (fileInformation: IImportFileInformation) => {
-    const fileInformationType = fileInformation.type || fileInformation.dirType || "";
+  const handleDropFileInformation = async (fileInformation: IImportFileInformation) => {
+    setDropHover(false);
 
-    if (fileInformation.dirType) {
-      if (fileInformation.mainFiles[fileInformationType].length > 1) {
-        handleNewNotification({
-          label: "Warning",
-          message: "Multiple importable files detected!",
-          type: "warning",
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
+    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+
+    if (fileInformation && userID && token) {
+      const minFileInformation = removeFileTreeAttributes(fileInformation);
+
+      const response = await validateFileInfo(minFileInformation, userID, token);
+
+      if (response && response.payload) {
+        Object.keys(response.payload).forEach((fileType) => {
+          switch (fileType) {
+            case "sequence":
+              if (response.payload.sequence!.length <= 1) {
+                response.payload.sequence!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
+                });
+              } else {
+                setNewAssembly([
+                  response.payload.sequence!.reduce(function (prev, current) {
+                    return prev.main_file.size! > current.main_file.size! ? prev : current;
+                  }, response.payload.sequence![0]),
+                ]);
+                handleNewNotification({
+                  label: "Warning",
+                  message: "Directory contains multiple sequence files! Largest file selected!",
+                  type: "warning",
+                });
+              }
+              break;
+            case "annotation":
+              response.payload.annotation!.length > 0 &&
+                response.payload.annotation!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newAnnotations) &&
+                    setNewAnnotations((prevState) => [...prevState, x]);
+                });
+              break;
+            case "mapping":
+              response.payload.mapping!.length > 0 &&
+                response.payload.mapping!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newMappings) &&
+                    setNewMappings((prevState) => [...prevState, x]);
+                });
+              break;
+            case "busco":
+              response.payload.busco!.length > 0 &&
+                response.payload.busco!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newBuscos) &&
+                    setNewBuscos((prevState) => [...prevState, x]);
+                });
+              break;
+            case "fcat":
+              response.payload.fcat!.length > 0 &&
+                response.payload.fcat!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newFcats) &&
+                    setNewFcats((prevState) => [...prevState, x]);
+                });
+              break;
+            case "milts":
+              response.payload.milts!.length > 0 &&
+                response.payload.milts!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newMilts) &&
+                    setNewMilts((prevState) => [...prevState, x]);
+                });
+              break;
+            case "repeatmasker":
+              response.payload.repeatmasker!.length > 0 &&
+                response.payload.repeatmasker!.forEach((x) => {
+                  !alreadyMarkedForImport(x["main_file"], newRepeatmaskers) &&
+                    setNewRepeatmaskers((prevState) => [...prevState, x]);
+                });
+              break;
+            default:
+              break;
+          }
         });
       }
     }
+  };
 
-    if (fileInformationType) {
-      switch (fileInformationType) {
-        case "sequence":
-          setNewAssembly(fileInformation);
-          break;
-        case "annotation":
-          !alreadyMarkedForImport(fileInformation, newAnnotations) &&
-            setNewAnnotations((prevState) => [...prevState, fileInformation]);
-          break;
-        case "mapping":
-          !alreadyMarkedForImport(fileInformation, newMappings) &&
-            setNewMappings((prevState) => [...prevState, fileInformation]);
-          break;
-        case "busco":
-          !alreadyMarkedForImport(fileInformation, newBuscos) &&
-            setNewBuscos((prevState) => [...prevState, fileInformation]);
-          break;
-        case "fcat":
-          !alreadyMarkedForImport(fileInformation, newFcats) &&
-            setNewFcats((prevState) => [...prevState, fileInformation]);
-          break;
-        case "milts":
-          !alreadyMarkedForImport(fileInformation, newMilts) &&
-            setNewMilts((prevState) => [...prevState, fileInformation]);
-          break;
-        case "repeatmasker":
-          !alreadyMarkedForImport(fileInformation, newRepeatmaskers) &&
-            setNewRepeatmaskers((prevState) => [...prevState, fileInformation]);
-          break;
-        default:
-          break;
+  const removeFileFromState = (
+    prevState: Dataset[],
+    mainFileID: string,
+    additionalFileID: string | undefined
+  ) => {
+    if (!additionalFileID) {
+      return prevState.filter((mainFile) => mainFile.main_file.id !== mainFileID);
+    } else {
+      const mainFileIndex = prevState.findIndex((mainFile) => mainFile.main_file.id === mainFileID);
+      if (mainFileIndex >= 0) {
+        prevState[mainFileIndex] = {
+          ...prevState[mainFileIndex],
+          additional_files: prevState[mainFileIndex]["additional_files"].filter(
+            (additionalFile) => additionalFile.id !== additionalFileID
+          ),
+        };
       }
+      return [...prevState];
     }
+  };
+
+  const handleRemoveFile = (
+    type: DatasetTypes,
+    mainFileID: string,
+    additionalFileID: string | undefined = undefined
+  ) => {
+    switch (type) {
+      case "sequence":
+        setNewAssembly((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        break;
+      case "annotation":
+        setNewAnnotations((prevState) =>
+          removeFileFromState(prevState, mainFileID, additionalFileID)
+        );
+        break;
+      case "mapping":
+        setNewMappings((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        break;
+      case "busco":
+        setNewBuscos((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        break;
+      case "fcat":
+        setNewFcats((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        break;
+      case "milts":
+        setNewMilts((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        break;
+      case "repeatmasker":
+        setNewRepeatmaskers((prevState) =>
+          removeFileFromState(prevState, mainFileID, additionalFileID)
+        );
+        break;
+      default:
+        break;
+    }
+  };
+
+  const removeFileTreeAttributes = (node: TreeNode): IImportFileInformation => {
+    delete node.isOpen;
+
+    if (node.children) {
+      const children = node.children.map((child: TreeNode) => {
+        return removeFileTreeAttributes(child);
+      });
+
+      return { ...node, children: children };
+    }
+
+    return { ...node };
   };
 
   const handleSubmitImport = async () => {
@@ -109,24 +256,67 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
     const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
-    if (taxon.id && newAssembly && newAssembly.path && userID && token) {
-      const response = await importAssembly(taxon, newAssembly.path, parseInt(userID), token);
+    if (newAssembly && newAssembly.length === 1) {
+      const responseAssembly = await importAssembly(taxon, newAssembly[0], userID, token);
 
-      if (response && response.notification?.length > 0) {
-        response.notification.map((notification: any) => handleNewNotification(notification));
+      if (
+        responseAssembly &&
+        responseAssembly.notification &&
+        responseAssembly.notification.length > 0
+      ) {
+        responseAssembly.notification.forEach((element) => handleNewNotification(element));
+      }
+
+      if (responseAssembly && responseAssembly.payload) {
+        const assemblyID = responseAssembly.payload;
+        if (newAnnotations && newAnnotations.length > 0) {
+          newAnnotations.forEach(async (annotation) => {
+            const responseAnnotation = await importAnnotation(
+              taxon,
+              annotation,
+              assemblyID,
+              userID,
+              token
+            );
+
+            if (
+              responseAnnotation &&
+              responseAnnotation.notification &&
+              responseAnnotation.notification.length > 0
+            ) {
+              responseAnnotation.notification.forEach((element) => handleNewNotification(element));
+            }
+
+            loadAssemblies();
+
+            handleResetForm();
+
+            setImporting(false);
+          });
+        }
+      } else {
+        responseAssembly &&
+        responseAssembly.notification &&
+        responseAssembly.notification.length > 0
+          ? responseAssembly.notification.forEach((not) => handleNewNotification(not))
+          : handleNewNotification({
+              label: "Error",
+              message: "Invalid response from importing assembly",
+              type: "error",
+            });
       }
     } else {
       handleNewNotification({
         label: "Error",
-        message: "Mising input!",
+        message: "Only one assembly at once can be imported!",
         type: "error",
       });
+      return;
     }
-    setImporting(false);
   };
 
   const handleResetForm = () => {
-    setNewAssembly(undefined);
+    setNewAssembly([]);
     setNewAnnotations([]);
     setNewMappings([]);
     setNewBuscos([]);
@@ -135,239 +325,219 @@ const NewAssemblyImportForm = ({ taxon }: { taxon: INcbiTaxon }) => {
     setNewRepeatmaskers([]);
   };
 
-  // const excludeFileAssembly = (f: IImportFileInformation) => {
-  //   if (newAssembly?.children && newAssembly.children.length > 0) {
-  //     const newChildren = newAssembly.children.filter(
-  //       (child) => child.id !== f.id || newAssembly.mainFiles["sequence"]?.includes(child.path)
-  //     );
-  //     return { ...newAssembly, children: newChildren };
-  //   }
-  // };
+  const MarkedFiles = ({ file, type }: { file: Dataset; type: DatasetTypes }) => {
+    return (
+      <div className="mb-2">
+        <div className="flex justify-between animate-fade-in">
+          <FileTree files={file["main_file"]} />
+          <div
+            className="p-1 text-red-600 cursor-pointer hover:text-red-400"
+            onClick={() => {
+              handleRemoveFile(type, file.main_file.id);
+            }}
+          >
+            <Trash color="blank" className="stroke-current" size="small" />
+          </div>
+        </div>
 
-  // const excludeFile = (f: IImportFileInformation, fList: IImportFileInformation[]) => {
-  //   const newFileInformation = fList.map((marked_file) => {
-  //     if (marked_file.id === f.id) {
-  //       return undefined;
-  //     }
-  //     if (marked_file.children && marked_file.children.length > 0) {
-  //       const newChildren = marked_file.children.filter((child) => child.id !== f.id);
-  //       return { ...marked_file, children: newChildren };
-  //     }
-
-  //     return marked_file;
-  //   });
-
-  //   return newFileInformation;
-  // };
-
-  // const handleExcludeFile = (type: string, fileInformation: IImportFileInformation) => {
-  //   switch (type) {
-  //     case "sequence":
-  //       setNewAssembly(excludeFileAssembly(fileInformation));
-  //       break;
-  //     case "annotation":
-  //       setNewAnnotations((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     case "mapping":
-  //       setNewMappings((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     case "busco":
-  //       setNewBuscos((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     case "fcat":
-  //       setNewFcats((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     case "milts":
-  //       setNewMilts((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     case "repeatmasker":
-  //       setNewRepeatmaskers((prevState) => [...prevState, fileInformation]);
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // };
+        <div>
+          {file["additional_files"] &&
+            file["additional_files"].length > 0 &&
+            file["additional_files"].map((additional_files) => (
+              <div key={additional_files.id} className="ml-8 animate-fade-in flex justify-between">
+                <FileTree files={additional_files} />
+                <div
+                  className="p-1 text-red-600 cursor-pointer hover:text-red-400"
+                  onClick={() => {
+                    handleRemoveFile(type, file.main_file.id, additional_files.id);
+                  }}
+                >
+                  <Trash color="blank" className="stroke-current" size="small" />
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="animate-grow-y">
-      <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
+      <div
+        ref={newAssemblyFormRef}
+        className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white"
+      >
         Add new assembly...
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="max-h-75 overflow-auto border rounded-lg py-2 px-4">
+          <h1 className="font-bold text-xl">Import directory...</h1>
+          <hr className="shadow my-2" />
+          {importDir && <FileTree files={importDir} />}
+        </div>
         <div
-          className="border rounded-lg p-2"
+          className="border rounded-lg px-4 p-2 max-h-75 overflow-auto"
           onDragOver={(e) => {
             e.stopPropagation();
             e.preventDefault();
           }}
-          onDrop={(e) => handleDropFileInformation(JSON.parse(e.dataTransfer.getData("fileInfos")))}
+          onDrop={(e) => {
+            e.stopPropagation();
+            handleDropFileInformation(JSON.parse(e.dataTransfer.getData("fileInfos")));
+          }}
+          // onDragEnter={(e) => {
+          //   e.stopPropagation();
+          //   setDropHover(true);
+          // }}
+          // onDragLeave={(e) => {
+          //   e.stopPropagation();
+          //   setDropHover(false);
+          // }}
         >
-          {/* Assembly */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Assembly</div>
-            {newAssembly ? (
-              <div>
-                <div
-                  className="ml-4 animate-fade-in"
-                  // onClick={() => setNewAssembly(undefined)}
-                >
-                  {newAssembly.name}
+          <h1 className="font-bold text-xl">
+            {dropHover ? "Drop now to mark for import..." : "Marked for import..."}
+          </h1>
+          <hr className="shadow my-2" />
+          <div className="px-4 py-2">
+            {/* Assembly */}
+            <div className="text-sm">
+              <div className="font-semibold">Assembly</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newAssembly && newAssembly.length > 0 ? (
+                    newAssembly.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="sequence" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
                 </div>
-                {newAssembly.children &&
-                  newAssembly.children.length > 0 &&
-                  newAssembly.children.map((child) => (
-                    <div
-                      key={child.id}
-                      className="ml-8 animate-fade-in"
-                      // onClick={(e) => {
-                      //   e.stopPropagation();
-                      //   handleExcludeFile("sequence", child);
-                      // }}
-                    >
-                      {child.name}
-                    </div>
-                  ))}
               </div>
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* Annotations */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Annotations</div>
-            {newAnnotations && newAnnotations.length > 0 ? (
-              newAnnotations.map((annotation) => (
-                <div key={annotation.id}>
-                  <div className="ml-4 animate-fade-in">{annotation.name}</div>
-                  {annotation.children &&
-                    annotation.children.length > 0 &&
-                    annotation.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* Mappings */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Mappings</div>
-            {newMappings && newMappings.length > 0 ? (
-              newMappings.map((mapping) => (
-                <div key={mapping.id}>
-                  <div className="ml-4 animate-fade-in">{mapping.name}</div>
-                  {mapping.children &&
-                    mapping.children.length > 0 &&
-                    mapping.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* Buscos */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Busco</div>
-            {newBuscos && newBuscos.length > 0 ? (
-              newBuscos.map((busco) => (
-                <div key={busco.id}>
-                  <div className="ml-4 animate-fade-in">{busco.name}</div>
-                  {busco.children &&
-                    busco.children.length > 0 &&
-                    busco.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* fCats */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">fCat</div>
-            {newFcats && newFcats.length > 0 ? (
-              newFcats.map((fcat) => (
-                <div key={fcat.id}>
-                  <div className="ml-4 animate-fade-in">{fcat.name}</div>
-                  {fcat.children &&
-                    fcat.children.length > 0 &&
-                    fcat.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* Milts */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Milts</div>
-            {newMilts && newMilts.length > 0 ? (
-              newMilts.map((milts) => (
-                <div key={milts.id}>
-                  <div className="ml-4 animate-fade-in">{milts.name}</div>
-                  {milts.children &&
-                    milts.children.length > 0 &&
-                    milts.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          {/* Repeatmaskers */}
-          <div className="py-2 text-sm">
-            <div className="font-semibold">Repeatmasker</div>
-            {newRepeatmaskers && newRepeatmaskers.length > 0 ? (
-              newRepeatmaskers.map((repeatmasker) => (
-                <div key={repeatmasker.id}>
-                  <div className="ml-4 animate-fade-in">{repeatmasker.name}</div>
-                  {repeatmasker.children &&
-                    repeatmasker.children.length > 0 &&
-                    repeatmasker.children.map((child) => (
-                      <div key={child.id} className="ml-8">
-                        {child.name}
-                      </div>
-                    ))}
-                </div>
-              ))
-            ) : (
-              <div className="ml-4 animate-fade-in">None</div>
-            )}
-          </div>
-          <hr className="my-4" />
-          <div className="flex justify-around items-center py-2">
-            <div className="w-28">
-              <Button
-                color="confirm"
-                label={!importing ? "Submit" : "Importing..."}
-                onClick={() => handleSubmitImport()}
-              />
             </div>
-            <div className="w-28">
-              <Button color="cancel" label="Reset" onClick={() => handleResetForm()} />
+            <hr className="shadow mt-1 mb-4" />
+            {/* Annotations */}
+            <div className="text-sm">
+              <div className="font-semibold">Annotations</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newAnnotations && newAnnotations.length > 0 ? (
+                    newAnnotations.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="annotation" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="shadow mt-1 mb-4" />
+            {/* Mappings */}
+            <div className="text-sm">
+              <div className="font-semibold">Mappings</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newMappings && newMappings.length > 0 ? (
+                    newMappings.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="mapping" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="shadow mt-1 mb-4" />
+            {/* Buscos */}
+            <div className="text-sm">
+              <div className="font-semibold">Busco</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newBuscos && newBuscos.length > 0 ? (
+                    newBuscos.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="busco" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="shadow mt-1 mb-4" />
+            {/* fCats */}
+            <div className="text-sm">
+              <div className="font-semibold">fCat</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newFcats && newFcats.length > 0 ? (
+                    newFcats.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="fcat" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="shadow mt-1 mb-4" />
+            {/* Milts */}
+            <div className="text-sm">
+              <div className="font-semibold">Milts</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newMilts && newMilts.length > 0 ? (
+                    newMilts.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="milts" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="shadow mt-1 mb-4" />
+            {/* Repeatmaskers */}
+            <div className="text-sm">
+              <div className="font-semibold">Repeatmasker</div>
+              <div className="flex justify-between items-center">
+                <div className="w-full">
+                  {newRepeatmaskers && newRepeatmaskers.length > 0 ? (
+                    newRepeatmaskers.map((file) => (
+                      <div key={file.main_file.id}>
+                        <MarkedFiles file={file} type="repeatmasker" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="mx-4 my-2">None</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <hr className="my-4" />
+            <div className="flex justify-around items-center py-2">
+              <div className="w-28">
+                <Button
+                  color="confirm"
+                  label={!importing ? "Submit" : "Importing..."}
+                  onClick={() => handleSubmitImport()}
+                />
+              </div>
+              <div className="w-28">
+                <Button color="cancel" label="Reset" onClick={() => handleResetForm()} />
+              </div>
             </div>
           </div>
-        </div>
-        <div className="max-h-75 min-h-1/2 border rounded-lg">
-          <FileTree />
         </div>
       </div>
     </div>

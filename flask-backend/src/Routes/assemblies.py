@@ -42,9 +42,13 @@ def assemblies_bp_import_assembly():
             return response
 
         taxon = req.get("taxon", None)
-        filePath = req.get("filePath", None)
+        dataset = req.get("dataset", None)
 
-        data, notification = import_assembly(taxon, filePath, userID)
+        if taxon and dataset and userID:
+            data, notification = import_assembly(taxon, dataset, userID)
+            print(data, notification)
+        else:
+            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -110,6 +114,7 @@ def assemblies_bp_fetchAssemblies():
         return response
     else:
         return REQUESTMETHODERROR
+
 
 # FETCH ALL ASSEMBLIES FOR SPECIFIC TAXON
 @assemblies_bp.route("/fetchAssembliesByTaxonID", methods=["GET"])

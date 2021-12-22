@@ -27,6 +27,7 @@ def connectionTest():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+
 # # ================== USER ================== #
 # # ADD NEW USER
 # @db.route("/addUser", methods=["GET", "POST"])
@@ -377,20 +378,20 @@ def fetchSpeciesProfilePictureTaxonID():
 #         return REQUESTMETHODERROR
 
 
-# ================== ANNOTATION ================== #
-# FETCH ALL ANNOTATIONS BY ASSEMBLY ID
-@db.route("/fetchAnnotationsByAssemblyID", methods=["GET"])
-def fetchAnnotationsByAssemblyID():
-    if request.method == "GET":
-        assemblyID = request.args.get("assemblyID")
-        data, notification = api.fetchAnnotationsByAssemblyID(assemblyID)
+# # ================== ANNOTATION ================== #
+# # FETCH ALL ANNOTATIONS BY ASSEMBLY ID
+# @db.route("/fetchAnnotationsByAssemblyID", methods=["GET"])
+# def fetchAnnotationsByAssemblyID():
+#     if request.method == "GET":
+#         assemblyID = request.args.get("assemblyID")
+#         data, notification = api.fetchAnnotationsByAssemblyID(assemblyID)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
 # ADD NEW ANNOTATION

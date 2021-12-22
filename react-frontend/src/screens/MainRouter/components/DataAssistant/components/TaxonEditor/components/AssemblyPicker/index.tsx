@@ -28,8 +28,9 @@ const AssemblyPicker = ({
 
   useEffect(() => {
     loadAssemblies();
-    const interval = setInterval(() => loadAssemblies(), 60000);
+    const interval = setInterval(() => loadAssemblies(), 30000);
     return clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // notifications
@@ -82,6 +83,7 @@ const AssemblyPicker = ({
           const response = await deleteAssemblyByAssemblyID(assemblyID, parseInt(userID), token);
           setToggleConfirmDeletion(-1);
           setConfirmDeletion("");
+          loadAssemblies();
 
           if (response.notification && response.notification.length > 0) {
             response.notification.map((n: any) => handleNewNotification(n));
@@ -209,7 +211,9 @@ const AssemblyPicker = ({
         </div>
       </div>
       <hr className="shadow my-4" />
-      {toggleNewAssemblyImportForm && <NewAssemblyImportForm taxon={taxon} />}
+      {toggleNewAssemblyImportForm && (
+        <NewAssemblyImportForm taxon={taxon} loadAssemblies={loadAssemblies} />
+      )}
     </div>
   );
 };

@@ -1,54 +1,144 @@
-import { useState } from "react";
-import { Search, List } from "grommet-icons";
+import { createViewState, JBrowseLinearGenomeView } from "@jbrowse/react-linear-genome-view";
+import "@fontsource/roboto";
+import { useEffect, useState } from "react";
 
-import Button from "../../../../../../components/Button";
+const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" }) => {
+  const [assembly, setAssembly] = useState({});
+  const [tracks, setTracks] = useState([]);
+  const [defaultSession, setDefaultSession] = useState({});
+  const [configuration, setConfiguration] = useState({});
+  const [aggregateTextSearchAdapters, setAggregateTextSearchAdapters] = useState([]);
 
-const GenomeViewer = ({ assemblyInformation }) => {
-  const [showNav, setshowNav] = useState(false);
-  const [showTracklist, setShowTracklist] = useState(true);
+  const [locationState, setLocationState] = useState("");
 
-  const configureSource = () => {
-    return (
-      `${process.env.REACT_APP_JBROWSE_ADRESS}/index.html?config=assemblies%2F${assemblyInformation.name}%2Fconfig.json&session=undefined`
+  useEffect(() => {
+    setLocationState(location);
+  }, [location]);
+
+  useEffect(() => {
+    setAssembly({
+      name: assemblyDetails.name,
+      sequence: {
+        type: "ReferenceSequenceTrack",
+        trackId: assemblyDetails.name + "-ReferenceSequenceTrack",
+        adapter: {
+          type: "BgzipFastaAdapter",
+          fastaLocation: {
+            uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${assemblyDetails.name}.fasta.gz`,
+            locationType: "UriLocation",
+          },
+          faiLocation: {
+            uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${assemblyDetails.name}.fasta.gz.fai`,
+            locationType: "UriLocation",
+          },
+          gziLocation: {
+            uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${assemblyDetails.name}.fasta.gz.gzi`,
+            locationType: "UriLocation",
+          },
+        },
+      },
+    });
+  }, [assemblyDetails]);
+
+  useEffect(() => {
+    setTracks(
+      annotations.map((annotation, index) => {
+        return {
+          type: "FeatureTrack",
+          trackId: annotation.name,
+          name: annotation.name,
+          category: ["annotation"],
+          assemblyNames: [assemblyDetails.name],
+          adapter: {
+            type: "Gff3TabixAdapter",
+            gffGzLocation: {
+              uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${annotation.name}.sorted.gff3.gz`,
+              locationType: "UriLocation",
+            },
+            index: {
+              location: {
+                uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${annotation.name}.sorted.gff3.gz.tbi`,
+                locationType: "UriLocation",
+              },
+              indexType: "TBI",
+            },
+          },
+        };
+      })
     );
-  };
+  }, [annotations, mappings]);
+
+  useEffect(() => {
+    setDefaultSession({
+      name: "Gnom - " + assemblyDetails.name,
+      view: {
+        id: "linearGenomeView",
+        type: "LinearGenomeView",
+        tracks: [
+          {
+            type: "ReferenceSequenceTrack",
+            configuration: assemblyDetails.name + "-ReferenceSequenceTrack",
+          },
+        ],
+      },
+    });
+  }, [assemblyDetails]);
+
+  useEffect(() => {
+    setConfiguration({
+      theme: {
+        palette: {
+          primary: {
+            main: "#3b82f6",
+          },
+          secondary: {
+            main: "#c7d2fe",
+          },
+          tertiary: {
+            main: "#c7d2fe",
+          },
+        },
+      },
+    });
+  }, [assemblyDetails]);
+
+  useEffect(() => {
+    setAggregateTextSearchAdapters([
+      {
+        type: "TrixTextSearchAdapter",
+        textSearchAdapterId: assemblyDetails.name + "-Trix",
+        ixFilePath: {
+          uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/trix/${assemblyDetails.name}.ix`,
+          locationType: "UriLocation",
+        },
+        ixxFilePath: {
+          uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/trix/${assemblyDetails.name}.ixx`,
+          locationType: "UriLocation",
+        },
+        metaFilePath: {
+          uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/trix/${assemblyDetails.name}_meta.json`,
+          locationType: "UriLocation",
+        },
+        assemblyNames: [assemblyDetails.name],
+      },
+    ]);
+  }, [assemblyDetails]);
+
   return (
     <div className="mx-8">
-      <div className="rounded-lg overflow-hidden p-1 bg-white animate-grow-y relative shadow-lg border">
-        <iframe
-          title="jbrowse"
-          className="w-full h-75 border animate-fade-in"
-          src={configureSource()}
+      {assembly.name && defaultSession.name && configuration.theme && (
+        <JBrowseLinearGenomeView
+          viewState={createViewState({
+            assembly: assembly,
+            tracks: tracks,
+            configuration: configuration,
+            location: locationState,
+            aggregateTextSearchAdapters: aggregateTextSearchAdapters,
+          })}
         />
-        <div className="absolute left-0 bottom-0 flex m-8">
-          <div className="opacity-25 hover:opacity-100 transition duration-300 mx-4">
-            <Button
-              color="secondary"
-              onClick={() => {
-                setshowNav((prevState) => !prevState);
-              }}
-            >
-              <Search size="small" color="blank" className="stroke-current" />
-            </Button>
-          </div>
-          <div className="opacity-25 hover:opacity-100 transition duration-300 mx-4">
-            <Button
-              color="secondary"
-              onClick={() => {
-                setShowTracklist((prevState) => !prevState);
-              }}
-            >
-              <List size="small" color="blank" className="stroke-current" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
 export default GenomeViewer;
-
-GenomeViewer.defaultProps = {};
-
-GenomeViewer.propTypes = {};

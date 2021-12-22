@@ -2,7 +2,16 @@
 from flask import Blueprint, jsonify, request
 
 # local imports
-from modules.users import addBookmark, addUser, deleteUserByUserID, fetchUsers, login, removeBookmark, updateUserRoleByUserID, validateActiveToken
+from modules.users import (
+    addBookmark,
+    addUser,
+    deleteUserByUserID,
+    fetchUsers,
+    login,
+    removeBookmark,
+    updateUserRoleByUserID,
+    validateActiveToken,
+)
 from modules.notifications import createNotification
 
 # setup blueprint name

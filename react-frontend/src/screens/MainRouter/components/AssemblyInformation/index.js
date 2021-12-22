@@ -6,6 +6,7 @@ import {
   addBookmark,
   addNewBookmark,
   fetchAnalysesByAssemblyID,
+  fetchAnnotationsByAssemblyID,
   fetchAssemblyByAssemblyID,
   fetchTaxonByTaxonID,
   fetchTaxonGeneralInformationByTaxonID,
@@ -25,6 +26,7 @@ import MaskingsViewer from "./components/MaskingsViewer";
 const AssemblyInformation = () => {
   const [assembly, setAssembly] = useState({});
   const [taxon, setTaxon] = useState({});
+  const [annotations, setAnnotations] = useState([]);
   const [generalInformation, setGeneralInformation] = useState([]);
   const [analyses, setAnalyses] = useState([]);
 
@@ -80,6 +82,10 @@ const AssemblyInformation = () => {
   }, [assembly.taxonID]);
 
   useEffect(() => {
+    loadAnnotations();
+  }, [id]);
+
+  useEffect(() => {
     loadAnalyses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -109,6 +115,22 @@ const AssemblyInformation = () => {
       );
       if (responseGeneralInformation && responseGeneralInformation.payload) {
         setGeneralInformation(responseGeneralInformation.payload);
+      }
+    }
+    setFetchingAll(false);
+  };
+
+  const loadAnnotations = async () => {
+    setFetchingAll(true);
+    if (userID && token) {
+      const response = await fetchAnnotationsByAssemblyID(
+        id.replace(":", ""),
+        parseInt(userID),
+        token
+      );
+      console.log(response);
+      if (response && response.payload) {
+        setAnnotations(response.payload);
       }
     }
     setFetchingAll(false);
@@ -313,7 +335,13 @@ const AssemblyInformation = () => {
                   Genome Viewer
                 </div>
               </div>
-              {toggleGenomeViewerSection && <GenomeViewer assembly={assembly} />}
+              {toggleGenomeViewerSection && (
+                <GenomeViewer
+                  assemblyDetails={assembly}
+                  annotations={annotations}
+                  location="scaffold110s:29,261..31,094"
+                />
+              )}
             </div>
             <hr className="shadow my-8 mx-8" />
           </div>
