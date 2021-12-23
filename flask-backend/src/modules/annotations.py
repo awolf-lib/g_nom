@@ -53,11 +53,24 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
+        # sort gff
+        path_to_dir = "/".join(new_file_path.split("/")[:-1])
+        new_file_path_sorted = path_to_dir + f"/{annotation_name}.sorted.gff3"
+
+        run(args=["gt", "gff3", "-sortlines", "-tidy", "-retainids", "-o", new_file_path_sorted, new_file_path])
+        if exists(new_file_path_sorted):
+            run(args=["rm", "-r", new_file_path])
+            new_file_path = new_file_path_sorted
+
         gff_content, error = parseGff(new_file_path)
 
         if not gff_content:
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
+
+        # zip
+        run(args=["bgzip", new_file_path])
+        new_file_path += ".gz"
 
         imported_status, error = __importDB(assembly_id, annotation_name, new_file_path, userID, gff_content)
 
@@ -95,8 +108,6 @@ def __generate_annotation_name(taxon):
 
     scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
     new_annotation_name = f"{scientificName}_annotation_id{next_id}"
-
-    print(new_annotation_name, next_id)
 
     return new_annotation_name, next_id, {}
 
@@ -150,22 +161,15 @@ def __store_annotation(dataset, taxon, assembly_id, assembly_name, annotation_id
         # check if main file was moved
         if not exists(new_file_path_main_file):
             return 0, createNotification(message="Moving annotation to storage failed!")
-        else:
-            pass
-            # TODO: enable rm on success
-            # run(
-            #     f"rm -r {old_file_path}",
-            #     shell=True,
-            # )
+        # add remove?
 
+        # handle additional files
         for additional_file in dataset["additional_files"]:
             old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
             if exists(old_additional_file_path):
-                run(
-                    ["cp", "-r", old_additional_file_path, new_file_path]
-                )
+                run(["cp", "-r", old_additional_file_path, new_file_path])
 
-        print(f"Annotation ({annotation_name}) moved to storage!")
+        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!")
         return new_file_path_main_file, {}
 
     except Exception as err:
@@ -334,7 +338,7 @@ def parseGff(path):
 
     file_name = basename(path)
 
-    print(file_name)
+    print(f"Parsing file: {file_name}")
 
     # check file extension
     if not GFF3_EXTENSION_PATTERN.match(file_name):

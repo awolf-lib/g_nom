@@ -291,6 +291,8 @@ const NewAssemblyImportForm = ({
 
             handleResetForm();
 
+            loadImportDir();
+
             setImporting(false);
           });
         }

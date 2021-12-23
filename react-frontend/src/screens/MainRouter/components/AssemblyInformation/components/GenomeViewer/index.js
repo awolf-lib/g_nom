@@ -43,6 +43,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
   useEffect(() => {
     setTracks(
       annotations.map((annotation, index) => {
+        const fileBasename = annotation.path.split("/").reverse()[0];
         return {
           type: "FeatureTrack",
           trackId: annotation.name,
@@ -52,12 +53,12 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
           adapter: {
             type: "Gff3TabixAdapter",
             gffGzLocation: {
-              uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${annotation.name}.sorted.gff3.gz`,
+              uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${fileBasename}`,
               locationType: "UriLocation",
             },
             index: {
               location: {
-                uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${annotation.name}.sorted.gff3.gz.tbi`,
+                uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/${fileBasename}.tbi`,
                 locationType: "UriLocation",
               },
               indexType: "TBI",

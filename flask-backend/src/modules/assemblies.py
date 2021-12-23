@@ -161,10 +161,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
             return 0, "", createNotification(message="Moving assembly to storage failed!")
         else:
             pass
-            # TODO: enable rm on success
-            # run(
-            #     ["rm", "-r", old_file_path]
-            # )
+            # add remove?
 
         for additional_file in dataset["additional_files"]:
             old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]

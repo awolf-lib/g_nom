@@ -66,27 +66,26 @@ def handle_new_mapping(message):
         return False
 
 
+def handle_delete_mapping(message):
+    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
+    try:
+        return True
+    except Exception as err:
+        return False
+
+
 def handle_new_annotation(message):
     storage_gff = "{}{}".format(STORAGE_ROOT, message["storage_path"])
     jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
 
-    file_name = basename(storage_gff).replace(".gff3", "").replace(".gff", "")
-    path_to_dir = "/".join(storage_gff.split("/")[-1])
-    storage_gff_sorted = path_to_dir + f"/{file_name}.sorted.gff3"
-    storage_gff_sorted = storage_gff.replace(basename(storage_gff), f"{file_name}.sorted.gff3")
-
     try:
-        run(args=["gt", "gff3", "-sortlines", "-tidy", "-retainids", "-o", storage_gff_sorted, storage_gff])
-        if exists(storage_gff_sorted):
-            run(args=["rm", "-r", storage_gff])
-            storage_gff = storage_gff_sorted
-        run(args=["bgzip", storage_gff])
-        run(args=["tabix", "-p", "gff", "{}.gz".format(storage_gff)])
+        run(args=["tabix", "-p", "gff", storage_gff])
         run(
             args=[
                 "jbrowse",
                 "add-track",
-                "{}.gz".format(storage_gff),
+                storage_gff,
                 "--name",
                 message["annotation_name"],
                 "--category",
@@ -105,6 +104,15 @@ def handle_new_annotation(message):
         return False
 
 
+def handle_delete_annotation(message):
+    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
+    try:
+        return True
+    except Exception as err:
+        return False
+
+
 def callback(ch, method, properties, body):
     message = json.loads(body)
 
@@ -117,6 +125,8 @@ def callback(ch, method, properties, body):
     else:
         handle_selector = {
             "Assembly": handle_delete_assembly,
+            "Mapping": handle_delete_mapping,
+            "Annotation": handle_delete_annotation,
         }
 
     handler = handle_selector[message["type"]]

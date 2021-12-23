@@ -140,7 +140,7 @@ docker exec $FLASK_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/stora
 # RUN mkdir -p ./storage/externalTools/
 
 # download taxa information from NCBI
-docker exec $FLASK_CONTAINER_NAME bash -c "wget https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
+docker exec $FLASK_CONTAINER_NAME bash -c "wget -q https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
 docker exec $FLASK_CONTAINER_NAME bash -c "rm -r /flask-backend/data/storage/taxa/taxdmp.zip"
 
 # docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
