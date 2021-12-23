@@ -35,6 +35,10 @@ def notify_assembly(assemblyId: int, name: str, path: str, action: str):
     __notify(payload)
 
 
-def notify_annotation(assemblyId: int, assemblyName: str, annotationId: int, annotationName: str, path: str, action: str):
-    payload = AnnotationPayload(Annotation(annotationName, annotationId), Assembly(assemblyName, assemblyId), path, action)
+def notify_annotation(
+    assemblyId: int, assemblyName: str, annotationId: int, annotationName: str, path: str, action: str
+):
+    payload = AnnotationPayload(
+        Annotation(annotationName, annotationId), Assembly(assemblyName, assemblyId), path, action
+    )
     __notify(payload)

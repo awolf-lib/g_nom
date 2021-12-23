@@ -48,7 +48,9 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         if not annotation_name:
             return 0, error
 
-        new_file_path, error = __store_annotation(dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name)
+        new_file_path, error = __store_annotation(
+            dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name
+        )
 
         if not new_file_path or not exists(new_file_path):
             deleteAnnotationByAnnotationID(annotation_id)
@@ -113,7 +115,9 @@ def __generate_annotation_name(taxon, assembly_name):
 
 
 # moves .gff3 into storage
-def __store_annotation(dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name, forceIdentical=False):
+def __store_annotation(
+    dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name, forceIdentical=False
+):
     """
     Moves annotation data to storage directory.
     """
@@ -230,7 +234,9 @@ def deleteAnnotationByAnnotationID(annotation_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id")
+        cursor.execute(
+            f"SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id"
+        )
         assembly_id, assembly_name, annotation_name = cursor.fetchone()
 
         print(assembly_id, assembly_name, annotation_name)
@@ -398,7 +404,7 @@ def parseGff(path):
 
         # no matching pattern
         else:
-            #print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
+            # print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
             continue
 
     print(f"Parsed: 100%", end="\r")

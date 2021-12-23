@@ -117,9 +117,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
             return 0, "", createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
-            run(
-                ["gunzip", old_file_path]
-            )
+            run(["gunzip", old_file_path])
             old_file_path = old_file_path[:-3]
 
         # check if file exists already in db
@@ -150,9 +148,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
         if isfile(old_file_path):
             new_file_name = f"{new_assembly_name}.fasta"
             new_file_path_main_file = f"{new_file_path}{new_file_name}"
-            run(
-                ["cp", old_file_path, new_file_path_main_file]
-            )
+            run(["cp", old_file_path, new_file_path_main_file])
         else:
             return 0, "", createNotification(message="Invalid path to .fasta!")
 
@@ -166,9 +162,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
         for additional_file in dataset["additional_files"]:
             old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
             if exists(old_additional_file_path):
-                run(
-                    ["cp", "-r", old_additional_file_path, new_file_path]
-                )
+                run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Assembly ({new_file_name}) moved to storage!")
         return new_file_path_main_file, new_assembly_name, {}
@@ -226,13 +220,9 @@ def __deleteAssemblyFolder(taxon, assembly_name):
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
         path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}"
         if len(listdir(path)) == 1:
-            run(
-                ["rm", "-r", path]
-            )
+            run(["rm", "-r", path])
         else:
-            run(
-                ["rm", "-r", f"{path}/{assembly_name}"]
-            )
+            run(["rm", "-r", f"{path}/{assembly_name}"])
 
         return 1, {}
     except Exception as err:

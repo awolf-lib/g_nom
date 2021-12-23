@@ -7,10 +7,12 @@ class Assembly:
     name: str
     id: int
 
+
 @dataclass(frozen=True)
 class Annotation:
     name: str
     id: int
+
 
 @dataclass(frozen=True)
 class Mapping:

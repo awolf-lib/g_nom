@@ -87,7 +87,11 @@ def handle_delete_mapping(message):
             jbrowse_config["tracks"] = tracks
 
         if "aggregateTextSearchAdapters" in jbrowse_config:
-            aggregateTextSearchAdapters = [adapter for adapter in jbrowse_config["aggregateTextSearchAdapters"] if adapter["textSearchAdapterId"] != f"text_search_adapter_mapping_{mapping_id}"]
+            aggregateTextSearchAdapters = [
+                adapter
+                for adapter in jbrowse_config["aggregateTextSearchAdapters"]
+                if adapter["textSearchAdapterId"] != f"text_search_adapter_mapping_{mapping_id}"
+            ]
             jbrowse_config["aggregateTextSearchAdapters"] = aggregateTextSearchAdapters
 
         with open(jbrowse_config_path, "w") as f:
@@ -155,11 +159,17 @@ def handle_delete_annotation(message):
             f.close()
 
         if "tracks" in jbrowse_config:
-            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_annotation_{annotation_id}"]
+            tracks = [
+                track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_annotation_{annotation_id}"
+            ]
             jbrowse_config["tracks"] = tracks
 
         if "aggregateTextSearchAdapters" in jbrowse_config:
-            aggregateTextSearchAdapters = [adapter for adapter in jbrowse_config["aggregateTextSearchAdapters"] if adapter["textSearchAdapterId"] != f"text_search_adapter_annotation_{annotation_id}"]
+            aggregateTextSearchAdapters = [
+                adapter
+                for adapter in jbrowse_config["aggregateTextSearchAdapters"]
+                if adapter["textSearchAdapterId"] != f"text_search_adapter_annotation_{annotation_id}"
+            ]
             jbrowse_config["aggregateTextSearchAdapters"] = aggregateTextSearchAdapters
 
         with open(jbrowse_config_path, "w") as f:
