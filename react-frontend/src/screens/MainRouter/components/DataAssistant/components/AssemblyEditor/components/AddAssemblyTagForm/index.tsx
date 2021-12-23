@@ -131,6 +131,9 @@ const AddAssemblyTagForm = ({
 
   return (
     <div className="animate-grow-y">
+      <div className="flex border-t border-b text-center px-4 py-2 text-sm font-semibold text-white bg-gray-500 border-white">
+        Edit assembly tags...
+      </div>
       <div>
         <div className="relative grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 justify-around py-2 border rounded mt-2 max-w-screen">
           {tags && tags.length > 0 ? (

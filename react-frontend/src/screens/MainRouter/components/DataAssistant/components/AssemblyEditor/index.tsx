@@ -3,6 +3,7 @@ import { INcbiTaxon } from "../../../../../../api";
 import TabWorkspace from "../../../../../../components/TabWorkspace";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
 import AddAssemblyTagForm from "./components/AddAssemblyTagForm";
+import EditAnnotationsForm from "./components/EditAnnotationsForm";
 
 const AssemblyEditor = ({
   taxon,
@@ -25,7 +26,10 @@ const AssemblyEditor = ({
         tabs={[
           { label: "Tags", content: <AddAssemblyTagForm taxon={taxon} assembly={assembly} /> },
           { label: "General information (Assembly)", content: <div></div> },
-          { label: "Annotations", content: <div></div> },
+          {
+            label: "Annotations",
+            content: <EditAnnotationsForm taxon={taxon} assembly={assembly} />,
+          },
           { label: "Mappings", content: <div></div> },
           { label: "Analyses", content: <div></div> },
         ]}

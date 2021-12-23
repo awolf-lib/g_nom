@@ -232,16 +232,16 @@ export async function importAssembly(
     });
 }
 
-// ===== DELETE ASSEMBLY BY ASSEMBLY ===== //
+// ===== DELETE ASSEMBLY BY ASSEMBLY ID ===== //
 export async function deleteAssemblyByAssemblyID(
-  id: number,
+  assemblyID: number,
   userID: number,
   token: string
 ): Promise<IResponse> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/deleteAssemblyByAssemblyID?assemblyID=" +
-      id +
+      assemblyID +
       "&userID=" +
       userID +
       "&token=" +
@@ -650,12 +650,34 @@ export async function importAnnotation(
     });
 }
 
+// ===== DELETE ANNOTATION BY ANNOTATION ID ===== //
+export async function deleteAnnotationByAnnotationID(
+  annotationID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/deleteAnnotationByAnnotationID?annotationID=" +
+      annotationID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
 export async function fetchAnnotationsByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<IAnnotation[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAnnotationsByAssemblyID?assemblyID=" +
@@ -670,6 +692,16 @@ export async function fetchAnnotationsByAssemblyID(
     .catch((error) => {
       console.error(error);
     });
+}
+
+export interface IAnnotation {
+  addedBy: number;
+  addedOn: string;
+  assemblyID: number;
+  id: number;
+  name: string;
+  path: string;
+  username: string;
 }
 
 // =============================== ANALYSES =============================== //

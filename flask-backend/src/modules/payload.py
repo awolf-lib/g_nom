@@ -7,6 +7,16 @@ class Assembly:
     name: str
     id: int
 
+@dataclass(frozen=True)
+class Annotation:
+    name: str
+    id: int
+
+@dataclass(frozen=True)
+class Mapping:
+    name: str
+    id: int
+
 
 Action = Union[Literal["Added"], Literal["Removed"]]
 
@@ -21,7 +31,7 @@ class AssemblyPayload:
 
 @dataclass(frozen=True)
 class AnnotationPayload:
-    annotation_name: str
+    annotation: Annotation
     assembly: Assembly
     storage_path: str
     action: Action
@@ -30,7 +40,7 @@ class AnnotationPayload:
 
 @dataclass(frozen=True)
 class MappingPayload:
-    mapping_name: str
+    mapping: Mapping
     assembly: Assembly
     storage_path: str
     action: Action

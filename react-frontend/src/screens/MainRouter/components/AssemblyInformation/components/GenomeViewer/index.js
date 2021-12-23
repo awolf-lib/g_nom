@@ -46,7 +46,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
         const fileBasename = annotation.path.split("/").reverse()[0];
         return {
           type: "FeatureTrack",
-          trackId: annotation.name,
+          trackId: "track_annotation_" + annotation.id,
           name: annotation.name,
           category: ["annotation"],
           assemblyNames: [assemblyDetails.name],
@@ -107,7 +107,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
     setAggregateTextSearchAdapters([
       {
         type: "TrixTextSearchAdapter",
-        textSearchAdapterId: assemblyDetails.name + "-Trix",
+        textSearchAdapterId: "text_search_adapter_annotation_" + annotations.id,
         ixFilePath: {
           uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/trix/${assemblyDetails.name}.ix`,
           locationType: "UriLocation",

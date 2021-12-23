@@ -240,10 +240,13 @@ def __deleteAssemblyFolder(taxon, assembly_name):
 
 
 def __deleteAssemblyEntryByAssemblyID(id):
-    connection, cursor, error = connect()
-    cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
-    connection.commit()
-    return 1, {}
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
+        connection.commit()
+        return 1, {}
+    except Exception as err:
+        return 0, createNotification(message=f"AssemblyDelitionError3: {str(err)}")
 
 
 # database import

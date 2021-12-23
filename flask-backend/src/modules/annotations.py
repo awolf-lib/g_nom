@@ -1,10 +1,11 @@
 from os.path import exists, isdir, isfile
-from os import listdir
+from os import listdir, remove
 from posixpath import basename
 from re import compile, sub
 from json import dumps
 from subprocess import run
 from filecmp import cmp
+from glob import glob
 
 from .notifications import createNotification, notify_annotation
 from .db_connection import connect, DB_NAME
@@ -39,7 +40,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
         assembly_name = cursor.fetchone()[0]
 
-        annotation_name, annotation_id, error = __generate_annotation_name(taxon)
+        annotation_name, annotation_id, error = __generate_annotation_name(taxon, assembly_name)
     except Exception as err:
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
@@ -78,7 +79,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
-        notify_annotation(annotation_id, assembly_name, annotation_name, new_file_path)
+        notify_annotation(annotation_id, assembly_name, annotation_id, annotation_name, new_file_path, "Added")
 
         print(f"New annotation {annotation_name} added!")
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
@@ -88,7 +89,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
 
 # generate annotation name
-def __generate_annotation_name(taxon):
+def __generate_annotation_name(taxon, assembly_name):
     """
     Generates new annotation name.
     """
@@ -106,8 +107,7 @@ def __generate_annotation_name(taxon):
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
-    scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
-    new_annotation_name = f"{scientificName}_annotation_id{next_id}"
+    new_annotation_name = f"{assembly_name}_annotation_id{next_id}"
 
     return new_annotation_name, next_id, {}
 
@@ -230,8 +230,14 @@ def deleteAnnotationByAnnotationID(annotation_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.id, assemblies.name, genomicAnnoations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id")
-        assembly_id, assembly_name, annotation_name = cursor.fetchone()[0]
+        cursor.execute(f"SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id")
+        assembly_id, assembly_name, annotation_name = cursor.fetchone()
+
+        print(assembly_id, assembly_name, annotation_name)
+
+        cursor.execute(
+            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+        )
 
         row_headers = [x[0] for x in cursor.description]
         taxon = cursor.fetchone()
@@ -240,7 +246,7 @@ def deleteAnnotationByAnnotationID(annotation_id):
         if annotation_id:
             status, error = __deleteAnnotationEntryByAnnotationID(annotation_id)
 
-        if status and taxon and assembly_name:
+        if status and taxon and assembly_name and annotation_name:
             status, error = __deleteAnnotationFile(taxon, assembly_name, annotation_name)
         else:
             return 0, error
@@ -248,11 +254,11 @@ def deleteAnnotationByAnnotationID(annotation_id):
         if not status:
             return 0, error
 
-        notify_annotation(assembly_id, assembly_name, "", "Remove")
+        notify_annotation(annotation_id, assembly_name, annotation_id, annotation_name, "", "Removed")
 
         return 1, []
     except Exception as err:
-        return 0, createNotification(message=f"AssemblyDeletionError1: {str(err)}")
+        return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
 
 # deletes folder for assembly
@@ -261,22 +267,25 @@ def __deleteAnnotationFile(taxon, assembly_name, annotation_name):
     Deletes data for specific annotation.
     """
     try:
-        scientificName = taxon["scientificName"].replace(" ", "_")
+        scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
         path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}"
-        run(
-            ["rm", "-r", f"{path}/{assembly_name}/annotations/{annotation_name}.gff3"]
-        )
+
+        for file in glob(f"{path}/{assembly_name}/annotations/{annotation_name}*"):
+            remove(file)
 
         return 1, {}
     except Exception as err:
-        return 0, createNotification(message=str(err))
+        return 0, createNotification(message=f"AnnotationDeletionError2: {str(err)}")
 
 
 def __deleteAnnotationEntryByAnnotationID(id):
-    connection, cursor, error = connect()
-    cursor.execute(f"DELETE FROM genomicAnnotations WHERE id={id}")
-    connection.commit()
-    return 1, {}
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"DELETE FROM genomicAnnotations WHERE id={id}")
+        connection.commit()
+        return 1, {}
+    except Exception as err:
+        return 0, createNotification(message=f"AnnotationDeletionError3: {str(err)}")
 
 
 # parse gff
@@ -321,8 +330,7 @@ def parseGff(path):
                 key_value = {match[1]: match[2]}
                 info.update(key_value)
             else:
-                pass
-                #print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
+                print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
 
         return {
             "seqID": seqID,

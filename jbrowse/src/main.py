@@ -1,26 +1,27 @@
-from genericpath import exists
 from posixpath import basename
 import pika
-import os
-import json
+from os import remove, environ, _exit
+from json import load, dumps, loads
 from subprocess import run
-import sys
+from sys import exit
+from glob import glob
 
 STORAGE_ROOT = ""
 JBROWSE_PATH = "/usr/local/apache2/htdocs"
 
 
 def handle_new_assembly(message):
-    storage_fasta = "{}{}".format(STORAGE_ROOT, message["storage_path"])
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
-
     try:
+        storage_fasta = "{}{}".format(STORAGE_ROOT, message["storage_path"])
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
         run(args=["samtools", "faidx", storage_fasta])
         run(args=["mkdir", "-p", jbrowse_assembly_path])
         run(
             args=["jbrowse", "add-assembly", storage_fasta, "--load", "symlink", "--name", message["assembly"]["name"]],
             cwd=jbrowse_assembly_path,
         )
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
         run(args=["jbrowse", "text-index", "--out", ".", "--force"], cwd=jbrowse_assembly_path)
         return True
     except Exception as err:
@@ -28,9 +29,9 @@ def handle_new_assembly(message):
 
 
 def handle_delete_assembly(message):
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
-
     try:
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
         run(args=["rm", "-r", jbrowse_assembly_path])
         return True
     except Exception as err:
@@ -38,10 +39,10 @@ def handle_delete_assembly(message):
 
 
 def handle_new_mapping(message):
-    storage_bam = "{}{}".format(STORAGE_ROOT, message["storage_path"])
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
-
     try:
+        storage_bam = "{}{}".format(STORAGE_ROOT, message["storage_path"])
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
         run(args=["samtools", "index", storage_bam])
         run(
             args=[
@@ -49,7 +50,7 @@ def handle_new_mapping(message):
                 "add-track",
                 storage_bam,
                 "--name",
-                message["mapping_name"],
+                message["mapping"]["name"],
                 "--category",
                 "mapping",
                 "--load",
@@ -57,8 +58,9 @@ def handle_new_mapping(message):
             ],
             cwd=jbrowse_assembly_path,
         )
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
         run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
+            args=["jbrowse", "text-index", "--out", ".", "---force"],
             cwd=jbrowse_assembly_path,
         )
         return True
@@ -67,7 +69,40 @@ def handle_new_mapping(message):
 
 
 def handle_delete_mapping(message):
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+    try:
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+        jbrowse_config_path = jbrowse_assembly_path + f"/config.json"
+        mapping_id = message["mapping"]["id"]
+        mapping_name = message["mapping"]["name"]
+
+        for file in glob(jbrowse_assembly_path + f"/{mapping_name}*"):
+            remove(file)
+
+        with open(jbrowse_config_path, "r") as f:
+            jbrowse_config = load(f)
+            f.close()
+
+        if "tracks" in jbrowse_config:
+            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_mapping_{mapping_id}"]
+            jbrowse_config["tracks"] = tracks
+
+        if "aggregateTextSearchAdapters" in jbrowse_config:
+            aggregateTextSearchAdapters = [adapter for adapter in jbrowse_config["aggregateTextSearchAdapters"] if adapter["textSearchAdapterId"] != f"text_search_adapter_mapping_{mapping_id}"]
+            jbrowse_config["aggregateTextSearchAdapters"] = aggregateTextSearchAdapters
+
+        with open(jbrowse_config_path, "w") as f:
+            f.write(dumps(jbrowse_config, indent=4))
+            f.close()
+
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        run(
+            args=["jbrowse", "text-index", "--out", ".", "---force"],
+            cwd=jbrowse_assembly_path,
+        )
+
+        return 1
+    except Exception as err:
+        print(f"JbrowseConfigUpdateError: {str(err)}")
 
     try:
         return True
@@ -76,10 +111,10 @@ def handle_delete_mapping(message):
 
 
 def handle_new_annotation(message):
-    storage_gff = "{}{}".format(STORAGE_ROOT, message["storage_path"])
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
-
     try:
+        storage_gff = "{}{}".format(STORAGE_ROOT, message["storage_path"])
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+
         run(args=["tabix", "-p", "gff", storage_gff])
         run(
             args=[
@@ -87,7 +122,7 @@ def handle_new_annotation(message):
                 "add-track",
                 storage_gff,
                 "--name",
-                message["annotation_name"],
+                message["annotation"]["name"],
                 "--category",
                 "annotation",
                 "--load",
@@ -95,8 +130,9 @@ def handle_new_annotation(message):
             ],
             cwd=jbrowse_assembly_path,
         )
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
         run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
+            args=["jbrowse", "text-index", "--out", ".", "---force"],
             cwd=jbrowse_assembly_path,
         )
         return True
@@ -105,7 +141,40 @@ def handle_new_annotation(message):
 
 
 def handle_delete_annotation(message):
-    jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+    try:
+        jbrowse_assembly_path = "{}/assemblies/{}".format(JBROWSE_PATH, message["assembly"]["name"])
+        jbrowse_config_path = jbrowse_assembly_path + f"/config.json"
+        annotation_id = message["annotation"]["id"]
+        annotation_name = message["annotation"]["name"]
+
+        for file in glob(jbrowse_assembly_path + f"/{annotation_name}*"):
+            remove(file)
+
+        with open(jbrowse_config_path, "r") as f:
+            jbrowse_config = load(f)
+            f.close()
+
+        if "tracks" in jbrowse_config:
+            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_annotation_{annotation_id}"]
+            jbrowse_config["tracks"] = tracks
+
+        if "aggregateTextSearchAdapters" in jbrowse_config:
+            aggregateTextSearchAdapters = [adapter for adapter in jbrowse_config["aggregateTextSearchAdapters"] if adapter["textSearchAdapterId"] != f"text_search_adapter_annotation_{annotation_id}"]
+            jbrowse_config["aggregateTextSearchAdapters"] = aggregateTextSearchAdapters
+
+        with open(jbrowse_config_path, "w") as f:
+            f.write(dumps(jbrowse_config, indent=4))
+            f.close()
+
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        run(
+            args=["jbrowse", "text-index", "--out", ".", "--force"],
+            cwd=jbrowse_assembly_path,
+        )
+
+        return 1
+    except Exception as err:
+        print(f"JbrowseConfigUpdateError: {str(err)}")
 
     try:
         return True
@@ -114,7 +183,7 @@ def handle_delete_annotation(message):
 
 
 def callback(ch, method, properties, body):
-    message = json.loads(body)
+    message = loads(body)
 
     if message["action"] == "Added":
         handle_selector = {
@@ -140,7 +209,7 @@ def callback(ch, method, properties, body):
 def main():
     queue = "resource"
 
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=os.environ.get("RABBIT_CONTAINER_NAME")))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=environ.get("RABBIT_CONTAINER_NAME")))
     channel = connection.channel()
 
     channel.queue_declare(queue=queue, durable=True)
@@ -156,6 +225,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Interrupted")
         try:
-            sys.exit(0)
+            exit(0)
         except SystemExit:
-            os._exit(0)
+            _exit(0)

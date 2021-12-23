@@ -15,13 +15,17 @@ const DataAssistant: React.FC = () => {
       <header className="bg-indigo-100 shadow sticky z-20 top-10">
         <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl md:text-3xl font-bold text-gray-900 mr-4">
-              <span>Data assistant</span>
+            <h1 className="text-gray-900 mr-4">
+              <span className="text-xl font-bold">Data assistant</span>
               {taxon && taxon.id && (
-                <span className="animate-fade-in">{" > " + taxon?.scientificName}</span>
+                <span className="animate-fade-in text-lg font-semibold">
+                  {" > " + taxon?.scientificName}
+                </span>
               )}
               {taxon && taxon.id && assembly && assembly.id && (
-                <span className="animate-fade-in">{" > " + assembly.name}</span>
+                <span className="animate-fade-in text-lg font-semibold">
+                  {" > " + assembly.name}
+                </span>
               )}
             </h1>
           </div>
