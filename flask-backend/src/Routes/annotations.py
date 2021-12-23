@@ -37,7 +37,6 @@ def annotations_bp_import_annotation():
 
         if taxon and dataset and userID:
             data, notification = import_annotation(taxon, assemblyID, dataset, userID)
-            print(data, notification)
         else:
             data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 

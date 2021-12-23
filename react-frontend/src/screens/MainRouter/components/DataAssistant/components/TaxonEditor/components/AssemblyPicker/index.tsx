@@ -102,7 +102,7 @@ const AssemblyPicker = ({
         <div className="w-2/5">Added on</div>
         <div className="w-64" />
       </div>
-      <div className="min-h-1/4 max-h-1/2">
+      <div className="animate-grow-y min-h-1/4 max-h-1/2">
         {assemblies && assemblies.length > 0 ? (
           assemblies.map((assembly: any) => (
             <div
@@ -200,14 +200,14 @@ const AssemblyPicker = ({
         ) : (
           <div className="flex justify-center items-center py-4 border-t border-b">No items!</div>
         )}
-        <div className="flex my-4 justify-center">
-          <div className="w-72">
-            <Button
-              size="sm"
-              label="Toggle add new assembly..."
-              onClick={() => setToggleNewAssemblyImportForm((prevState) => !prevState)}
-            />
-          </div>
+      </div>
+      <div className="flex my-4 justify-center">
+        <div className="w-72">
+          <Button
+            size="sm"
+            label="Toggle add new assembly..."
+            onClick={() => setToggleNewAssemblyImportForm((prevState) => !prevState)}
+          />
         </div>
       </div>
       <hr className="shadow my-4" />

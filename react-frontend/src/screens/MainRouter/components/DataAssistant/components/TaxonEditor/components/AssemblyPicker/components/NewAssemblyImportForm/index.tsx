@@ -11,6 +11,7 @@ import {
   TreeNode,
   importAssembly,
   importAnnotation,
+  importMapping,
 } from "../../../../../../../../../../api";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import FileTree from "../../../../../../../../../../components/FileTree";
@@ -257,55 +258,24 @@ const NewAssemblyImportForm = ({
     const token = JSON.parse(sessionStorage.getItem("token") || "{}");
 
     if (newAssembly && newAssembly.length === 1) {
-      const responseAssembly = await importAssembly(taxon, newAssembly[0], userID, token);
+      const response = await importDataset(
+        taxon,
+        newAssembly,
+        newAnnotations,
+        newMappings,
+        newBuscos,
+        newFcats,
+        newMilts,
+        newRepeatmaskers,
+        userID,
+        token
+      );
 
-      if (
-        responseAssembly &&
-        responseAssembly.notification &&
-        responseAssembly.notification.length > 0
-      ) {
-        responseAssembly.notification.forEach((element) => handleNewNotification(element));
-      }
+      loadAssemblies();
+      loadImportDir();
 
-      if (responseAssembly && responseAssembly.payload) {
-        const assemblyID = responseAssembly.payload;
-        if (newAnnotations && newAnnotations.length > 0) {
-          newAnnotations.forEach(async (annotation) => {
-            const responseAnnotation = await importAnnotation(
-              taxon,
-              annotation,
-              assemblyID,
-              userID,
-              token
-            );
-
-            if (
-              responseAnnotation &&
-              responseAnnotation.notification &&
-              responseAnnotation.notification.length > 0
-            ) {
-              responseAnnotation.notification.forEach((element) => handleNewNotification(element));
-            }
-
-            loadAssemblies();
-
-            handleResetForm();
-
-            loadImportDir();
-
-            setImporting(false);
-          });
-        }
-      } else {
-        responseAssembly &&
-        responseAssembly.notification &&
-        responseAssembly.notification.length > 0
-          ? responseAssembly.notification.forEach((not) => handleNewNotification(not))
-          : handleNewNotification({
-              label: "Error",
-              message: "Invalid response from importing assembly",
-              type: "error",
-            });
+      if (response && response.notification && response.notification.length > 0) {
+        response.notification.forEach((element) => handleNewNotification(element));
       }
     } else {
       handleNewNotification({
@@ -315,6 +285,7 @@ const NewAssemblyImportForm = ({
       });
       return;
     }
+    setImporting(false);
   };
 
   const handleResetForm = () => {

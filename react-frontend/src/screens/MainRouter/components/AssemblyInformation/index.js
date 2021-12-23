@@ -8,6 +8,7 @@ import {
   fetchAnalysesByAssemblyID,
   fetchAnnotationsByAssemblyID,
   fetchAssemblyByAssemblyID,
+  fetchMappingsByAssemblyID,
   fetchTaxonByTaxonID,
   fetchTaxonGeneralInformationByTaxonID,
   removeBookmark,
@@ -27,6 +28,7 @@ const AssemblyInformation = () => {
   const [assembly, setAssembly] = useState({});
   const [taxon, setTaxon] = useState({});
   const [annotations, setAnnotations] = useState([]);
+  const [mappings, setMappings] = useState([]);
   const [generalInformation, setGeneralInformation] = useState([]);
   const [analyses, setAnalyses] = useState([]);
 
@@ -45,6 +47,8 @@ const AssemblyInformation = () => {
   const [toggleAnnotationCompleteness, setToggleAnnotationCompleteness] = useState(false);
 
   const [toggleGenomeViewerSection, setToggleGenomeViewerSection] = useState(false);
+
+  const [location, setLocation] = useState("");
 
   const { id } = useParams();
 
@@ -68,7 +72,7 @@ const AssemblyInformation = () => {
   }, [id]);
 
   useEffect(() => {
-    fetchTaxonByTaxonID(assembly.taxonID, parseInt(userID), token).then((responseTaxa) => {
+    fetchTaxonByTaxonID(assembly.taxonID, userID, token).then((responseTaxa) => {
       if (responseTaxa && responseTaxa.payload) {
         setTaxon(responseTaxa.payload);
       }
@@ -83,6 +87,10 @@ const AssemblyInformation = () => {
 
   useEffect(() => {
     loadAnnotations();
+  }, [id]);
+
+  useEffect(() => {
+    loadMappings();
   }, [id]);
 
   useEffect(() => {
@@ -110,7 +118,7 @@ const AssemblyInformation = () => {
     if (userID && token) {
       const responseGeneralInformation = await fetchTaxonGeneralInformationByTaxonID(
         assembly.taxonID,
-        parseInt(userID),
+        userID,
         token
       );
       if (responseGeneralInformation && responseGeneralInformation.payload) {
@@ -123,14 +131,21 @@ const AssemblyInformation = () => {
   const loadAnnotations = async () => {
     setFetchingAll(true);
     if (userID && token) {
-      const response = await fetchAnnotationsByAssemblyID(
-        id.replace(":", ""),
-        parseInt(userID),
-        token
-      );
-      console.log(response);
+      const response = await fetchAnnotationsByAssemblyID(id.replace(":", ""), userID, token);
       if (response && response.payload) {
         setAnnotations(response.payload);
+      }
+    }
+    setFetchingAll(false);
+  };
+
+  const loadMappings = async () => {
+    setFetchingAll(true);
+    if (userID && token) {
+      const response = await fetchMappingsByAssemblyID(id.replace(":", ""), userID, token);
+      console.log(response);
+      if (response && response.payload) {
+        setMappings(response.payload);
       }
     }
     setFetchingAll(false);
@@ -141,7 +156,7 @@ const AssemblyInformation = () => {
     if (userID && token && id) {
       const responseAnalyses = await fetchAnalysesByAssemblyID(
         parseInt(id.replace(":", "")),
-        parseInt(userID),
+        userID,
         token
       );
       if (responseAnalyses && responseAnalyses.payload) {
@@ -339,7 +354,8 @@ const AssemblyInformation = () => {
                 <GenomeViewer
                   assemblyDetails={assembly}
                   annotations={annotations}
-                  location="scaffold110s:29,261..31,094"
+                  mappings={mappings}
+                  location={location}
                 />
               )}
             </div>

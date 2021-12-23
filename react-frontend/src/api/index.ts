@@ -704,6 +704,89 @@ export interface IAnnotation {
   username: string;
 }
 
+// =============================== mappings =============================== //
+// ===== IMPORT NEW MAPPING ===== //
+export async function importMapping(
+  taxon: INcbiTaxon,
+  dataset: Dataset,
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_mapping", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      taxon: taxon,
+      dataset: dataset,
+      assemblyID: assemblyID,
+      userID: userID,
+      token: token,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== DELETE MAPPING BY MAPPING ID ===== //
+export async function deleteMappingByMappingID(
+  mappingID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/deleteMappingByMappingID?mappingID=" +
+      mappingID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
+export async function fetchMappingsByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse<IMapping[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchMappingsByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IMapping {
+  addedBy: number;
+  addedOn: string;
+  assemblyID: number;
+  id: number;
+  name: string;
+  path: string;
+  username: string;
+}
+
 // =============================== ANALYSES =============================== //
 // ===== FETCH BUSCO ANALYSES BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(
@@ -759,13 +842,13 @@ export interface IImportFileInformation {
 // ===== IMPORT COMBINED ===== //
 export async function importDataset(
   taxon: INcbiTaxon,
-  assembly: IImportFileInformation,
-  annotations: IImportFileInformation[],
-  mappings: IImportFileInformation[],
-  buscos: IImportFileInformation[],
-  fcats: IImportFileInformation[],
-  milts: IImportFileInformation[],
-  repeatmaskers: IImportFileInformation[],
+  assembly: Dataset[],
+  annotations: Dataset[],
+  mappings: Dataset[],
+  buscos: Dataset[],
+  fcats: Dataset[],
+  milts: Dataset[],
+  repeatmaskers: Dataset[],
   userID: number,
   token: string
 ): Promise<IResponse> {
@@ -1190,17 +1273,17 @@ export interface IMappingAdded {
   additionalFilesPath: string;
 }
 
-// ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
-export async function fetchMappingsByAssemblyID(assemblyID: number): Promise<IResponse> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
+// // ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
+// export async function fetchMappingsByAssemblyID(assemblyID: number): Promise<IResponse> {
+//   return fetch(
+//     process.env.REACT_APP_API_ADRESS + "/fetchMappingsByAssemblyID?assemblyID=" + assemblyID
+//   )
+//     .then((request) => request.json())
+//     .then((data) => data)
+//     .catch((error) => {
+//       console.error(error);
+//     });
+// }
 
 // // ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
 // export async function fetchAnnotationsByAssemblyID(assemblyID: number): Promise<IResponse> {

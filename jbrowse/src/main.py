@@ -21,7 +21,10 @@ def handle_new_assembly(message):
             args=["jbrowse", "add-assembly", storage_fasta, "--load", "symlink", "--name", message["assembly"]["name"]],
             cwd=jbrowse_assembly_path,
         )
-        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        try:
+            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        except:
+            pass
         run(args=["jbrowse", "text-index", "--out", ".", "--force"], cwd=jbrowse_assembly_path)
         return True
     except Exception as err:
@@ -58,9 +61,12 @@ def handle_new_mapping(message):
             ],
             cwd=jbrowse_assembly_path,
         )
-        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        try:
+            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        except:
+            pass
         run(
-            args=["jbrowse", "text-index", "--out", ".", "---force"],
+            args=["jbrowse", "text-index", "--out", ".", "--force"],
             cwd=jbrowse_assembly_path,
         )
         return True
@@ -98,9 +104,12 @@ def handle_delete_mapping(message):
             f.write(dumps(jbrowse_config, indent=4))
             f.close()
 
-        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        try:
+            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        except:
+            pass
         run(
-            args=["jbrowse", "text-index", "--out", ".", "---force"],
+            args=["jbrowse", "text-index", "--out", ".", "--force"],
             cwd=jbrowse_assembly_path,
         )
 
@@ -134,9 +143,12 @@ def handle_new_annotation(message):
             ],
             cwd=jbrowse_assembly_path,
         )
-        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        try:
+            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        except:
+            pass
         run(
-            args=["jbrowse", "text-index", "--out", ".", "---force"],
+            args=["jbrowse", "text-index", "--out", ".", "--force"],
             cwd=jbrowse_assembly_path,
         )
         return True
@@ -176,7 +188,10 @@ def handle_delete_annotation(message):
             f.write(dumps(jbrowse_config, indent=4))
             f.close()
 
-        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        try:
+            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+        except:
+            pass
         run(
             args=["jbrowse", "text-index", "--out", ".", "--force"],
             cwd=jbrowse_assembly_path,

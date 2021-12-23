@@ -13,6 +13,7 @@ def create_app():
     from .users import users_bp
     from .assemblies import assemblies_bp
     from .annotations import annotations_bp
+    from .mappings import mappings_bp
     from .analyses import analyses_bp
     from .combined_imports import imports_bp
 
@@ -23,6 +24,8 @@ def create_app():
     app.register_blueprint(users_bp, url_prefix="/")
     app.register_blueprint(assemblies_bp, url_prefix="/")
     app.register_blueprint(annotations_bp, url_prefix="/")
+    app.register_blueprint(mappings_bp, url_prefix="/")
+    app.register_blueprint(imports_bp, url_prefix="/")
     app.register_blueprint(analyses_bp, url_prefix="/")
     app.register_blueprint(imports_bp, url_prefix="/")
 

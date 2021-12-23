@@ -2,7 +2,7 @@ from dataclasses import asdict
 import pika
 from os import getenv
 from json import dumps
-from .payload import Annotation, AnnotationPayload, Assembly, AssemblyPayload, MappingPayload, Payload
+from .payload import Annotation, AnnotationPayload, Assembly, AssemblyPayload, Mapping, MappingPayload, Payload
 
 RABBIT_MQ_QUEUE_RESOURCE = "resource"
 
@@ -41,4 +41,9 @@ def notify_annotation(
     payload = AnnotationPayload(
         Annotation(annotationName, annotationId), Assembly(assemblyName, assemblyId), path, action
     )
+    __notify(payload)
+
+
+def notify_mapping(assemblyId: int, assemblyName: str, mappingId: int, mappingName: str, path: str, action: str):
+    payload = MappingPayload(Mapping(mappingName, mappingId), Assembly(assemblyName, assemblyId), path, action)
     __notify(payload)

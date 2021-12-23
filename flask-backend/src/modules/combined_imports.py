@@ -6,8 +6,9 @@ from re import compile
 from sys import argv
 
 from modules.environment import BASE_PATH_TO_IMPORT
-from modules.assemblies import import_assembly, FASTA_FILE_PATTERN
+from modules.assemblies import deleteAssemblyByAssemblyID, import_assembly, FASTA_FILE_PATTERN
 from modules.annotations import ANNOTATION_FILE_PATTERN, import_annotation
+from modules.mappings import import_mapping
 from modules.notifications import createNotification
 
 FILE_PATTERN_DICT = {
@@ -183,6 +184,10 @@ def validateFileInfo(file_info, forceType=""):
     return datasets, createNotification("Success", "At least one valid dataset detetcted!", "success")
 
 
+# TODO: check why text-index generation is not working sometimes
+# TODO: check if removing mapping is working
+# TODO: add analyses
+
 # import for all possible data
 def importDataset(
     taxon, assembly, userID, annotations=[], mappings=[], buscos=[], fcats=[], milts=[], repeatmaskers=[]
@@ -199,21 +204,55 @@ def importDataset(
         "miltsIDs": [],
         "repeatmaskerIDs": [],
     }
-    errors = []
+    notifications = []
 
-    # assembly_id, error = import_assembly(taxon, assembly, userID)
-    # if not assembly_id:
-    #     return 0, error
-    # summary["assemblyID"] = assembly_id
-    # errors += error
+    if not taxon:
+        return summary, createNotification(message="Missing taxon information!")
 
-    # for annotation in annotations:
-    #     annotation_id, error = import_annotation(taxon, 1, annotation, userID)
-    #     if annotation_id:
-    #         summary["annotationIDs"] += [annotation_id]
-    #     errors += error
+    if not assembly:
+        return summary, createNotification(message="Missing assembly!")
 
-    # return summary, errors
+    if not userID:
+        return summary, createNotification(message="Missing user information!")
+
+    assembly_id = None
+    try:
+        if len(assembly) != 1:
+            return summary, createNotification(message="Exact one assembly needs to be supplied!")
+
+        assembly = assembly[0]
+
+        assembly_id, notification = import_assembly(taxon, assembly, userID)
+        if not assembly_id:
+            return summary, notification
+        summary["assemblyID"] = assembly_id
+    except Exception as err:
+        if assembly_id:
+            deleteAssemblyByAssemblyID(assembly_id)
+        return summary, createNotification(message=f"CombinedImportError1: {str(err)}!")
+
+    try:
+        for annotation in annotations:
+            annotation_id, notification = import_annotation(taxon, assembly_id, annotation, userID)
+            if annotation_id:
+                summary["annotationIDs"] += [annotation_id]
+            else:
+                notifications += notification
+
+        for mapping in mappings:
+            mapping_id, notification = import_mapping(taxon, assembly_id, mapping, userID)
+            if mapping_id:
+                summary["mappingIDs"] += [mapping_id]
+            else:
+                notifications += notification
+
+        if len(notifications) == 0:
+            notifications += createNotification("Success", "All files successfully imported!", "success")
+
+        return summary, notifications
+    except Exception as err:
+        deleteAssemblyByAssemblyID(assembly_id)
+        return summary, createNotification(message=f"CombinedImportError2: {str(err)}")
 
 
 def readArgs():

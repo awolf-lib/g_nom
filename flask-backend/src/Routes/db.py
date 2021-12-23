@@ -394,88 +394,88 @@ def fetchSpeciesProfilePictureTaxonID():
 #         return REQUESTMETHODERROR
 
 
-# ADD NEW ANNOTATION
-@db.route("/addNewAnnotation", methods=["GET"])
-def addNewAnnotation():
-    if request.method == "GET":
-        id = request.args.get("id")
-        name = request.args.get("name")
-        path = request.args.get("path")
-        userID = request.args.get("userID")
-        additionalFiles = request.args.get("additionalFilesPath")
-        data, notification = api.addNewAnnotation(id, name, path, userID, additionalFiles)
+# # ADD NEW ANNOTATION
+# @db.route("/addNewAnnotation", methods=["GET"])
+# def addNewAnnotation():
+#     if request.method == "GET":
+#         id = request.args.get("id")
+#         name = request.args.get("name")
+#         path = request.args.get("path")
+#         userID = request.args.get("userID")
+#         additionalFiles = request.args.get("additionalFilesPath")
+#         data, notification = api.addNewAnnotation(id, name, path, userID, additionalFiles)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
-
-
-# REMOVE ANNOTATION
-@db.route("/removeAnnotationByAnnotationID", methods=["GET"])
-def removeAnnotationByAnnotationID():
-    if request.method == "GET":
-        id = request.args.get("id")
-        data, notification = api.removeAnnotationByAnnotationID(id)
-
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
-# ================== MAPPING ================== #
-# FETCH ALL MAPPINGS BY ASSEMBLY ID
-@db.route("/fetchMappingsByAssemblyID", methods=["GET"])
-def fetchMappingsByAssemblyID():
-    if request.method == "GET":
-        assemblyID = request.args.get("assemblyID")
-        data, notification = api.fetchMappingsByAssemblyID(assemblyID)
+# # REMOVE ANNOTATION
+# @db.route("/removeAnnotationByAnnotationID", methods=["GET"])
+# def removeAnnotationByAnnotationID():
+#     if request.method == "GET":
+#         id = request.args.get("id")
+#         data, notification = api.removeAnnotationByAnnotationID(id)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
-
-
-# ADD NEW MAPPING
-@db.route("/addNewMapping", methods=["GET"])
-def addNewMapping():
-    if request.method == "GET":
-        id = request.args.get("id")
-        name = request.args.get("name")
-        path = request.args.get("path")
-        userID = request.args.get("userID")
-        additionalFiles = request.args.get("additionalFilesPath")
-        data, notification = api.addNewMapping(id, name, path, userID, additionalFiles)
-
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
-# REMOVE MAPPING
-@db.route("/removeMappingByMappingID", methods=["GET"])
-def removeMappingByMappingID():
-    if request.method == "GET":
-        id = request.args.get("id")
-        data, notification = api.removeMappingByMappingID(id)
+# # ================== MAPPING ================== #
+# # FETCH ALL MAPPINGS BY ASSEMBLY ID
+# @db.route("/fetchMappingsByAssemblyID", methods=["GET"])
+# def fetchMappingsByAssemblyID():
+#     if request.method == "GET":
+#         assemblyID = request.args.get("assemblyID")
+#         data, notification = api.fetchMappingsByAssemblyID(assemblyID)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
+
+
+# # ADD NEW MAPPING
+# @db.route("/addNewMapping", methods=["GET"])
+# def addNewMapping():
+#     if request.method == "GET":
+#         id = request.args.get("id")
+#         name = request.args.get("name")
+#         path = request.args.get("path")
+#         userID = request.args.get("userID")
+#         additionalFiles = request.args.get("additionalFilesPath")
+#         data, notification = api.addNewMapping(id, name, path, userID, additionalFiles)
+
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
+
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
+
+
+# # REMOVE MAPPING
+# @db.route("/removeMappingByMappingID", methods=["GET"])
+# def removeMappingByMappingID():
+#     if request.method == "GET":
+#         id = request.args.get("id")
+#         data, notification = api.removeMappingByMappingID(id)
+
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
+
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
 # ================== ANALYSIS ================== #

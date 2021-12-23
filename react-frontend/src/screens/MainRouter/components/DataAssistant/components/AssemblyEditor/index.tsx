@@ -4,6 +4,7 @@ import TabWorkspace from "../../../../../../components/TabWorkspace";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
 import AddAssemblyTagForm from "./components/AddAssemblyTagForm";
 import EditAnnotationsForm from "./components/EditAnnotationsForm";
+import EditMappingsForm from "./components/EditMappingsForm";
 
 const AssemblyEditor = ({
   taxon,
@@ -30,7 +31,7 @@ const AssemblyEditor = ({
             label: "Annotations",
             content: <EditAnnotationsForm taxon={taxon} assembly={assembly} />,
           },
-          { label: "Mappings", content: <div></div> },
+          { label: "Mappings", content: <EditMappingsForm taxon={taxon} assembly={assembly} /> },
           { label: "Analyses", content: <div></div> },
         ]}
       />

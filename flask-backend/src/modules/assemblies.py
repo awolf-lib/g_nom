@@ -120,19 +120,19 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
             run(["gunzip", old_file_path])
             old_file_path = old_file_path[:-3]
 
-        # check if file exists already in db
-        if not forceIdentical:
-            connection, cursor, error = connect()
-            taxonID = taxon["id"]
-            cursor.execute(f"SELECT id, name, path FROM assemblies WHERE taxonID={taxonID}")
-            row_headers = [x[0] for x in cursor.description]
-            assembly_paths = cursor.fetchall()
-            assembly_paths = [dict(zip(row_headers, x)) for x in assembly_paths]
+        # # check if file exists already in db
+        # if not forceIdentical:
+        #     connection, cursor, error = connect()
+        #     taxonID = taxon["id"]
+        #     cursor.execute(f"SELECT id, name, path FROM assemblies WHERE taxonID={taxonID}")
+        #     row_headers = [x[0] for x in cursor.description]
+        #     assembly_paths = cursor.fetchall()
+        #     assembly_paths = [dict(zip(row_headers, x)) for x in assembly_paths]
 
-        for file in assembly_paths:
-            if cmp(old_file_path, file["path"]):
-                same_assembly = file["name"]
-                return 0, "", createNotification(message=f"New assembly seems to be identical to {same_assembly}")
+        # for file in assembly_paths:
+        #     if cmp(old_file_path, file["path"]):
+        #         same_assembly = file["name"]
+        #         return 0, "", createNotification(message=f"New assembly seems to be identical to {same_assembly}")
 
         # move to storage
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])

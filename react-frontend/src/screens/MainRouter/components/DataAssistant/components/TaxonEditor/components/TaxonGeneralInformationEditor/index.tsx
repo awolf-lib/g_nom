@@ -35,6 +35,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   const [toggleAddNewGeneralInforamtion, setToggleAddNewGeneralInforamtion] =
     useState<boolean>(false);
 
+  const newGeneralInformationFormRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     loadGeneralInformation(taxon.id);
     topRef.current?.scrollIntoView();
@@ -47,6 +49,10 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const topRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    newGeneralInformationFormRef.current?.scrollIntoView();
+  }, [newGeneralInformationFormRef]);
 
   // notifications
   const dispatch = useNotification();
@@ -266,24 +272,21 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
     <div className="animate-grow-y">
       {/* Update existing GIs */}
       <div>
-        <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
-          <div>Edit existing general information...</div>
+        <div className="font-semibold text-sm text-white bg-gray-500 border-b border-t border-white flex">
+          <div className="w-1/5 py-2 px-4 text-sm font-semibold">Label</div>
+          <div className="w-4/5 py-2 px-4 text-sm font-semibold">Description</div>
           {fetchingGeneralInformation && (
             <div>
               <LoadingSpinner />
             </div>
           )}
         </div>
-        <div className="flex bg-indigo-100 px-2">
-          <div className="w-1/5 py-4 px-4 text-sm font-semibold">Label</div>
-          <div className="w-4/5 py-4 px-4 text-sm font-semibold">Description</div>
-        </div>
         <div className="animate-grow-y min-h-1/4 max-h-1/2">
           {generalInfos && generalInfos.length > 0 ? (
             generalInfos.slice(listOffset, listOffset + 5).map((gi) => (
               <div
                 key={gi.id}
-                className="hover:text-blue-600 cursor-pointer odd:bg-gray-100 even:bg-white border-t py-2 px-2 shadow"
+                className="hover:text-blue-600 cursor-pointer odd:bg-gray-100 even:bg-white border-t py-2 shadow"
               >
                 {gi.id !== editing ? (
                   <div className="flex" onClick={() => handleSetEditing(gi)}>
@@ -407,12 +410,11 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
       {/* Create new GIs */}
       {toggleAddNewGeneralInforamtion && (
         <div className="bg-indigo-100 animate-grow-y">
-          <div className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white">
+          <div
+            className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white"
+            ref={newGeneralInformationFormRef}
+          >
             <div>Add new general information...</div>
-          </div>
-          <div className="flex px-2">
-            <div className="w-1/5 text-sm py-4 px-4 font-semibold">Label</div>
-            <div className="w-4/5 text-sm py-4 px-4 font-semibold">Description</div>
           </div>
           <div className="bg-gray-100 py-4 px-2">
             <div className="flex">

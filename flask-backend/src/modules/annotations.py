@@ -81,7 +81,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
-        notify_annotation(annotation_id, assembly_name, annotation_id, annotation_name, new_file_path, "Added")
+        notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, new_file_path, "Added")
 
         print(f"New annotation {annotation_name} added!")
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
@@ -135,18 +135,18 @@ def __store_annotation(
             else:
                 return 0, createNotification(message="Unzipping of gff failed!")
 
-        # check if file exists already in db
-        if not forceIdentical:
-            connection, cursor, error = connect()
-            cursor.execute(f"SELECT id, name, path FROM genomicAnnotations WHERE assemblyID={assembly_id}")
-            row_headers = [x[0] for x in cursor.description]
-            annotation_paths = cursor.fetchall()
-            annotation_paths = [dict(zip(row_headers, x)) for x in annotation_paths]
+        # # check if file exists already in db
+        # if not forceIdentical:
+        #     connection, cursor, error = connect()
+        #     cursor.execute(f"SELECT id, name, path FROM genomicAnnotations WHERE assemblyID={assembly_id}")
+        #     row_headers = [x[0] for x in cursor.description]
+        #     annotation_paths = cursor.fetchall()
+        #     annotation_paths = [dict(zip(row_headers, x)) for x in annotation_paths]
 
-        for file in annotation_paths:
-            if cmp(old_file_path, file["path"]):
-                same_annotation = file["name"]
-                return 0, createNotification(message=f"New assembly seems to be identical to {same_annotation}")
+        # for file in annotation_paths:
+        #     if cmp(old_file_path, file["path"]):
+        #         same_annotation = file["name"]
+        #         return 0, createNotification(message=f"New assembly seems to be identical to {same_annotation}")
 
         # move to storage
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
@@ -197,29 +197,33 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         connection, cursor, error = connect()
         counter = 0
         values = ""
+
+        sql = "INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+        values = []
+
         for feature in file_content:
             seqID = feature["seqID"]
-            type = feature["feature"] if feature["feature"] != "." else "NULL"
+            type = feature["feature"] if feature["feature"] != "." else "N/A"
             start = feature["start"]
             end = feature["end"]
             attributes = feature["info"]
-            source = feature["method"] if feature["method"] != "." else "NULL"
-            score = feature["score"] if feature["score"] != "." else "NULL"
-            strand = feature["strand"] if feature["strand"] != "." else "NULL"
-            phase = feature["phase"] if feature["phase"] != "." else "NULL"
+            source = feature["method"][:50] if feature["method"] and feature["method"] != "." else None
+            try:
+                score = float(feature["score"])
+            except:
+                score = None
+            strand = feature["strand"] if feature["strand"] in ["+", "-"] else None
+            phase = int(feature["phase"]) if feature["phase"] in [0, 1, 2, "0", "1", "2"] else None
 
-            values += f"({annotationID}, '{seqID}', '{source}', '{type}', {start}, {end}, {score}, '{strand}', {phase}, '{attributes}'),"
+            values.append((annotationID, seqID, source, type, start, end, score, strand, phase, attributes))
             counter += 1
 
             if counter % 1000 == 0 and counter > 0:
-                values = values[:-1]
-                sql = f"INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES {values}"
-                cursor.execute(sql)
+                cursor.executemany(sql, values)
                 connection.commit()
-                values = ""
-        values = values[:-1]
-        sql = f"INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES {values}"
-        cursor.execute(sql)
+                values = []
+
+        cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -227,7 +231,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
     return 1, {}
 
 
-# fully deletes assembly by its ID
+# fully deletes annotation by its ID
 def deleteAnnotationByAnnotationID(annotation_id):
     """
     Deletes .gff3 and datatbase entry for specific annotation by annotation ID.
@@ -238,8 +242,6 @@ def deleteAnnotationByAnnotationID(annotation_id):
             f"SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id"
         )
         assembly_id, assembly_name, annotation_name = cursor.fetchone()
-
-        print(assembly_id, assembly_name, annotation_name)
 
         cursor.execute(
             f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
@@ -260,14 +262,14 @@ def deleteAnnotationByAnnotationID(annotation_id):
         if not status:
             return 0, error
 
-        notify_annotation(annotation_id, assembly_name, annotation_id, annotation_name, "", "Removed")
+        notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, "", "Removed")
 
         return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
 
-# deletes folder for assembly
+# deletes files for annotation
 def __deleteAnnotationFile(taxon, assembly_name, annotation_name):
     """
     Deletes data for specific annotation.
@@ -413,7 +415,7 @@ def parseGff(path):
 
 
 ## ============================ FETCH ============================ ##
-# fetches all assemblies for specific taxon
+# fetches all annotations for specific assembly
 def fetchAnnotationsByAssemblyID(assemblyID):
     """
     Fetches all annotations for specific assembly from database.
