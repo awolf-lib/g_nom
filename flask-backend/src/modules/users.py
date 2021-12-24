@@ -91,7 +91,7 @@ def validateActiveToken(userID, token):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, {}
+    return 1, []
 
 
 # ADD NEW USER
@@ -139,7 +139,7 @@ def fetchUsers():
         return [], createNotification(message=str(err) + "TEST")
 
     if len(user):
-        return [dict(zip(row_headers, x)) for x in user], {}
+        return [dict(zip(row_headers, x)) for x in user], []
     else:
         return [], createNotification("Info", "No users in database!", "info")
 

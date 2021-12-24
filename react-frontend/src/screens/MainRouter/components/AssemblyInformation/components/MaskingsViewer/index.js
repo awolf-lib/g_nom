@@ -4,7 +4,7 @@ import propTypes from "prop-types";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
 
-const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
+const MaskingsViewer = ({ repeatmasker }) => {
   const [elementsData, setElementsData] = useState([]);
   const [elementsLayout, setElementsLayout] = useState([]);
   const [repetitivenessData, setRepetitivenessData] = useState([]);
@@ -45,36 +45,24 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       repeatmasker.forEach((analysis) => {
         names.push(analysis.name);
         sines_lengths.push(analysis["sines_length"]);
-        sines_numbers.push(
-          analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        sines_numbers.push(analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         lines_lengths.push(analysis["lines_length"]);
-        lines_numbers.push(
-          analysis["lines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        lines_numbers.push(analysis["lines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         ltr_elements_lengths.push(analysis["ltr_elements_length"]);
         ltr_elements_numbers.push(
-          analysis["ltr_elements"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["ltr_elements"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         dna_elements_lengths.push(analysis["dna_elements_length"]);
         dna_elements_numbers.push(
-          analysis["dna_elements"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["dna_elements"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         rolling_circles_lengths.push(analysis["rolling_circles_length"]);
         rolling_circles_numbers.push(
-          analysis["rolling_circles"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["rolling_circles"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         unclassified_lengths.push(analysis["unclassified_length"]);
         unclassified_numbers.push(
-          analysis["unclassified"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["unclassified"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         small_rna_lengths.push(analysis["small_rna_length"]);
         small_rna_numbers.push(
@@ -82,21 +70,15 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         );
         satellites_lengths.push(analysis["satellites_length"]);
         satellites_numbers.push(
-          analysis["satellites"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["satellites"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         simple_repeats_lengths.push(analysis["simple_repeats_length"]);
         simple_repeats_numbers.push(
-          analysis["simple_repeats"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["simple_repeats"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         low_complexity_lengths.push(analysis["low_complexity_length"]);
         low_complexity_numbers.push(
-          analysis["low_complexity"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["low_complexity"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 
@@ -322,25 +304,15 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
     let names = [];
     repeatmasker.length > 0 &&
       repeatmasker.forEach((analysis) => {
-        let total =
-          analysis.total_repetitive_length +
-          analysis.total_non_repetitive_length;
+        let total = analysis.total_repetitive_length + analysis.total_non_repetitive_length;
         names.push(analysis.name);
-        total_repetitive_length.push(
-          (analysis["total_repetitive_length"] * 100) / total
-        );
+        total_repetitive_length.push((analysis["total_repetitive_length"] * 100) / total);
         total_repetitive_length_absolute.push(
-          analysis["total_repetitive_length"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["total_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
-        total_non_repetitive_length.push(
-          (analysis["total_non_repetitive_length"] * 100) / total
-        );
+        total_non_repetitive_length.push((analysis["total_non_repetitive_length"] * 100) / total);
         total_non_repetitive_length_absolute.push(
-          analysis["total_non_repetitive_length"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["total_non_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 

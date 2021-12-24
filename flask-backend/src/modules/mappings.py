@@ -18,7 +18,7 @@ ANNOTATION_FILE_PATTERN = {
 }
 
 ## ============================ IMPORT AND DELETE ============================ ##
-# full import of .gff3
+# full import of .sam/.bam
 def import_mapping(taxon, assembly_id, dataset, userID):
     """
     Import workflow for new mapping.
@@ -40,7 +40,9 @@ def import_mapping(taxon, assembly_id, dataset, userID):
         cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
         assembly_name = cursor.fetchone()[0]
 
-        mapping_name, mapping_id, error = __generate_mapping_name(taxon, assembly_name)
+        mapping_name, mapping_id, error = __generate_mapping_name(assembly_name)
+        if not mapping_id:
+            return 0, error
     except Exception as err:
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
@@ -48,7 +50,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
         if not mapping_name:
             return 0, error
 
-        new_file_path, error = __store_annotation(dataset, taxon, assembly_id, assembly_name, mapping_id, mapping_name)
+        new_file_path, error = __store_mapping(dataset, taxon, assembly_name, mapping_name)
 
         if not new_file_path or not exists(new_file_path):
             deleteMappingByMappingID(mapping_id)
@@ -69,8 +71,8 @@ def import_mapping(taxon, assembly_id, dataset, userID):
         return 0, createNotification(message=f"AnnotationImportError2: {str(err)}")
 
 
-# generate annotation name
-def __generate_mapping_name(taxon, assembly_name):
+# generate mapping name
+def __generate_mapping_name(assembly_name):
     """
     Generates new mapping name.
     """
@@ -79,24 +81,22 @@ def __generate_mapping_name(taxon, assembly_name):
         cursor.execute(
             f"SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='{DB_NAME}' AND TABLE_NAME='mappings'"
         )
-        auto_increment_counter = cursor.fetchone()
+        auto_increment_counter = cursor.fetchone()[0]
 
         if not auto_increment_counter:
             next_id = 1
         else:
-            next_id = auto_increment_counter[0]
+            next_id = auto_increment_counter
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
     new_mapping_name = f"{assembly_name}_mapping_id{next_id}"
 
-    return new_mapping_name, next_id, {}
+    return new_mapping_name, next_id, []
 
 
 # moves .gff3 into storage
-def __store_annotation(
-    dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name, forceIdentical=False
-):
+def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentical=False):
     """
     Moves annotation data to storage directory.
     """
@@ -153,7 +153,7 @@ def __store_annotation(
                 run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Mapping ({basename(new_file_path_main_file)}) moved to storage!")
-        return new_file_path_main_file, {}
+        return new_file_path_main_file, []
 
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -174,7 +174,7 @@ def __importDB(assembly_id, annotation_name, path, userID):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, {}
+    return 1, []
 
 
 # fully deletes mapping by its ID
@@ -227,7 +227,7 @@ def __deleteMappingFile(taxon, assembly_name, mapping_name):
         for file in glob(f"{path}/{assembly_name}/mappings/{mapping_name}*"):
             remove(file)
 
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"MappingDeletionError2: {str(err)}")
 
@@ -237,7 +237,7 @@ def __deleteMappingEntryByMappingID(id):
         connection, cursor, error = connect()
         cursor.execute(f"DELETE FROM mappings WHERE id={id}")
         connection.commit()
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"MappingDeletionError3: {str(err)}")
 
@@ -261,7 +261,7 @@ def fetchMappingsByAssemblyID(assemblyID):
 
         return (
             annotations,
-            {},
+            [],
         )
     except Exception as err:
         return [], createNotification(message=str(err))

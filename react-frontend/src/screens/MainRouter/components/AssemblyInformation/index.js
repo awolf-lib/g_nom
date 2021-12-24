@@ -143,7 +143,6 @@ const AssemblyInformation = () => {
     setFetchingAll(true);
     if (userID && token) {
       const response = await fetchMappingsByAssemblyID(id.replace(":", ""), userID, token);
-      console.log(response);
       if (response && response.payload) {
         setMappings(response.payload);
       }
@@ -159,6 +158,7 @@ const AssemblyInformation = () => {
         userID,
         token
       );
+      console.log(responseAnalyses);
       if (responseAnalyses && responseAnalyses.payload) {
         setAnalyses(responseAnalyses.payload);
       }
@@ -257,32 +257,25 @@ const AssemblyInformation = () => {
             <hr className="shadow my-8 mx-8" />
           </div>
 
-          {assembly.analyses &&
-            assembly.analyses.repeatmasker &&
-            assembly.analyses.repeatmasker.length > 0 && (
+          {analyses && analyses.repeatmasker && analyses.repeatmasker.length > 0 && (
+            <div>
               <div>
-                <div>
-                  <div
-                    className="m-8 select-none"
-                    onClick={() => setToggleMaskings((prevState) => !prevState)}
-                  >
-                    <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
-                      Masking
-                    </div>
+                <div
+                  className="m-8 select-none"
+                  onClick={() => setToggleMaskings((prevState) => !prevState)}
+                >
+                  <div className="text-xl px-4 py-2 font-semibold shadow bg-gradient-to-b from-gray-600 to-gray-400 rounded-lg text-white cursor-pointer hover:text-gray-100">
+                    Masking
                   </div>
-
-                  {toggleMaskings && (
-                    <MaskingsViewer
-                      repeatmasker={assembly.analyses.repeatmasker}
-                      assemblyName={assembly.name}
-                    />
-                  )}
                 </div>
-                <hr className="shadow my-8 mx-8" />
-              </div>
-            )}
 
-          {assembly.analyses && assembly.analyses.milts && assembly.analyses.milts.length > 0 && (
+                {toggleMaskings && <MaskingsViewer repeatmasker={analyses.repeatmasker} />}
+              </div>
+              <hr className="shadow my-8 mx-8" />
+            </div>
+          )}
+
+          {analyses && analyses.milts && analyses.milts.length > 0 && (
             <div>
               <div className="animate-grow-y">
                 <div
@@ -303,7 +296,7 @@ const AssemblyInformation = () => {
                 </div>
                 {toggleTaxonomicAssignment && (
                   <TaxonomicAssignmentViewer
-                    assembly={assembly}
+                    milts={analyses.milts}
                     setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
                   />
                 )}
@@ -312,10 +305,10 @@ const AssemblyInformation = () => {
             </div>
           )}
 
-          {assembly.analyses &&
-            assembly.analyses.busco &&
-            assembly.analyses.fcat &&
-            (assembly.analyses.busco.length > 0 || assembly.analyses.fcat.length > 0) && (
+          {analyses &&
+            analyses.busco &&
+            analyses.fcat &&
+            (analyses.busco.length > 0 || analyses.fcat.length > 0) && (
               <div>
                 <div className="animate-grow-y">
                   <div
@@ -330,8 +323,8 @@ const AssemblyInformation = () => {
                   </div>
                   {toggleAnnotationCompleteness && (
                     <AnnotationCompletenessViewer
-                      busco={assembly.analyses.busco}
-                      fcat={assembly.analyses.fcat}
+                      busco={analyses.busco}
+                      fcat={analyses.fcat}
                       assemblyName={assembly.name}
                     />
                   )}

@@ -788,7 +788,38 @@ export interface IMapping {
 }
 
 // =============================== ANALYSES =============================== //
-// ===== FETCH BUSCO ANALYSES BY ASSEMBLY ID ===== //
+// =============================== annotations =============================== //
+// ===== IMPORT NEW ANNOTATION ===== //
+export async function importAnalyses(
+  taxon: INcbiTaxon,
+  dataset: Dataset,
+  assemblyID: number,
+  analysesType: DatasetTypes,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_analyses", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      taxon: taxon,
+      dataset: dataset,
+      assemblyID: assemblyID,
+      analysesType: analysesType,
+      userID: userID,
+      token: token,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ANALYSES BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
@@ -797,6 +828,94 @@ export async function fetchAnalysesByAssemblyID(
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAnalysesByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH BUSCO ANALYSES BY ASSEMBLY ID ===== //
+export async function fetchBuscoAnalysesByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchBuscoAnalysesByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH FCAT ANALYSES BY ASSEMBLY ID ===== //
+export async function fetchFcatAnalysesByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchFcatAnalysesByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH MILTS ANALYSES BY ASSEMBLY ID ===== //
+export async function fetchMiltsAnalysesByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchMiltsAnalysesByAssemblyID?assemblyID=" +
+      assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ANALYSES BY ASSEMBLY ID ===== //
+export async function fetchRepeatmaskerAnalysesByAssemblyID(
+  assemblyID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchRepeatmaskerAnalysesByAssemblyID?assemblyID=" +
       assemblyID +
       "&userID=" +
       userID +

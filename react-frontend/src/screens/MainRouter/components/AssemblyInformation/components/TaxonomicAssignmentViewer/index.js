@@ -2,10 +2,7 @@ import { useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
 
-const TaxonomicAssignmentViewer = ({
-  assemblyInformation,
-  setTaxonomicAssignmentLoading,
-}) => {
+const TaxonomicAssignmentViewer = ({ milts, setTaxonomicAssignmentLoading }) => {
   const [index, setIndex] = useState(0);
   return (
     <div className="mx-8 animate-grow-y shadow-lg rounded-lg overflow-hidden border bg-white relative">
@@ -14,11 +11,7 @@ const TaxonomicAssignmentViewer = ({
           onLoad={() => setTaxonomicAssignmentLoading(false)}
           title="MiltsPlot"
           className="w-full h-screen"
-          src={
-            process.env.REACT_APP_API_ADRESS +
-            "/fetchMiltsPlotByPath?path=" +
-            assemblyInformation.analyses.milts[index].path
-          }
+          src={process.env.REACT_APP_API_ADRESS + "/fetchMiltsPlotByPath?path=" + milts[index].path}
         />
       </div>
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
@@ -33,7 +26,7 @@ const TaxonomicAssignmentViewer = ({
           </Button>
         </a>
       </div>
-      {assemblyInformation.analyses.milts.length > 1 && (
+      {milts.length > 1 && (
         <div className="absolute bottom-0 left-0 opacity-50 flex items-center mx-4 my-1 z-10">
           <Button
             color="link"
@@ -53,11 +46,8 @@ const TaxonomicAssignmentViewer = ({
             color="link"
             onClick={() =>
               setIndex((prevState) => {
-                if (
-                  prevState + 1 >
-                  assemblyInformation.analyses.milts.length - 1
-                ) {
-                  return assemblyInformation.analyses.milts.length - 1;
+                if (prevState + 1 > milts.length - 1) {
+                  return milts.length - 1;
                 } else {
                   return prevState + 1;
                 }

@@ -40,7 +40,9 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
         assembly_name = cursor.fetchone()[0]
 
-        annotation_name, annotation_id, error = __generate_annotation_name(taxon, assembly_name)
+        annotation_name, annotation_id, error = __generate_annotation_name(assembly_name)
+        if not annotation_id:
+            return 0, error
     except Exception as err:
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
@@ -48,9 +50,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         if not annotation_name:
             return 0, error
 
-        new_file_path, error = __store_annotation(
-            dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name
-        )
+        new_file_path, error = __store_annotation(dataset, taxon, assembly_name, annotation_name)
 
         if not new_file_path or not exists(new_file_path):
             deleteAnnotationByAnnotationID(annotation_id)
@@ -91,7 +91,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
 
 # generate annotation name
-def __generate_annotation_name(taxon, assembly_name):
+def __generate_annotation_name(assembly_name):
     """
     Generates new annotation name.
     """
@@ -100,24 +100,22 @@ def __generate_annotation_name(taxon, assembly_name):
         cursor.execute(
             f"SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='{DB_NAME}' AND TABLE_NAME='genomicAnnotations'"
         )
-        auto_increment_counter = cursor.fetchone()
+        auto_increment_counter = cursor.fetchone()[0]
 
         if not auto_increment_counter:
             next_id = 1
         else:
-            next_id = auto_increment_counter[0]
+            next_id = auto_increment_counter
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
     new_annotation_name = f"{assembly_name}_annotation_id{next_id}"
 
-    return new_annotation_name, next_id, {}
+    return new_annotation_name, next_id, []
 
 
 # moves .gff3 into storage
-def __store_annotation(
-    dataset, taxon, assembly_id, assembly_name, annotation_id, annotation_name, forceIdentical=False
-):
+def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIdentical=False):
     """
     Moves annotation data to storage directory.
     """
@@ -174,7 +172,7 @@ def __store_annotation(
                 run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!")
-        return new_file_path_main_file, {}
+        return new_file_path_main_file, []
 
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -228,7 +226,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, {}
+    return 1, []
 
 
 # fully deletes annotation by its ID
@@ -281,7 +279,7 @@ def __deleteAnnotationFile(taxon, assembly_name, annotation_name):
         for file in glob(f"{path}/{assembly_name}/annotations/{annotation_name}*"):
             remove(file)
 
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError2: {str(err)}")
 
@@ -291,7 +289,7 @@ def __deleteAnnotationEntryByAnnotationID(id):
         connection, cursor, error = connect()
         cursor.execute(f"DELETE FROM genomicAnnotations WHERE id={id}")
         connection.commit()
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError3: {str(err)}")
 
@@ -411,7 +409,7 @@ def parseGff(path):
 
     print(f"Parsed: 100%", end="\r")
 
-    return features, {}
+    return features, []
 
 
 ## ============================ FETCH ============================ ##
@@ -433,7 +431,7 @@ def fetchAnnotationsByAssemblyID(assemblyID):
 
         return (
             annotations,
-            {},
+            [],
         )
     except Exception as err:
         return [], createNotification(message=str(err))

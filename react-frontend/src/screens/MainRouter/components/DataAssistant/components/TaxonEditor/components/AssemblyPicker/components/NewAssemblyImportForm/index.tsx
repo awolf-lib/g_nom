@@ -9,9 +9,6 @@ import {
   Dataset,
   DatasetTypes,
   TreeNode,
-  importAssembly,
-  importAnnotation,
-  importMapping,
 } from "../../../../../../../../../../api";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import FileTree from "../../../../../../../../../../components/FileTree";

@@ -5,8 +5,6 @@ from subprocess import run
 from json import dumps
 from filecmp import cmp
 from re import compile, sub
-from sys import argv
-from time import time
 
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
 from .db_connection import DB_NAME, connect
@@ -72,7 +70,7 @@ def import_assembly(taxon, dataset, userID):
             deleteAssemblyByAssemblyID(assembly_id)
             return 0, error
 
-        # tree, error = updateTaxonTree()
+        tree, error = updateTaxonTree()
 
         print(f"New assembly ({basename(main_file_path)}) added!")
         return assembly_id, createNotification(
@@ -93,16 +91,16 @@ def __get_new_assembly_ID():
         cursor.execute(
             f"SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='{DB_NAME}' AND TABLE_NAME='assemblies'"
         )
-        auto_increment_counter = cursor.fetchone()
+        auto_increment_counter = cursor.fetchone()[0]
 
         if not auto_increment_counter:
             next_id = 1
         else:
-            next_id = auto_increment_counter[0]
+            next_id = auto_increment_counter
     except Exception as err:
         return 0, createNotification(message=f"AssemblyCreationError: {str(err)}")
 
-    return next_id, {}
+    return next_id, []
 
 
 # moves .fasta into storage
@@ -165,7 +163,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
                 run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Assembly ({new_file_name}) moved to storage!")
-        return new_file_path_main_file, new_assembly_name, {}
+        return new_file_path_main_file, new_assembly_name, []
 
     except Exception as err:
         return 0, "", createNotification(message=f"AssemblyStorageError: {str(err)}")
@@ -224,7 +222,7 @@ def __deleteAssemblyFolder(taxon, assembly_name):
         else:
             run(["rm", "-r", f"{path}/{assembly_name}"])
 
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDelitionError2: {str(err)}")
 
@@ -234,7 +232,7 @@ def __deleteAssemblyEntryByAssemblyID(id):
         connection, cursor, error = connect()
         cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
         connection.commit()
-        return 1, {}
+        return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDelitionError3: {str(err)}")
 
@@ -295,7 +293,7 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
     except Exception as err:
         return 0, createNotification(message=f"AssemblyImportDbError: {str(err)}")
 
-    return 1, {}
+    return 1, []
 
 
 # parse fasta
@@ -556,7 +554,7 @@ def parseFasta(path):
             "sequences": sequences,
             "type": sequence_type,
             "statistics": statistics,
-        }, {}
+        }, []
 
     except:
         return 0, createNotification(message=f"Something went wrong while parsing {filename}!")
@@ -607,7 +605,7 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
             {},
         )
     except Exception as err:
-        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # fetches all assemblies for specific taxon
@@ -631,7 +629,7 @@ def fetchAssembliesByTaxonID(taxonID):
             {},
         )
     except Exception as err:
-        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
@@ -653,7 +651,7 @@ def fetchAssembliesByTaxonIDs(taxonIDsString):
         return {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
     if len(assemblies):
-        return [dict(zip(row_headers, x)) for x in assemblies], {}
+        return [dict(zip(row_headers, x)) for x in assemblies], []
     else:
         return {}, createNotification("Info", "No assemblies found!", "info")
 
@@ -684,7 +682,7 @@ def fetchAssemblyByAssemblyID(id, userID):
         else:
             assembly.update({"bookmarked": 0})
 
-        return assembly, {}
+        return assembly, []
 
     except Exception as err:
         return {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
@@ -746,7 +744,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
         if len(tags) == 0:
             return [], createNotification("Info", "No tags in database!", "info")
         else:
-            return tags, {}
+            return tags, []
 
     except Exception as err:
         return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")

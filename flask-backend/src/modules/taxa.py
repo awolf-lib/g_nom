@@ -216,7 +216,7 @@ def updateTaxonTree():
         treeFile.write(dumps(lineageDict[1], separators=(",", ":")))
         treeFile.close()
 
-    return lineageDict[1], {}
+    return lineageDict[1], []
 
 
 # FETCH TAXON TREE
@@ -230,7 +230,7 @@ def fetchTaxonTree():
             treeData = loads(treeData)
             treeFile.close()
 
-        return treeData, {}
+        return treeData, []
     except Exception as err:
         return {}, createNotification(message=str(err))
 
@@ -253,7 +253,7 @@ def fetchTaxonByTaxonID(taxonID):
     if not len(taxa):
         return [], createNotification("Info", f"No taxon for ID {taxonID} found!", "info")
 
-    return dict(zip(row_headers, taxa)), {}
+    return dict(zip(row_headers, taxa)), []
 
 
 # FETCH TAXA BY SEARCH STRING
@@ -277,7 +277,7 @@ def fetchTaxonBySearch(search):
     if not len(taxa):
         return [], createNotification("Info", f"No taxon for search '{search}' found!", "info")
 
-    return sorted_taxa, {}
+    return sorted_taxa, []
 
 
 # FETCH ONE TAXON BY NCBI TAXON ID
@@ -298,7 +298,7 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     if not len(taxa):
         return [], createNotification("Info", f"No taxon for NCBI taxonomy ID {ncbiTaxonID} found!", "info")
 
-    return [dict(zip(row_headers, x)) for x in taxa], {}
+    return [dict(zip(row_headers, x)) for x in taxa], []
 
 
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
@@ -318,7 +318,7 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
         return [], createNotification(message=str(err))
 
     if len(generalInfos):
-        return [dict(zip(row_headers, x)) for x in generalInfos], {}
+        return [dict(zip(row_headers, x)) for x in generalInfos], []
     else:
         return [], createNotification("Info", "No general information!", "info")
 

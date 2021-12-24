@@ -10,6 +10,7 @@ from modules.assemblies import deleteAssemblyByAssemblyID, import_assembly, FAST
 from modules.annotations import ANNOTATION_FILE_PATTERN, import_annotation
 from modules.mappings import import_mapping
 from modules.notifications import createNotification
+from modules.analyses import import_analyses
 
 FILE_PATTERN_DICT = {
     "image": {
@@ -57,7 +58,7 @@ FILE_PATTERN_DICT = {
         ],
     },
     "repeatmasker": {
-        "main_file": compile(r"^(.*\.tbl$)"),
+        "main_file": compile(r"^.*\.tbl$"),
         "default_parent_dir": None,
         "additional_files": [compile(r"^(.*\.align$)"), compile(r"^(.*\.out$)")],
     },
@@ -187,6 +188,7 @@ def validateFileInfo(file_info, forceType=""):
 # TODO: check why text-index generation is not working sometimes
 # TODO: check if removing mapping is working
 # TODO: add analyses
+# TODO: add .sam support
 
 # import for all possible data
 def importDataset(
@@ -243,6 +245,34 @@ def importDataset(
             mapping_id, notification = import_mapping(taxon, assembly_id, mapping, userID)
             if mapping_id:
                 summary["mappingIDs"] += [mapping_id]
+            else:
+                notifications += notification
+
+        for busco in buscos:
+            busco_id, notification = import_analyses(taxon, assembly_id, busco, "busco", userID)
+            if busco_id:
+                summary["buscoIDs"] += [busco_id]
+            else:
+                notifications += notification
+
+        for fcat in fcats:
+            fcat_id, notification = import_analyses(taxon, assembly_id, fcat, "fcat", userID)
+            if fcat_id:
+                summary["fcatIDs"] += [fcat_id]
+            else:
+                notifications += notification
+
+        for milt in milts:
+            milt_id, notification = import_analyses(taxon, assembly_id, milt, "milts", userID)
+            if milt_id:
+                summary["miltsIDs"] += [milt_id]
+            else:
+                notifications += notification
+
+        for repeatmasker in repeatmaskers:
+            repeatmasker_id, notification = import_analyses(taxon, assembly_id, repeatmasker, "repeatmasker", userID)
+            if repeatmasker_id:
+                summary["repeatmaskerIDs"] += [repeatmasker_id]
             else:
                 notifications += notification
 
