@@ -407,7 +407,7 @@ const MaskingsViewer = ({ repeatmasker }) => {
           />
           <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
-              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+              href={process.env.REACT_APP_FILE_SERVER_ADRESS}
               target="_blank"
               rel="noopener noreferrer"
               className="flex justify-center items-center"

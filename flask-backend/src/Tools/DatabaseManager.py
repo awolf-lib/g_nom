@@ -562,7 +562,7 @@ class DatabaseManager:
         Gets all assemblies from db
         """
         try:
-            api = getenv("API_ADRESS")
+            api = getenv("API_ADRESS") + ":" + getenv("API_PORT")
             if not api:
                 return (
                     [],

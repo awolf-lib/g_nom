@@ -15,14 +15,15 @@ docker start $RABBIT_CONTAINER_NAME
 # start MySQL Docker container
 docker start $MYSQL_CONTAINER_NAME
 
-# start Flask Docker container
-docker start $NEXTCLOUD_CONTAINER_NAME
+# start File Server Docker container
+docker start $FILE_SERVER_CONTAINER_NAME
+# docker start $NEXTCLOUD_CONTAINER_NAME
 
 # start React Docker container
-docker start $REACTAPP_CONTAINER_NAME
+docker start $FRONTEND_CONTAINER_NAME
 
 # start Flask Docker container
-docker start $FLASK_CONTAINER_NAME
+docker start $API_CONTAINER_NAME
 
 # start jBrowse Docker container
 docker start $JBROWSE_CONTAINER_NAME

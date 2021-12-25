@@ -177,29 +177,15 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
           analysis["m" + activeMode + "_ignored"];
         names.push(analysis.name);
         similar.push((analysis["m" + activeMode + "_similar"] * 100) / total);
-        similar_absolute.push(
-          analysis["m" + activeMode + "_similar"] + "/" + total
-        );
-        duplicated.push(
-          (analysis["m" + activeMode + "_duplicated"] * 100) / total
-        );
-        duplicated_absolute.push(
-          analysis["m" + activeMode + "_duplicated"] + "/" + total
-        );
-        dissimilar.push(
-          (analysis["m" + activeMode + "_dissimilar"] * 100) / total
-        );
-        dissimilar_absolute.push(
-          analysis["m" + activeMode + "_dissimilar"] + "/" + total
-        );
+        similar_absolute.push(analysis["m" + activeMode + "_similar"] + "/" + total);
+        duplicated.push((analysis["m" + activeMode + "_duplicated"] * 100) / total);
+        duplicated_absolute.push(analysis["m" + activeMode + "_duplicated"] + "/" + total);
+        dissimilar.push((analysis["m" + activeMode + "_dissimilar"] * 100) / total);
+        dissimilar_absolute.push(analysis["m" + activeMode + "_dissimilar"] + "/" + total);
         missing.push((analysis["m" + activeMode + "_missing"] * 100) / total);
-        missing_absolute.push(
-          analysis["m" + activeMode + "_missing"] + "/" + total
-        );
+        missing_absolute.push(analysis["m" + activeMode + "_missing"] + "/" + total);
         ignored.push((analysis["m" + activeMode + "_ignored"] * 100) / total);
-        ignored_absolute.push(
-          analysis["m" + activeMode + "_ignored"] + "/" + total
-        );
+        ignored_absolute.push(analysis["m" + activeMode + "_ignored"] + "/" + total);
       });
     tracks.push({
       x: similar,
@@ -343,14 +329,12 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
                 style={{ width: "100%", height: "100%" }}
               />
             ) : (
-              <div className="flex items-center justify-center text-center">
-                Not yet imported!
-              </div>
+              <div className="flex items-center justify-center text-center">Not yet imported!</div>
             )}
           </div>
           <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
             <a
-              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+              href={process.env.REACT_APP_FILE_SERVER_ADRESS}
               target="_blank"
               rel="noopener noreferrer"
               className="flex justify-center items-center"
@@ -384,14 +368,12 @@ const AnnotationCompletenessViewer = ({ busco, fcat, assemblyName }) => {
                 style={{ width: "100%", height: "100%" }}
               />
             ) : (
-              <div className="flex items-center justify-center text-center">
-                Not yet imported!
-              </div>
+              <div className="flex items-center justify-center text-center">Not yet imported!</div>
             )}
           </div>
           <div className="absolute bottom-0 right-0 mx-4 my-1 z-10 opacity-50 flex items-center">
             <a
-              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
+              href={process.env.REACT_APP_FILE_SERVER_ADRESS}
               target="_blank"
               rel="noopener noreferrer"
               className="flex justify-center items-center"

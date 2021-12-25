@@ -1,10 +1,5 @@
 import "../../App.css";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Redirect,
-} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
@@ -12,7 +7,6 @@ import Footer from "./components/Footer";
 import Dashboard from "./components/Dashboard";
 import useToken from "./components/useToken";
 import Logout from "./components/Logout";
-import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import Download from "./components/Download";
 import AssembliesTable from "../../components/AssembliesTable";
@@ -20,14 +14,14 @@ import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
 
 const MainRouter = () => {
-  const { token, setToken, setUserID, setUserName, setUserRole } = useToken();
+  const { token, setToken, setUserID, setUserRole, setUserName } = useToken();
 
   return !token ? (
     <Login
       setToken={setToken}
       setUserID={setUserID}
-      setUserName={setUserName}
       setUserRole={setUserRole}
+      setUserName={setUserName}
     />
   ) : (
     <Router>
@@ -59,18 +53,6 @@ const MainRouter = () => {
         </Route>
         <Route exact path="/g-nom/download">
           <Download />
-        </Route>
-        <Route exact path="/g-nom/imprint">
-          <div className="p-4">Imprint</div>
-        </Route>
-        <Route exact path="/g-nom/help">
-          <div className="p-4">Help</div>
-        </Route>
-        <Route exact path="/g-nom/contact">
-          <div className="p-4">Contact</div>
-        </Route>
-        <Route exact path="/g-nom/profile">
-          <Profile />
         </Route>
         <Route exact path="/g-nom/settings">
           <Settings />

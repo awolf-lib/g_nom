@@ -1,4 +1,3 @@
-from posixpath import basename
 import pika
 from os import remove, environ, _exit
 from json import load, dumps, loads
@@ -28,6 +27,7 @@ def handle_new_assembly(message):
         run(args=["jbrowse", "text-index", "--out", ".", "--force"], cwd=jbrowse_assembly_path)
         return True
     except Exception as err:
+        print(f"JbrowseAddAssemblyError: {str(err)}")
         return False
 
 
@@ -38,6 +38,7 @@ def handle_delete_assembly(message):
         run(args=["rm", "-r", jbrowse_assembly_path])
         return True
     except Exception as err:
+        print(f"JbrowseConfigUpdateError: {str(err)}")
         return False
 
 
@@ -71,6 +72,7 @@ def handle_new_mapping(message):
         )
         return True
     except Exception as err:
+        print(f"JbrowseAddMappingError: {str(err)}")
         return False
 
 
@@ -116,10 +118,6 @@ def handle_delete_mapping(message):
         return 1
     except Exception as err:
         print(f"JbrowseConfigUpdateError: {str(err)}")
-
-    try:
-        return True
-    except Exception as err:
         return False
 
 
@@ -153,6 +151,7 @@ def handle_new_annotation(message):
         )
         return True
     except Exception as err:
+        print(f"JbrowseAddAnnotationError: {str(err)}")
         return False
 
 
@@ -200,10 +199,6 @@ def handle_delete_annotation(message):
         return 1
     except Exception as err:
         print(f"JbrowseConfigUpdateError: {str(err)}")
-
-    try:
-        return True
-    except Exception as err:
         return False
 
 
@@ -216,7 +211,7 @@ def callback(ch, method, properties, body):
             "Mapping": handle_new_mapping,
             "Annotation": handle_new_annotation,
         }
-    else:
+    elif message["action"] == "Removed":
         handle_selector = {
             "Assembly": handle_delete_assembly,
             "Mapping": handle_delete_mapping,
@@ -228,7 +223,7 @@ def callback(ch, method, properties, body):
     if handler(message):
         ch.basic_ack(delivery_tag=method.delivery_tag)
     else:
-        ch.basic_reject(delivery_tag=method.delivery_tag, requeue=True)
+        ch.basic_reject(delivery_tag=method.delivery_tag)
 
 
 def main():
