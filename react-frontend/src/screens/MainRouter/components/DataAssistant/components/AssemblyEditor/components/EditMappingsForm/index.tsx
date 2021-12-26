@@ -37,8 +37,8 @@ const EditMappingsForm = ({
   }, [assembly.id]);
 
   const loadMappings = async () => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (assembly && assembly.id && userID && token) {
       const response = await fetchMappingsByAssemblyID(assembly.id, userID, token);
@@ -58,8 +58,8 @@ const EditMappingsForm = ({
       setConfirmDeletion(confirmation);
 
       if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+        const token = JSON.parse(sessionStorage.getItem("token") || "");
 
         if (mappingID && userID && token) {
           const response = await deleteMappingByMappingID(mappingID, userID, token);

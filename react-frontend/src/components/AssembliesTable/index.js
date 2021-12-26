@@ -61,8 +61,8 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
   const loadData = async (page = 1, range = 10, search = "", link = "") => {
     setFetching(true);
 
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       const response = await fetchAssemblies(

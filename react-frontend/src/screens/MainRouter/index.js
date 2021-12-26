@@ -1,5 +1,5 @@
 import "../../App.css";
-import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
@@ -14,9 +14,9 @@ import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
 
 const MainRouter = () => {
-  const { token, setToken, setUserID, setUserRole, setUserName } = useToken();
+  const { token, userID, setToken, setUserID, setUserRole, setUserName } = useToken();
 
-  return !token ? (
+  return !token || !userID ? (
     <Login
       setToken={setToken}
       setUserID={setUserID}
@@ -26,41 +26,19 @@ const MainRouter = () => {
   ) : (
     <Router>
       <Navbar />
-      <Switch>
-        <Route exact path="/">
-          <Redirect to="/g-nom/dashboard" />
-        </Route>
-        <Route exact path="/g-nom">
-          <Redirect to="/g-nom/dashboard" />
-        </Route>
-        <Route exact path="/g-nom/dashboard">
-          <Dashboard />
-        </Route>
-        <Route exact path="/g-nom/assemblies">
-          <Redirect to="/g-nom/assemblies/list" />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/list"}>
-          <AssembliesTable />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/manage"}>
-          <DataAssistant />
-        </Route>
-        <Route exact path={"/g-nom/assemblies/assembly:id"}>
-          <AssemblyInformation />
-        </Route>
-        <Route exact path="/g-nom/tools">
-          <div className="p-4">Tools</div>
-        </Route>
-        <Route exact path="/g-nom/download">
-          <Download />
-        </Route>
-        <Route exact path="/g-nom/settings">
-          <Settings />
-        </Route>
-        <Route path="/logout">
-          <Logout setToken={setToken} />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route exact path="/" element={<Navigate to="/g-nom/dashboard" />} />
+        <Route exact path="/g-nom" element={<Navigate to="/g-nom/dashboard" />} />
+        <Route exact path="/g-nom/dashboard" element={<Dashboard />} />
+        <Route exact path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
+        <Route exact path="/g-nom/assemblies/list" element={<AssembliesTable />} />
+        <Route exact path="/g-nom/assemblies/manage" element={<DataAssistant />} />
+        <Route exact path="/g-nom/assemblies/assembly:id" element={<AssemblyInformation />} />
+        <Route exact path="/g-nom/tools" element={<div className="p-4">Tools</div>} />
+        <Route exact path="/g-nom/download" element={<Download />} />
+        <Route exact path="/g-nom/settings" element={<Settings />} />
+        <Route path="/logout" element={<Logout setToken={setToken} />} />
+      </Routes>
       <Footer />
     </Router>
   );

@@ -42,8 +42,8 @@ const AddAssemblyTagForm = ({
   }, []);
 
   const loadTags = async () => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (assembly && assembly.id && userID && token) {
       const response = await fetchAssemblyTagsByAssemblyID(assembly.id, userID, token);
@@ -85,8 +85,8 @@ const AddAssemblyTagForm = ({
         type: "error",
       });
     } else {
-      const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-      const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+      const token = JSON.parse(sessionStorage.getItem("token") || "");
 
       if (assembly && assembly.id && newAssemblyTag && userID && token) {
         if (!tags?.find((x) => x.tag.toUpperCase() === newAssemblyTag.toUpperCase())) {
@@ -113,8 +113,8 @@ const AddAssemblyTagForm = ({
   };
 
   const handleRemoveAssemblyTag = async (tag: AssemblyTagInterface) => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (tag && tag.id && userID && token) {
       const response = await removeAssemblyTagbyTagID(tag.id, userID, token);

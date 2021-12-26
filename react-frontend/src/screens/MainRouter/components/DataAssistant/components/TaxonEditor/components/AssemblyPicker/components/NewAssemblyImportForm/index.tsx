@@ -66,8 +66,8 @@ const NewAssemblyImportForm = ({
 
   const loadImportDir = async () => {
     setLoadingFiles(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
     const response = await fetchImportDirectory(userID, token);
     if (response && response.payload) {
       setImportDir(response.payload);
@@ -99,8 +99,8 @@ const NewAssemblyImportForm = ({
   const handleDropFileInformation = async (fileInformation: IImportFileInformation) => {
     setDropHover(false);
 
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (fileInformation && userID && token) {
       const minFileInformation = removeFileTreeAttributes(fileInformation);
@@ -251,8 +251,8 @@ const NewAssemblyImportForm = ({
 
   const handleSubmitImport = async () => {
     setImporting(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (newAssembly && newAssembly.length === 1) {
       const response = await importDataset(

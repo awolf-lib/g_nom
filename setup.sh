@@ -59,7 +59,7 @@ cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
 # start
 echo "Start ${FRONTEND_CONTAINER_NAME} container..."
-docker run --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 3000:3000 gnom/reactapp
+docker run --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 5000:5000 gnom/reactapp
 cd ..
 
 # ============================================ #

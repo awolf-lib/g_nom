@@ -1,6 +1,6 @@
 module.exports = {
-  purge: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
-  darkMode: false, // or 'media' or 'class'
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  purge: false,
   theme: {
     extend: {
       transitionPropery: { width: "width", height: "height" },
@@ -8,7 +8,7 @@ module.exports = {
         2000: "2000ms",
         3000: "3000ms",
       },
-      maxHeight: {
+        maxHeight: {
         50: "50vh",
         25: "25vh",
         75: "75vh",

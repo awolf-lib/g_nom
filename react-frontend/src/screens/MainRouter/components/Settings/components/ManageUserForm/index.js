@@ -27,8 +27,8 @@ const ManageUserForm = () => {
 
   const loadData = async () => {
     setFetching(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     const response = await fetchUsers(userID, token);
 
@@ -45,8 +45,8 @@ const ManageUserForm = () => {
   const handleDeleteUser = async (id, confirmation) => {
     if (id !== loggedInUserID) {
       if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+        const token = JSON.parse(sessionStorage.getItem("token") || "");
         const response = await deleteUserByUserID(id, userID, token);
 
         if (response && response.notification && response.notification.length > 0) {
@@ -61,8 +61,8 @@ const ManageUserForm = () => {
 
   const handleSaveNewUserRole = async (id) => {
     if (id !== loggedInUserID) {
-      const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-      const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+      const token = JSON.parse(sessionStorage.getItem("token") || "");
       const response = await updateUserRoleByUserID(id, userRole, userID, token);
 
       if (response && response.notification && response.notification.length > 0) {

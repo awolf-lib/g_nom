@@ -37,8 +37,8 @@ const EditAnnotationsForm = ({
   }, [assembly.id]);
 
   const loadAnnotations = async () => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (assembly && assembly.id && userID && token) {
       const response = await fetchAnnotationsByAssemblyID(assembly.id, userID, token);
@@ -58,8 +58,8 @@ const EditAnnotationsForm = ({
       setConfirmDeletion(confirmation);
 
       if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+        const token = JSON.parse(sessionStorage.getItem("token") || "");
 
         if (annotationID && userID && token) {
           const response = await deleteAnnotationByAnnotationID(annotationID, userID, token);

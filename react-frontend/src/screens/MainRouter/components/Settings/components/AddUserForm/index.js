@@ -33,8 +33,8 @@ const AddUserForm = () => {
       password === confirmPassword &&
       (role === "admin" || role === "user")
     ) {
-      const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-      const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+      const token = JSON.parse(sessionStorage.getItem("token") || "");
       const response = await addUser(username, password, role, userID, token);
       if (response && response.notification && response.notification.length > 0) {
         response.notification.map((not) => handleNewNotification(not));

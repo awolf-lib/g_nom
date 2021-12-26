@@ -29,10 +29,10 @@ const Login = ({ setToken, setUserID, setUserRole, setUserName }) => {
     login(name, password).then((response) => {
       if (response) {
         if (response.payload?.token) {
+          setUserID(response.payload.userID);
           setUserRole(response.payload.role);
           setUserName(response.payload.userName);
           setToken(response.payload.token);
-          setUserID(response.payload.userID);
         }
         if (response && response.notification && response.notification.length > 0) {
           response.notification.map((not) => handleNewNotification(not));

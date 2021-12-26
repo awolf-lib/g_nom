@@ -6,7 +6,7 @@ import ManageUserForm from "./components/ManageUserForm";
 const Settings = () => {
   const [toggleSection, setToggleSection] = useState(0);
 
-  const userRole = JSON.parse(sessionStorage.getItem("userRole") || "{}");
+  const userRole = JSON.parse(sessionStorage.getItem("userRole"));
 
   return (
     <div className="mb-16">

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Redirect } from "react-router";
+import { Navigate } from "react-router";
 
 export default function Logout({ setToken }) {
   useEffect(() => {
@@ -11,5 +11,5 @@ export default function Logout({ setToken }) {
     setToken("");
   });
 
-  return <Redirect to="/" />;
+  return <Navigate to="/" />;
 }

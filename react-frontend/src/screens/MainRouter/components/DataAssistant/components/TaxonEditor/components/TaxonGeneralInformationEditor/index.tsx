@@ -67,8 +67,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const loadGeneralInformation = async (id: number) => {
     setFetchingGeneralInformation(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       const response = await fetchTaxonGeneralInformationByTaxonID(id, parseInt(userID), token);
@@ -122,8 +122,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const updateGeneralInformation = async (id: any) => {
     setFetchingUpdateGeneralInformation(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       if (updatedGeneralInformationLabel && updatedGeneralInformationDescription) {
@@ -187,8 +187,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const handleSubmitNewGeneralInformation = async () => {
     setFetchingNewGeneralInformation(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       if (newGeneralInformationLabel && newGeneralInformationDescription) {
@@ -251,8 +251,8 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
   const handleDeleteGeneralInformation = async (id: number) => {
     setFetchingDeleteGeneralInformation(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       const response = await deleteTaxonGeneralInformationByID(id, parseInt(userID), token);

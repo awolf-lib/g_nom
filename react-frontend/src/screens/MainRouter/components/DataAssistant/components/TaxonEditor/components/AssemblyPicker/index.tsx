@@ -45,8 +45,8 @@ const AssemblyPicker = ({
   };
 
   const loadAssemblies = async () => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (taxon && taxon.id && userID && token) {
       const response = await fetchAssembliesByTaxonID(taxon.id, parseInt(userID), token);
@@ -76,8 +76,8 @@ const AssemblyPicker = ({
       setConfirmDeletion(confirmation);
 
       if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-        const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+        const token = JSON.parse(sessionStorage.getItem("token") || "");
 
         if (userID && token) {
           const response = await deleteAssemblyByAssemblyID(assemblyID, parseInt(userID), token);

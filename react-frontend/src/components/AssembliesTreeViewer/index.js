@@ -44,8 +44,8 @@ const AssembliesTreeViewer = () => {
 
   const loadTree = async () => {
     setLoadingTree(true);
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
     const response = await fetchTaxonTree(userID, token);
 
     if (response && response.payload) {
@@ -83,8 +83,8 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTaxa = async (nodeDatum) => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-    const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     const response = await fetchAssembliesByTaxonIDs(getChildrenTaxIds(nodeDatum), userID, token);
 

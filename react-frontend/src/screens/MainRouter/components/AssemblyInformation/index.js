@@ -63,8 +63,8 @@ const AssemblyInformation = () => {
     });
   };
 
-  const userID = JSON.parse(sessionStorage.getItem("userID") || "{}");
-  const token = JSON.parse(sessionStorage.getItem("token") || "{}");
+  const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+  const token = JSON.parse(sessionStorage.getItem("token") || "");
 
   useEffect(() => {
     loadAssembly();
@@ -158,7 +158,6 @@ const AssemblyInformation = () => {
         userID,
         token
       );
-      console.log(responseAnalyses);
       if (responseAnalyses && responseAnalyses.payload) {
         setAnalyses(responseAnalyses.payload);
       }

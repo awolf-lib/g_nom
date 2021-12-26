@@ -11,8 +11,8 @@ const Navbar = () => {
   const [userRole, setUserRole] = useState("");
   const [userName, setUserName] = useState("");
 
-  const userRoleStorage = JSON.parse(sessionStorage.getItem("userRole") || "{}");
-  const userNameStorage = JSON.parse(sessionStorage.getItem("userName") || "{}");
+  const userRoleStorage = JSON.parse(sessionStorage.getItem("userRole"));
+  const userNameStorage = JSON.parse(sessionStorage.getItem("userName"));
 
   const dropdownRef = useRef(null);
 
