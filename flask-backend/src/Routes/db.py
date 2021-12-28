@@ -180,32 +180,32 @@ def updateImageByTaxonID():
 #         return REQUESTMETHODERROR
 
 
-# FETCH ONE TAXON BY TAXON ID
-@db.route("/removeImageByTaxonID", methods=["GET"])
-def removeImageByTaxonID():
-    if request.method == "GET":
-        taxonID = request.args.get("taxonID")
-        userID = request.args.get("userID")
-        data, notification = api.removeImageByTaxonID(taxonID, userID)
+# # FETCH ONE TAXON BY TAXON ID
+# @db.route("/removeImageByTaxonID", methods=["GET"])
+# def removeImageByTaxonID():
+#     if request.method == "GET":
+#         taxonID = request.args.get("taxonID")
+#         userID = request.args.get("userID")
+#         data, notification = api.removeImageByTaxonID(taxonID, userID)
 
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
+#         response = jsonify({"payload": data, "notification": notification})
+#         response.headers.add("Access-Control-Allow-Origin", "*")
 
-        return response
-    else:
-        return REQUESTMETHODERROR
+#         return response
+#     else:
+#         return REQUESTMETHODERROR
 
 
-# FETCH ONE TAXON BY TAXON ID
-@db.route("/fetchSpeciesProfilePictureTaxonID", methods=["GET"])
-def fetchSpeciesProfilePictureTaxonID():
-    if request.method == "GET":
-        taxonID = request.args.get("taxonID")
-        data = api.fetchSpeciesProfilePictureTaxonID(taxonID)
+# # FETCH ONE TAXON BY TAXON ID
+# @db.route("/fetchSpeciesProfilePictureTaxonID", methods=["GET"])
+# def fetchSpeciesProfilePictureTaxonID():
+#     if request.method == "GET":
+#         taxonID = request.args.get("taxonID")
+#         data = api.fetchSpeciesProfilePictureTaxonID(taxonID)
 
-        return data
-    else:
-        return REQUESTMETHODERROR
+#         return data
+#     else:
+#         return REQUESTMETHODERROR
 
 
 # ================== ASSEMBLY ================== #

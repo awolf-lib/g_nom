@@ -234,7 +234,7 @@ const AssemblyInformation = () => {
               <GeneralInformationCarousel
                 generalInfos={generalInformation}
                 ncbiTaxonID={taxon.ncbiTaxonID}
-                imageStatus={taxon.imageStatus}
+                imagePath={taxon.imagePath}
               />
             )}
             <hr className="shadow my-8 mx-8" />

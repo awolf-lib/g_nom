@@ -132,7 +132,7 @@ const AssembliesTreeViewer = () => {
       <foreignObject
         {...foreignObjectProps}
         x="0"
-        y={nodeDatum.imageStatus || !nodeDatum.children ? "-45" : "-16"}
+        y={nodeDatum.imagePath || !nodeDatum.children ? "-45" : "-16"}
       >
         <div>
           <div
@@ -145,11 +145,11 @@ const AssembliesTreeViewer = () => {
               // toggleNode();
             }}
           >
-            {nodeDatum.imageStatus || !nodeDatum.children ? (
+            {nodeDatum.imagePath || !nodeDatum.children ? (
               <div className="border border-black rounded-lg overflow-hidden">
                 <SpeciesProfilePictureViewer
                   taxonID={nodeDatum.ncbiID}
-                  imageStatus={nodeDatum.imageStatus}
+                  imagePath={nodeDatum.imagePath}
                 />
               </div>
             ) : (
@@ -266,7 +266,7 @@ const AssembliesTreeViewer = () => {
                         taxonID={assembly.ncbiTaxonID}
                         assemblyName={assembly.name}
                         types={assembly.types}
-                        imageStatus={assembly.imageStatus}
+                        imagePath={assembly.imagePath}
                         key={assembly.id}
                       />
                     </div>

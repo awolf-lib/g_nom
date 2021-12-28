@@ -344,7 +344,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"SELECT assembly.taxonID, taxon.ncbiTaxonID, taxon.parentNcbiTaxonID, taxon.scientificName, taxon.taxonRank, taxon.imageStatus FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
+                f"SELECT assembly.taxonID, taxon.ncbiTaxonID, taxon.parentNcbiTaxonID, taxon.scientificName, taxon.taxonRank, taxon.imagePath FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
             )
             taxa = [x for x in cursor.fetchall()]
             taxa = set(taxa)
@@ -371,7 +371,7 @@ class DatabaseManager:
                             "level": level,
                             "id": taxon[0],
                             "ncbiID": taxon[1],
-                            "imageStatus": taxon[5],
+                            "imagePath": taxon[5],
                         }
                     }
                 )
@@ -394,7 +394,7 @@ class DatabaseManager:
             while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
                 level += 1
                 cursor.execute(
-                    f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imageStatus FROM taxon WHERE ncbiTaxonID IN {taxonSqlString}"
+                    f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxon WHERE ncbiTaxonID IN {taxonSqlString}"
                 )
                 taxa = cursor.fetchall()
                 taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
@@ -409,7 +409,7 @@ class DatabaseManager:
                                 "level": level,
                                 "id": taxon[4],
                                 "ncbiID": taxon[0],
-                                "imageStatus": taxon[5],
+                                "imagePath": taxon[5],
                             }
                         }
                     )
@@ -482,7 +482,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"UPDATE taxon SET imageStatus={1}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE ncbiTaxonID={taxonID}"
+                f"UPDATE taxon SET imagePath={1}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE ncbiTaxonID={taxonID}"
             )
             connection.commit()
         except:
@@ -517,7 +517,7 @@ class DatabaseManager:
         try:
             connection, cursor = self.updateConnection()
             cursor.execute(
-                f"UPDATE taxon SET taxon.imageStatus={0}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxon.ncbiTaxonID={taxonID}"
+                f"UPDATE taxon SET taxon.imagePath={0}, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxon.ncbiTaxonID={taxonID}"
             )
             connection.commit()
         except:
@@ -588,11 +588,11 @@ class DatabaseManager:
             userID = int(userID)
             if not userID:
                 cursor.execute(
-                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStatus, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
+                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imagePath, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id"
                 )
             else:
                 cursor.execute(
-                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStatus, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon, bookmark WHERE bookmark.userID={userID} AND bookmark.assemblyID=assembly.id AND assembly.taxonID = taxon.id"
+                    f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imagePath, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon, bookmark WHERE bookmark.userID={userID} AND bookmark.assemblyID=assembly.id AND assembly.taxonID = taxon.id"
                 )
 
             row_headers = [x[0] for x in cursor.description]
@@ -782,7 +782,7 @@ class DatabaseManager:
             taxonIDs = taxonIDsString.split(",")
             taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
             cursor.execute(
-                f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imageStatus, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id AND taxon.id IN {taxonSqlString}"
+                f"SELECT assembly.id, assembly.name, taxon.scientificName, taxon.imagePath, assembly.taxonID, taxon.ncbiTaxonID FROM assembly, taxon WHERE assembly.taxonID = taxon.id AND taxon.id IN {taxonSqlString}"
             )
             row_headers = [x[0] for x in cursor.description]
             assemblies = cursor.fetchall()

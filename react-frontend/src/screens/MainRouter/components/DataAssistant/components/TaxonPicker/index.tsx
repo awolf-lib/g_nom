@@ -1,11 +1,17 @@
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { fetchTaxonByNCBITaxonID, fetchTaxonBySearch, INcbiTaxon } from "../../../../../../api";
 import Input from "../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 
-const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
+const TaxonPicker = ({
+  getTaxon,
+  parentTaxon,
+}: {
+  getTaxon: SetStateAction<any>;
+  parentTaxon: INcbiTaxon | undefined;
+}) => {
   const [requestTimeoutTaxonID, setRequestTimeoutTaxonID] = useState<any>();
   const [taxa, setTaxa] = useState<any>([]);
   const [taxon, setTaxon] = useState<INcbiTaxon | undefined>();
@@ -20,6 +26,10 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
       type: notification.type,
     });
   };
+
+  useEffect(() => {
+    if (parentTaxon?.imagePath !== taxon?.imagePath) setTaxon(parentTaxon);
+  }, [parentTaxon?.imagePath]);
 
   const fetchTaxaByID = (id: number | undefined) => {
     clearTimeout(requestTimeoutTaxonID);
@@ -128,7 +138,7 @@ const TaxonPicker = ({ getTaxon }: { getTaxon: SetStateAction<any> }) => {
           <div className="flex justify-around items-center w-full border p-2 xl:rounded-xl shadow bg-gray-100">
             <div>
               <div className="w-32 rounded-lg overflow-hidden border-2 border-dotted border-white">
-                <SpeciesProfilePictureViewer taxonID={taxon.id} imageStatus={taxon.imageStatus} />
+                <SpeciesProfilePictureViewer taxonID={taxon.id} imagePath={taxon.imagePath} />
               </div>
             </div>
             <div className="w-full flex">

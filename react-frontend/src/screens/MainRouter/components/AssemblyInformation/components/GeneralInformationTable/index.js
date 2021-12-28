@@ -14,7 +14,7 @@ import {
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import Button from "../../../../../../components/Button";
 
-const GeneralInformationCarousel = ({ generalInfos, ncbiTaxonID, imageStatus }) => {
+const GeneralInformationCarousel = ({ generalInfos, ncbiTaxonID, imagePath }) => {
   const [taxonGeneralInfoCarouselIndex, setTaxonGeneralInfoCarouselIndex] = useState(0);
   const [taxonGeneralInfoInterval, setTaxonGeneralInfoInterval] = useState(undefined);
 
@@ -67,7 +67,7 @@ const GeneralInformationCarousel = ({ generalInfos, ncbiTaxonID, imageStatus }) 
         <div className="lg:p-4">
           <div className="flex justify-center lg:justify-start overflow-hidden rounded-lg">
             <div className="w-32 lg:w-64 rounded-lg overflow-hidden object-contain shadow-lg">
-              <SpeciesProfilePictureViewer taxonID={ncbiTaxonID} imageStatus={imageStatus} />
+              <SpeciesProfilePictureViewer taxonID={ncbiTaxonID} imagePath={imagePath} />
             </div>
           </div>
         </div>

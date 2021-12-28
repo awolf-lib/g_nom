@@ -199,7 +199,7 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
                             taxonID={assembly.ncbiTaxonID}
                             assemblyName={assembly.name}
                             types={assembly.types}
-                            imageStatus={assembly.imageStatus}
+                            imagePath={assembly.imagePath}
                             key={assembly.id}
                           />
                         ) : (
@@ -209,7 +209,7 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
                             taxonID={assembly.ncbiTaxonID}
                             assemblyName={assembly.name}
                             types={assembly.types}
-                            imageStatus={assembly.imageStatus}
+                            imagePath={assembly.imagePath}
                             key={assembly.id}
                           />
                         );

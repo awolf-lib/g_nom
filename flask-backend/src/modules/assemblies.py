@@ -642,7 +642,7 @@ def fetchAssembliesByTaxonIDs(taxonIDsString):
         taxonIDs = taxonIDsString.split(",")
         taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
         cursor.execute(
-            f"SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imageStatus, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN {taxonSqlString}"
+            f"SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imagePath, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN {taxonSqlString}"
         )
         row_headers = [x[0] for x in cursor.description]
         assemblies = cursor.fetchall()

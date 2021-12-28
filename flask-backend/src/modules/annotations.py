@@ -196,7 +196,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         counter = 0
         values = ""
 
-        sql = "INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) "
+        sql = "INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         values = []
 
         for feature in file_content:

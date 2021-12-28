@@ -9,7 +9,7 @@ export function AssemblyInfoCard({
   taxonID,
   assemblyName,
   types,
-  imageStatus,
+  imagePath,
 }: IAssemblyInfoCardProps): JSX.Element {
   const analysisClass = (analysisDone: boolean) =>
     classNames("my-2 rounded-full px-1 text-center text-xs text-white py-px shadow", {
@@ -21,7 +21,7 @@ export function AssemblyInfoCard({
       <div className="h-36 my-4 lg:my-0 border border-outset border-gray-400 w-full max-w-lg transition duration-500 ease-in-out bg-gradient-to-b from-gray-600 to-gray-400 transform hover:-translate-y-1 hover:scale-110 flex overflow-hidden rounded-r-lg shadow-lg">
         {taxonID && (
           <div className="w-64 p-1">
-            <SpeciesProfilePictureViewer taxonID={taxonID} imageStatus={imageStatus} />
+            <SpeciesProfilePictureViewer taxonID={taxonID} imagePath={imagePath} />
           </div>
         )}
         <div className="w-full px-3 py-2 mr-12">
@@ -68,7 +68,7 @@ export interface IAssemblyInfoCardProps {
   taxonID: number;
   assemblyName: string;
   types: string[];
-  imageStatus: boolean;
+  imagePath: boolean;
 }
 
 AssemblyInfoCard.defaultProps = {

@@ -4,14 +4,7 @@ import PropTypes from "prop-types";
 
 import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
 
-const AssemblyInfoListItem = ({
-  id,
-  taxonID,
-  scientificName,
-  assemblyName,
-  types,
-  imageStatus,
-}) => {
+const AssemblyInfoListItem = ({ id, taxonID, scientificName, assemblyName, types, imagePath }) => {
   const analysisClass = (analysisDone) =>
     classNames(
       "mx-1 rounded-full px-2 py-1 text-center text-xs text-white shadow border border-gray-200 border-inset",
@@ -28,10 +21,7 @@ const AssemblyInfoListItem = ({
     >
       <div className="sm:w-1/12 px-4 py-2 hidden sm:block">
         <div className="w-16 h-16 object-contain min-w-min rounded-lg overflow-hidden">
-          <SpeciesProfilePictureViewer
-            taxonID={taxonID}
-            imageStatus={imageStatus}
-          />
+          <SpeciesProfilePictureViewer taxonID={taxonID} imagePath={imagePath} />
         </div>
       </div>
       <div className="w-3/12 sm:w-3/12 px-4 py-2">{scientificName}</div>
@@ -42,9 +32,7 @@ const AssemblyInfoListItem = ({
           <div className="transform scale-75 md:scale-100 text-xs grid grid-cols-2 md:flex bg-gray-100 border border-gray-300 border-dotted shadow p-1 sm:px-2 rounded-lg transition transition duration-500">
             <div className={analysisClass(types.includes("busco"))}>B</div>
             <div className={analysisClass(types.includes("fcat"))}>F</div>
-            <div className={analysisClass(types.includes("repeatmasker"))}>
-              R
-            </div>
+            <div className={analysisClass(types.includes("repeatmasker"))}>R</div>
             <div className={analysisClass(types.includes("milts"))}>M</div>
           </div>
         )}
@@ -61,7 +49,7 @@ AssemblyInfoListItem.propTypes = {
   taxonID: PropTypes.number,
   assemblyName: PropTypes.string,
   types: PropTypes.array,
-  imageStatus: PropTypes.number,
+  imagePath: PropTypes.number,
 };
 
 AssemblyInfoListItem.defaultProps = {
@@ -69,5 +57,5 @@ AssemblyInfoListItem.defaultProps = {
   taxonID: 0,
   assemblyName: "",
   types: [],
-  imageStatus: 0,
+  imagePath: 0,
 };

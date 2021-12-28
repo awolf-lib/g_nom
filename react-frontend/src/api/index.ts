@@ -437,6 +437,58 @@ export async function reloadTaxonIDsFromFile(userID: number, token: string): Pro
     });
 }
 
+// ===== IMPORT NEW IMAGE ===== //
+export async function importImage(data: FormData): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/import_image", {
+    method: "POST",
+    body: data,
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH TAXON IMAGE BY TAXON ID ===== //
+export function fetchTaxonImageByTaxonID(
+  taxonID: number,
+  userID: number,
+  token: string
+): Promise<unknown> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaxonImageByTaxonID?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&taxonID=" +
+      taxonID
+  );
+}
+
+// ===== FETCH TAXON IMAGE BY TAXON ID ===== //
+export function removeImageByTaxonID(
+  taxonID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/removeImageByTaxonID?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&taxonID=" +
+      taxonID
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ONE TAXON BY TAXON ID ===== //
 export function fetchTaxonByTaxonID(
   taxonID: number,
@@ -506,7 +558,7 @@ export function fetchTaxonByNCBITaxonID(
 export interface INcbiTaxon {
   commonName: string;
   id: number; // taxonId
-  imageStatus: number;
+  imagePath: string;
   lastUpdatedBy: number;
   lastUpdatedOn: string; // TimeString
   ncbiTaxonID: number;
@@ -1140,43 +1192,43 @@ export async function importDataset(
 //     });
 // }
 
-// ===== UPDATE TAXON IMAGE ===== //
-export async function updateImageByTaxonID(
-  taxonID: number,
-  path: string,
-  userID: number
-): Promise<IResponse> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/updateImageByTaxonID?taxonID=" +
-      taxonID +
-      "&path=" +
-      path +
-      "&userID=" +
-      userID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
+// // ===== UPDATE TAXON IMAGE ===== //
+// export async function updateImageByTaxonID(
+//   taxonID: number,
+//   path: string,
+//   userID: number
+// ): Promise<IResponse> {
+//   return fetch(
+//     process.env.REACT_APP_API_ADRESS +
+//       "/updateImageByTaxonID?taxonID=" +
+//       taxonID +
+//       "&path=" +
+//       path +
+//       "&userID=" +
+//       userID
+//   )
+//     .then((request) => request.json())
+//     .then((data) => data)
+//     .catch((error) => {
+//       console.error(error);
+//     });
+// }
 
-// ===== DELETE TAXON IMAGE ===== //
-export async function removeImageByTaxonID(taxonID: number, userID: number): Promise<IResponse> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/removeImageByTaxonID?taxonID=" +
-      taxonID +
-      "&userID=" +
-      userID
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
+// // ===== DELETE TAXON IMAGE ===== //
+// export async function removeImageByTaxonID(taxonID: number, userID: number): Promise<IResponse> {
+//   return fetch(
+//     process.env.REACT_APP_API_ADRESS +
+//       "/removeImageByTaxonID?taxonID=" +
+//       taxonID +
+//       "&userID=" +
+//       userID
+//   )
+//     .then((request) => request.json())
+//     .then((data) => data)
+//     .catch((error) => {
+//       console.error(error);
+//     });
+// }
 
 // // ===== FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL ===== //
 // export async function fetchGeneralInfosByID(level: number, id: number) {

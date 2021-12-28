@@ -1,10 +1,18 @@
 from sys import argv
 from json import dumps, loads
+from re import sub, compile, IGNORECASE
+from subprocess import run
+from PIL import Image
 
 from modules.environment import BASE_PATH_TO_STORAGE
 from modules.db_connection import connect
 from modules.notifications import createNotification
 
+IMAGE_FILE_PATTERN = {
+    "main_file": compile(r"^image/(png|jfif|jpg|jpeg)$", IGNORECASE),
+    "default_parent_dir": None,
+    "additional_files": [],
+}
 
 # IMPORT ALL FROM TAXDUMP FILE
 def reloadTaxonIDsFromFile(userID):
@@ -126,7 +134,7 @@ def updateTaxonTree():
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imageStatus FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
+            f"SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imagePath FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
         )
         taxa = [x for x in cursor.fetchall()]
         taxa = set(taxa)
@@ -149,7 +157,7 @@ def updateTaxonTree():
                         "level": level,
                         "id": taxon[0],
                         "ncbiID": taxon[1],
-                        "imageStatus": taxon[5],
+                        "imagePath": taxon[5],
                     }
                 }
             )
@@ -168,7 +176,7 @@ def updateTaxonTree():
         while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
             level += 1
             cursor.execute(
-                f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imageStatus FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
+                f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
             )
             taxa = cursor.fetchall()
             taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
@@ -183,7 +191,7 @@ def updateTaxonTree():
                             "level": level,
                             "id": taxon[4],
                             "ncbiID": taxon[0],
-                            "imageStatus": taxon[5],
+                            "imagePath": taxon[5],
                         }
                     }
                 )
@@ -235,14 +243,67 @@ def fetchTaxonTree():
         return {}, createNotification(message=str(err))
 
 
+# FULL IMPORT WORKFLOW FOR NEW IMAGES
+def import_image(taxonID, taxonScientificName, image, userID):
+    """
+    Imports a new image into database.
+    """
+    connection, cursor, error = connect()
+
+    if not IMAGE_FILE_PATTERN["main_file"].match(image.content_type):
+        return 0, createNotification(message="Unsupported image type!")
+
+    scientificName = sub("[^a-zA-Z0-9_]", "_", taxonScientificName)
+    SIZE = 256, 256
+    try:
+        imagePath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/"
+        run(args=["mkdir", "-p", imagePath])
+        with Image.open(image) as image:
+            image.thumbnail(SIZE)
+            newPath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/" + scientificName + ".thumbnail.jpg"
+            image.save(newPath, "JPEG")
+
+        cursor.execute(f"UPDATE taxa SET imagePath='{newPath}', lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxa.id={taxonID};")
+        connection.commit()
+        return 1, createNotification("Success", f"Successfully imported image!", "success")
+    except Exception as err:
+        return 0, createNotification(message=f"ImageImportError: {str(err)}")
+
+
+def removeImageByTaxonID(taxonID, userID):
+    """
+    Deletes imagePath (DB) and file.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        cursor.execute(
+            f"SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id={taxonID}"
+        )
+
+        row_headers = [x[0] for x in cursor.description]
+        taxon = cursor.fetchone()
+        taxon = dict(zip(row_headers, taxon))
+
+        scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
+
+        imagePath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/"
+        run(args=["rm", imagePath])
+
+        cursor.execute(f"UPDATE taxa SET imagePath=NULL, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxa.id={taxonID};")
+        connection.commit()
+        return 1, createNotification("Success", f"Successfully deleted image!", "success")
+    except Exception as err:
+        return 0, createNotification(message=f"ImageDeletionError: {str(err)}")
+
+
 # FETCH ONE TAXON BY NCBI TAXON ID
 def fetchTaxonByTaxonID(taxonID):
     """
     Fetches taxon by taxon ID
     """
-    connection, cursor, error = connect()
-
     try:
+        connection, cursor, error = connect()
         cursor.execute(f"SELECT * FROM taxa WHERE id = {taxonID}")
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchone()
@@ -254,6 +315,17 @@ def fetchTaxonByTaxonID(taxonID):
         return [], createNotification("Info", f"No taxon for ID {taxonID} found!", "info")
 
     return dict(zip(row_headers, taxa)), []
+
+
+def fetchTaxonImageByTaxonID(taxonID):
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"SELECT imagePath FROM taxa WHERE id={taxonID}")
+        row_headers = [x[0] for x in cursor.description]
+        imagePath = cursor.fetchone()[0]
+        return imagePath, []
+    except Exception as err:
+        return "", createNotification(message=f"FetchImageError: {str(err)}")
 
 
 # FETCH TAXA BY SEARCH STRING

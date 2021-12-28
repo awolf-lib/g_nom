@@ -33,14 +33,14 @@ const DataAssistant: React.FC = () => {
       </header>
 
       <div className="mt-2 px-2">
-        <TaxonPicker getTaxon={setTaxon} />
+        <TaxonPicker getTaxon={setTaxon} parentTaxon={taxon} />
       </div>
 
       <hr className="shadow my-4" />
 
       {taxon && taxon.id && !assembly && (
         <div className="px-2">
-          <TaxonEditor taxon={taxon} getAssembly={setAssembly} />
+          <TaxonEditor taxon={taxon} getAssembly={setAssembly} setTaxon={setTaxon} />
         </div>
       )}
 
