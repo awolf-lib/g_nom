@@ -2,6 +2,7 @@
 // import { fromFetch } from "rxjs/fetch";
 // import { catchError, map, switchMap } from "rxjs/operators";
 
+import { type } from "os";
 import { AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
 // =============================== users =============================== //
@@ -871,6 +872,152 @@ export async function importAnalyses(
     });
 }
 
+// ===== DELETE ANNOTATION BY ANNOTATION ID ===== //
+export async function deleteAnalysesByAnalysesID(
+  analysisID: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/deleteAnalysesByAnalysesID?analysisID=" +
+      analysisID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IBuscoAnalysis {
+  addedBy: number;
+  addedOn: string;
+  analysisID: number;
+  assemblyID: number;
+  buscoMode: string;
+  completeDuplicated: number;
+  completeDuplicatedPercent: number;
+  completeSingle: number;
+  completeSinglePercent: number;
+  dataset: string;
+  fragmented: number;
+  fragmentedPercent: number;
+  id: number;
+  missing: number;
+  missingPercent: number;
+  name: string;
+  path: string;
+  targetFile: string;
+  total: number;
+  type: "busco";
+}
+
+export interface IFcatAnalysis {
+  addedBy: number;
+  addedOn: string;
+  analysisID: number;
+  assemblyID: number;
+  genomeID: string;
+  id: number;
+  m1_dissimilar: number;
+  m1_dissimilarPercent: number;
+  m1_duplicated: number;
+  m1_duplicatedPercent: number;
+  m1_ignored: number;
+  m1_ignoredPercent: number;
+  m1_missing: number;
+  m1_missingPercent: number;
+  m1_similar: number;
+  m1_similarPercent: number;
+  m2_dissimilar: number;
+  m2_dissimilarPercent: number;
+  m2_duplicated: number;
+  m2_duplicatedPercent: number;
+  m2_ignored: number;
+  m2_ignoredPercent: number;
+  m2_missing: number;
+  m2_missingPercent: number;
+  m2_similar: number;
+  m2_similarPercent: number;
+  m3_dissimilar: number;
+  m3_dissimilarPercent: number;
+  m3_duplicated: number;
+  m3_duplicatedPercent: number;
+  m3_ignored: number;
+  m3_ignoredPercent: number;
+  m3_missing: number;
+  m3_missingPercent: number;
+  m3_similar: number;
+  m3_similarPercent: number;
+  m4_dissimilar: number;
+  m4_dissimilarPercent: number;
+  m4_duplicated: number;
+  m4_duplicatedPercent: number;
+  m4_ignored: number;
+  m4_ignoredPercent: number;
+  m4_missing: number;
+  m4_missingPercent: number;
+  m4_similar: number;
+  m4_similarPercent: number;
+  name: string;
+  path: string;
+  total: number;
+  type: "fcat";
+}
+
+export interface IMiltsAnalysis {
+  addedBy: number;
+  addedOn: string;
+  analysisID: number;
+  assemblyID: number;
+  id: number;
+  name: string;
+  path: string;
+  type: "milts";
+}
+
+export interface IRepeatmaskerAnalysis {
+  addedBy: number;
+  addedOn: string;
+  analysisID: number;
+  assemblyID: number;
+  dna_elements: number;
+  dna_elements_length: number;
+  id: number;
+  lines: number;
+  lines_length: number;
+  low_complexity: number;
+  low_complexity_length: number;
+  ltr_elements: number;
+  ltr_elements_length: number;
+  name: string;
+  numberN: number;
+  path: string;
+  percentN: number;
+  rolling_circles: number;
+  rolling_circles_length: number;
+  satellites: number;
+  satellites_length: number;
+  simple_repeats: number;
+  simple_repeats_length: number;
+  sines: number;
+  sines_length: number;
+  small_rna: number;
+  small_rna_length: number;
+  total_non_repetitive_length: number;
+  total_repetitive_length: number;
+  type: "repeatmasker";
+  unclassified: number;
+  unclassified_length: number;
+}
+
+export type IAnalyses = IBuscoAnalysis | IFcatAnalysis | IMiltsAnalysis | IRepeatmaskerAnalysis;
+
 // ===== FETCH ALL ANALYSES BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(
   assemblyID: number,
@@ -898,7 +1045,7 @@ export async function fetchBuscoAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<IBuscoAnalysis[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchBuscoAnalysesByAssemblyID?assemblyID=" +
@@ -920,7 +1067,7 @@ export async function fetchFcatAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<IFcatAnalysis[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchFcatAnalysesByAssemblyID?assemblyID=" +
@@ -942,7 +1089,7 @@ export async function fetchMiltsAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<IMiltsAnalysis[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchMiltsAnalysesByAssemblyID?assemblyID=" +
@@ -964,7 +1111,7 @@ export async function fetchRepeatmaskerAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<IRepeatmaskerAnalysis[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchRepeatmaskerAnalysesByAssemblyID?assemblyID=" +

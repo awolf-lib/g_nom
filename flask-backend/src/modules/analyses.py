@@ -509,7 +509,7 @@ def deleteAnalysesByAnalysesID(analyses_id):
         if not status:
             return 0, error
 
-        return 1, []
+        return 1, createNotification("Success", f"Successfully deleted anaylsis", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnalysesDeletionError1: {str(err)}")
 

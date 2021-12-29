@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from modules.notifications import createNotification
 from modules.users import validateActiveToken
 from modules.analyses import (
+    deleteAnalysesByAnalysesID,
     fetchAnalysesByAssemblyID,
     fetchBuscoAnalysesByAssemblyID,
     fetchFcatAnalysesByAssemblyID,
@@ -23,7 +24,7 @@ REQUESTMETHODERROR = {
 }
 
 
-# IMPORT NEW ANNOTATION
+# IMPORT NEW ANALYSES
 @analyses_bp.route("/import_analyses", methods=["POST"])
 def analyses_bp_import_analyses():
     if request.method == "POST":
@@ -46,6 +47,34 @@ def analyses_bp_import_analyses():
 
         if taxon and dataset and userID and assemblyID and analyses_type:
             data, notification = import_analyses(taxon, assemblyID, dataset, analyses_type, userID)
+        else:
+            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# IMPORT NEW ANNOTATION
+@analyses_bp.route("/deleteAnalysesByAnalysesID", methods=["GET"])
+def analyses_bp_deleteAnalysesByAnalysesID():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        analysisID = request.args.get("analysisID")
+        if analysisID:
+            data, notification = deleteAnalysesByAnalysesID(analysisID)
         else:
             data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
