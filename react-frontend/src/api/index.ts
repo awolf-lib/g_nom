@@ -1168,7 +1168,8 @@ export async function importDataset(
   milts: Dataset[],
   repeatmaskers: Dataset[],
   userID: number,
-  token: string
+  token: string,
+  assemblyID: number | undefined = undefined
 ): Promise<IResponse> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/import_dataset", {
     method: "POST",
@@ -1186,6 +1187,7 @@ export async function importDataset(
       repeatmaskers: repeatmaskers,
       userID: userID,
       token: token,
+      assemblyID: assemblyID,
     }),
   })
     .then((request) => request.json())

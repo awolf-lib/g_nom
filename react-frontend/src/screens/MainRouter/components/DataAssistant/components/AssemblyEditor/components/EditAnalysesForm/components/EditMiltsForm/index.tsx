@@ -90,16 +90,14 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
                   {toggleConfirmDeletion !== milt.analysisID ? (
                     <div className="flex justify-between items-center">
                       <div className="flex items-center justify-center">
-                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
-                          <Trash
-                            className="stroke-current"
-                            color="blank"
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteMilts(milt.analysisID, "");
-                            }}
-                          />
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteMilts(milt.analysisID, "");
+                          }}
+                          className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125"
+                        >
+                          <Trash className="stroke-current" color="blank" size="small" />
                         </div>
                       </div>
                     </div>

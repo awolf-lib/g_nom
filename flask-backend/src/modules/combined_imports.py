@@ -192,7 +192,7 @@ def validateFileInfo(file_info, forceType=""):
 
 # import for all possible data
 def importDataset(
-    taxon, assembly, userID, annotations=[], mappings=[], buscos=[], fcats=[], milts=[], repeatmaskers=[]
+    taxon, assembly, userID, annotations=[], mappings=[], buscos=[], fcats=[], milts=[], repeatmaskers=[], append_assembly_id=0
 ):
     """
     Imports assembly with all supported datasets (annotations, mappings, Busco, fCat, Milts, Repeatmasker)
@@ -211,27 +211,30 @@ def importDataset(
     if not taxon:
         return summary, createNotification(message="Missing taxon information!")
 
-    if not assembly:
+    if not assembly and not append_assembly_id:
         return summary, createNotification(message="Missing assembly!")
 
     if not userID:
         return summary, createNotification(message="Missing user information!")
 
-    assembly_id = None
-    try:
-        if len(assembly) != 1:
-            return summary, createNotification(message="Exact one assembly needs to be supplied!")
+    if not append_assembly_id:
+        assembly_id = None
+        try:
+            if len(assembly) != 1:
+                return summary, createNotification(message="Exact one assembly needs to be supplied!")
 
-        assembly = assembly[0]
+            assembly = assembly[0]
 
-        assembly_id, notification = import_assembly(taxon, assembly, userID)
-        if not assembly_id:
-            return summary, notification
-        summary["assemblyID"] = assembly_id
-    except Exception as err:
-        if assembly_id:
-            deleteAssemblyByAssemblyID(assembly_id)
-        return summary, createNotification(message=f"CombinedImportError1: {str(err)}!")
+            assembly_id, notification = import_assembly(taxon, assembly, userID)
+            if not assembly_id:
+                return summary, notification
+            summary["assemblyID"] = assembly_id
+        except Exception as err:
+            if assembly_id:
+                deleteAssemblyByAssemblyID(assembly_id)
+            return summary, createNotification(message=f"CombinedImportError1: {str(err)}!")
+    else:
+        assembly_id = append_assembly_id
 
     try:
         for annotation in annotations:

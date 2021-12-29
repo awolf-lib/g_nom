@@ -8,7 +8,7 @@ import {
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
-import NewAssemblyImportForm from "./components/NewAssemblyImportForm";
+import NewDataImportForm from "./components/NewDataImportForm";
 
 const AssemblyPicker = ({
   taxon,
@@ -18,7 +18,6 @@ const AssemblyPicker = ({
   getAssembly: SetStateAction<any>;
 }) => {
   const [assemblies, setAssemblies] = useState<any>([]);
-  const [toggleStatistics, setToggleStatistics] = useState<number>(-1);
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
 
@@ -61,14 +60,6 @@ const AssemblyPicker = ({
     }
   };
 
-  const handleToggleStatistics = (id: number) => {
-    if (id === toggleStatistics) {
-      setToggleStatistics(-1);
-    } else {
-      setToggleStatistics(id);
-    }
-  };
-
   const handleDeleteAssembly = async (assemblyID: number, confirmation: string) => {
     if (toggleConfirmDeletion !== assemblyID) {
       setToggleConfirmDeletion(assemblyID);
@@ -105,18 +96,8 @@ const AssemblyPicker = ({
       <div className="animate-grow-y min-h-1/4 max-h-1/2">
         {assemblies && assemblies.length > 0 ? (
           assemblies.map((assembly: any) => (
-            <div
-              key={assembly.id}
-              className={
-                toggleStatistics === assembly.id
-                  ? "border-t border-b odd:bg-indigo-50 font-semibold shadow"
-                  : "border-t border-b odd:bg-indigo-50 shadow"
-              }
-            >
-              <div
-                className="flex py-4 text-center"
-                onClick={() => handleToggleStatistics(assembly.id)}
-              >
+            <div key={assembly.id} className="border-t border-b odd:bg-indigo-50 shadow">
+              <div className="flex py-4 text-center">
                 <div className="w-16">{assembly.id}</div>
                 <div className="w-2/5">{assembly.name}</div>
                 <div className="w-1/5">{assembly.username}</div>
@@ -125,16 +106,14 @@ const AssemblyPicker = ({
                   {toggleConfirmDeletion !== assembly.id ? (
                     <div className="flex justify-between items-center">
                       <div className="flex items-center justify-center">
-                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
-                          <Trash
-                            className="stroke-current"
-                            color="blank"
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteAssembly(assembly.id, "");
-                            }}
-                          />
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteAssembly(assembly.id, "");
+                          }}
+                          className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125"
+                        >
+                          <Trash className="stroke-current" color="blank" size="small" />
                         </div>
                       </div>
                     </div>
@@ -153,47 +132,30 @@ const AssemblyPicker = ({
                       <div className="w-8 flex items-center justify-center">
                         <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
                           <Close
-                            className="stroke-current"
-                            color="blank"
-                            size="small"
                             onClick={(e) => {
                               e.stopPropagation();
                               setConfirmDeletion("");
                               setToggleConfirmDeletion(-1);
                             }}
+                            className="stroke-current"
+                            color="blank"
+                            size="small"
                           />
                         </div>
                       </div>
                     </div>
                   )}
-                  <div className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 rounded-lg transform scale-125">
-                    <Edit
-                      className="stroke-current"
-                      color="blank"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setTargetAssembly(assembly);
-                        getAssembly(assembly);
-                      }}
-                    />
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTargetAssembly(assembly);
+                      getAssembly(assembly);
+                    }}
+                    className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 rounded-lg transform scale-125"
+                  >
+                    <Edit className="stroke-current" color="blank" size="small" />
                   </div>
                 </div>
-              </div>
-              <div>
-                {toggleStatistics === assembly.id && (
-                  <div className="animate-grow-y">
-                    <hr className="my-2 shadow" />
-                    <div>
-                      {Object.keys(assembly).map((key: string) => (
-                        <div className="flex justify-between">
-                          <div>{key}</div>
-                          <div>{assembly[key]}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           ))
@@ -212,7 +174,7 @@ const AssemblyPicker = ({
       </div>
       <hr className="shadow my-4" />
       {toggleNewAssemblyImportForm && (
-        <NewAssemblyImportForm taxon={taxon} loadAssemblies={loadAssemblies} />
+        <NewDataImportForm taxon={taxon} loadAssemblies={loadAssemblies} assembly={undefined} />
       )}
     </div>
   );

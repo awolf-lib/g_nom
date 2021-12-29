@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { INcbiTaxon } from "../../../../../../api";
 import TabWorkspace from "../../../../../../components/TabWorkspace";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
+import NewDataImportForm from "../TaxonEditor/components/AssemblyPicker/components/NewDataImportForm";
 import AddAssemblyTagForm from "./components/AddAssemblyTagForm";
 import EditAnalysesForm from "./components/EditAnalysesForm";
 import EditAnnotationsForm from "./components/EditAnnotationsForm";
@@ -34,6 +35,12 @@ const AssemblyEditor = ({
           },
           { label: "Mappings", content: <EditMappingsForm taxon={taxon} assembly={assembly} /> },
           { label: "Analyses", content: <EditAnalysesForm taxon={taxon} assembly={assembly} /> },
+          {
+            label: "Add data",
+            content: (
+              <NewDataImportForm taxon={taxon} assembly={assembly} loadAssemblies={undefined} />
+            ),
+          },
         ]}
       />
     </div>

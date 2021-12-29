@@ -57,6 +57,7 @@ def imports_bp_import_dataset():
 
         taxon = req.get("taxon", None)
         assembly = req.get("assembly", None)
+        assemblyID = req.get("assemblyID", None)
         annotations = req.get("annotations", [])
         mappings = req.get("mappings", [])
         buscos = req.get("buscos", [])
@@ -65,7 +66,7 @@ def imports_bp_import_dataset():
         repeatmaskers = req.get("repeatmaskers", [])
 
         data, notification = importDataset(
-            taxon, assembly, userID, annotations, mappings, buscos, fcats, milts, repeatmaskers
+            taxon, assembly, userID, annotations, mappings, buscos, fcats, milts, repeatmaskers, assemblyID
         )
 
         response = jsonify({"payload": data, "notification": notification})

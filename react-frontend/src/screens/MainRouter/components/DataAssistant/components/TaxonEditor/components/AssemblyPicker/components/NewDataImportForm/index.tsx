@@ -14,13 +14,16 @@ import { useNotification } from "../../../../../../../../../../components/Notifi
 import FileTree from "../../../../../../../../../../components/FileTree";
 import Button from "../../../../../../../../../../components/Button";
 import { Trash } from "grommet-icons";
+import { AssemblyInterface } from "../../../../../../../../../../tsInterfaces/tsInterfaces";
 
-const NewAssemblyImportForm = ({
+const NewDataImportForm = ({
   taxon,
   loadAssemblies,
+  assembly,
 }: {
   taxon: INcbiTaxon;
   loadAssemblies: any;
+  assembly: AssemblyInterface | undefined;
 }) => {
   const [importDir, setImportDir] = useState<IImportFileInformation>();
 
@@ -111,21 +114,23 @@ const NewAssemblyImportForm = ({
         Object.keys(response.payload).forEach((fileType) => {
           switch (fileType) {
             case "sequence":
-              if (response.payload.sequence!.length <= 1) {
-                response.payload.sequence!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
-                });
-              } else {
-                setNewAssembly([
-                  response.payload.sequence!.reduce(function (prev, current) {
-                    return prev.main_file.size! > current.main_file.size! ? prev : current;
-                  }, response.payload.sequence![0]),
-                ]);
-                handleNewNotification({
-                  label: "Warning",
-                  message: "Directory contains multiple sequence files! Largest file selected!",
-                  type: "warning",
-                });
+              if (!assembly?.id) {
+                if (response.payload.sequence!.length <= 1) {
+                  response.payload.sequence!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
+                  });
+                } else {
+                  setNewAssembly([
+                    response.payload.sequence!.reduce(function (prev, current) {
+                      return prev.main_file.size! > current.main_file.size! ? prev : current;
+                    }, response.payload.sequence![0]),
+                  ]);
+                  handleNewNotification({
+                    label: "Warning",
+                    message: "Directory contains multiple sequence files! Largest file selected!",
+                    type: "warning",
+                  });
+                }
               }
               break;
             case "annotation":
@@ -206,7 +211,11 @@ const NewAssemblyImportForm = ({
   ) => {
     switch (type) {
       case "sequence":
-        setNewAssembly((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+        if (!assembly?.id) {
+          setNewAssembly((prevState) =>
+            removeFileFromState(prevState, mainFileID, additionalFileID)
+          );
+        }
         break;
       case "annotation":
         setNewAnnotations((prevState) =>
@@ -254,7 +263,7 @@ const NewAssemblyImportForm = ({
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-    if (newAssembly && newAssembly.length === 1) {
+    if (assembly?.id || (newAssembly && newAssembly?.length === 1)) {
       const response = await importDataset(
         taxon,
         newAssembly,
@@ -265,11 +274,15 @@ const NewAssemblyImportForm = ({
         newMilts,
         newRepeatmaskers,
         userID,
-        token
+        token,
+        assembly?.id
       );
 
-      loadAssemblies();
+      if (loadAssemblies) {
+        loadAssemblies();
+      }
       loadImportDir();
+      handleResetForm();
 
       if (response && response.notification && response.notification.length > 0) {
         response.notification.forEach((element) => handleNewNotification(element));
@@ -337,7 +350,7 @@ const NewAssemblyImportForm = ({
         ref={newAssemblyFormRef}
         className="px-4 py-2 font-semibold text-sm text-white bg-gray-500 border-b border-t border-white"
       >
-        Add new assembly...
+        Add new assembly?...
       </div>
       <div className="grid grid-cols-2 gap-4 mt-4">
         <div className="max-h-75 overflow-auto border rounded-lg py-2 px-4">
@@ -372,19 +385,23 @@ const NewAssemblyImportForm = ({
             {/* Assembly */}
             <div className="text-sm">
               <div className="font-semibold">Assembly</div>
-              <div className="flex justify-between items-center">
-                <div className="w-full">
-                  {newAssembly && newAssembly.length > 0 ? (
-                    newAssembly.map((file) => (
-                      <div key={file.main_file.id}>
-                        <MarkedFiles file={file} type="sequence" />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="mx-4 my-2">None</div>
-                  )}
+              {!assembly?.id ? (
+                <div className="flex justify-between items-center">
+                  <div className="w-full">
+                    {newAssembly && newAssembly?.length > 0 ? (
+                      newAssembly?.map((file) => (
+                        <div key={file.main_file.id}>
+                          <MarkedFiles file={file} type="sequence" />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="mx-4 my-2">None</div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="px-4 py-2 font-bold">{assembly?.name}</div>
+              )}
             </div>
             <hr className="shadow mt-1 mb-4" />
             {/* Annotations */}
@@ -514,4 +531,4 @@ const NewAssemblyImportForm = ({
   );
 };
 
-export default NewAssemblyImportForm;
+export default NewDataImportForm;
