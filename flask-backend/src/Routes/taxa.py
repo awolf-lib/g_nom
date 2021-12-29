@@ -120,7 +120,9 @@ def taxa_bp_fetchTaxonImageByTaxonID():
         imagePath, notification = fetchTaxonImageByTaxonID(taxonID)
 
         if not imagePath or not exists(imagePath):
-            response = jsonify({"payload": 0, "notification": createNotification(message="Image path does not exist anymore!")})
+            response = jsonify(
+                {"payload": 0, "notification": createNotification(message="Image path does not exist anymore!")}
+            )
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
         return send_file(imagePath, mimetype="image/jpeg")

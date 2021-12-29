@@ -37,7 +37,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id, ))
         assembly_name = cursor.fetchone()[0]
 
         annotation_name, annotation_id, error = __generate_annotation_name(assembly_name)
@@ -187,7 +187,8 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"INSERT INTO genomicAnnotations (assemblyID, name, path, addedBy, addedOn) VALUES ({assembly_id}, '{annotation_name}', '{path}', {userID}, NOW())"
+            "INSERT INTO genomicAnnotations (assemblyID, name, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, NOW())",
+            (assembly_id, annotation_name, path, userID),
         )
         annotationID = cursor.lastrowid
         connection.commit()
@@ -237,12 +238,13 @@ def deleteAnnotationByAnnotationID(annotation_id):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id={annotation_id} AND genomicAnnotations.assemblyID=assemblies.id"
+            "SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id=%s AND genomicAnnotations.assemblyID=assemblies.id",
+            (annotation_id, ),
         )
         assembly_id, assembly_name, annotation_name = cursor.fetchone()
 
         cursor.execute(
-            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -287,7 +289,7 @@ def __deleteAnnotationFile(taxon, assembly_name, annotation_name):
 def __deleteAnnotationEntryByAnnotationID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM genomicAnnotations WHERE id={id}")
+        cursor.execute("DELETE FROM genomicAnnotations WHERE id=%s", (id, ))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -422,7 +424,8 @@ def fetchAnnotationsByAssemblyID(assemblyID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"SELECT genomicAnnotations.*, users.username FROM genomicAnnotations, users WHERE genomicAnnotations.assemblyID={assemblyID} AND genomicAnnotations.addedBy=users.id"
+            "SELECT genomicAnnotations.*, users.username FROM genomicAnnotations, users WHERE genomicAnnotations.assemblyID=%s AND genomicAnnotations.addedBy=users.id",
+            (assemblyID, ),
         )
 
         row_headers = [x[0] for x in cursor.description]

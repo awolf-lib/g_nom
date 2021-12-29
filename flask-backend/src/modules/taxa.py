@@ -47,8 +47,9 @@ def reloadTaxonIDsFromFile(userID):
     try:
         taxonID = None
         counter = 0
-        values = ""
+        values = []
         commonName = ""
+        sql = "INSERT INTO taxa (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES (%s, %s, %s, %s, %s, NOW(), %s)"
         for index, line in enumerate(taxonData):
             taxonSplit = line.split("\t")
             taxonID = int(taxonSplit[0])
@@ -76,24 +77,18 @@ def reloadTaxonIDsFromFile(userID):
                 parentTaxonID = int(nodeSplit[2])
                 rank = nodeSplit[4].replace("'", "")
 
-                values += (
-                    f"({taxonID}, {parentTaxonID}, '{scientificName}', '{rank}', {userID}, NOW(), '{commonName}'),"
-                )
+                values.append((taxonID, parentTaxonID, scientificName, rank, userID, commonName))
                 counter += 1
                 taxonID = None
                 scientificName = ""
                 commonName = ""
 
                 if counter % 5000 == 0 and counter > 0:
-                    values = values[:-1]
-                    sql = f"INSERT INTO taxa (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES {values}"
-                    cursor.execute(sql)
+                    cursor.executemany(sql, values)
                     connection.commit()
-                    values = ""
+                    values = []
 
-        values = values[:-1]
-        sql = f"INSERT INTO taxa (ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, lastUpdatedBy, lastUpdatedOn, commonName) VALUES {values}"
-        cursor.execute(sql)
+        cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
         cursor.execute("DELETE FROM taxa")
@@ -134,7 +129,7 @@ def updateTaxonTree():
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imagePath FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
+            "SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imagePath FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
         )
         taxa = [x for x in cursor.fetchall()]
         taxa = set(taxa)
@@ -176,7 +171,8 @@ def updateTaxonTree():
         while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
             level += 1
             cursor.execute(
-                f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
+                "SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN %s",
+                (taxonSqlString, ),
             )
             taxa = cursor.fetchall()
             taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
@@ -263,7 +259,10 @@ def import_image(taxonID, taxonScientificName, image, userID):
             newPath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/" + scientificName + ".thumbnail.jpg"
             image.save(newPath, "JPEG")
 
-        cursor.execute(f"UPDATE taxa SET imagePath='{newPath}', lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxa.id={taxonID};")
+        cursor.execute(
+            "UPDATE taxa SET imagePath=%s, lastUpdatedBy=%s, lastUpdatedOn=NOW() WHERE taxa.id=%s;",
+            (newPath, userID, taxonID),
+        )
         connection.commit()
         return 1, createNotification("Success", f"Successfully imported image!", "success")
     except Exception as err:
@@ -277,9 +276,7 @@ def removeImageByTaxonID(taxonID, userID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(
-            f"SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id={taxonID}"
-        )
+        cursor.execute("SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id=%s", (taxonID, ))
 
         row_headers = [x[0] for x in cursor.description]
         taxon = cursor.fetchone()
@@ -290,7 +287,9 @@ def removeImageByTaxonID(taxonID, userID):
         imagePath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/"
         run(args=["rm", imagePath])
 
-        cursor.execute(f"UPDATE taxa SET imagePath=NULL, lastUpdatedBy={userID}, lastUpdatedOn=NOW() WHERE taxa.id={taxonID};")
+        cursor.execute(
+            "UPDATE taxa SET imagePath=NULL, lastUpdatedBy=%s, lastUpdatedOn=NOW() WHERE taxa.id=%s;", (userID, taxonID)
+        )
         connection.commit()
         return 1, createNotification("Success", f"Successfully deleted image!", "success")
     except Exception as err:
@@ -304,7 +303,7 @@ def fetchTaxonByTaxonID(taxonID):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT * FROM taxa WHERE id = {taxonID}")
+        cursor.execute("SELECT * FROM taxa WHERE id = %s", (taxonID, ))
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchone()
 
@@ -320,7 +319,7 @@ def fetchTaxonByTaxonID(taxonID):
 def fetchTaxonImageByTaxonID(taxonID):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT imagePath FROM taxa WHERE id={taxonID}")
+        cursor.execute("SELECT imagePath FROM taxa WHERE id=%s", (taxonID, ))
         row_headers = [x[0] for x in cursor.description]
         imagePath = cursor.fetchone()[0]
         return imagePath, []
@@ -337,7 +336,8 @@ def fetchTaxonBySearch(search):
 
     try:
         cursor.execute(
-            f"SELECT * FROM taxa WHERE taxa.scientificName LIKE '%{search}%' OR taxa.commonName LIKE '%{search}%'"
+            "SELECT * FROM taxa WHERE taxa.scientificName LIKE %s OR taxa.commonName LIKE %s",
+            ("%" + search + "%", "%" + search + "%"),
         )
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchall()
@@ -360,7 +360,7 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     connection, cursor, error = connect()
 
     try:
-        cursor.execute(f"SELECT * FROM taxa WHERE ncbiTaxonID = {ncbiTaxonID}")
+        cursor.execute("SELECT * FROM taxa WHERE ncbiTaxonID = %s", (ncbiTaxonID, ))
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchall()
 
@@ -382,7 +382,7 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
     generalInfos = []
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT * from taxaGeneralInfo WHERE taxonID={taxonID}")
+        cursor.execute("SELECT * from taxaGeneralInfo WHERE taxonID=%s", (taxonID, ))
 
         row_headers = [x[0] for x in cursor.description]
         generalInfos = cursor.fetchall()
@@ -407,7 +407,8 @@ def addTaxonGeneralInformation(taxonID, key, value):
         # TODO: validate string
 
         cursor.execute(
-            f"INSERT INTO taxaGeneralInfo (taxonID, generalInfoLabel, generalInfoDescription) VALUES ({taxonID}, '{key}', '{value}')"
+            "INSERT INTO taxaGeneralInfo (taxonID, generalInfoLabel, generalInfoDescription) VALUES (%s, %s, %s)",
+            (taxonID, key, value),
         )
         connection.commit()
     except Exception as err:
@@ -430,7 +431,7 @@ def updateTaxonGeneralInformationByID(id, key, value):
         # TODO: validate string
 
         cursor.execute(
-            f"UPDATE taxaGeneralInfo SET generalInfoLabel='{key}', generalInfoDescription='{value}' WHERE id={id}"
+            "UPDATE taxaGeneralInfo SET generalInfoLabel=%s, generalInfoDescription=%s WHERE id=%s", (key, value, id)
         )
         connection.commit()
     except Exception as err:
@@ -447,7 +448,7 @@ def deleteTaxonGeneralInformationByID(id):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM taxaGeneralInfo WHERE id={id}")
+        cursor.execute("DELETE FROM taxaGeneralInfo WHERE id=%s", (id, ))
         connection.commit()
     except Exception as err:
         return [], createNotification(message=str(err))

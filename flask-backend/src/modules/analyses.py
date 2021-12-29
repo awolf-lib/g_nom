@@ -31,7 +31,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
         assembly_name = cursor.fetchone()[0]
 
         analyses_name, analyses_id, error = __generate_analyses_name(assembly_name, analyses_type)
@@ -232,7 +232,8 @@ def __importAnalyses(assembly_id, analyses_name, analyses_path, analyses_type, u
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"INSERT INTO analyses (assemblyID, name, type, path, addedBy, addedOn) VALUES ({assembly_id}, '{analyses_name}', '{analyses_type}', '{analyses_path}', {userID}, NOW())"
+            "INSERT INTO analyses (assemblyID, name, type, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, NOW())",
+            (assembly_id, analyses_name, analyses_type, analyses_path, userID),
         )
         connection.commit()
         return 1, []
@@ -246,7 +247,7 @@ def __importBusco(assemblyID, analysisID, buscoData):
     Imports Busco analysis results
     """
     try:
-        notifications =  []
+        notifications = []
         completeSingle = buscoData["completeSingle"]
         completeSinglePercent = buscoData["completeSinglePercent"]
         completeDuplicated = buscoData["completeDuplicated"]
@@ -368,7 +369,8 @@ def __importFcat(assemblyID, analysisID, fcatData):
 
         connection, cursor, error = connect()
         cursor.execute(
-            "INSERT INTO analysesFcat (analysisID, m1_similar, m1_similarPercent, m1_dissimilar, m1_dissimilarPercent, m1_duplicated, m1_duplicatedPercent, m1_missing, m1_missingPercent, m1_ignored, m1_ignoredPercent, m2_similar, m2_similarPercent, m2_dissimilar, m2_dissimilarPercent, m2_duplicated, m2_duplicatedPercent, m2_missing, m2_missingPercent, m2_ignored, m2_ignoredPercent, m3_similar, m3_similarPercent, m3_dissimilar, m3_dissimilarPercent, m3_duplicated, m3_duplicatedPercent, m3_missing, m3_missingPercent, m3_ignored, m3_ignoredPercent, m4_similar, m4_similarPercent, m4_dissimilar, m4_dissimilarPercent, m4_duplicated, m4_duplicatedPercent, m4_missing, m4_missingPercent, m4_ignored, m4_ignoredPercent, total, genomeID) VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, '{}')".format(
+            "INSERT INTO analysesFcat (analysisID, m1_similar, m1_similarPercent, m1_dissimilar, m1_dissimilarPercent, m1_duplicated, m1_duplicatedPercent, m1_missing, m1_missingPercent, m1_ignored, m1_ignoredPercent, m2_similar, m2_similarPercent, m2_dissimilar, m2_dissimilarPercent, m2_duplicated, m2_duplicatedPercent, m2_missing, m2_missingPercent, m2_ignored, m2_ignoredPercent, m3_similar, m3_similarPercent, m3_dissimilar, m3_dissimilarPercent, m3_duplicated, m3_duplicatedPercent, m3_missing, m3_missingPercent, m3_ignored, m3_ignoredPercent, m4_similar, m4_similarPercent, m4_dissimilar, m4_dissimilarPercent, m4_duplicated, m4_duplicatedPercent, m4_missing, m4_missingPercent, m4_ignored, m4_ignoredPercent, total, genomeID) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (
                 analysisID,
                 m1_similar,
                 m1_similarPercent,
@@ -412,7 +414,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m4_ignoredPercent,
                 m1_total,
                 m1_genomeID,
-            )
+            ),
         )
         connection.commit()
         return 1, notifications
@@ -425,7 +427,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
 def __importMilts(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"INSERT INTO analysesMilts (analysisID) VALUES ({analysisID})")
+        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID, ))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -496,7 +498,34 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
 
         connection, cursor, error = connect()
         cursor.execute(
-            f"INSERT INTO analysesRepeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, {sines}, {sines_length}, {lines}, {lines_length}, {ltr_elements}, {ltr_elements_length}, {dna_elements}, {dna_elements_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
+            "INSERT INTO analysesRepeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (
+                analysisID,
+                sines,
+                sines_length,
+                lines,
+                lines_length,
+                ltr_elements,
+                ltr_elements_length,
+                dna_elements,
+                dna_elements_length,
+                rolling_circles,
+                rolling_circles_length,
+                unclassified,
+                unclassified_length,
+                small_rna,
+                small_rna_length,
+                satellites,
+                satellites_length,
+                simple_repeats,
+                simple_repeats_length,
+                low_complexity,
+                low_complexity_length,
+                total_non_repetitive_length,
+                total_repetitive_length,
+                numberN,
+                percentN,
+            ),
         )
         connection.commit()
         return 1, []
@@ -512,12 +541,13 @@ def deleteAnalysesByAnalysesID(analyses_id):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT assemblies.id, assemblies.name, analyses.path FROM assemblies, analyses WHERE analyses.id={analyses_id} AND analyses.assemblyID=assemblies.id"
+            "SELECT assemblies.id, assemblies.name, analyses.path FROM assemblies, analyses WHERE analyses.id=%s AND analyses.assemblyID=assemblies.id",
+            (analyses_id, ),
         )
         assembly_id, assembly_name, analyses_path = cursor.fetchone()
 
         cursor.execute(
-            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -559,7 +589,7 @@ def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
 def __deleteAnalysesEntryByAnalysesID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM analyses WHERE id={id}")
+        cursor.execute("DELETE FROM analyses WHERE id=%s", (id))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -827,28 +857,32 @@ def fetchAnalysesByAssemblyID(assemblyID):
 
         # busco analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesBusco.analysisID"
+            "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s} AND analyses.id=analysesBusco.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["busco"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
         # fcat analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesFcat.analysisID"
+            "SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["fcat"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
         # milts analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesMilts.analysisID"
+            "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["milts"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
         # repeatmasker analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesRepeatmasker.analysisID"
+            "SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["repeatmasker"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -870,7 +904,8 @@ def fetchBuscoAnalysesByAssemblyID(assemblyID):
 
         # busco analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesBusco.analysisID"
+            "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s AND analyses.id=analysesBusco.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         buscoList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -895,7 +930,8 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
 
         # fcat analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesFcat.analysisID"
+            "SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         fcatList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -920,7 +956,8 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
 
         # milts analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesMilts.analysisID"
+            "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         miltsList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -945,7 +982,8 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
 
         # repeatmasker analyses
         cursor.execute(
-            f"SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID={assemblyID} AND analyses.id=analysesRepeatmasker.analysisID"
+            "SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID",
+            (assemblyID, ),
         )
         row_headers = [x[0] for x in cursor.description]
         repeatmaskerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]

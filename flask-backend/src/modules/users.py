@@ -62,7 +62,7 @@ def __updateToken(userID, token):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"UPDATE users SET activeToken='{token}', tokenCreationTime=NOW() WHERE id={userID}")
+        cursor.execute("UPDATE users SET activeToken=%s, tokenCreationTime=NOW() WHERE id=%s", (token, userID))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -77,19 +77,20 @@ def validateActiveToken(userID, token):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT activeToken from users WHERE id={userID} AND activeToken='{token}' AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)"
+            "SELECT activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
+            (userID, token),
         )
-        user = cursor.fetchone()
+        valid_token = cursor.fetchone()
 
-        if not user:
-            cursor.execute(f"UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id={userID}")
+        if not valid_token:
+            cursor.execute("UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id=%s", (userID, ))
             connection.commit()
             return 0, createNotification(message="Session expired. Relog first!")
 
-        cursor.execute(f"UPDATE users SET tokenCreationTime=NOW() WHERE id={userID}")
+        cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID, ))
         connection.commit()
     except Exception as err:
-        return 0, createNotification(message=str(err))
+        return 0, createNotification(message=f"TokenValidationError: {str(err)}")
 
     return 1, []
 
@@ -101,7 +102,7 @@ def addUser(username, password, role):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT * FROM users where username='{username}'")
+        cursor.execute("SELECT * FROM users where username=%s", (username, ))
         user = cursor.fetchone()
         if user:
             return {}, createNotification(message=f"Name '{username}' already exists!")
@@ -112,7 +113,7 @@ def addUser(username, password, role):
         connection, cursor, error = connect()
         password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
         cursor.execute(
-            f"INSERT INTO users (username, password, userRole) VALUES ('{username}', '{password}', '{role}')"
+            "INSERT INTO users (username, password, userRole) VALUES (%s, %s, %s)", (username, password, role)
         )
         connection.commit()
     except Exception as err:
@@ -131,7 +132,7 @@ def fetchUsers():
     user = []
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT users.id, users.username, users.userRole from users")
+        cursor.execute("SELECT users.id, users.username, users.userRole from users")
 
         row_headers = [x[0] for x in cursor.description]
         user = cursor.fetchall()
@@ -151,7 +152,7 @@ def deleteUserByUserID(userID):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM users WHERE id={userID}")
+        cursor.execute("DELETE FROM users WHERE id=%s", (userID, ))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -167,7 +168,7 @@ def updateUserRoleByUserID(userID, role):
     try:
         if role == "admin" or role == "user":
             connection, cursor, error = connect()
-            cursor.execute(f"UPDATE users SET users.userRole='{role}' WHERE users.id={userID}")
+            cursor.execute("UPDATE users SET users.userRole=%s WHERE users.id=%s", (role, userID))
             connection.commit()
         else:
             return 0, createNotification(message=f"Unknown user role '{role}'!")
@@ -187,7 +188,7 @@ def addBookmark(userID, assemblyID):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"INSERT INTO bookmarks (userID, assemblyID) VALUES ({userID}, {assemblyID})")
+        cursor.execute("INSERT INTO bookmarks (userID, assemblyID) VALUES (%s, %s)", (userID, assemblyID))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))
@@ -203,7 +204,7 @@ def removeBookmark(userID, assemblyID):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM bookmarks WHERE userID={userID} AND assemblyID={assemblyID}")
+        cursor.execute("DELETE FROM bookmarks WHERE userID=%s AND assemblyID=%s", (userID, assemblyID))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))

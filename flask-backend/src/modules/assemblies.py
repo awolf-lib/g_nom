@@ -176,11 +176,11 @@ def deleteAssemblyByAssemblyID(assembly_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id))
         assembly_name = cursor.fetchone()[0]
 
         cursor.execute(
-            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id)
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -230,7 +230,7 @@ def __deleteAssemblyFolder(taxon, assembly_name):
 def __deleteAssemblyEntryByAssemblyID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM assemblies WHERE id={id}")
+        cursor.execute("DELETE FROM assemblies WHERE id=%s", (id))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -260,14 +260,35 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         charCountString = dumps(file_content["statistics"]["cumulative_char_counts"], separators=(",", ":"))
 
         cursor.execute(
-            f"INSERT INTO assemblies (taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, numberOfSequences, sequenceType, cumulativeSequenceLength, n50, n90, shortestSequence, largestSequence, meanSequence, medianSequence, gcPercent, gcPercentMasked, lengthDistributionString, charCountString) VALUES ({taxonID}, '{assembly_name}', '{path}', {userID}, NOW(), {userID}, NOW(), {numberOfSequences}, '{sequenceType}', {cumulativeSequenceLength}, {n50}, {n90}, {shortestSequence}, {largestSequence}, {meanSequence}, {medianSequence}, {gcPercent}, {gcPercentMasked}, '{lengthDistributionString}', '{charCountString}')"
+            "INSERT INTO assemblies (taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, numberOfSequences, sequenceType, cumulativeSequenceLength, n50, n90, shortestSequence, largestSequence, meanSequence, medianSequence, gcPercent, gcPercentMasked, lengthDistributionString, charCountString) VALUES (%s, %s, %s, %s, NOW(), %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (
+                taxonID,
+                assembly_name,
+                path,
+                userID,
+                userID,
+                numberOfSequences,
+                sequenceType,
+                cumulativeSequenceLength,
+                n50,
+                n90,
+                shortestSequence,
+                largestSequence,
+                meanSequence,
+                medianSequence,
+                gcPercent,
+                gcPercentMasked,
+                lengthDistributionString,
+                charCountString,
+            ),
         )
         assemblyID = cursor.lastrowid
         connection.commit()
 
         connection, cursor, error = connect()
         counter = 0
-        values = ""
+        values = []
+        sql = "INSERT INTO assembliesSequences (assemblyID, header, headerIdx, sequenceLength, gcPercentLocal, gcPercentMaskedLocal) VALUES %s, %s, %s, %s, %s, %s"
         for seq in file_content["sequences"]:
             header_name = seq["header"]
             header_idx = seq["header_idx"]
@@ -275,20 +296,16 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
             GC_local = seq["statistics"]["GC_local"]
             GC_local_masked = seq["statistics"]["GC_local_masked"]
 
-            values += (
-                f"({assemblyID}, '{header_name}', {header_idx}, {sequence_length}, {GC_local}, {GC_local_masked}),"
-            )
+            values.append((assemblyID, header_name, header_idx, sequence_length, GC_local, GC_local_masked))
             counter += 1
 
             if counter % 1000 == 0 and counter > 0:
                 values = values[:-1]
-                sql = f"INSERT INTO assembliesSequences (assemblyID, header, headerIdx, sequenceLength, gcPercentLocal, gcPercentMaskedLocal) VALUES {values}"
-                cursor.execute(sql)
+
+                cursor.executemany(sql, values)
                 connection.commit()
-                values = ""
-        values = values[:-1]
-        sql = f"INSERT INTO assembliesSequences (assemblyID, header, headerIdx, sequenceLength, gcPercentLocal, gcPercentMaskedLocal) VALUES {values}"
-        cursor.execute(sql)
+                values = []
+        cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=f"AssemblyImportDbError: {str(err)}")
@@ -305,11 +322,7 @@ def parseFasta(path):
     __TYPE_AUTO_DETECT_ATGCU_THRESHOLD = 65
 
     if not exists(path):
-        return 0, {
-            "label": "Error",
-            "message": "Path not found.",
-            "type": "error",
-        }
+        return 0, createNotification(message="Path not found.")
 
     filename = basename(path)
     print(f"Parsing {filename}...")
@@ -318,11 +331,7 @@ def parseFasta(path):
     if not extensionMatch:
         return (
             0,
-            {
-                "label": "Error",
-                "message": "Uncorrect filetype! Only files of type .fa/.fasta/.faa/.fna are allowed.",
-                "type": "error",
-            },
+            createNotification(message="Uncorrect filetype! Only files of type .fa/.fasta/.faa/.fna are allowed."),
         )
 
     lines = []
@@ -331,18 +340,9 @@ def parseFasta(path):
             lines = fa.readlines()
             fa.close()
     except:
-        return 0, {
-            "label": "Error",
-            "message": f"Error while opening {filename}.",
-            "type": "error",
-        }
-
+        return 0, createNotification(message=f"Error while opening {filename}.")
     if not len(lines):
-        return 0, {
-            "label": "Error",
-            "message": f"{filename} is empty!",
-            "type": "error",
-        }
+        return 0, createNotification(message=f"{filename} is empty!")
 
     # header and sequences
     try:
@@ -576,11 +576,12 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
 
         if not userID:
             cursor.execute(
-                f"SELECT assemblies.*, taxa.scientificName, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id"
+                "SELECT assemblies.*, taxa.scientificName, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id"
             )
         else:
             cursor.execute(
-                f"SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users, bookmarks WHERE bookmarks.userID={userID} AND bookmarks.assemblyID=assemblies.id AND assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id"
+                "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users, bookmarks WHERE bookmarks.userID=%s AND bookmarks.assemblyID=assemblies.id AND assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id",
+                (userID, ),
             )
 
         row_headers = [x[0] for x in cursor.description]
@@ -617,7 +618,8 @@ def fetchAssembliesByTaxonID(taxonID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID={taxonID} AND taxa.id={taxonID} AND assemblies.addedBy=users.id"
+            "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID=%s AND taxa.id=%s AND assemblies.addedBy=users.id",
+            (taxonID, taxonID),
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -642,7 +644,8 @@ def fetchAssembliesByTaxonIDs(taxonIDsString):
         taxonIDs = taxonIDsString.split(",")
         taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
         cursor.execute(
-            f"SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imagePath, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN {taxonSqlString}"
+            "SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imagePath, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN %s",
+            (taxonSqlString, ),
         )
         row_headers = [x[0] for x in cursor.description]
         assemblies = cursor.fetchall()
@@ -667,14 +670,15 @@ def fetchAssemblyByAssemblyID(id, userID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.id={id} AND taxa.id=assemblies.taxonID AND assemblies.addedBy=users.id"
+            "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.id=%s AND taxa.id=assemblies.taxonID AND assemblies.addedBy=users.id",
+            (id, ),
         )
 
         row_headers = [x[0] for x in cursor.description]
         assembly = cursor.fetchone()
         assembly = dict(zip(row_headers, assembly))
 
-        cursor.execute(f"SELECT * FROM bookmarks WHERE assemblyID={id} AND userID={userID}")
+        cursor.execute("SELECT * FROM bookmarks WHERE assemblyID=%s AND userID=%s", (id, userID))
         bookmark = cursor.fetchone()
 
         if bookmark:
@@ -697,7 +701,7 @@ def addAssemblyTag(assemblyID, tag):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(f"INSERT INTO tags (assemblyID, tag) VALUES ({assemblyID}, '{tag}')")
+        cursor.execute("INSERT INTO tags (assemblyID, tag) VALUES (%s, %s)", (assemblyID, tag))
         connection.commit()
 
         return tag, createNotification(
@@ -717,7 +721,7 @@ def removeAssemblyTagbyTagID(tagID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(f"DELETE FROM tags WHERE id={tagID}")
+        cursor.execute("DELETE FROM tags WHERE id=%s", (tagID, ))
         connection.commit()
 
         return 1, createNotification("Success", f"Successfully removed tag!", "success")
@@ -735,7 +739,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute(f"SELECT * FROM tags WHERE assemblyID={assemblyID}")
+        cursor.execute("SELECT * FROM tags WHERE assemblyID=%s", (assemblyID, ))
 
         row_headers = [x[0] for x in cursor.description]
         tags = cursor.fetchall()
@@ -759,7 +763,7 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
     generalInfos = []
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT * from assembliesGeneralInfo WHERE assemblyID={assemblyID}")
+        cursor.execute("SELECT * from assembliesGeneralInfo WHERE assemblyID=%s", (assemblyID, ))
 
         row_headers = [x[0] for x in cursor.description]
         generalInfos = cursor.fetchall()
@@ -784,7 +788,8 @@ def addAssemblyGeneralInformation(assemblyID, key, value):
         # TODO: validate string
 
         cursor.execute(
-            f"INSERT INTO assembliesGeneralInfo (assemblyID, generalInfoLabel, generalInfoDescription) VALUES ({assemblyID}, '{key}', '{value}')"
+            "INSERT INTO assembliesGeneralInfo (assemblyID, generalInfoLabel, generalInfoDescription) VALUES (%s, %s, %s)",
+            (assemblyID, key, value),
         )
         connection.commit()
     except Exception as err:
@@ -807,7 +812,8 @@ def updateAssemblyGeneralInformationByID(id, key, value):
         # TODO: validate string
 
         cursor.execute(
-            f"UPDATE assembliesGeneralInfo SET generalInfoLabel='{key}', generalInfoDescription='{value}' WHERE id={id}"
+            "UPDATE assembliesGeneralInfo SET generalInfoLabel=%s, generalInfoDescription=%s WHERE id=%s",
+            (key, value, id),
         )
         connection.commit()
     except Exception as err:
@@ -824,7 +830,7 @@ def deleteAssemblyGeneralInformationByID(id):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM assembliesGeneralInfo WHERE id={id}")
+        cursor.execute("DELETE FROM assembliesGeneralInfo WHERE id=%s", (id, ))
         connection.commit()
     except Exception as err:
         return [], createNotification(message=str(err))

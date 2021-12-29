@@ -192,7 +192,16 @@ def validateFileInfo(file_info, forceType=""):
 
 # import for all possible data
 def importDataset(
-    taxon, assembly, userID, annotations=[], mappings=[], buscos=[], fcats=[], milts=[], repeatmaskers=[], append_assembly_id=0
+    taxon,
+    assembly,
+    userID,
+    annotations=[],
+    mappings=[],
+    buscos=[],
+    fcats=[],
+    milts=[],
+    repeatmaskers=[],
+    append_assembly_id=0,
 ):
     """
     Imports assembly with all supported datasets (annotations, mappings, Busco, fCat, Milts, Repeatmasker)

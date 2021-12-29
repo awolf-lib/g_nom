@@ -37,7 +37,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute(f"SELECT assemblies.name FROM assemblies WHERE assemblies.id={assembly_id}")
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id, ))
         assembly_name = cursor.fetchone()[0]
 
         mapping_name, mapping_id, error = __generate_mapping_name(assembly_name)
@@ -168,7 +168,8 @@ def __importDB(assembly_id, annotation_name, path, userID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"INSERT INTO mappings (assemblyID, name, path, addedBy, addedOn) VALUES ({assembly_id}, '{annotation_name}', '{path}', {userID}, NOW())"
+            "INSERT INTO mappings (assemblyID, name, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, NOW())",
+            (assembly_id, annotation_name, path, userID),
         )
         connection.commit()
     except Exception as err:
@@ -185,12 +186,13 @@ def deleteMappingByMappingID(mapping_id):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT assemblies.id, assemblies.name, mappings.name FROM assemblies, mappings WHERE mappings.id={mapping_id} AND mappings.assemblyID=assemblies.id"
+            "SELECT assemblies.id, assemblies.name, mappings.name FROM assemblies, mappings WHERE mappings.id=%s AND mappings.assemblyID=assemblies.id",
+            (mapping_id, ),
         )
         assembly_id, assembly_name, mapping_name = cursor.fetchone()
 
         cursor.execute(
-            f"SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id={assembly_id} AND assemblies.taxonID=taxa.id"
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -235,7 +237,7 @@ def __deleteMappingFile(taxon, assembly_name, mapping_name):
 def __deleteMappingEntryByMappingID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute(f"DELETE FROM mappings WHERE id={id}")
+        cursor.execute("DELETE FROM mappings WHERE id=%s", (id, ))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -252,7 +254,8 @@ def fetchMappingsByAssemblyID(assemblyID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            f"SELECT mappings.*, users.username FROM mappings, users WHERE mappings.assemblyID={assemblyID} AND mappings.addedBy=users.id"
+            "SELECT mappings.*, users.username FROM mappings, users WHERE mappings.assemblyID=%s AND mappings.addedBy=users.id",
+            (assemblyID),
         )
 
         row_headers = [x[0] for x in cursor.description]
