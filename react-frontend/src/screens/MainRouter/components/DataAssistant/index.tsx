@@ -5,10 +5,20 @@ import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
 import AssemblyEditor from "./components/AssemblyEditor";
 import TaxonEditor from "./components/TaxonEditor";
 import TaxonPicker from "./components/TaxonPicker";
+import { useSearchParams } from "react-router-dom";
 
 const DataAssistant: React.FC = () => {
   const [taxon, setTaxon] = useState<INcbiTaxon>();
   const [assembly, setAssembly] = useState<AssemblyInterface | undefined>();
+
+  let [searchParams, setSearchParams] = useSearchParams();
+
+  const handleBackToTaxonLevel = () => {
+    setAssembly(undefined);
+    let newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("assemblyID", JSON.stringify(undefined));
+    setSearchParams(newSearchParams);
+  };
 
   return (
     <div className="mb-16">
@@ -48,7 +58,7 @@ const DataAssistant: React.FC = () => {
         <div className="px-2">
           <div
             className="max-w-max flex items-center bg-gray-500 text-white text-sm rounded-lg px-2 py-1 cursor-pointer hover:bg-gray-400"
-            onClick={() => setAssembly(undefined)}
+            onClick={() => handleBackToTaxonLevel()}
           >
             <Previous className="stroke-current" color="blank" size="small" />
             <span className="px-4">Back to taxon level...</span>

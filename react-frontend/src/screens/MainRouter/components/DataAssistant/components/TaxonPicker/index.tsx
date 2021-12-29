@@ -1,9 +1,15 @@
 import { SetStateAction, useEffect, useState } from "react";
-import { fetchTaxonByNCBITaxonID, fetchTaxonBySearch, INcbiTaxon } from "../../../../../../api";
+import {
+  fetchTaxonByNCBITaxonID,
+  fetchTaxonBySearch,
+  fetchTaxonByTaxonID,
+  INcbiTaxon,
+} from "../../../../../../api";
 import Input from "../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
+import { useSearchParams } from "react-router-dom";
 
 const TaxonPicker = ({
   getTaxon,
@@ -16,6 +22,8 @@ const TaxonPicker = ({
   const [taxa, setTaxa] = useState<any>([]);
   const [taxon, setTaxon] = useState<INcbiTaxon | undefined>();
   const [loadingTaxa, setLoadingTaxa] = useState<boolean>(false);
+
+  let [searchParams, setSearchParams] = useSearchParams();
 
   const dispatch = useNotification();
 
@@ -31,48 +39,99 @@ const TaxonPicker = ({
     if (parentTaxon?.imagePath !== taxon?.imagePath) setTaxon(parentTaxon);
   }, [parentTaxon?.imagePath]);
 
-  const fetchTaxaByID = (id: number | undefined) => {
+  useEffect(() => {
+    if (taxon?.id) {
+      let newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set("taxID", JSON.stringify(taxon.id));
+      setSearchParams(newSearchParams);
+    }
+  }, [taxon?.id]);
+
+  useEffect(() => {
+    if (taxon?.ncbiTaxonID) {
+      let newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set("ncbiTaxID", JSON.stringify(taxon.ncbiTaxonID));
+      setSearchParams(newSearchParams);
+    }
+  }, [taxon?.id]);
+
+  useEffect(() => {
+    let taxIdString = searchParams.get("taxID");
+    let taxID = Number(taxIdString);
+    let ncbiTaxIdString = searchParams.get("ncbiTaxID");
+    let ncbiTaxID = Number(ncbiTaxIdString);
+    if (taxID) {
+      fetchTaxonByID(taxID);
+    } else if (ncbiTaxID) {
+      fetchTaxaByNcbiID(ncbiTaxID);
+    }
+  }, [searchParams]);
+
+  const fetchTaxonByID = (taxonID: number) => {
+    setLoadingTaxa(true);
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+    fetchTaxonByTaxonID(taxonID, userID, token).then((response) => {
+      if (response && response.payload) {
+        setTaxon(response.payload);
+        getTaxon(response.payload);
+      }
+
+      if (response?.notification) {
+        response?.notification.map((n) => {
+          handleNewNotification(n);
+        });
+      }
+    });
+    setLoadingTaxa(false);
+  };
+
+  const fetchTaxaByNcbiID = (ncbiID: number) => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    if (userID && token) {
+      fetchTaxonByNCBITaxonID(userID, token, ncbiID).then((response) => {
+        if (response.payload.length <= 1000) {
+          if (response.payload) {
+            setTaxa(response.payload);
+
+            if (response.payload.length === 1) {
+              setTaxon(response.payload[0]);
+              getTaxon(response.payload[0]);
+            }
+          }
+        } else {
+          handleNewNotification({
+            label: "Error",
+            message: "Too many results. Specify name!",
+            type: "error",
+          });
+        }
+
+        if (response.notification && response.notification.length) {
+          response.notification.map((not: any) => handleNewNotification(not));
+        }
+      });
+    } else {
+      handleNewNotification({
+        label: "Error",
+        message: "UserID and/or userToken deleted from storage. Relog necessary!",
+        type: "error",
+      });
+    }
+    setLoadingTaxa(false);
+  };
+
+  const fetchTaxaByIDTimeout = (id: number | undefined) => {
+    setLoadingTaxa(true);
     clearTimeout(requestTimeoutTaxonID);
     setTaxa([]);
     getTaxon(undefined);
     if (id) {
       setRequestTimeoutTaxonID(
         setTimeout(() => {
-          setLoadingTaxa(true);
-          const userID = JSON.parse(sessionStorage.getItem("userID") || "");
-          const token = JSON.parse(sessionStorage.getItem("token") || "");
-
-          if (userID && token) {
-            fetchTaxonByNCBITaxonID(parseInt(userID), token, id).then((response) => {
-              if (response.payload.length <= 1000) {
-                if (response.payload) {
-                  setTaxa(response.payload);
-
-                  if (response.payload.length === 1) {
-                    setTaxon(response.payload[0]);
-                    getTaxon(response.payload[0]);
-                  }
-                }
-              } else {
-                handleNewNotification({
-                  label: "Error",
-                  message: "Too many results. Specify name!",
-                  type: "error",
-                });
-              }
-
-              if (response.notification && response.notification.length) {
-                response.notification.map((not: any) => handleNewNotification(not));
-              }
-            });
-          } else {
-            handleNewNotification({
-              label: "Error",
-              message: "UserID and/or userToken deleted from storage. Relog necessary!",
-              type: "error",
-            });
-          }
-          setLoadingTaxa(false);
+          fetchTaxaByNcbiID(id);
         }, 3000)
       );
     }
@@ -183,13 +242,12 @@ const TaxonPicker = ({
             <label className="w-2/5 px-4">
               <div className="w-full flex justify-between items-center">
                 <div className="w-full text-center font-semibold truncate">NCBI ID</div>
-                {loadingTaxa && <LoadingSpinner label="Loading..." />}
               </div>
               <hr className="shadow my-2" />
               <div className="shadow rounded-lg">
                 <Input
                   type="number"
-                  onChange={(e) => fetchTaxaByID(e.target.value)}
+                  onChange={(e) => fetchTaxaByIDTimeout(e.target.value)}
                   placeholder={taxon && taxon.ncbiTaxonID ? taxon.ncbiTaxonID + "" : "NCBI ID"}
                 />
               </div>
@@ -198,7 +256,6 @@ const TaxonPicker = ({
             <label className="w-full px-4">
               <div className="w-full flex justify-between items-center">
                 <div className="w-full text-center font-semibold truncate">Search by name</div>
-                {loadingTaxa && <LoadingSpinner label="Loading..." />}
               </div>
               <hr className="shadow my-2" />
               <div className="shadow rounded-lg">

@@ -9,6 +9,8 @@ import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 import NewDataImportForm from "./components/NewDataImportForm";
+import { useSearchParams } from "react-router-dom";
+import { AssemblyInterface } from "../../../../../../../../tsInterfaces/tsInterfaces";
 
 const AssemblyPicker = ({
   taxon,
@@ -17,13 +19,15 @@ const AssemblyPicker = ({
   taxon: INcbiTaxon;
   getAssembly: SetStateAction<any>;
 }) => {
-  const [assemblies, setAssemblies] = useState<any>([]);
+  const [assemblies, setAssemblies] = useState<AssemblyInterface[]>([]);
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
 
   const [targetAssembly, setTargetAssembly] = useState<any>();
 
   const [toggleNewAssemblyImportForm, setToggleNewAssemblyImportForm] = useState<boolean>(false);
+
+  let [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     loadAssemblies();
@@ -42,6 +46,25 @@ const AssemblyPicker = ({
       type: notification.type,
     });
   };
+
+  useEffect(() => {
+    if (targetAssembly?.id) {
+      let newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set("assemblyID", JSON.stringify(targetAssembly.id));
+      setSearchParams(newSearchParams);
+    }
+  }, [targetAssembly?.id]);
+
+  useEffect(() => {
+    let assemblyIdString = searchParams.get("assemblyID");
+    let assemblyID = Number(assemblyIdString);
+    if (assemblyID) {
+      let target = assemblies.find((element) => element.id === assemblyID);
+      if (target?.id) {
+        getAssembly(target);
+      }
+    }
+  }, [searchParams, assemblies?.length]);
 
   const loadAssemblies = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
@@ -82,6 +105,14 @@ const AssemblyPicker = ({
         }
       }
     }
+  };
+
+  const handleEditAssembly = (assembly: AssemblyInterface) => {
+    let newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("assemblyID", JSON.stringify(assembly.id));
+    setTargetAssembly(assembly);
+    getAssembly(assembly);
+    setSearchParams(newSearchParams);
   };
 
   return (
@@ -148,8 +179,7 @@ const AssemblyPicker = ({
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
-                      setTargetAssembly(assembly);
-                      getAssembly(assembly);
+                      handleEditAssembly(assembly);
                     }}
                     className="cursor-pointer hover:bg-blue-600 hover:text-white flex items-center justify-center p-1 rounded-lg transform scale-125"
                   >

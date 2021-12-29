@@ -3,7 +3,7 @@
 // import { catchError, map, switchMap } from "rxjs/operators";
 
 import { type } from "os";
-import { AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
+import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
 // =============================== users =============================== //
 // USER AUTHENTIFCATION
@@ -291,7 +291,7 @@ export async function fetchAssembliesByTaxonID(
   taxonID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<AssemblyInterface[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAssembliesByTaxonID?taxonID=" +
@@ -313,7 +313,7 @@ export async function fetchAssembliesByTaxonIDs(
   taxonIDs: number[],
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<AssemblyInterface>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAssembliesByTaxonIDs?taxonIDs=" +
@@ -495,7 +495,7 @@ export function fetchTaxonByTaxonID(
   taxonID: number,
   userID: number,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<INcbiTaxon>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchTaxonByTaxonID?userID=" +
