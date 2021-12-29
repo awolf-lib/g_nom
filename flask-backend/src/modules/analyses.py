@@ -1,10 +1,12 @@
 from os.path import basename, exists, isdir, isfile
 from subprocess import run
 from re import sub, compile
+from math import floor
 
 from .notifications import createNotification
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
+from .assemblies import addAssemblyTag
 
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of analyses
@@ -87,13 +89,13 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             return 0, error
 
         if analyses_type == "busco":
-            import_status, error = __importBusco(analyses_id, busco_content)
+            import_status, error = __importBusco(assembly_id, analyses_id, busco_content)
         elif analyses_type == "fcat":
-            import_status, error = __importFcat(analyses_id, fcat_content)
+            import_status, error = __importFcat(assembly_id, analyses_id, fcat_content)
         elif analyses_type == "milts":
-            import_status, error = __importMilts(analyses_id)
+            import_status, error = __importMilts(assembly_id, analyses_id)
         elif analyses_type == "repeatmasker":
-            import_status, error = __importRepeatmasker(analyses_id, repeatmasker_content)
+            import_status, error = __importRepeatmasker(assembly_id, analyses_id, repeatmasker_content)
 
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
@@ -139,7 +141,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
         # check if path exists
         old_file_path = BASE_PATH_TO_IMPORT + dataset["main_file"]["path"]
         if not exists(old_file_path):
-            return 0, createNotification(message="Import path not found!")
+            return "", "", createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
             run(["gunzip", old_file_path])
@@ -147,7 +149,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
             if exists(old_file_path[:-3]):
                 old_file_path = old_file_path[:-3]
             else:
-                return 0, createNotification(message="Unzipping of gff failed!")
+                return "", "", createNotification(message="Unzipping of gff failed!")
 
         # # check if file exists already in db
         # if not forceIdentical:
@@ -169,18 +171,18 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
         )
         run(["mkdir", "-p", new_file_path])
         if not isdir(new_file_path):
-            return 0, createNotification(message="Creation of new directory failed!")
+            return "", "", createNotification(message="Creation of new directory failed!")
 
         if isfile(old_file_path):
             new_file_name = basename(old_file_path)
             new_file_path_main_file = f"{new_file_path}{new_file_name}"
             run(["cp", old_file_path, new_file_path_main_file])
         else:
-            return 0, createNotification(message="Invalid path to analyses file!")
+            return "", "", createNotification(message="Invalid path to analyses file!")
 
         # check if main file was moved
         if not exists(new_file_path_main_file):
-            return 0, createNotification(message="Moving analyses to storage failed!")
+            return "", "", createNotification(message="Moving analyses to storage failed!")
         # add remove?
 
         if analyses_type == "milts":
@@ -190,14 +192,14 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
                     plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{analyses_name}"')
                     plotFile.close()
 
-                with open("src/Tools/templates/milts_head_template.html", "r") as milts_template_file:
+                with open("src/modules/templates/milts_head_template.html", "r") as milts_template_file:
                     milts_template = milts_template_file.readlines()
                     milts_template_file.close()
 
                 body_regex = compile(r"<body>.*</body>")
                 body_match = body_regex.findall(plot_data)
                 if len(body_match) != 1:
-                    return 0, createNotification(message="Error inserting scripts into old milts version!")
+                    return "", "", createNotification(message="Error inserting scripts into old milts version!")
 
                 for i in range(len(milts_template) - 1, len(milts_template) - 5, -1):
                     if "<body>REPLACE_BODY</body>" in milts_template[i]:
@@ -210,7 +212,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
                     plotFile.writelines(milts_template)
                     plotFile.close()
             except Exception as err:
-                return 0, createNotification(message=f"MiltsHeaderInsertionError: {str(err)}")
+                return "", "", createNotification(message=f"MiltsHeaderInsertionError: {str(err)}")
 
         # handle additional files
         for additional_file in dataset["additional_files"]:
@@ -222,7 +224,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
         return new_file_path_main_file, new_file_path, []
 
     except Exception as err:
-        return 0, createNotification(message=f"AnalysesStorageError: {str(err)}")
+        return "", "", createNotification(message=f"AnalysesStorageError: {str(err)}")
 
 
 # import Analyses
@@ -239,11 +241,12 @@ def __importAnalyses(assembly_id, analyses_name, analyses_path, analyses_type, u
 
 
 # import Busco
-def __importBusco(analysisID, buscoData):
+def __importBusco(assemblyID, analysisID, buscoData):
     """
     Imports Busco analysis results
     """
     try:
+        notifications =  []
         completeSingle = buscoData["completeSingle"]
         completeSinglePercent = buscoData["completeSinglePercent"]
         completeDuplicated = buscoData["completeDuplicated"]
@@ -259,6 +262,10 @@ def __importBusco(analysisID, buscoData):
 
         if total != completeSingle + completeDuplicated + fragmented + missing:
             return 0, createNotification(message="Busco total number does not match sum of all categories!")
+
+        tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_{floor(completeSinglePercent)}")
+        if not tagAddedStatus:
+            notifications += notification
 
         connection, cursor, error = connect()
         cursor.execute(
@@ -280,18 +287,19 @@ def __importBusco(analysisID, buscoData):
             ),
         )
         connection.commit()
-        return 1, []
+        return 1, notifications
 
     except Exception as err:
         return 0, createNotification(message=f"BuscoImportDBError: {str(err)}")
 
 
 # import fCat
-def __importFcat(analysisID, fcatData):
+def __importFcat(assemblyID, analysisID, fcatData):
     """
     Imports fCat analysis results
     """
     try:
+        notifications = []
         for mode in fcatData:
             if mode == "mode_1":
                 m1_similar = fcatData[mode]["similar"]
@@ -306,6 +314,9 @@ def __importFcat(analysisID, fcatData):
                 m1_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m1_total = fcatData[mode]["total"]
                 m1_genomeID = fcatData[mode]["genomeID"]
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M1_{floor(m1_similarPercent)}")
+                if not tagAddedStatus:
+                    notifications += notification
             elif mode == "mode_2":
                 m2_similar = fcatData[mode]["similar"]
                 m2_similarPercent = fcatData[mode]["similarPercent"]
@@ -319,6 +330,9 @@ def __importFcat(analysisID, fcatData):
                 m2_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m2_total = fcatData[mode]["total"]
                 m2_genomeID = fcatData[mode]["genomeID"]
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M2_{floor(m2_similarPercent)}")
+                if not tagAddedStatus:
+                    notifications += notification
             elif mode == "mode_3":
                 m3_similar = fcatData[mode]["similar"]
                 m3_similarPercent = fcatData[mode]["similarPercent"]
@@ -332,6 +346,9 @@ def __importFcat(analysisID, fcatData):
                 m3_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m3_total = fcatData[mode]["total"]
                 m3_genomeID = fcatData[mode]["genomeID"]
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M3_{floor(m3_similarPercent)}")
+                if not tagAddedStatus:
+                    notifications += notification
             elif mode == "mode_4":
                 m4_similar = fcatData[mode]["similar"]
                 m4_similarPercent = fcatData[mode]["similarPercent"]
@@ -345,6 +362,9 @@ def __importFcat(analysisID, fcatData):
                 m4_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m4_total = fcatData[mode]["total"]
                 m4_genomeID = fcatData[mode]["genomeID"]
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M4_{floor(m4_similarPercent)}")
+                if not tagAddedStatus:
+                    notifications += notification
 
         connection, cursor, error = connect()
         cursor.execute(
@@ -395,14 +415,14 @@ def __importFcat(analysisID, fcatData):
             )
         )
         connection.commit()
-        return 1, []
+        return 1, notifications
 
     except Exception as err:
         return 0, createNotification(message=f"FcatImportDBError; {str(err)}")
 
 
 # import Milts
-def __importMilts(analysisID):
+def __importMilts(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
         cursor.execute(f"INSERT INTO analysesMilts (analysisID) VALUES ({analysisID})")
@@ -413,10 +433,11 @@ def __importMilts(analysisID):
 
 
 # import Repeatmasker
-def __importRepeatmasker(analysisID, repeatmaskerData):
+def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
     """
     Imports Repeatmasker analysis results
     """
+    notifications = []
 
     if "sines" in repeatmaskerData:
         sines = repeatmaskerData["sines"]
@@ -468,6 +489,11 @@ def __importRepeatmasker(analysisID, repeatmaskerData):
         percentN = repeatmaskerData["percentN"]
 
     try:
+        repetitiveness = total_repetitive_length * 100 / (total_non_repetitive_length + total_repetitive_length)
+        tagAddedStatus, notification = addAssemblyTag(assemblyID, f"REPETITIVENESS_{floor(repetitiveness)}")
+        if not tagAddedStatus:
+            notifications += notification
+
         connection, cursor, error = connect()
         cursor.execute(
             f"INSERT INTO analysesRepeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES ({analysisID}, {sines}, {sines_length}, {lines}, {lines_length}, {ltr_elements}, {ltr_elements_length}, {dna_elements}, {dna_elements_length}, {rolling_circles}, {rolling_circles_length}, {unclassified}, {unclassified_length}, {small_rna}, {small_rna_length}, {satellites}, {satellites_length}, {simple_repeats}, {simple_repeats_length}, {low_complexity}, {low_complexity_length}, {total_non_repetitive_length}, {total_repetitive_length}, {numberN}, {percentN})"
@@ -694,27 +720,21 @@ def parseRepeatmasker(pathToRepeatmasker):
             if len(values) == 0:
                 continue
             elif "sequences" in line.lower():
-                print(line, values)
                 number_of_sequences = int(values[0])
-                print("numberSequences", number_of_sequences)
                 continue
 
             elif "total length" in line.lower():
                 total_sequence_length = int(values[0])
                 sequence_length = int(values[0])
-                print("totalLength", total_sequence_length)
                 continue
 
             elif "gc level" in line.lower():
                 gc_level = float(values[0])
-                print("gc", gc_level)
                 continue
 
             elif "bases masked" in line.lower():
                 data["numberN"] = int(values[0])
                 data["percentN"] = float(values[1])
-                print("n", data["numberN"])
-                print("pn", data["percentN"])
                 continue
 
             # body
@@ -749,7 +769,6 @@ def parseRepeatmasker(pathToRepeatmasker):
                 sequence_length -= length_occupied
 
             elif "total interspersed repeats" in line.lower():
-                print(line, values)
                 total_interspersed_repeats = int(values[0])
 
             elif "rolling-circles" in line.lower():
@@ -834,7 +853,6 @@ def fetchAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         analyses["repeatmasker"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        print(analyses)
         return analyses, []
     except Exception as err:
         return {}, createNotification(message=str(err))

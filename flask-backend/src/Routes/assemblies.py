@@ -46,7 +46,6 @@ def assemblies_bp_import_assembly():
 
         if taxon and dataset and userID:
             data, notification = import_assembly(taxon, dataset, userID)
-            print(data, notification)
         else:
             data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
