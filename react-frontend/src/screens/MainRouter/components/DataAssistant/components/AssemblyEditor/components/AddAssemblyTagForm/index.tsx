@@ -24,7 +24,7 @@ const AddAssemblyTagForm = ({
   const [tags, setTags] = useState<AssemblyTagInterface[]>();
   const [newAssemblyTag, setNewAssemblyTag] = useState<string>("");
   const [hoverTag, setHoverTag] = useState<number>(-1);
-  const [removeTagConfirmation, setRemoveTagConfirmation] = useState<boolean>(false);
+  const [removeTagConfirmation, setRemoveTagConfirmation] = useState<number>(-1);
 
   // notifications
   const dispatch = useNotification();
@@ -52,7 +52,7 @@ const AddAssemblyTagForm = ({
         setTags(
           response.payload.map((tag) => ({
             ...tag,
-            color: "#" + Math.random().toString(16).substr(-6),
+            ...createColorCombination(),
           }))
         );
       }
@@ -64,51 +64,35 @@ const AddAssemblyTagForm = ({
   };
 
   const handleChangeNewAssemblyTag = (tag: string) => {
-    const regex = /^([,.A-Za-z0-9_ ]*)$/g;
-    if (!tag.match(regex)) {
-      handleNewNotification({
-        label: "Error",
-        message: "Invalid input. No special characters allowed!",
-        type: "error",
-      });
-    } else {
+    if (tag.length <= 45) {
       setNewAssemblyTag(tag);
     }
   };
 
   const handleAddNewAssemblyTag = async () => {
-    const regex = /^([,.A-Za-z0-9_ ]+)$/g;
-    if (!newAssemblyTag.match(regex) && newAssemblyTag.length < 1) {
-      handleNewNotification({
-        label: "Error",
-        message: "Invalid input. No special characters allowed!",
-        type: "error",
-      });
-    } else {
-      const userID = JSON.parse(sessionStorage.getItem("userID") || "");
-      const token = JSON.parse(sessionStorage.getItem("token") || "");
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-      if (assembly && assembly.id && newAssemblyTag && userID && token) {
-        if (!tags?.find((x) => x.tag.toUpperCase() === newAssemblyTag.toUpperCase())) {
-          const response = await addAssemblyTag(
-            assembly.id,
-            newAssemblyTag.toUpperCase(),
-            userID,
-            token
-          );
+    if (assembly && assembly.id && newAssemblyTag && userID && token) {
+      if (!tags?.find((x) => x.tag.toUpperCase() === newAssemblyTag.toUpperCase())) {
+        const response = await addAssemblyTag(
+          assembly.id,
+          newAssemblyTag.toUpperCase(),
+          userID,
+          token
+        );
 
-          if (response && response.notification && response.notification.length > 0) {
-            response.notification.map((not) => handleNewNotification(not));
-          }
-
-          setNewAssemblyTag("");
-          loadTags();
-        } else {
-          handleNewNotification({ label: "Info", message: "Tag already exists!", type: "info" });
+        if (response && response.notification && response.notification.length > 0) {
+          response.notification.map((not) => handleNewNotification(not));
         }
+
+        setNewAssemblyTag("");
+        loadTags();
       } else {
-        handleNewNotification({ label: "Error", message: "Missing input!", type: "error" });
+        handleNewNotification({ label: "Info", message: "Tag already exists!", type: "info" });
       }
+    } else {
+      handleNewNotification({ label: "Error", message: "Missing input!", type: "error" });
     }
   };
 
@@ -123,10 +107,33 @@ const AddAssemblyTagForm = ({
         response.notification.map((not) => handleNewNotification(not));
       }
 
-      setRemoveTagConfirmation(false);
+      setRemoveTagConfirmation(-1);
       setHoverTag(-1);
       loadTags();
     }
+  };
+
+  const createColorCombination = () => {
+    // Generate random RGB values
+    var r = Math.floor(Math.random() * 15 - 1);
+    var g = Math.floor(Math.random() * 175 - 1);
+    var b = Math.floor(Math.random() * 150 - 1);
+    // Calculate brightness of randomized colour
+    var brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    // Calculate brightness of white and black text
+    var lightText = (255 * 299 + 255 * 587 + 255 * 114) / 1000;
+    var darkText = (0 * 299 + 0 * 587 + 0 * 114) / 1000;
+
+    let backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
+
+    let color;
+    if (Math.abs(brightness - lightText) > Math.abs(brightness - darkText)) {
+      color = "rgb(255, 255, 255)";
+    } else {
+      color = "rgb(0, 0, 0)";
+    }
+
+    return { backgroundColor: backgroundColor, color: color };
   };
 
   return (
@@ -135,30 +142,30 @@ const AddAssemblyTagForm = ({
         Edit assembly tags...
       </div>
       <div>
-        <div className="relative grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-4 justify-around py-2 border rounded mt-2 max-w-screen">
+        <div className="relative flex flex-wrap justify-around items-center py-2 border rounded mt-2">
           {tags && tags.length > 0 ? (
             tags.map((tag, index) => (
               <div
                 key={tag.id}
-                style={{ backgroundColor: tag.color }}
-                className="relative text-white flex justify-center items-center py-1 rounded-lg uppercase ring-1 ring-gray-400 ring-offset-1"
+                style={{ backgroundColor: tag.backgroundColor, color: tag.color }}
+                className="mb-4 mx-4 max-w-max cursor-pointer text-sm font-bold flex justify-between items-center py-1 px-2 rounded-lg uppercase ring-1 ring-gray-400 shadow-lg"
                 onMouseEnter={() => setHoverTag(index)}
                 onMouseLeave={() => {
-                  setRemoveTagConfirmation(false);
+                  setRemoveTagConfirmation(-1);
                   setHoverTag(-1);
                 }}
-                onClick={() => setRemoveTagConfirmation(true)}
+                onClick={() => setRemoveTagConfirmation(index)}
               >
-                <span className="truncate w-full text-center text-sm">
-                  {!removeTagConfirmation ? tag.tag : "DELETE?"}
+                <span className="text-center px-2 py-1">
+                  {removeTagConfirmation !== index ? tag.tag : "DELETE?"}
                 </span>
-                {hoverTag === index && !removeTagConfirmation && (
-                  <div className="absolute right-0 mx-4 flex items-center animate-grow-y">
+                {hoverTag === index && removeTagConfirmation !== index && (
+                  <div className="flex items-center">
                     <Trash className="stroke-current" color="blank" size="small" />
                   </div>
                 )}
-                {hoverTag === index && removeTagConfirmation && (
-                  <div className="absolute right-0 flex items-center mx-4 animate-grow-y">
+                {hoverTag === index && removeTagConfirmation === index && (
+                  <div className="flex items-center animate-grow-y">
                     <div className="bg-green-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-green-400">
                       <Checkmark
                         className="stroke-current"
@@ -174,7 +181,7 @@ const AddAssemblyTagForm = ({
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setRemoveTagConfirmation(false);
+                          setRemoveTagConfirmation(-1);
                         }}
                       />
                     </div>
@@ -189,13 +196,18 @@ const AddAssemblyTagForm = ({
       </div>
       <hr className="shadow my-4" />
       <div className="flex">
-        <label className="mx-4 flex items-center">
-          <span className="w-32 font-semibold">New tag...</span>
-          <Input
-            placeholder="Max. 45 characters..."
-            value={newAssemblyTag}
-            onChange={(e) => handleChangeNewAssemblyTag(e.target.value)}
-          />
+        <label className="mx-4 flex items-center w-full">
+          <span className="w-32 font-semibold flex justify-center items-center">New tag...</span>
+          <div className="relative w-full mx-4">
+            <Input
+              placeholder="Max. 45 characters..."
+              value={newAssemblyTag}
+              onChange={(e) => handleChangeNewAssemblyTag(e.target.value)}
+            />
+            <div className="absolute bottom-0 right-0 m-2 text-xs">
+              {newAssemblyTag && newAssemblyTag.length + "/45"}
+            </div>
+          </div>
         </label>
         <div className="mx-4 w-20">
           <Button label="Add" color="confirm" onClick={() => handleAddNewAssemblyTag()} />

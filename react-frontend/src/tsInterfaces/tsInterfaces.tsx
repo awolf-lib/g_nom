@@ -30,4 +30,5 @@ export interface AssemblyTagInterface {
   assemblyID: number;
   tag: string;
   color?: string;
+  backgroundColor?: string;
 }
