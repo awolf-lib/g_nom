@@ -748,3 +748,85 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
 
     except Exception as err:
         return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
+
+
+# FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
+def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
+    """
+    Gets all general information by specific taxon ID
+    """
+
+    generalInfos = []
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"SELECT * from assembliesGeneralInfo WHERE assemblyID={assemblyID}")
+
+        row_headers = [x[0] for x in cursor.description]
+        generalInfos = cursor.fetchall()
+    except Exception as err:
+        return [], createNotification(message=str(err))
+
+    if len(generalInfos):
+        return [dict(zip(row_headers, x)) for x in generalInfos], []
+    else:
+        return [], createNotification("Info", "No general information!", "info")
+
+
+# ADD GENERAL INFO
+def addAssemblyGeneralInformation(assemblyID, key, value):
+    """
+    add general info by level and id
+    """
+
+    try:
+        connection, cursor, error = connect()
+
+        # TODO: validate string
+
+        cursor.execute(
+            f"INSERT INTO assembliesGeneralInfo (assemblyID, generalInfoLabel, generalInfoDescription) VALUES ({assemblyID}, '{key}', '{value}')"
+        )
+        connection.commit()
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
+    return {"assemblyID": assemblyID, "key": key, "value": value}, createNotification(
+        "Success", "Successfully added general info!", "success"
+    )
+
+
+# UPDATE GENERAL INFO
+def updateAssemblyGeneralInformationByID(id, key, value):
+    """
+    update general info by level and id
+    """
+
+    try:
+        connection, cursor, error = connect()
+
+        # TODO: validate string
+
+        cursor.execute(
+            f"UPDATE assembliesGeneralInfo SET generalInfoLabel='{key}', generalInfoDescription='{value}' WHERE id={id}"
+        )
+        connection.commit()
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
+    return 1, createNotification("Success", "Successfully updated general info!", "success")
+
+
+# DELETE GENERAL INFO
+def deleteAssemblyGeneralInformationByID(id):
+    """
+    deletes general information and id
+    """
+
+    try:
+        connection, cursor, error = connect()
+        cursor.execute(f"DELETE FROM assembliesGeneralInfo WHERE id={id}")
+        connection.commit()
+    except Exception as err:
+        return [], createNotification(message=str(err))
+
+    return 1, createNotification("Success", "Successfully removed general information!", "success")

@@ -7,14 +7,25 @@ import {
   deleteTaxonGeneralInformationByID,
   updateTaxonGeneralInformationByID,
   IGeneralInformation,
+  fetchAssemblyGeneralInformationByAssemblyID,
+  updateAssemblyGeneralInformationByID,
+  addAssemblyGeneralInformation,
+  deleteAssemblyGeneralInformationByID,
 } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
+import { AssemblyInterface } from "../../../../../../../../tsInterfaces/tsInterfaces";
 
-const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
-  const [generalInfos, setGeneralInfos] = useState<Array<any>>([]);
+const GeneralInformationEditor = ({
+  target,
+  level,
+}: {
+  target: INcbiTaxon | AssemblyInterface;
+  level: "taxon" | "assembly";
+}) => {
+  const [generalInfos, setGeneralInfos] = useState<IGeneralInformation[]>([]);
   const [editing, setEditing] = useState<number>(-1);
   const [listOffset, setListOffset] = useState<number>(0);
   const [newGeneralInformationLabel, setNewGeneralInformationLabel] = useState<string>("");
@@ -38,7 +49,7 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   const newGeneralInformationFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    loadGeneralInformation(taxon.id);
+    loadGeneralInformation(target.id);
     topRef.current?.scrollIntoView();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -71,14 +82,34 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
-      const response = await fetchTaxonGeneralInformationByTaxonID(id, parseInt(userID), token);
-      if (response && response.payload) {
-        setGeneralInfos(response.payload);
-        if (response.notification && response.notification.length) {
-          response.notification.map((not: any) => {
-            handleNewNotification(not);
+      switch (level) {
+        case "taxon":
+          await fetchTaxonGeneralInformationByTaxonID(id, userID, token).then((response) => {
+            if (response && response.payload) {
+              setGeneralInfos(response.payload);
+              if (response.notification && response.notification.length) {
+                response.notification.map((not) => {
+                  handleNewNotification(not);
+                });
+              }
+            }
           });
-        }
+          break;
+        case "assembly":
+          await fetchAssemblyGeneralInformationByAssemblyID(id, userID, token).then((response) => {
+            if (response && response.payload) {
+              setGeneralInfos(response.payload);
+              if (response.notification && response.notification.length) {
+                response.notification.map((not) => {
+                  handleNewNotification(not);
+                });
+              }
+            }
+          });
+          break;
+
+        default:
+          break;
       }
     }
     setFetchingGeneralInformation(false);
@@ -103,7 +134,7 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   };
 
   const handleChangeUpdatedGeneralInformationDescription = (newDescription: string) => {
-    if (newDescription.length <= 2000) {
+    if (newDescription.length <= 500) {
       setUpdatedGeneralInformationDescription(newDescription);
     }
   };
@@ -115,66 +146,82 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   };
 
   const handleChangeNewGeneralInformationDescription = (newDescription: string) => {
-    if (newDescription.length <= 2000) {
+    if (newDescription.length <= 500) {
       setNewGeneralInformationDescription(newDescription);
     }
   };
 
-  const updateGeneralInformation = async (id: any) => {
+  const updateGeneralInformation = async (id: number) => {
     setFetchingUpdateGeneralInformation(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
       if (updatedGeneralInformationLabel && updatedGeneralInformationDescription) {
-        const regex = /^([\w ]+)$/g;
         if (
-          !newGeneralInformationLabel.match(regex) ||
-          !newGeneralInformationDescription.match(regex)
+          updatedGeneralInformationLabel.length <= 50 ||
+          updatedGeneralInformationDescription.length <= 2000
         ) {
+          switch (level) {
+            case "taxon":
+              await updateTaxonGeneralInformationByID(
+                id,
+                updatedGeneralInformationLabel,
+                updatedGeneralInformationDescription,
+                userID,
+                token
+              ).then((response) => {
+                if (response && response.notification && response.notification.length) {
+                  response.notification.map((element: any) => {
+                    handleNewNotification(element);
+                  });
+                } else {
+                  handleNewNotification({
+                    label: "Error",
+                    message: "Input too long!",
+                    type: "error",
+                  });
+                }
+              });
+              break;
+            case "assembly":
+              await updateAssemblyGeneralInformationByID(
+                id,
+                updatedGeneralInformationLabel,
+                updatedGeneralInformationDescription,
+                userID,
+                token
+              ).then((response) => {
+                if (response && response.notification && response.notification.length) {
+                  response.notification.map((element: any) => {
+                    handleNewNotification(element);
+                  });
+                } else {
+                  handleNewNotification({
+                    label: "Error",
+                    message: "Input too long!",
+                    type: "error",
+                  });
+                }
+              });
+              break;
+
+            default:
+              break;
+          }
+        } else {
           handleNewNotification({
             label: "Error",
-            message: "Invalid input. No special characters allowed!",
+            message: "Missing input!",
             type: "error",
           });
-        } else {
-          if (
-            updatedGeneralInformationLabel.length <= 50 ||
-            updatedGeneralInformationDescription.length <= 2000
-          ) {
-            const response = await updateTaxonGeneralInformationByID(
-              id,
-              updatedGeneralInformationLabel,
-              updatedGeneralInformationDescription,
-              parseInt(userID),
-              token
-            );
-
-            if (response && response.notification && response.notification.length) {
-              response.notification.map((element: any) => {
-                handleNewNotification(element);
-              });
-            }
-          } else {
-            handleNewNotification({
-              label: "Error",
-              message: "Input too long!",
-              type: "error",
-            });
-          }
         }
-      } else {
-        handleNewNotification({
-          label: "Error",
-          message: "Missing input!",
-          type: "error",
-        });
       }
     }
 
     setUpdatedGeneralInformationLabel("");
     setUpdatedGeneralInformationDescription("");
-    loadGeneralInformation(taxon.id);
+    loadGeneralInformation(target.id);
     setEditing(-1);
     setFetchingUpdateGeneralInformation(false);
   };
@@ -192,41 +239,51 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
 
     if (userID && token) {
       if (newGeneralInformationLabel && newGeneralInformationDescription) {
-        const regex = /^([,.A-Za-z0-9_ ]+)$/g;
         if (
-          !newGeneralInformationLabel.match(regex) ||
-          !newGeneralInformationDescription.match(regex)
+          newGeneralInformationLabel.length <= 50 &&
+          newGeneralInformationDescription.length <= 2000
         ) {
+          switch (level) {
+            case "taxon":
+              await addTaxonGeneralInformation(
+                target.id,
+                newGeneralInformationLabel,
+                newGeneralInformationDescription,
+                userID,
+                token
+              ).then((response) => {
+                if (response && response.notification && response.notification.length) {
+                  response.notification.map((element: any) => {
+                    handleNewNotification(element);
+                  });
+                }
+              });
+              break;
+            case "assembly":
+              await addAssemblyGeneralInformation(
+                target.id,
+                newGeneralInformationLabel,
+                newGeneralInformationDescription,
+                userID,
+                token
+              ).then((response) => {
+                if (response && response.notification && response.notification.length) {
+                  response.notification.map((element: any) => {
+                    handleNewNotification(element);
+                  });
+                }
+              });
+              break;
+
+            default:
+              break;
+          }
+        } else {
           handleNewNotification({
             label: "Error",
-            message: "Invalid input. No special characters allowed!",
+            message: "Input too long!",
             type: "error",
           });
-        } else {
-          if (
-            newGeneralInformationLabel.length <= 50 &&
-            newGeneralInformationDescription.length <= 2000
-          ) {
-            const response = await addTaxonGeneralInformation(
-              taxon.id,
-              newGeneralInformationLabel,
-              newGeneralInformationDescription,
-              parseInt(userID),
-              token
-            );
-
-            if (response && response.notification && response.notification.length) {
-              response.notification.map((element: any) => {
-                handleNewNotification(element);
-              });
-            }
-          } else {
-            handleNewNotification({
-              label: "Error",
-              message: "Input too long!",
-              type: "error",
-            });
-          }
         }
       } else {
         handleNewNotification({
@@ -240,7 +297,7 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
     setNewGeneralInformationLabel("");
     setNewGeneralInformationDescription("");
     setEditing(-1);
-    loadGeneralInformation(taxon.id);
+    loadGeneralInformation(target.id);
     setFetchingNewGeneralInformation(false);
   };
 
@@ -255,14 +312,31 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token) {
-      const response = await deleteTaxonGeneralInformationByID(id, parseInt(userID), token);
-      if (response && response.notification && response.notification.length) {
-        response.notification.map((element: any) => {
-          handleNewNotification(element);
-        });
+      switch (level) {
+        case "taxon":
+          await deleteTaxonGeneralInformationByID(id, userID, token).then((response) => {
+            if (response && response.notification && response.notification.length) {
+              response.notification.map((element: any) => {
+                handleNewNotification(element);
+              });
+            }
+          });
+          break;
+        case "assembly":
+          await deleteAssemblyGeneralInformationByID(id, userID, token).then((response) => {
+            if (response && response.notification && response.notification.length) {
+              response.notification.map((element: any) => {
+                handleNewNotification(element);
+              });
+            }
+          });
+          break;
+
+        default:
+          break;
       }
 
-      loadGeneralInformation(taxon.id);
+      loadGeneralInformation(target.id);
       setEditing(-1);
       setFetchingDeleteGeneralInformation(false);
     }
@@ -297,14 +371,20 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
                   <div className="animate-grow-y">
                     <div className="flex py-4">
                       <div className="w-1/5 mx-2">
-                        <Input
-                          type="textarea"
-                          placeholder="Max. 50 characters..."
-                          onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                            handleChangeUpdatedGeneralInformationLabel(e.currentTarget.value)
-                          }
-                          value={updatedGeneralInformationLabel}
-                        />
+                        <div className="relative">
+                          <Input
+                            type="textarea"
+                            placeholder="Max. 50 characters..."
+                            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                              handleChangeUpdatedGeneralInformationLabel(e.currentTarget.value)
+                            }
+                            value={updatedGeneralInformationLabel}
+                          />
+                          <div className="absolute bottom-0 right-0 m-2 text-xs">
+                            {updatedGeneralInformationLabel &&
+                              updatedGeneralInformationLabel.length + "/50"}
+                          </div>
+                        </div>
                         <div className="flex justify-around mt-2">
                           <div className="w-24" onClick={() => updateGeneralInformation(gi.id)}>
                             <Button
@@ -322,14 +402,22 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
                         </div>
                       </div>
                       <div className="w-4/5">
-                        <Input
-                          type="textarea"
-                          placeholder="Max. 2000 characters..."
-                          onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                            handleChangeUpdatedGeneralInformationDescription(e.currentTarget.value)
-                          }
-                          value={updatedGeneralInformationDescription}
-                        />
+                        <div className="relative">
+                          <Input
+                            type="textarea"
+                            placeholder="Max. 500 characters..."
+                            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                              handleChangeUpdatedGeneralInformationDescription(
+                                e.currentTarget.value
+                              )
+                            }
+                            value={updatedGeneralInformationDescription}
+                          />
+                          <div className="absolute bottom-0 right-0 m-2 text-xs">
+                            {updatedGeneralInformationDescription &&
+                              updatedGeneralInformationDescription.length + "/500"}
+                          </div>
+                        </div>
                         <div className="flex justify-end items-center mt-2 mx-4">
                           <div
                             onClick={() => handleDeleteGeneralInformation(gi.id)}
@@ -419,14 +507,19 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
           <div className="bg-gray-100 py-4 px-2">
             <div className="flex">
               <div className="w-1/5 mx-1">
-                <Input
-                  type="textarea"
-                  placeholder="Max. 50 characters..."
-                  onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                    handleChangeNewGeneralInformationLabel(e.currentTarget.value)
-                  }
-                  value={newGeneralInformationLabel}
-                />
+                <div className="relative">
+                  <Input
+                    type="textarea"
+                    placeholder="Max. 50 characters..."
+                    onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                      handleChangeNewGeneralInformationLabel(e.currentTarget.value)
+                    }
+                    value={newGeneralInformationLabel}
+                  />
+                  <div className="absolute bottom-0 right-0 m-2 text-xs">
+                    {newGeneralInformationLabel && newGeneralInformationLabel.length + "/500"}
+                  </div>
+                </div>
                 <div className="flex justify-around py-2">
                   <div className="w-24" onClick={() => handleSubmitNewGeneralInformation()}>
                     <Button
@@ -444,14 +537,20 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
                 </div>
               </div>
               <div className="w-4/5 mx-1">
-                <Input
-                  type="textarea"
-                  placeholder="Max. 2000 characters..."
-                  onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                    handleChangeNewGeneralInformationDescription(e.currentTarget.value)
-                  }
-                  value={newGeneralInformationDescription}
-                />
+                <div className="relative">
+                  <Input
+                    type="textarea"
+                    placeholder="Max. 2000 characters..."
+                    onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                      handleChangeNewGeneralInformationDescription(e.currentTarget.value)
+                    }
+                    value={newGeneralInformationDescription}
+                  />
+                  <div className="absolute bottom-0 right-0 m-2 text-xs">
+                    {newGeneralInformationDescription &&
+                      newGeneralInformationDescription.length + "/500"}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -461,4 +560,4 @@ const TaxonGeneralInformationEditor = ({ taxon }: { taxon: INcbiTaxon }) => {
   );
 };
 
-export default TaxonGeneralInformationEditor;
+export default GeneralInformationEditor;

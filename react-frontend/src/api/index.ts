@@ -255,6 +255,106 @@ export async function deleteAssemblyByAssemblyID(
     });
 }
 
+// ===== FETCH ALL GENERAL INFORMATION FOR SPECIFIC ASSEMBLY ===== //
+export async function fetchAssemblyGeneralInformationByAssemblyID(
+  id: number,
+  userID: number,
+  token: string
+): Promise<IResponse<[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssemblyGeneralInformationByAssemblyID?id=" +
+      id +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== ADD ASSEMBLY GENERAL INFORMATION ===== //
+export async function addAssemblyGeneralInformation(
+  id: number,
+  key: string,
+  value: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/addAssemblyGeneralInformation?id=" +
+      id +
+      "&key=" +
+      key +
+      "&value=" +
+      value +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// =====  UPDATE TAXON GENERAL INFORMATION ===== //
+export async function updateAssemblyGeneralInformationByID(
+  id: number,
+  key: string,
+  value: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateAssemblyGeneralInformationByID?id=" +
+      id +
+      "&key=" +
+      key +
+      "&value=" +
+      value +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== DELETE TAXON GENERAL INFORMATION ===== //
+export async function deleteAssemblyGeneralInformationByID(
+  id: number,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/deleteAssemblyGeneralInformationByID?id=" +
+      id +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ALL ASSEMBLIES ===== //
 export async function fetchAssemblies(
   search = "",

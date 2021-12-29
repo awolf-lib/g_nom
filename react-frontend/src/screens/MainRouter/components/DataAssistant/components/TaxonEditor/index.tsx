@@ -2,7 +2,7 @@ import { SetStateAction } from "react";
 import { INcbiTaxon } from "../../../../../../api";
 import TabWorkspace from "../../../../../../components/TabWorkspace";
 import AssemblyPicker from "./components/AssemblyPicker";
-import TaxonGeneralInformationEditor from "./components/TaxonGeneralInformationEditor";
+import GeneralInformationEditor from "./components/GeneralInformationEditor";
 import TaxonImageEditor from "./components/TaxonImageEditor";
 
 const TaxonEditor = ({
@@ -28,7 +28,7 @@ const TaxonEditor = ({
           },
           {
             label: "General information (Taxon)",
-            content: <TaxonGeneralInformationEditor taxon={taxon} />,
+            content: <GeneralInformationEditor target={taxon} level="taxon" />,
           },
         ]}
       />

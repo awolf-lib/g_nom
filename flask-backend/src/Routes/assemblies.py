@@ -3,15 +3,19 @@ from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.assemblies import (
+    addAssemblyGeneralInformation,
     addAssemblyTag,
     deleteAssemblyByAssemblyID,
+    deleteAssemblyGeneralInformationByID,
     fetchAssembliesByTaxonID,
     fetchAssembliesByTaxonIDs,
     fetchAssemblyByAssemblyID,
+    fetchAssemblyGeneralInformationByAssemblyID,
     fetchAssemblyTagsByAssemblyID,
     import_assembly,
     fetchAssemblies,
     removeAssemblyTagbyTagID,
+    updateAssemblyGeneralInformationByID,
 )
 from modules.users import validateActiveToken
 from modules.notifications import createNotification
@@ -257,6 +261,100 @@ def assemblies_bp_fetchAssemblyTagsByAssemblyID():
 
         assemblyID = request.args.get("assemblyID")
         data, notification = fetchAssemblyTagsByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL GENERAL INFORMATION FOR SPECIFIC ASSEMBLY ID
+@assemblies_bp.route("/fetchAssemblyGeneralInformationByAssemblyID", methods=["GET"])
+def assemblies_bp_fetchTaxonGeneralInformationByTaxonID():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        id = request.args.get("id")
+        data, notification = fetchAssemblyGeneralInformationByAssemblyID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# ADD GENERAL INFORMATION
+@assemblies_bp.route("/addAssemblyGeneralInformation", methods=["GET"])
+def assemblies_bp_addTaxonGeneralInformation():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        id = request.args.get("id")
+        key = request.args.get("key")
+        value = request.args.get("value")
+        data, notification = addAssemblyGeneralInformation(id, key, value)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# UPDATE GENERAL INFORMATION
+@assemblies_bp.route("/updateAssemblyGeneralInformationByID", methods=["GET"])
+def assemblies_bp_updateTaxonGeneralInformationByID():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        id = request.args.get("id")
+        key = request.args.get("key")
+        value = request.args.get("value")
+        data, notification = updateAssemblyGeneralInformationByID(id, key, value)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# DELETES GENERAL INFORMATION
+@assemblies_bp.route("/deleteAssemblyGeneralInformationByID", methods=["GET"])
+def assemblies_bp_deleteTaxonGeneralInformationByID():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = deleteAssemblyGeneralInformationByID(id)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
