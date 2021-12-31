@@ -165,6 +165,9 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
     ]);
   }, [assemblyDetails]);
 
+  console.log(tracks);
+  console.log(aggregateTextSearchAdapters);
+
   return (
     <div className="mx-8">
       {assembly.name && defaultSession.name && configuration.theme && (

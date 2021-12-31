@@ -7,10 +7,10 @@ RUN pip3 install pika
 
 RUN npm install -g @jbrowse/cli
 RUN jbrowse create -f /usr/local/apache2/htdocs
+RUN mkdir -p /usr/local/apache2/htdocs/assemblies
 
 EXPOSE 80
 
-# COPY target/release/jbrowselistener /usr/local/j_listener/jbrowselistener
 COPY src/main.py /usr/local/j_listener/main.py
 COPY httpd.conf /usr/local/apache2/conf/httpd.conf
-CMD httpd-foreground & cd /usr/local/j_listener && python3 ./main.py
+CMD httpd-foreground & cd /usr/local/j_listener && python3 -u ./main.py

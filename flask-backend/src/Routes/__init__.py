@@ -13,6 +13,7 @@ def create_app():
     from .mappings import mappings_bp
     from .analyses import analyses_bp
     from .combined_imports import imports_bp
+    from .files import files_bp
 
     app.register_blueprint(taxa_bp, url_prefix="/")
     app.register_blueprint(users_bp, url_prefix="/")
@@ -22,6 +23,7 @@ def create_app():
     app.register_blueprint(imports_bp, url_prefix="/")
     app.register_blueprint(analyses_bp, url_prefix="/")
     app.register_blueprint(imports_bp, url_prefix="/")
+    app.register_blueprint(files_bp, url_prefix="/")
 
     CORS(app)
     return app

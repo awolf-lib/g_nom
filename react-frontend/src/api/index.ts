@@ -1297,6 +1297,29 @@ export async function importDataset(
     });
 }
 
+// files
+export async function scanFiles(userID: number, token: string): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/scanFiles?userID=" + userID + "&token=" + token)
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH TAXON IMAGE BY TAXON ID ===== //
+export function fetchFileByPath(path: string, userID: number, token: string): Promise<unknown> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchFileByPath?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&path=" +
+      path
+  );
+}
+
 // old ---------------------------------------------------------------------
 
 // // ADD NEW USER

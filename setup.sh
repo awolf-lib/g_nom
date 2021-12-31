@@ -41,6 +41,40 @@ cat ./mysql/create_gnom_db.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/m
 
 # ============================================ #
 
+## Nextcloud server
+echo "Build nextcloud docker container..."
+mkdir -p ${DATA_DIR}
+# start
+echo "Start ${FILE_SERVER_CONTAINER_NAME} container..."
+cd ./fileserver
+docker build --no-cache -t gnom/nextcloud .
+docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -v ${DATA_DIR}:/var/www/data/ -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -d -p 8080:80 gnom/nextcloud
+cd ..
+
+echo "Waiting for nextcloud installation..."
+until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${FILE_SERVER_ADRESS}:${FILE_SERVER_PORT}/login) -eq 200 ]; do
+  printf "."
+  sleep 3;
+done;
+echo ""
+
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install files_external
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:enable files_external
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/data "GnomData" 'local' null::null
+
+# setup nextcloud defaults
+echo "Remove default nextcloud files and setup group folders..."
+docker exec $FILE_SERVER_CONTAINER_NAME bash -c "rm -r /var/www/html/core/skeleton/*"
+docker exec $FILE_SERVER_CONTAINER_NAME bash -c "rm -r /var/www/html/data/$INITIAL_USER_USERNAME/files/*"
+
+# reindex
+echo "Reindex nextcloud directories..."
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files:scan --all
+
+docker exec -it $FILE_SERVER_CONTAINER_NAME python3 /usr/local/j_listener/main.py &
+
+# ============================================ #
+
 ## RabbitMQ
 docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 15672:15672 -p 5672:5672 --hostname gnom_rabbit_host rabbitmq:3-management-alpine
 
@@ -71,7 +105,7 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${API_CONTAINER_NAME} container..."
-docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e "MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME}" -e "MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}" -e "API_ADRESS=http://${API_ADRESS}" -e "API_PORT=${API_PORT}" -e "FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS}" -e "JBROWSE_ADRESS=${JBROWSE_ADRESS}" -e "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" gnom/flask
+docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e INITIAL_USER_USERNAME=${INITIAL_USER_USERNAME} -e INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} -e MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e API_ADRESS=http://${API_ADRESS} -e API_PORT=${API_PORT} -e FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS} -e JBROWSE_ADRESS=${JBROWSE_ADRESS} -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
@@ -102,9 +136,11 @@ docker exec $API_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/storage
 docker exec $API_CONTAINER_NAME bash -c "wget -q https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
 docker exec $API_CONTAINER_NAME bash -c "rm -r /flask-backend/data/storage/taxa/taxdmp.zip"
 
-# docker exec -u www-data $NEXTCLOUD_CONTAINER_NAME php occ files:scan --all
-
 # ============================================ #
+
+# initial user import into database
+echo "Initial user import..."
+docker exec $API_CONTAINER_NAME bash -c "cd src/ && python3 -m modules.users addInitialUser && cd .."
 
 # initial taxa import into database
 echo "Initial taxa import..."
@@ -113,3 +149,5 @@ docker exec $API_CONTAINER_NAME bash -c "cd src/ && python3 -m modules.taxa relo
 # ============================================ #
 
 echo "Successfully setup G-nom!"
+
+cp -r ~/import_bak/* ~/import/

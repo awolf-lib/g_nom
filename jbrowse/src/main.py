@@ -1,7 +1,7 @@
 import pika
 from os import remove, environ, _exit
 from json import load, dumps, loads
-from subprocess import run
+from subprocess import PIPE, run
 from sys import exit
 from glob import glob
 
@@ -20,11 +20,8 @@ def handle_new_assembly(message):
             args=["jbrowse", "add-assembly", storage_fasta, "--load", "symlink", "--name", message["assembly"]["name"]],
             cwd=jbrowse_assembly_path,
         )
-        try:
-            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
-        except:
-            pass
-        run(args=["jbrowse", "text-index", "--out", ".", "--force"], cwd=jbrowse_assembly_path)
+
+        reindexAssemblyFiles(jbrowse_assembly_path, message["assembly"]["name"])
         return True
     except Exception as err:
         print(f"JbrowseAddAssemblyError: {str(err)}")
@@ -55,6 +52,8 @@ def handle_new_mapping(message):
                 storage_bam,
                 "--name",
                 message["mapping"]["name"],
+                "--trackId",
+                message["mapping"]["name"],
                 "--category",
                 "mapping",
                 "--load",
@@ -62,14 +61,8 @@ def handle_new_mapping(message):
             ],
             cwd=jbrowse_assembly_path,
         )
-        try:
-            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
-        except:
-            pass
-        run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
-            cwd=jbrowse_assembly_path,
-        )
+
+        reindexAssemblyFiles(jbrowse_assembly_path, message["mapping"]["name"])
         return True
     except Exception as err:
         print(f"JbrowseAddMappingError: {str(err)}")
@@ -106,16 +99,8 @@ def handle_delete_mapping(message):
             f.write(dumps(jbrowse_config, indent=4))
             f.close()
 
-        try:
-            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
-        except:
-            pass
-        run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
-            cwd=jbrowse_assembly_path,
-        )
-
-        return 1
+        reindexAssemblyFiles(jbrowse_assembly_path, mapping_name)
+        return True
     except Exception as err:
         print(f"JbrowseConfigUpdateError: {str(err)}")
         return False
@@ -134,6 +119,8 @@ def handle_new_annotation(message):
                 storage_gff,
                 "--name",
                 message["annotation"]["name"],
+                "--trackId",
+                message["annotation"]["name"],
                 "--category",
                 "annotation",
                 "--load",
@@ -141,14 +128,8 @@ def handle_new_annotation(message):
             ],
             cwd=jbrowse_assembly_path,
         )
-        try:
-            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
-        except:
-            pass
-        run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
-            cwd=jbrowse_assembly_path,
-        )
+
+        reindexAssemblyFiles(jbrowse_assembly_path, message["annotation"]["name"])
         return True
     except Exception as err:
         print(f"JbrowseAddAnnotationError: {str(err)}")
@@ -187,43 +168,94 @@ def handle_delete_annotation(message):
             f.write(dumps(jbrowse_config, indent=4))
             f.close()
 
-        try:
-            run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
-        except:
-            pass
-        run(
-            args=["jbrowse", "text-index", "--out", ".", "--force"],
-            cwd=jbrowse_assembly_path,
-        )
-
+        reindexAssemblyFiles(jbrowse_assembly_path, annotation_name)
         return 1
     except Exception as err:
         print(f"JbrowseConfigUpdateError: {str(err)}")
         return False
 
 
+def reindexAssemblyFiles(jbrowse_assembly_path, track_name, fallback=False):
+    try:
+        run(args=["rm", "-r", jbrowse_assembly_path + f"/trix"])
+    except:
+        pass
+
+    try:
+        with open(f"{jbrowse_assembly_path}/config.json") as configFile:
+            config = load(configFile)
+            configFile.close()
+        if "tracks" in config:
+            tracks = [x["trackId"] for x in config["tracks"]]
+    except:
+        tracks = []
+
+    try:
+        with open(f"{jbrowse_assembly_path}/exceptions.txt", "r") as exceptionFile:
+            exceptions = [x.replace("\n", "") for x in exceptionFile.readlines()]
+            exceptionFile.close()
+    except:
+        exceptions = []
+
+    try:
+        if len(tracks) and len(exceptions) > 0:
+            tracks_without_exceptions = [x for x in tracks if x not in exceptions]
+            track_index_string = ",".join(tracks_without_exceptions)
+            output = run(
+                args=["jbrowse", "text-index", "--out", ".", "--force", f"--tracks={track_index_string}"],
+                cwd=jbrowse_assembly_path,
+                stdout=PIPE,
+                stderr=PIPE,
+            )
+        else:
+            output = run(
+                args=["jbrowse", "text-index", "--out", ".", "--force"],
+                cwd=jbrowse_assembly_path,
+                stdout=PIPE,
+                stderr=PIPE,
+            )
+
+        if "error" in output.stderr.decode("UTF-8").lower():
+            if not fallback:
+                with open(f"{jbrowse_assembly_path}/exceptions.txt", "a+") as exceptionFile:
+                    exceptionFile.write(track_name + "\n")
+                    exceptionFile.close()
+                print(f"IndexError2: Added {track_name} to exceptions!")
+                reindexAssemblyFiles(jbrowse_assembly_path, track_name, True)
+    except Exception as e:
+        if not fallback:
+            with open(f"{jbrowse_assembly_path}/exceptions.txt", "a+") as exceptionFile:
+                exceptionFile.write(track_name + "\n")
+                exceptionFile.close()
+            reindexAssemblyFiles(jbrowse_assembly_path, track_name, True)
+
+
 def callback(ch, method, properties, body):
     message = loads(body)
 
-    if message["action"] == "Added":
-        handle_selector = {
-            "Assembly": handle_new_assembly,
-            "Mapping": handle_new_mapping,
-            "Annotation": handle_new_annotation,
-        }
-    elif message["action"] == "Removed":
-        handle_selector = {
-            "Assembly": handle_delete_assembly,
-            "Mapping": handle_delete_mapping,
-            "Annotation": handle_delete_annotation,
-        }
+    try:
+        if message["action"] == "Added":
+            handle_selector = {
+                "Assembly": handle_new_assembly,
+                "Mapping": handle_new_mapping,
+                "Annotation": handle_new_annotation,
+            }
+        elif message["action"] == "Removed":
+            handle_selector = {
+                "Assembly": handle_delete_assembly,
+                "Mapping": handle_delete_mapping,
+                "Annotation": handle_delete_annotation,
+            }
 
-    handler = handle_selector[message["type"]]
+        handler = handle_selector[message["type"]]
 
-    if handler(message):
+        if handler(message):
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        else:
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+    except Exception as err:
+        print(str(err))
         ch.basic_ack(delivery_tag=method.delivery_tag)
-    else:
-        ch.basic_reject(delivery_tag=method.delivery_tag)
 
 
 def main():

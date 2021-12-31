@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { scanFiles } from "../../../../api";
 import "../../../../App.css";
 
 import AssembliesTable from "../../../../components/AssembliesTable";

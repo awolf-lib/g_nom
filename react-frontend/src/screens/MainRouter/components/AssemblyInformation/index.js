@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 
 import {
   addBookmark,
-  addNewBookmark,
   fetchAnalysesByAssemblyID,
   fetchAnnotationsByAssemblyID,
   fetchAssemblyByAssemblyID,
@@ -72,11 +71,13 @@ const AssemblyInformation = () => {
   }, [id]);
 
   useEffect(() => {
-    fetchTaxonByTaxonID(assembly.taxonID, userID, token).then((responseTaxa) => {
-      if (responseTaxa && responseTaxa.payload) {
-        setTaxon(responseTaxa.payload);
-      }
-    });
+    if (assembly?.taxonID) {
+      fetchTaxonByTaxonID(assembly.taxonID, userID, token).then((responseTaxa) => {
+        if (responseTaxa && responseTaxa.payload) {
+          setTaxon(responseTaxa.payload);
+        }
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.taxonID]);
 

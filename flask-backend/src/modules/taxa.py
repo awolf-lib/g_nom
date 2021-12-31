@@ -172,7 +172,7 @@ def updateTaxonTree():
             level += 1
             cursor.execute(
                 "SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN %s",
-                (taxonSqlString, ),
+                (taxonSqlString,),
             )
             taxa = cursor.fetchall()
             taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
@@ -276,7 +276,7 @@ def removeImageByTaxonID(taxonID, userID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id=%s", (taxonID, ))
+        cursor.execute("SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id=%s", (taxonID,))
 
         row_headers = [x[0] for x in cursor.description]
         taxon = cursor.fetchone()
@@ -303,14 +303,14 @@ def fetchTaxonByTaxonID(taxonID):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * FROM taxa WHERE id = %s", (taxonID, ))
+        cursor.execute("SELECT * FROM taxa WHERE id=%s", (taxonID,))
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchone()
 
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    if not len(taxa):
+    if not taxa or not len(taxa):
         return [], createNotification("Info", f"No taxon for ID {taxonID} found!", "info")
 
     return dict(zip(row_headers, taxa)), []
@@ -319,7 +319,7 @@ def fetchTaxonByTaxonID(taxonID):
 def fetchTaxonImageByTaxonID(taxonID):
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT imagePath FROM taxa WHERE id=%s", (taxonID, ))
+        cursor.execute("SELECT imagePath FROM taxa WHERE id=%s", (taxonID,))
         row_headers = [x[0] for x in cursor.description]
         imagePath = cursor.fetchone()[0]
         return imagePath, []
@@ -360,7 +360,7 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     connection, cursor, error = connect()
 
     try:
-        cursor.execute("SELECT * FROM taxa WHERE ncbiTaxonID = %s", (ncbiTaxonID, ))
+        cursor.execute("SELECT * FROM taxa WHERE ncbiTaxonID = %s", (ncbiTaxonID,))
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchall()
 
@@ -382,7 +382,7 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
     generalInfos = []
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * from taxaGeneralInfo WHERE taxonID=%s", (taxonID, ))
+        cursor.execute("SELECT * from taxaGeneralInfo WHERE taxonID=%s", (taxonID,))
 
         row_headers = [x[0] for x in cursor.description]
         generalInfos = cursor.fetchall()
@@ -448,7 +448,7 @@ def deleteTaxonGeneralInformationByID(id):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM taxaGeneralInfo WHERE id=%s", (id, ))
+        cursor.execute("DELETE FROM taxaGeneralInfo WHERE id=%s", (id,))
         connection.commit()
     except Exception as err:
         return [], createNotification(message=str(err))

@@ -3,13 +3,13 @@ from os import listdir
 from os.path import exists, basename, getsize
 from subprocess import run
 from json import dumps
-from filecmp import cmp
 from re import compile, sub
 
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
 from .db_connection import DB_NAME, connect
 from .notifications import createNotification, notify_assembly
 from .taxa import updateTaxonTree
+from .files import scanFiles
 
 FASTA_FILE_PATTERN = {
     "main_file": compile(
@@ -67,10 +67,12 @@ def import_assembly(taxon, dataset, userID):
         imported_status, error = __importDB(taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content)
 
         if not imported_status:
-            deleteAssemblyByAssemblyID(assembly_id)
-            return 0, error
+            d_status, d_error = deleteAssemblyByAssemblyID(assembly_id)
+            return 0, error + d_error
 
         tree, error = updateTaxonTree()
+
+        scanFiles()
 
         print(f"New assembly ({basename(main_file_path)}) added!")
         return assembly_id, createNotification(
@@ -176,11 +178,11 @@ def deleteAssemblyByAssemblyID(assembly_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id))
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
         assembly_name = cursor.fetchone()[0]
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id)
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -203,6 +205,8 @@ def deleteAssemblyByAssemblyID(assembly_id):
         tree, error = updateTaxonTree()
         if not tree:
             return 0, error
+
+        scanFiles()
 
         return 1, []
     except Exception as err:
@@ -230,7 +234,7 @@ def __deleteAssemblyFolder(taxon, assembly_name):
 def __deleteAssemblyEntryByAssemblyID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM assemblies WHERE id=%s", (id))
+        cursor.execute("DELETE FROM assemblies WHERE id=%s", (id,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -288,7 +292,7 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         connection, cursor, error = connect()
         counter = 0
         values = []
-        sql = "INSERT INTO assembliesSequences (assemblyID, header, headerIdx, sequenceLength, gcPercentLocal, gcPercentMaskedLocal) VALUES %s, %s, %s, %s, %s, %s"
+        sql = "INSERT INTO assembliesSequences (assemblyID, header, headerIdx, sequenceLength, gcPercentLocal, gcPercentMaskedLocal) VALUES (%s, %s, %s, %s, %s, %s)"
         for seq in file_content["sequences"]:
             header_name = seq["header"]
             header_idx = seq["header_idx"]
@@ -581,7 +585,7 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
         else:
             cursor.execute(
                 "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users, bookmarks WHERE bookmarks.userID=%s AND bookmarks.assemblyID=assemblies.id AND assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id",
-                (userID, ),
+                (userID,),
             )
 
         row_headers = [x[0] for x in cursor.description]
@@ -645,7 +649,7 @@ def fetchAssembliesByTaxonIDs(taxonIDsString):
         taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
         cursor.execute(
             "SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imagePath, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN %s",
-            (taxonSqlString, ),
+            (taxonSqlString,),
         )
         row_headers = [x[0] for x in cursor.description]
         assemblies = cursor.fetchall()
@@ -671,7 +675,7 @@ def fetchAssemblyByAssemblyID(id, userID):
 
         cursor.execute(
             "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.id=%s AND taxa.id=assemblies.taxonID AND assemblies.addedBy=users.id",
-            (id, ),
+            (id,),
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -721,7 +725,7 @@ def removeAssemblyTagbyTagID(tagID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("DELETE FROM tags WHERE id=%s", (tagID, ))
+        cursor.execute("DELETE FROM tags WHERE id=%s", (tagID,))
         connection.commit()
 
         return 1, createNotification("Success", f"Successfully removed tag!", "success")
@@ -739,7 +743,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("SELECT * FROM tags WHERE assemblyID=%s", (assemblyID, ))
+        cursor.execute("SELECT * FROM tags WHERE assemblyID=%s", (assemblyID,))
 
         row_headers = [x[0] for x in cursor.description]
         tags = cursor.fetchall()
@@ -763,7 +767,7 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
     generalInfos = []
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * from assembliesGeneralInfo WHERE assemblyID=%s", (assemblyID, ))
+        cursor.execute("SELECT * from assembliesGeneralInfo WHERE assemblyID=%s", (assemblyID,))
 
         row_headers = [x[0] for x in cursor.description]
         generalInfos = cursor.fetchall()
@@ -830,7 +834,7 @@ def deleteAssemblyGeneralInformationByID(id):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM assembliesGeneralInfo WHERE id=%s", (id, ))
+        cursor.execute("DELETE FROM assembliesGeneralInfo WHERE id=%s", (id,))
         connection.commit()
     except Exception as err:
         return [], createNotification(message=str(err))

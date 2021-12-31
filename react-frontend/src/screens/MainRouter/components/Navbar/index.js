@@ -58,9 +58,14 @@ const Navbar = () => {
                 <Link to="/g-nom/assemblies">
                   <Button label="Assemblies" color="nav" />
                 </Link>
-                <Link to={"/g-nom/download"}>
+                <a
+                  to={"/g-nom/download"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={process.env.REACT_APP_FILE_SERVER_ADRESS + "/login"}
+                >
                   <Button label="Downloads" color="nav" />
-                </Link>
+                </a>
                 {userRole === "admin" && (
                   <Link to={"/g-nom/assemblies/manage"}>
                     <Button label="Data" color="nav" />

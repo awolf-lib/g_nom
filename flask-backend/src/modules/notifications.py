@@ -2,9 +2,21 @@ from dataclasses import asdict
 import pika
 from os import getenv
 from json import dumps
-from .payload import Annotation, AnnotationPayload, Assembly, AssemblyPayload, Mapping, MappingPayload, Payload
+from .payload import (
+    Annotation,
+    AnnotationPayload,
+    Assembly,
+    AssemblyPayload,
+    FileserverPayload,
+    Mapping,
+    MappingPayload,
+    Payload,
+    User,
+    UserPayload,
+)
 
 RABBIT_MQ_QUEUE_RESOURCE = "resource"
+RABBIT_MQ_QUEUE_FILESERVER = "fileserver"
 
 
 def createNotification(label="Error", message="Something went wrong", type="error"):
@@ -47,3 +59,13 @@ def notify_annotation(
 def notify_mapping(assemblyId: int, assemblyName: str, mappingId: int, mappingName: str, path: str, action: str):
     payload = MappingPayload(Mapping(mappingName, mappingId), Assembly(assemblyName, assemblyId), path, action)
     __notify(payload)
+
+
+def notify_fileserver(action: str, type: str = "All"):
+    payload = FileserverPayload(action, type)
+    __notify(payload, RABBIT_MQ_QUEUE_FILESERVER)
+
+
+def notify_fileserver_user(username: str, password: str, action: str, type: str):
+    payload = UserPayload(User(username, password), action, type)
+    __notify(payload, RABBIT_MQ_QUEUE_FILESERVER)

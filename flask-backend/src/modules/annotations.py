@@ -1,15 +1,15 @@
 from os.path import exists, isdir, isfile
-from os import listdir, remove
+from os import remove
 from posixpath import basename
 from re import compile, sub
 from json import dumps
 from subprocess import run
-from filecmp import cmp
 from glob import glob
 
 from .notifications import createNotification, notify_annotation
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_STORAGE, BASE_PATH_TO_IMPORT
+from .files import scanFiles
 
 ANNOTATION_FILE_PATTERN = {
     "main_file": compile(r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff\.gz$)|(.*\.gff3\.gz$)"),
@@ -37,7 +37,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id, ))
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
         assembly_name = cursor.fetchone()[0]
 
         annotation_name, annotation_id, error = __generate_annotation_name(assembly_name)
@@ -82,6 +82,8 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             return 0, error
 
         notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, new_file_path, "Added")
+
+        scanFiles()
 
         print(f"New annotation {annotation_name} added!")
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
@@ -214,8 +216,9 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
             strand = feature["strand"] if feature["strand"] in ["+", "-"] else None
             phase = int(feature["phase"]) if feature["phase"] in [0, 1, 2, "0", "1", "2"] else None
 
-            values.append((annotationID, seqID, source, type, start, end, score, strand, phase, attributes))
-            counter += 1
+            if "parent" not in attributes and "Parent" not in attributes:
+                values.append((annotationID, seqID, source, type, start, end, score, strand, phase, attributes))
+                counter += 1
 
             if counter % 1000 == 0 and counter > 0:
                 cursor.executemany(sql, values)
@@ -239,12 +242,12 @@ def deleteAnnotationByAnnotationID(annotation_id):
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT assemblies.id, assemblies.name, genomicAnnotations.name FROM assemblies, genomicAnnotations WHERE genomicAnnotations.id=%s AND genomicAnnotations.assemblyID=assemblies.id",
-            (annotation_id, ),
+            (annotation_id,),
         )
         assembly_id, assembly_name, annotation_name = cursor.fetchone()
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -263,6 +266,8 @@ def deleteAnnotationByAnnotationID(annotation_id):
             return 0, error
 
         notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, "", "Removed")
+
+        scanFiles()
 
         return 1, []
     except Exception as err:
@@ -289,7 +294,7 @@ def __deleteAnnotationFile(taxon, assembly_name, annotation_name):
 def __deleteAnnotationEntryByAnnotationID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM genomicAnnotations WHERE id=%s", (id, ))
+        cursor.execute("DELETE FROM genomicAnnotations WHERE id=%s", (id,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -335,7 +340,10 @@ def parseGff(path):
                 continue
             match = GFF3_KEY_VALUE_PATTERN.match(i)
             if match:
-                key_value = {match[1]: match[2]}
+                try:
+                    key_value = {match[1]: float(match[2])}
+                except:
+                    key_value = {match[1]: match[2]}
                 info.update(key_value)
             else:
                 print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
@@ -425,7 +433,7 @@ def fetchAnnotationsByAssemblyID(assemblyID):
 
         cursor.execute(
             "SELECT genomicAnnotations.*, users.username FROM genomicAnnotations, users WHERE genomicAnnotations.assemblyID=%s AND genomicAnnotations.addedBy=users.id",
-            (assemblyID, ),
+            (assemblyID,),
         )
 
         row_headers = [x[0] for x in cursor.description]

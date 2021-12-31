@@ -1,9 +1,10 @@
 from secrets import token_hex
 from hashlib import sha512
 from sys import argv
+from os import getenv
 
 from modules.db_connection import connect
-from modules.notifications import createNotification
+from modules.notifications import createNotification, notify_fileserver_user
 
 # ====== FETCH FROM USER ====== #
 # fetch token if username/password is correct
@@ -83,11 +84,11 @@ def validateActiveToken(userID, token):
         valid_token = cursor.fetchone()
 
         if not valid_token:
-            cursor.execute("UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id=%s", (userID, ))
+            cursor.execute("UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id=%s", (userID,))
             connection.commit()
             return 0, createNotification(message="Session expired. Relog first!")
 
-        cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID, ))
+        cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID,))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=f"TokenValidationError: {str(err)}")
@@ -102,7 +103,7 @@ def addUser(username, password, role):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * FROM users where username=%s", (username, ))
+        cursor.execute("SELECT * FROM users where username=%s", (username,))
         user = cursor.fetchone()
         if user:
             return {}, createNotification(message=f"Name '{username}' already exists!")
@@ -111,6 +112,7 @@ def addUser(username, password, role):
 
     try:
         connection, cursor, error = connect()
+        notify_fileserver_user(username, password, "User", "Create")
         password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
         cursor.execute(
             "INSERT INTO users (username, password, userRole) VALUES (%s, %s, %s)", (username, password, role)
@@ -152,8 +154,14 @@ def deleteUserByUserID(userID):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM users WHERE id=%s", (userID, ))
+        cursor.execute("SELECT username from users WHERE id=%s", (userID,))
+        user = cursor.fetchone()
+
+        cursor.execute("DELETE FROM users WHERE id=%s", (userID,))
         connection.commit()
+
+        if user:
+            notify_fileserver_user(user[0], "", "User", "Delete")
     except Exception as err:
         return 0, createNotification(message=str(err))
 
@@ -214,9 +222,8 @@ def removeBookmark(userID, assemblyID):
 
 # Main
 if __name__ == "__main__":
-    if len(argv) == 1:
-        if argv[0] == "fn_name":
-            # fn_name()
-            pass
+    if len(argv[1:]) == 1:
+        if argv[1] == "addInitialUser":
+            addUser(getenv("INITIAL_USER_USERNAME"), getenv("INITIAL_USER_PASSWORD"), "admin")
     else:
         pass

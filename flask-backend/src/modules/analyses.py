@@ -7,6 +7,7 @@ from .notifications import createNotification
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
 from .assemblies import addAssemblyTag
+from .files import scanFiles
 
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of analyses
@@ -100,6 +101,8 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
             return 0, error
+
+        scanFiles()
 
         print(f"New analyses {analyses_name} ({analyses_type}) added!")
         return analyses_id, createNotification("Success", f"New annotation {analyses_name} added!", "success")
@@ -427,7 +430,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
 def __importMilts(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID, ))
+        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -542,12 +545,12 @@ def deleteAnalysesByAnalysesID(analyses_id):
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT assemblies.id, assemblies.name, analyses.path FROM assemblies, analyses WHERE analyses.id=%s AND analyses.assemblyID=assemblies.id",
-            (analyses_id, ),
+            (analyses_id,),
         )
         assembly_id, assembly_name, analyses_path = cursor.fetchone()
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -564,6 +567,8 @@ def deleteAnalysesByAnalysesID(analyses_id):
 
         if not status:
             return 0, error
+
+        scanFiles()
 
         return 1, createNotification("Success", f"Successfully deleted anaylsis", "success")
     except Exception as err:
@@ -589,7 +594,7 @@ def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
 def __deleteAnalysesEntryByAnalysesID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM analyses WHERE id=%s", (id))
+        cursor.execute("DELETE FROM analyses WHERE id=%s", (id,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -857,8 +862,8 @@ def fetchAnalysesByAssemblyID(assemblyID):
 
         # busco analyses
         cursor.execute(
-            "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s} AND analyses.id=analysesBusco.analysisID",
-            (assemblyID, ),
+            "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s AND analyses.id=analysesBusco.analysisID",
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["busco"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -866,7 +871,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
         # fcat analyses
         cursor.execute(
             "SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["fcat"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -874,7 +879,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
         # milts analyses
         cursor.execute(
             "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["milts"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -882,7 +887,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
         # repeatmasker analyses
         cursor.execute(
             "SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         analyses["repeatmasker"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -905,7 +910,7 @@ def fetchBuscoAnalysesByAssemblyID(assemblyID):
         # busco analyses
         cursor.execute(
             "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s AND analyses.id=analysesBusco.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         buscoList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -931,7 +936,7 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
         # fcat analyses
         cursor.execute(
             "SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         fcatList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -957,7 +962,7 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
         # milts analyses
         cursor.execute(
             "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         miltsList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -983,7 +988,7 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
         # repeatmasker analyses
         cursor.execute(
             "SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID",
-            (assemblyID, ),
+            (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
         repeatmaskerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]

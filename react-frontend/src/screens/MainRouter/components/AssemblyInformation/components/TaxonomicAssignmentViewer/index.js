@@ -1,18 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
+import { fetchFileByPath } from "../../../../../../api";
 
 const TaxonomicAssignmentViewer = ({ milts, setTaxonomicAssignmentLoading }) => {
   const [index, setIndex] = useState(0);
+  const [plot, setPlot] = useState();
+
+  useEffect(() => {
+    getPlot();
+  }, [index]);
+
+  const getPlot = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+    await fetchFileByPath(milts[index].path, userID, token).then((response) => {
+      if (response && response.url) {
+        setPlot(response.url);
+      }
+    });
+  };
+
   return (
     <div className="mx-8 animate-grow-y shadow-lg rounded-lg overflow-hidden border bg-white relative">
       <div className="animate-fade-in">
-        <iframe
-          onLoad={() => setTaxonomicAssignmentLoading(false)}
-          title="MiltsPlot"
-          className="w-full h-screen"
-          src={process.env.REACT_APP_API_ADRESS + "/fetchMiltsPlotByPath?path=" + milts[index].path}
-        />
+        {milts && milts[index] && (
+          <iframe
+            onLoad={() => setTaxonomicAssignmentLoading(false)}
+            title="MiltsPlot"
+            className="w-full h-screen"
+            src={plot}
+          />
+        )}
       </div>
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
         <a

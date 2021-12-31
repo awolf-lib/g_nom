@@ -1,15 +1,14 @@
 from os.path import exists, isdir, isfile
-from os import listdir, remove
+from os import remove
 from posixpath import basename
 from re import compile, sub
-from json import dumps
 from subprocess import run
-from filecmp import cmp
 from glob import glob
 
 from .notifications import createNotification, notify_mapping
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_STORAGE, BASE_PATH_TO_IMPORT
+from .files import scanFiles
 
 ANNOTATION_FILE_PATTERN = {
     "main_file": compile(r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff\.gz$)|(.*\.gff3\.gz$)"),
@@ -37,7 +36,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id, ))
+        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
         assembly_name = cursor.fetchone()[0]
 
         mapping_name, mapping_id, error = __generate_mapping_name(assembly_name)
@@ -63,6 +62,8 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             return 0, error
 
         notify_mapping(assembly_id, assembly_name, mapping_id, mapping_name, new_file_path, "Added")
+
+        scanFiles()
 
         print(f"New mapping {mapping_name} added!")
         return mapping_id, createNotification("Success", f"New mapping {mapping_name} added!", "success")
@@ -187,12 +188,12 @@ def deleteMappingByMappingID(mapping_id):
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT assemblies.id, assemblies.name, mappings.name FROM assemblies, mappings WHERE mappings.id=%s AND mappings.assemblyID=assemblies.id",
-            (mapping_id, ),
+            (mapping_id,),
         )
         assembly_id, assembly_name, mapping_name = cursor.fetchone()
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id, )
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -211,6 +212,8 @@ def deleteMappingByMappingID(mapping_id):
             return 0, error
 
         notify_mapping(assembly_id, assembly_name, mapping_id, mapping_name, "", "Removed")
+
+        scanFiles()
 
         return 1, []
     except Exception as err:
@@ -237,7 +240,7 @@ def __deleteMappingFile(taxon, assembly_name, mapping_name):
 def __deleteMappingEntryByMappingID(id):
     try:
         connection, cursor, error = connect()
-        cursor.execute("DELETE FROM mappings WHERE id=%s", (id, ))
+        cursor.execute("DELETE FROM mappings WHERE id=%s", (id,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -255,7 +258,7 @@ def fetchMappingsByAssemblyID(assemblyID):
 
         cursor.execute(
             "SELECT mappings.*, users.username FROM mappings, users WHERE mappings.assemblyID=%s AND mappings.addedBy=users.id",
-            (assemblyID),
+            (assemblyID,),
         )
 
         row_headers = [x[0] for x in cursor.description]

@@ -20,6 +20,12 @@ class Mapping:
     id: int
 
 
+@dataclass(frozen=True)
+class User:
+    username: str
+    password: str
+
+
 Action = Union[Literal["Added"], Literal["Removed"]]
 
 
@@ -47,6 +53,19 @@ class MappingPayload:
     storage_path: str
     action: Action
     type: Literal["Mapping"] = "Mapping"
+
+
+@dataclass(frozen=True)
+class FileserverPayload:
+    action: Action
+    type: Literal["All"] = "All"
+
+
+@dataclass(frozen=True)
+class UserPayload:
+    user: User
+    action: Action
+    type: Union[Literal["Create"], Literal["Delete"]]
 
 
 Payload = Union[AssemblyPayload, AnnotationPayload, MappingPayload]

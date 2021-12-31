@@ -8,7 +8,6 @@ import Dashboard from "./components/Dashboard";
 import useToken from "./components/useToken";
 import Logout from "./components/Logout";
 import Settings from "./components/Settings";
-import Download from "./components/Download";
 import AssembliesTable from "../../components/AssembliesTable";
 import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
@@ -35,7 +34,6 @@ const MainRouter = () => {
         <Route exact path="/g-nom/assemblies/manage" element={<DataAssistant />} />
         <Route exact path="/g-nom/assemblies/assembly:id" element={<AssemblyInformation />} />
         <Route exact path="/g-nom/tools" element={<div className="p-4">Tools</div>} />
-        <Route exact path="/g-nom/download" element={<Download />} />
         <Route exact path="/g-nom/settings" element={<Settings />} />
         <Route path="/logout" element={<Logout setToken={setToken} />} />
       </Routes>

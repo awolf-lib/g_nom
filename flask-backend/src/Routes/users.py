@@ -197,3 +197,10 @@ def users_bp_removeBookmark():
         return response
     else:
         return REQUESTMETHODERROR
+
+
+@users_bp.route("/connectionTest", methods=["GET"])
+def connectionTest():
+    response = jsonify({"payload": "Success"})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
