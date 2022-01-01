@@ -293,7 +293,6 @@ const NewDataImportForm = ({
         message: "Only one assembly at once can be imported!",
         type: "error",
       });
-      return;
     }
     setImporting(false);
   };

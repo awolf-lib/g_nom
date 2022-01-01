@@ -264,7 +264,7 @@ const AssembliesTreeViewer = () => {
                         id={assembly.id}
                         scientificName={assembly.scientificName}
                         taxonID={assembly.ncbiTaxonID}
-                        assemblyName={assembly.name}
+                        assemblyName={assembly.label || assembly.name}
                         types={assembly.types}
                         imagePath={assembly.imagePath}
                         key={assembly.id}

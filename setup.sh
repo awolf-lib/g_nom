@@ -41,6 +41,11 @@ cat ./mysql/create_gnom_db.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/m
 
 # ============================================ #
 
+## RabbitMQ
+docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 15672:15672 -p 5672:5672 --hostname gnom_rabbit_host rabbitmq:3-management-alpine
+
+# ============================================ #
+
 ## Nextcloud server
 echo "Build nextcloud docker container..."
 mkdir -p ${DATA_DIR}
@@ -72,11 +77,6 @@ echo "Reindex nextcloud directories..."
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files:scan --all
 
 docker exec -it $FILE_SERVER_CONTAINER_NAME python3 /usr/local/j_listener/main.py &
-
-# ============================================ #
-
-## RabbitMQ
-docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 15672:15672 -p 5672:5672 --hostname gnom_rabbit_host rabbitmq:3-management-alpine
 
 # ============================================ #
 
@@ -125,12 +125,10 @@ cd ..
 
 # setup missing directories
 docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/assemblies"
-docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/taxa/images"
 docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/taxa/taxdmp"
 docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/import"
 docker exec $API_CONTAINER_NAME bash -c "touch /flask-backend/data/storage/taxa/tree.json"
 docker exec $API_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/storage/taxa/tree.json"
-# RUN mkdir -p ./storage/externalTools/
 
 # download taxa information from NCBI
 docker exec $API_CONTAINER_NAME bash -c "wget -q https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
@@ -149,5 +147,3 @@ docker exec $API_CONTAINER_NAME bash -c "cd src/ && python3 -m modules.taxa relo
 # ============================================ #
 
 echo "Successfully setup G-nom!"
-
-cp -r ~/import_bak/* ~/import/

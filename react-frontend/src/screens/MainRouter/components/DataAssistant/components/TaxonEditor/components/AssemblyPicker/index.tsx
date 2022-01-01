@@ -119,7 +119,7 @@ const AssemblyPicker = ({
     <div className="animate-grow-y">
       <div className="flex border-t border-b text-center py-2 text-sm font-semibold text-white bg-gray-500 border-white">
         <div className="w-16">ID</div>
-        <div className="w-2/5">Name</div>
+        <div className="w-2/5">Name/Alias</div>
         <div className="w-1/5">Added by</div>
         <div className="w-2/5">Added on</div>
         <div className="w-64" />
@@ -130,7 +130,7 @@ const AssemblyPicker = ({
             <div key={assembly.id} className="border-t border-b odd:bg-indigo-50 shadow">
               <div className="flex py-4 text-center">
                 <div className="w-16">{assembly.id}</div>
-                <div className="w-2/5">{assembly.name}</div>
+                <div className="w-2/5">{assembly.label || assembly.name}</div>
                 <div className="w-1/5">{assembly.username}</div>
                 <div className="w-2/5">{assembly.addedOn}</div>
                 <div className="flex justify-around items-center w-64">

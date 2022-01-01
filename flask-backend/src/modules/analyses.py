@@ -244,6 +244,34 @@ def __importAnalyses(assembly_id, analyses_name, analyses_path, analyses_type, u
         return 0, createNotification(message=f"ImportAnalysesError: {str(err)}")
 
 
+# update analysis label
+def updateAnalysisLabel(analysis_id: int, label: str):
+    """
+    Set label for analyses.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        LABEL_PATTERN = compile(r"^\w+$")
+
+        if label and not LABEL_PATTERN.match(label):
+            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+        elif not label:
+            label = None
+
+        cursor.execute(
+            "UPDATE analyses SET label=%s WHERE id=%s",
+            (label, analysis_id),
+        )
+        connection.commit()
+        if label:
+            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+        else:
+            return 1, createNotification("Info", f"Default name restored", "info")
+    except Exception as err:
+        return 0, createNotification(message=f"AnalysesLabelUpdateError: {str(err)}")
+
+
 # import Busco
 def __importBusco(assemblyID, analysisID, buscoData):
     """
@@ -586,7 +614,7 @@ def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
 
         run(args=["rm", "-r", analyses_path])
 
-        return 1, []
+        return 1, createNotification("Success", "Successfully deleted analyses", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnalysesDeletionError2: {str(err)}")
 
@@ -909,7 +937,7 @@ def fetchBuscoAnalysesByAssemblyID(assemblyID):
 
         # busco analyses
         cursor.execute(
-            "SELECT analyses.*, analysesBusco.* FROM analyses, analysesBusco WHERE analyses.assemblyID=%s AND analyses.id=analysesBusco.analysisID",
+            "SELECT analyses.*, analysesBusco.*, users.username FROM analyses, analysesBusco, users WHERE analyses.assemblyID=%s AND analyses.id=analysesBusco.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
@@ -935,7 +963,7 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
 
         # fcat analyses
         cursor.execute(
-            "SELECT analyses.*, analysesFcat.* FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID",
+            "SELECT analyses.*, analysesFcat.*, users.username FROM analyses, analysesFcat, users WHERE analyses.assemblyID=%s AND analyses.id=analysesFcat.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
@@ -961,7 +989,7 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
 
         # milts analyses
         cursor.execute(
-            "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
+            "SELECT analyses.*, analysesMilts.*, users.username FROM analyses, analysesMilts, users WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
@@ -987,7 +1015,7 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
 
         # repeatmasker analyses
         cursor.execute(
-            "SELECT analyses.*, analysesRepeatmasker.* FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID",
+            "SELECT analyses.*, analysesRepeatmasker.*, users.username FROM analyses, analysesRepeatmasker, users WHERE analyses.assemblyID=%s AND analyses.id=analysesRepeatmasker.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]

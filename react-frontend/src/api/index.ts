@@ -432,10 +432,10 @@ export async function fetchAssembliesByTaxonIDs(
 
 // ===== FETCH ONE ASSEMBLY BY ASSEMBLY ID ===== //
 export async function fetchAssemblyByAssemblyID(
-  assemblyID: string,
+  assemblyID: number,
   userID: string,
   token: string
-): Promise<IResponse> {
+): Promise<IResponse<AssemblyInterface>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAssemblyByAssemblyID?assemblyID=" +
@@ -452,7 +452,7 @@ export async function fetchAssemblyByAssemblyID(
     });
 }
 
-// ===== FETCH ONE ASSEMBLY BY ASSEMBLY ID ===== //
+// ===== ADD ASSEMBLY TAG ===== //
 export async function addAssemblyTag(
   assemblyID: number,
   tag: string,
@@ -477,7 +477,7 @@ export async function addAssemblyTag(
     });
 }
 
-// ===== FETCH ONE ASSEMBLY BY ASSEMBLY ID ===== //
+// ===== REMOVE ASSEMBLY TAG ===== //
 export async function removeAssemblyTagbyTagID(
   tagID: number,
   userID: number,
@@ -499,7 +499,7 @@ export async function removeAssemblyTagbyTagID(
     });
 }
 
-// ===== FETCH ONE ASSEMBLY BY ASSEMBLY ID ===== //
+// ===== FETCH ALL ASSEMBLY TAGS BY ASSEMBLY ID ===== //
 export async function fetchAssemblyTagsByAssemblyID(
   assemblyID: number,
   userID: number,
@@ -509,6 +509,31 @@ export async function fetchAssemblyTagsByAssemblyID(
     process.env.REACT_APP_API_ADRESS +
       "/fetchAssemblyTagsByAssemblyID?assemblyID=" +
       assemblyID +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== UPDATE ASSEMBLY LABEL BY ASSEMBLY ID ===== //
+export async function updateAssemblyLabel(
+  assemblyID: number,
+  label: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateAssemblyLabel?assemblyID=" +
+      assemblyID +
+      "&label=" +
+      label +
       "&userID=" +
       userID +
       "&token=" +
@@ -855,6 +880,32 @@ export interface IAnnotation {
   name: string;
   path: string;
   username: string;
+  label?: string;
+}
+
+// ===== UPDATE ANNOTATION LABEL BY ANNOTATION ID ===== //
+export async function updateAnnotationLabel(
+  annotationID: number,
+  label: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateAnnotationLabel?annotationID=" +
+      annotationID +
+      "&label=" +
+      label +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
 }
 
 // =============================== mappings =============================== //
@@ -908,7 +959,7 @@ export async function deleteMappingByMappingID(
     });
 }
 
-// ===== FETCH ALL ANNOTATIONS BY ASSEMBLY ID ===== //
+// ===== FETCH ALL MAPPINGS BY ASSEMBLY ID ===== //
 export async function fetchMappingsByAssemblyID(
   assemblyID: number,
   userID: number,
@@ -938,6 +989,32 @@ export interface IMapping {
   name: string;
   path: string;
   username: string;
+  label?: string;
+}
+
+// ===== UPDATE MAPPING LABEL BY MAPPING ID ===== //
+export async function updateMappingLabel(
+  mappingID: number,
+  label: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateMappingLabel?mappingID=" +
+      mappingID +
+      "&label=" +
+      label +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
 }
 
 // =============================== ANALYSES =============================== //
@@ -1015,6 +1092,8 @@ export interface IBuscoAnalysis {
   targetFile: string;
   total: number;
   type: "busco";
+  label?: string;
+  username: string;
 }
 
 export interface IFcatAnalysis {
@@ -1068,6 +1147,8 @@ export interface IFcatAnalysis {
   path: string;
   total: number;
   type: "fcat";
+  label?: string;
+  username: string;
 }
 
 export interface IMiltsAnalysis {
@@ -1079,6 +1160,8 @@ export interface IMiltsAnalysis {
   name: string;
   path: string;
   type: "milts";
+  label?: string;
+  username: string;
 }
 
 export interface IRepeatmaskerAnalysis {
@@ -1114,6 +1197,8 @@ export interface IRepeatmaskerAnalysis {
   type: "repeatmasker";
   unclassified: number;
   unclassified_length: number;
+  label?: string;
+  username: string;
 }
 
 export type IAnalyses = IBuscoAnalysis | IFcatAnalysis | IMiltsAnalysis | IRepeatmaskerAnalysis;
@@ -1228,6 +1313,31 @@ export async function fetchRepeatmaskerAnalysesByAssemblyID(
     });
 }
 
+// ===== UPDATE MAPPING LABEL BY MAPPING ID ===== //
+export async function updateAnalysisLabel(
+  analysisID: number,
+  label: string,
+  userID: number,
+  token: string
+): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/updateAnalysisLabel?analysisID=" +
+      analysisID +
+      "&label=" +
+      label +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // =============================== IMPORTS =============================== //
 // ===== FETCH IMPORT DIRECTORY ===== //
 export async function fetchImportDirectory(
@@ -1297,7 +1407,8 @@ export async function importDataset(
     });
 }
 
-// files
+// =============================== FILES =============================== //
+// ===== Reindex Fileserver ===== //
 export async function scanFiles(userID: number, token: string): Promise<IResponse> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/scanFiles?userID=" + userID + "&token=" + token)
     .then((request) => request.json())
@@ -1912,7 +2023,7 @@ export async function fetchTaxonTree(userID: number, token: string): Promise<IRe
 
 export type Response<T = unknown> = IResponse<T> | IErrorResponse;
 
-interface IResponse<T = unknown> {
+export interface IResponse<T = unknown> {
   payload: T;
   notification: IInfoNotification[] | ISuccessNotification[];
 }

@@ -76,6 +76,9 @@ def validateActiveToken(userID, token):
     Validates token for specific user.
     """
     try:
+        if not userID or not token:
+            return 0, createNotification(message="Did not receive UserID or token!")
+
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
@@ -86,7 +89,7 @@ def validateActiveToken(userID, token):
         if not valid_token:
             cursor.execute("UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id=%s", (userID,))
             connection.commit()
-            return 0, createNotification(message="Session expired. Relog first!")
+            return 0, createNotification(message="Session expired. Please relog first!")
 
         cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID,))
         connection.commit()

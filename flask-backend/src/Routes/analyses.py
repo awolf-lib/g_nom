@@ -13,6 +13,7 @@ from modules.analyses import (
     fetchMiltsAnalysesByAssemblyID,
     fetchRepeatmaskerAnalysesByAssemblyID,
     import_analyses,
+    updateAnalysisLabel,
 )
 from modules.environment import BASE_PATH_TO_STORAGE
 
@@ -81,6 +82,39 @@ def analyses_bp_deleteAnalysesByAnalysesID():
             data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# UPDATE ANALYSES LABEL
+@analyses_bp.route("/updateAnalysisLabel", methods=["GET"])
+def analyses_bp_updateAnalysisLabel():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        analysis_id = request.args.get("analysisID", None)
+        label = request.args.get("label", None)
+
+        if analysis_id:
+            if label:
+                status, notification = updateAnalysisLabel(analysis_id, label)
+            else:
+                status, notification = updateAnalysisLabel(analysis_id, None)
+        else:
+            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+
+        response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
@@ -220,8 +254,6 @@ def analyses_bp_fetchFileByPath():
         userID = request.args.get("userID")
         token = request.args.get("token")
 
-        print(userID, token)
-
         # token still active?
         valid_token, error = validateActiveToken(userID, token)
         if not valid_token:
@@ -230,7 +262,6 @@ def analyses_bp_fetchFileByPath():
             return response
 
         path = request.args.get("path")
-        print(path)
 
         if not path or not exists(path):
             response = jsonify(

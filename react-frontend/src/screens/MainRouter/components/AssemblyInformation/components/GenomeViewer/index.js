@@ -1,6 +1,7 @@
 import { createViewState, JBrowseLinearGenomeView } from "@jbrowse/react-linear-genome-view";
 import "@fontsource/roboto";
 import { useEffect, useState } from "react";
+import { Expand } from "grommet-icons";
 
 const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" }) => {
   const [assembly, setAssembly] = useState({});
@@ -113,14 +114,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
     setDefaultSession({
       name: "Gnom - " + assemblyDetails.name,
       view: {
-        id: "linearGenomeView",
-        type: "LinearGenomeView",
-        tracks: [
-          {
-            type: "ReferenceSequenceTrack",
-            configuration: assemblyDetails.name + "-ReferenceSequenceTrack",
-          },
-        ],
+        type: "linearGenomeView",
       },
     });
   }, [assemblyDetails]);
@@ -165,12 +159,9 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
     ]);
   }, [assemblyDetails]);
 
-  console.log(tracks);
-  console.log(aggregateTextSearchAdapters);
-
   return (
-    <div className="mx-8">
-      {assembly.name && defaultSession.name && configuration.theme && (
+    <div className="relative mx-8">
+      {assemblyDetails?.id && defaultSession.name && configuration.theme && (
         <JBrowseLinearGenomeView
           viewState={createViewState({
             assembly: assembly,
@@ -181,6 +172,14 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
           })}
         />
       )}
+      <a
+        className="absolute bottom-0 right-0 mx-4 my-3 opacity-25 hover:opacity-100 text-gray-600"
+        target="_blank"
+        rel="noopener noreferrer"
+        href={`${process.env.REACT_APP_JBROWSE_ADRESS}/index.html?config=assemblies%2F${assemblyDetails.name}%2Fconfig.json&session=session=local-WYqeaO9Fn`}
+      >
+        <Expand className="stroke-current" color="blank" />
+      </a>
     </div>
   );
 };

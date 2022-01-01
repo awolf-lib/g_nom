@@ -84,7 +84,7 @@ def handle_delete_mapping(message):
             f.close()
 
         if "tracks" in jbrowse_config:
-            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_mapping_{mapping_id}"]
+            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != mapping_name]
             jbrowse_config["tracks"] = tracks
 
         if "aggregateTextSearchAdapters" in jbrowse_config:
@@ -152,7 +152,7 @@ def handle_delete_annotation(message):
 
         if "tracks" in jbrowse_config:
             tracks = [
-                track for track in jbrowse_config["tracks"] if track["trackId"] != f"track_annotation_{annotation_id}"
+                track for track in jbrowse_config["tracks"] if track["trackId"] != annotation_name
             ]
             jbrowse_config["tracks"] = tracks
 

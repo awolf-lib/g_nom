@@ -16,6 +16,7 @@ from modules.assemblies import (
     fetchAssemblies,
     removeAssemblyTagbyTagID,
     updateAssemblyGeneralInformationByID,
+    updateAssemblyLabel,
 )
 from modules.users import validateActiveToken
 from modules.notifications import createNotification
@@ -78,6 +79,39 @@ def assemblies_bp_deleteAssemblyByAssemblyID():
         assemblyID = request.args.get("assemblyID")
 
         status, notification = deleteAssemblyByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": status, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# UPDATE ASSEMBLY LABEL
+@assemblies_bp.route("/updateAssemblyLabel", methods=["GET"])
+def assemblies_bp_updateAssemblyLabel():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        assemblyID = request.args.get("assemblyID", None)
+        label = request.args.get("label", None)
+
+        if assemblyID:
+            if label:
+                status, notification = updateAssemblyLabel(assemblyID, label, userID)
+            else:
+                status, notification = updateAssemblyLabel(assemblyID, None, userID)
+        else:
+            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

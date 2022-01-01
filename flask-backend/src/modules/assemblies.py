@@ -208,7 +208,7 @@ def deleteAssemblyByAssemblyID(assembly_id):
 
         scanFiles()
 
-        return 1, []
+        return 1, createNotification("Success", "Successfully deleted assembly", "success")
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDeletionError1: {str(err)}")
 
@@ -612,6 +612,34 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
     except Exception as err:
         return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
+
+# update assembly label
+def updateAssemblyLabel(assembly_id: int, label: str, userID: int):
+    """
+    Set label for assembly.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        LABEL_PATTERN = compile(r"^\w+$")
+
+        if label and not LABEL_PATTERN.match(label):
+            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+        elif not label:
+            label = None
+
+        cursor.execute(
+            "UPDATE assemblies SET label=%s, lastUpdatedBy=%s, lastUpdatedOn=NOW() WHERE id=%s",
+            (label, userID, assembly_id),
+        )
+        connection.commit()
+
+        if label:
+            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+        else:
+            return 1, createNotification("Info", f"Default name restored", "info")
+    except Exception as err:
+        return 0, createNotification(message=f"AssemblyLabelUpdateError: {str(err)}")
 
 # fetches all assemblies for specific taxon
 def fetchAssembliesByTaxonID(taxonID):

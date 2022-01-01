@@ -215,7 +215,7 @@ def deleteMappingByMappingID(mapping_id):
 
         scanFiles()
 
-        return 1, []
+        return 1, createNotification("Success", "Successfully deleted mapping", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
@@ -245,6 +245,34 @@ def __deleteMappingEntryByMappingID(id):
         return 1, []
     except Exception as err:
         return 0, createNotification(message=f"MappingDeletionError3: {str(err)}")
+
+
+# update mapping label
+def updateMappingLabel(mapping_id: int, label: str):
+    """
+    Set label for mapping.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        LABEL_PATTERN = compile(r"^\w+$")
+
+        if label and not LABEL_PATTERN.match(label):
+            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+        elif not label:
+            label = None
+
+        cursor.execute(
+            "UPDATE mappings SET label=%s WHERE id=%s",
+            (label, mapping_id),
+        )
+        connection.commit()
+        if label:
+            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+        else:
+            return 1, createNotification("Info", f"Default name restored", "info")
+    except Exception as err:
+        return 0, createNotification(message=f"MappingLabelUpdateError: {str(err)}")
 
 
 ## ============================ FETCH ============================ ##

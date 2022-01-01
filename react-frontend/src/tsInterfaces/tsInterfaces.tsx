@@ -23,6 +23,7 @@ export interface AssemblyInterface {
   shortestSequence: string;
   taxonID: string;
   username: string;
+  label?: string;
 }
 
 export interface AssemblyTagInterface {

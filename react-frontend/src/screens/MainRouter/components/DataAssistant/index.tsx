@@ -1,6 +1,6 @@
 import { Previous } from "grommet-icons";
 import { useState } from "react";
-import { INcbiTaxon } from "../../../../api";
+import { fetchAssemblyByAssemblyID, fetchTaxonByTaxonID, INcbiTaxon } from "../../../../api";
 import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
 import AssemblyEditor from "./components/AssemblyEditor";
 import TaxonEditor from "./components/TaxonEditor";
@@ -20,6 +20,34 @@ const DataAssistant: React.FC = () => {
     setSearchParams(newSearchParams);
   };
 
+  const reloadTaxon = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+    if (userID && token) {
+      if (taxon) {
+        await fetchTaxonByTaxonID(taxon.id, userID, token).then((response) => {
+          if (response?.payload) {
+            setTaxon(response.payload);
+          }
+        });
+      }
+    }
+  };
+
+  const reloadAssembly = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+    if (userID && token) {
+      if (assembly) {
+        await fetchAssemblyByAssemblyID(assembly.id, userID, token).then((response) => {
+          if (response?.payload) {
+            setAssembly(response.payload);
+          }
+        });
+      }
+    }
+  };
+
   return (
     <div className="mb-16">
       <header className="bg-indigo-100 shadow sticky z-20 top-10">
@@ -35,6 +63,11 @@ const DataAssistant: React.FC = () => {
               {taxon && taxon.id && assembly && assembly.id && (
                 <span className="animate-fade-in text-lg font-semibold">
                   {" > " + assembly.name}
+                </span>
+              )}
+              {taxon && taxon.id && assembly && assembly.id && assembly.label && (
+                <span className="animate-fade-in text-lg font-semibold">
+                  {" (alias " + assembly.label + ")"}
                 </span>
               )}
             </h1>
@@ -64,7 +97,12 @@ const DataAssistant: React.FC = () => {
             <span className="px-4">Back to taxon level...</span>
           </div>
           <hr className="shadow my-4" />
-          <AssemblyEditor taxon={taxon} assembly={assembly} />
+          <AssemblyEditor
+            taxon={taxon}
+            assembly={assembly}
+            reloadTaxon={reloadTaxon}
+            reloadAssembly={reloadAssembly}
+          />
         </div>
       )}
     </div>

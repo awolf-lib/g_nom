@@ -269,7 +269,7 @@ def deleteAnnotationByAnnotationID(annotation_id):
 
         scanFiles()
 
-        return 1, []
+        return 1, createNotification("Success", "Successfully deleted annotation", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
@@ -420,6 +420,34 @@ def parseGff(path):
     print(f"Parsed: 100%", end="\r")
 
     return features, []
+
+
+# update annotation label
+def updateAnnotationLabel(annotation_id: int, label: str):
+    """
+    Set label for annotation.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        LABEL_PATTERN = compile(r"^\w+$")
+
+        if label and not LABEL_PATTERN.match(label):
+            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+        elif not label:
+            label = None
+
+        cursor.execute(
+            "UPDATE genomicAnnotations SET label=%s WHERE id=%s",
+            (label, annotation_id),
+        )
+        connection.commit()
+        if label:
+            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+        else:
+            return 1, createNotification("Info", f"Default name restored", "info")
+    except Exception as err:
+        return 0, createNotification(message=f"AnnotationLabelUpdateError: {str(err)}")
 
 
 ## ============================ FETCH ============================ ##

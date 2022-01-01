@@ -1,18 +1,22 @@
-import { Close, Edit, Trash } from "grommet-icons";
+import { Close, Tag, Trash } from "grommet-icons";
 import { useEffect, useState } from "react";
 import {
   deleteAnalysesByAnalysesID,
   fetchMiltsAnalysesByAssemblyID,
+  IMiltsAnalysis,
+  INcbiTaxon,
+  updateAnalysisLabel,
 } from "../../../../../../../../../../api";
-import { INcbiTaxon } from "../../../../../../../../../../api";
 import Input from "../../../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import { AssemblyInterface } from "../../../../../../../../../../tsInterfaces/tsInterfaces";
+import EditLabelForm from "../../../EditAssemblyLabelForm/components/EditLabelForm";
 
 const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: AssemblyInterface }) => {
-  const [milts, setMilts] = useState<any[]>([]);
+  const [miltsAnalyses, setMiltsAnalyses] = useState<IMiltsAnalysis[]>([]);
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
+  const [toggleEditLabel, setToggleEditLabel] = useState<number>(-1);
 
   // notifications
   const dispatch = useNotification();
@@ -26,10 +30,10 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
   };
 
   useEffect(() => {
-    loadMilts();
+    loadMiltsAnalyses();
   }, [assembly.id]);
 
-  const loadMilts = async () => {
+  const loadMiltsAnalyses = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
@@ -38,31 +42,27 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
 
       if (response) {
         if (response.payload) {
-          setMilts(response.payload);
+          setMiltsAnalyses(response.payload);
         }
       }
     }
   };
 
-  const handleDeleteMilts = async (analysesID: number, confirmation: string) => {
-    if (toggleConfirmDeletion !== analysesID) {
-      setToggleConfirmDeletion(analysesID);
-    } else {
-      setConfirmDeletion(confirmation);
+  const handleDeleteAnalyses = async (analysesID: number, confirmationString: string) => {
+    setConfirmDeletion(confirmationString);
 
-      if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
-        const token = JSON.parse(sessionStorage.getItem("token") || "");
+    if (confirmationString === "REMOVE") {
+      const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+      const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-        if (analysesID && userID && token) {
-          const response = await deleteAnalysesByAnalysesID(analysesID, userID, token);
-          setToggleConfirmDeletion(-1);
-          setConfirmDeletion("");
-          loadMilts();
+      if (analysesID && userID && token) {
+        const response = await deleteAnalysesByAnalysesID(analysesID, userID, token);
+        setToggleConfirmDeletion(-1);
+        setConfirmDeletion("");
+        loadMiltsAnalyses();
 
-          if (response.notification && response.notification.length > 0) {
-            response.notification.map((n: any) => handleNewNotification(n));
-          }
+        if (response.notification && response.notification.length > 0) {
+          response.notification.map((n: any) => handleNewNotification(n));
         }
       }
     }
@@ -72,65 +72,87 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
     <div className="animate-grow-y">
       <div className="flex border-t border-b text-center py-2 text-sm font-semibold text-white bg-gray-500 border-white">
         <div className="w-16">ID</div>
-        <div className="w-2/5">Name</div>
+        <div className="w-2/5">Name/Alias</div>
         <div className="w-1/5">Added by</div>
         <div className="w-2/5">Added on</div>
-        <div className="w-56" />
+        <div className="w-96" />
       </div>
       <div className="min-h-1/4 max-h-1/2">
-        {milts && milts.length > 0 ? (
-          milts.map((milt: any) => (
-            <div key={milt.analysisID} className="border-t border-b odd:bg-indigo-50 shadow">
-              <div className="flex py-4 text-center">
-                <div className="w-16">{milt.analysisID}</div>
-                <div className="w-2/5">{milt.name}</div>
-                <div className="w-1/5">{milt.username}</div>
-                <div className="w-2/5">{milt.addedOn}</div>
-                <div className="flex justify-around items-center w-56">
-                  {toggleConfirmDeletion !== milt.analysisID ? (
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center justify-center">
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteMilts(milt.analysisID, "");
-                          }}
-                          className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125"
-                        >
-                          <Trash className="stroke-current" color="blank" size="small" />
-                        </div>
-                      </div>
+        {miltsAnalyses && miltsAnalyses.length > 0 ? (
+          miltsAnalyses.map((milts) => (
+            <div key={milts.analysisID} className="border-t border-b odd:bg-indigo-50 shadow">
+              <div className="flex py-4 text-center items-center">
+                <div className="w-16">{milts.analysisID}</div>
+                <div className="w-2/5 flex justify-center items-center">
+                  {milts.label || milts.name}
+                </div>
+                <div className="w-1/5">{milts.username}</div>
+                <div className="w-2/5">{milts.addedOn}</div>
+                <div className="flex justify-around items-center w-48">
+                  <div
+                    onClick={() => {
+                      setToggleConfirmDeletion(-1);
+                      setConfirmDeletion("");
+                      setToggleEditLabel((prevState) =>
+                        prevState !== milts.analysisID ? milts.analysisID : -1
+                      );
+                    }}
+                    className="p-1 hover:bg-gray-600 hover:text-white cursor-pointer transition duration-300 flex rounded-lg transform scale-125"
+                  >
+                    {toggleEditLabel !== milts.analysisID ? (
+                      <Tag className="stroke-current" color="blank" size="small" />
+                    ) : (
+                      <Close className="stroke-current" color="blank" size="small" />
+                    )}
+                  </div>
+                  <div className="flex justify-center">
+                    <div
+                      onClick={() => {
+                        setToggleEditLabel(-1);
+                        setConfirmDeletion("");
+                        setToggleConfirmDeletion((prevState) =>
+                          prevState !== milts.analysisID ? milts.analysisID : -1
+                        );
+                      }}
+                      className="p-1 hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 flex rounded-lg transform scale-125"
+                    >
+                      {toggleConfirmDeletion !== milts.analysisID ? (
+                        <Trash className="stroke-current" color="blank" size="small" />
+                      ) : (
+                        <Close className="stroke-current" color="blank" size="small" />
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex justify-between items-center">
-                      <div
-                        className="w-32 flex items-center justify-center"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Input
-                          size="sm"
-                          placeholder="Type REMOVE..."
-                          onChange={(e: any) => handleDeleteMilts(milt.analysisID, e.target.value)}
-                        />
-                      </div>
-                      <div className="w-8 flex items-center justify-center">
-                        <div className="flex cursor-pointer hover:bg-red-600 hover:text-white p-1 rounded-lg transform scale-125">
-                          <Close
-                            className="stroke-current"
-                            color="blank"
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setConfirmDeletion("");
-                              setToggleConfirmDeletion(-1);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
+              {(toggleConfirmDeletion || toggleEditLabel) && <hr className="shadow" />}
+              {toggleConfirmDeletion === milts.analysisID && (
+                <div className="flex justify-center animate-grow-y">
+                  <div className="mx-4 my-8">
+                    <div className="flex justify-between items-center">
+                      <label className="flex">
+                        <span className="flex items-center mx-4 font-semibold text-sm">
+                          CONFIRM DELETION:
+                        </span>
+                        <div className="flex items-center justify-center w-96">
+                          <Input
+                            placeholder="Type REMOVE..."
+                            onChange={(e) => handleDeleteAnalyses(milts.analysisID, e.target.value)}
+                            value={confirmDeletion}
+                          />
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {toggleEditLabel === milts.analysisID && (
+                <EditLabelForm
+                  target={milts}
+                  updateLabel={updateAnalysisLabel}
+                  reloadTarget={loadMiltsAnalyses}
+                />
+              )}
             </div>
           ))
         ) : (

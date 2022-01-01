@@ -194,7 +194,11 @@ const AssemblyInformation = () => {
               {fetchingAll ? (
                 <LoadingSpinner label="Loading..." />
               ) : (
-                <div>{taxon.scientificName + " (" + assembly.name + ")"}</div>
+                <div>
+                  {assembly.label
+                    ? taxon.scientificName + " (" + assembly.label + ")"
+                    : taxon.scientificName + " (" + assembly.name + ")"}
+                </div>
               )}
             </div>
             <div

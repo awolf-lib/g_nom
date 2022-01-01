@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request
 # local imports
 from modules.users import validateActiveToken
 from modules.notifications import createNotification
-from modules.annotations import deleteAnnotationByAnnotationID, fetchAnnotationsByAssemblyID, import_annotation
+from modules.annotations import deleteAnnotationByAnnotationID, fetchAnnotationsByAssemblyID, import_annotation, updateAnnotationLabel
 
 # setup blueprint name
 annotations_bp = Blueprint("annotations", __name__)
@@ -48,7 +48,7 @@ def annotations_bp_import_annotation():
         return REQUESTMETHODERROR
 
 
-# DELETE ASSEMBLY BY ASSEMBLY ID
+# DELETE ANNOTATION BY ANNOTATION ID
 @annotations_bp.route("/deleteAnnotationByAnnotationID", methods=["GET"])
 def annotations_bp_deleteAnnotationByAnnotationID():
     if request.method == "GET":
@@ -65,6 +65,39 @@ def annotations_bp_deleteAnnotationByAnnotationID():
         annotation_id = request.args.get("annotationID")
 
         status, notification = deleteAnnotationByAnnotationID(annotation_id)
+
+        response = jsonify({"payload": status, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# UPDATE ANNOTATION LABEL
+@annotations_bp.route("/updateAnnotationLabel", methods=["GET"])
+def annotations_bp_updateAnnotationLabel():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        annotation_id = request.args.get("annotationID", None)
+        label = request.args.get("label", None)
+
+        if annotation_id:
+            if label:
+                status, notification = updateAnnotationLabel(annotation_id, label)
+            else:
+                status, notification = updateAnnotationLabel(annotation_id, None)
+        else:
+            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

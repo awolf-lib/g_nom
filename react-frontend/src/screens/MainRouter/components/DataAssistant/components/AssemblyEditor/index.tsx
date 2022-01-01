@@ -7,14 +7,19 @@ import GeneralInformationEditor from "../TaxonEditor/components/GeneralInformati
 import AddAssemblyTagForm from "./components/AddAssemblyTagForm";
 import EditAnalysesForm from "./components/EditAnalysesForm";
 import EditAnnotationsForm from "./components/EditAnnotationsForm";
+import EditAssemblyLabelForm from "./components/EditAssemblyLabelForm";
 import EditMappingsForm from "./components/EditMappingsForm";
 
 const AssemblyEditor = ({
   taxon,
   assembly,
+  reloadTaxon,
+  reloadAssembly,
 }: {
   taxon: INcbiTaxon;
   assembly: AssemblyInterface;
+  reloadTaxon: any;
+  reloadAssembly: any;
 }) => {
   const focusRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +33,16 @@ const AssemblyEditor = ({
     <div className="animate-grow-y">
       <TabWorkspace
         tabs={[
+          {
+            label: "Label",
+            content: (
+              <EditAssemblyLabelForm
+                taxon={taxon}
+                assembly={assembly}
+                reloadAssembly={reloadAssembly}
+              />
+            ),
+          },
           { label: "Tags", content: <AddAssemblyTagForm taxon={taxon} assembly={assembly} /> },
           {
             label: "General information (Assembly)",

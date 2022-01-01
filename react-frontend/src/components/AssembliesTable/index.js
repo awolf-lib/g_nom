@@ -180,7 +180,7 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
                 <div className="hidden sm:block w-1/12 px-4 truncate">Image</div>
                 <div className="w-3/12 sm:w-3/12 px-4 truncate">Sc. name</div>
                 <div className="w-3/12 sm:w-2/12 px-4 truncate">NCBI ID</div>
-                <div className="w-3/12 sm:w-3/12 px-4 truncate">Asmbl. name</div>
+                <div className="w-3/12 sm:w-3/12 px-4 truncate">Name/Alias (Assembly)</div>
                 <div className="w-3/12 sm:w-3/12 px-4 truncate">Analysis</div>
               </div>
             )}
@@ -197,7 +197,7 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
                             id={assembly.id}
                             scientificName={assembly.scientificName}
                             taxonID={assembly.ncbiTaxonID}
-                            assemblyName={assembly.name}
+                            assemblyName={assembly.label || assembly.name}
                             types={assembly.types}
                             imagePath={assembly.imagePath}
                             key={assembly.id}
@@ -207,7 +207,7 @@ const AssembliesTable = ({ label, bookmarksUserID }) => {
                             id={assembly.id}
                             scientificName={assembly.scientificName}
                             taxonID={assembly.ncbiTaxonID}
-                            assemblyName={assembly.name}
+                            assemblyName={assembly.label || assembly.name}
                             types={assembly.types}
                             imagePath={assembly.imagePath}
                             key={assembly.id}
