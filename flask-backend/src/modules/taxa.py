@@ -7,6 +7,7 @@ from PIL import Image
 from modules.environment import BASE_PATH_TO_STORAGE
 from modules.db_connection import connect
 from modules.notifications import createNotification
+from modules.files import scanFiles
 
 IMAGE_FILE_PATTERN = {
     "main_file": compile(r"^image/(png|jfif|jpg|jpeg)$", IGNORECASE),
@@ -264,6 +265,9 @@ def import_image(taxonID, taxonScientificName, image, userID):
             (newPath, userID, taxonID),
         )
         connection.commit()
+
+        scanFiles()
+
         return 1, createNotification("Success", f"Successfully imported image!", "success")
     except Exception as err:
         return 0, createNotification(message=f"ImageImportError: {str(err)}")
@@ -371,6 +375,27 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
         return [], createNotification("Info", f"No taxon for NCBI taxonomy ID {ncbiTaxonID} found!", "info")
 
     return [dict(zip(row_headers, x)) for x in taxa], []
+
+
+# FETCH ALL TAXA WITH AT LEAST ONE ASSEMBLY
+def fetchTaxaWithAssemblies():
+    """
+    Fetches taxa with at least one assembly
+    """
+    connection, cursor, error = connect()
+
+    try:
+        cursor.execute("SELECT taxa.id, taxa.ncbiTaxonID, taxa.scientificName, taxa.commonName FROM taxa, assemblies WHERE taxa.id=assemblies.taxonID GROUP BY taxa.id")
+        row_headers = [x[0] for x in cursor.description]
+        taxa = cursor.fetchall()
+
+        if not len(taxa):
+            return [], createNotification("Info", f"No taxon with at least one assembly found!", "info")
+
+        return sorted([dict(zip(row_headers, x)) for x in taxa], key=lambda x: x["scientificName"]), []
+
+    except Exception as err:
+        return [], createNotification(message=str(err))
 
 
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL

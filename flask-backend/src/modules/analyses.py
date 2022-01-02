@@ -529,7 +529,7 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
 
         connection, cursor, error = connect()
         cursor.execute(
-            "INSERT INTO analysesRepeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, rolling_circles, rolling_circles_length, unclassified, unclassified_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length, total_repetitive_length, numberN, percentN) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO analysesRepeatmasker (analysisID, sines, sines_length, `lines`, lines_length, ltr_elements, ltr_elements_length, dna_elements, dna_elements_length, unclassified, unclassified_length, rolling_circles, rolling_circles_length, small_rna, small_rna_length, satellites, satellites_length, simple_repeats, simple_repeats_length, low_complexity, low_complexity_length, total_non_repetitive_length_percent, total_non_repetitive_length, total_repetitive_length_percent, total_repetitive_length, numberN, percentN) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (
                 analysisID,
                 sines,
@@ -552,7 +552,9 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
                 simple_repeats_length,
                 low_complexity,
                 low_complexity_length,
+                100 - repetitiveness,
                 total_non_repetitive_length,
+                repetitiveness,
                 total_repetitive_length,
                 numberN,
                 percentN,

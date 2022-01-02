@@ -122,11 +122,12 @@ def assemblies_bp_updateAssemblyLabel():
 
 
 # FETCH ALL ASSEMBLIES
-@assemblies_bp.route("/fetchAssemblies", methods=["GET"])
+@assemblies_bp.route("/fetchAssemblies", methods=["POST"])
 def assemblies_bp_fetchAssemblies():
-    if request.method == "GET":
-        userID = request.args.get("userID", None)
-        token = request.args.get("token", None)
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
 
         # token still active
         valid_token, error = validateActiveToken(userID, token)
@@ -135,15 +136,19 @@ def assemblies_bp_fetchAssemblies():
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 
-        search = request.args.get("search")
-        offset = request.args.get("offset")
-        range = request.args.get("range")
-        onlyBookmarked = request.args.get("onlyBookmarked", None)
+        search = req.get("search", None)
+        sortBy = req.get("sortBy", None)
+        offset = req.get("offset", None)
+        range = req.get("range", None)
+        filter = req.get("filter", None)
+        onlyBookmarked = req.get("onlyBookmarked", None)
+
+        print(onlyBookmarked)
 
         if int(onlyBookmarked):
-            data, pagination, notification = fetchAssemblies(search, offset, range, userID)
+            data, pagination, notification = fetchAssemblies(search, filter, sortBy, offset, range, userID)
         else:
-            data, pagination, notification = fetchAssemblies(search, offset, range)
+            data, pagination, notification = fetchAssemblies(search, filter, sortBy, offset, range)
 
         response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

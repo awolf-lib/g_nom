@@ -4,7 +4,12 @@ from flask import Blueprint, jsonify, request
 # local imports
 from modules.users import validateActiveToken
 from modules.notifications import createNotification
-from modules.annotations import deleteAnnotationByAnnotationID, fetchAnnotationsByAssemblyID, import_annotation, updateAnnotationLabel
+from modules.annotations import (
+    deleteAnnotationByAnnotationID,
+    fetchAnnotationsByAssemblyID,
+    import_annotation,
+    updateAnnotationLabel,
+)
 
 # setup blueprint name
 annotations_bp = Blueprint("annotations", __name__)

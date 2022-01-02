@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 const Input = (props) => {
   const inputClass = classNames(
-    "px-2 py-1 border border-gray-300 bg-white text-black rounded-lg focus:outline-none transition duration-300",
+    "px-2 py-1 bg-white text-black focus:outline-none transition duration-300",
     {
       "w-full text-xs h-6": props.size === "sm",
       "w-full text-base h-10": props.size === "md",
@@ -12,9 +12,12 @@ const Input = (props) => {
     },
     {
       "pl-6": props.type === "number",
-      "focus:ring-2 hover:ring-2 ring-offset-1": props.type !== "radio",
+      "focus:ring-2 hover:ring-2 ring-offset-1 shadow": props.type !== "radio",
       "text-center": props.type !== "textarea",
       "h-32 text-justify": props.type === "textarea",
+    },
+    {
+      "border border-gray-300 rounded-lg shadow": !props.borderless,
     }
   );
   if (props.type !== "textarea") {
@@ -41,6 +44,7 @@ Input.propTypes = {
   ]),
   onChange: PropTypes.func,
   checked: PropTypes.bool,
+  borderless: PropTypes.bool,
 };
 
 export default Input;

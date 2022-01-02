@@ -151,9 +151,7 @@ def handle_delete_annotation(message):
             f.close()
 
         if "tracks" in jbrowse_config:
-            tracks = [
-                track for track in jbrowse_config["tracks"] if track["trackId"] != annotation_name
-            ]
+            tracks = [track for track in jbrowse_config["tracks"] if track["trackId"] != annotation_name]
             jbrowse_config["tracks"] = tracks
 
         if "aggregateTextSearchAdapters" in jbrowse_config:

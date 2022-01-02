@@ -238,7 +238,7 @@ const AssemblyInformation = () => {
             {toggleGeneralInfoSection && taxon && taxon.ncbiTaxonID && (
               <GeneralInformationCarousel
                 generalInfos={generalInformation}
-                ncbiTaxonID={taxon.ncbiTaxonID}
+                ncbiTaxonID={taxon.id}
                 imagePath={taxon.imagePath}
               />
             )}

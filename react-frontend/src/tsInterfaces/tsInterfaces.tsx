@@ -1,12 +1,14 @@
 export interface AssemblyInterface {
   addedBy: number;
   addedOn: string;
-  bookmarked: number;
   charCountString: string;
+  commonName?: string;
   cumulativeSequenceLength: number;
   gcPercent: number;
   gcPercentMasked: number;
   id: number;
+  imagePath: string;
+  label?: string;
   largestSequence: number;
   lastUpdatedBy: number;
   lastUpdatedOn: string;
@@ -18,12 +20,26 @@ export interface AssemblyInterface {
   name: string;
   ncbiTaxonID: number;
   numberOfSequences: number;
+  parentNcbiTaxonID: number;
   path: string;
+  scientificName: string;
   sequenceType: string;
-  shortestSequence: string;
-  taxonID: string;
+  shortestSequence: number;
+  taxonID: number;
+  taxonRank: string;
   username: string;
-  label?: string;
+  annotations?: number;
+  buscos?: number;
+  fcats?: number;
+  mappings?: number;
+  maxBuscoScore?: number;
+  maxFcatScoreM1?: number;
+  maxFcatScoreM2?: number;
+  maxFcatScoreM3?: number;
+  maxFcatScoreM4?: number;
+  milts?: number;
+  repeatmaskers?: number;
+  averageRepetitiveness?: number;
 }
 
 export interface AssemblyTagInterface {

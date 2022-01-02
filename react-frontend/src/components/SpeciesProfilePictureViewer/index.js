@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { fetchTaxonImageByTaxonID } from "../../api";
 import { useNotification } from "../NotificationProvider";
 
-const SpeciesProfilePictureViewer = ({ taxonID, imagePath }) => {
+const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }) => {
   const [image, setImage] = useState("");
 
   useEffect(() => {
@@ -40,11 +40,19 @@ const SpeciesProfilePictureViewer = ({ taxonID, imagePath }) => {
     }
   };
 
+  const getImageURL = () => {
+    if (useTimestamp) {
+      return image + "&hash=" + Date.now();
+    } else {
+      return image;
+    }
+  };
+
   return (
     <img
       className="w-full h-full object-fill"
       alt="Species profile"
-      src={imagePath && image ? image + "&hash=" + Date.now() : picPlacerholder}
+      src={imagePath && image ? getImageURL() : picPlacerholder}
     />
   );
 };

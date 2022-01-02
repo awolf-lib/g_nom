@@ -8,6 +8,7 @@ from modules.users import validateActiveToken
 from modules.taxa import (
     addTaxonGeneralInformation,
     deleteTaxonGeneralInformationByID,
+    fetchTaxaWithAssemblies,
     fetchTaxonByNCBITaxonID,
     fetchTaxonBySearch,
     fetchTaxonByTaxonID,
@@ -221,6 +222,30 @@ def taxa_bp_fetchTaxonByNCBITaxonID():
 
         taxonID = request.args.get("taxonID")
         data, notification = fetchTaxonByNCBITaxonID(taxonID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# IMPORT TAXA BY NCBI TAXON ID
+@taxa_bp.route("/fetchTaxaWithAssemblies", methods=["GET"])
+def taxa_bp_fetchTaxaWithAssemblies():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = fetchTaxaWithAssemblies()
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

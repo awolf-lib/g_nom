@@ -566,7 +566,7 @@ def parseFasta(path):
 
 ## ============================ FETCH ============================ ##
 # fetches all assemblies (includes filtering by search, offset, range, userID)
-def fetchAssemblies(search="", offset=0, range=10, userID=0):
+def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": True}, offset=0, range=10, userID=0):
     """
     Fetches all assemblies from database. Filtering by search term, offset, range and/or userID.
     """
@@ -578,13 +578,15 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
         range = int(range)
         userID = int(userID)
 
+        print(userID)
+
         if not userID:
             cursor.execute(
-                "SELECT assemblies.*, taxa.scientificName, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id"
+                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name"
             )
         else:
             cursor.execute(
-                "SELECT assemblies.*, taxa.ncbiTaxonID, users.username FROM assemblies, taxa, users, bookmarks WHERE bookmarks.userID=%s AND bookmarks.assemblyID=assemblies.id AND assemblies.taxonID=taxa.id AND assemblies.addedBy=users.id",
+                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id INNER JOIN bookmarks ON bookmarks.userID=%s AND assemblies.id=bookmarks.assemblyID LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name",
                 (userID,),
             )
 
@@ -592,25 +594,107 @@ def fetchAssemblies(search="", offset=0, range=10, userID=0):
         assemblies = cursor.fetchall()
         assemblies = [dict(zip(row_headers, x)) for x in assemblies]
 
-        number_of_elements = len(assemblies)
-
         if search:
+            search = str(search).lower()
             filtered_assemblies = []
             for x in assemblies:
-                if len([s for s in x.values() if search == str(s) or search in str(s)]):
+                if len([s for s in x.values() if search == str(s).lower() or search in str(s).lower()]):
                     filtered_assemblies.append(x)
-
             assemblies = filtered_assemblies
+
+        if (sortBy["column"] == "label"):
+            assemblies = sorted(assemblies, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"])
+        else:
+            assemblies = sorted(assemblies, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"])
+
+        # get annotations, mappings, analyses
+        for assembly in assemblies:
+            cursor.execute(
+                "SELECT COUNT(*) FROM genomicAnnotations WHERE genomicAnnotations.assemblyID=%s",
+                (assembly["id"],),
+            )
+            annotations = cursor.fetchone()[0]
+
+            cursor.execute(
+                "SELECT COUNT(*) FROM mappings WHERE mappings.assemblyID=%s",
+                (assembly["id"],),
+            )
+            mappings = cursor.fetchone()[0]
+
+            cursor.execute(
+                "SELECT COUNT(*), MAX(analysesBusco.completeSinglePercent) FROM analyses, analysesBusco WHERE analyses.assemblyID=%s AND analysesBusco.analysisID=analyses.id",
+                (assembly["id"],),
+            )
+            buscos, maxBuscoScore = cursor.fetchone()
+
+            cursor.execute(
+                "SELECT COUNT(*), MAX(analysesFcat.m1_similarPercent), MAX(analysesFcat.m2_similarPercent), MAX(analysesFcat.m3_similarPercent), MAX(analysesFcat.m4_similarPercent) FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analysesFcat.analysisID=analyses.id",
+                (assembly["id"],),
+            )
+            fcats, maxFcatScoreM1, maxFcatScoreM2, maxFcatScoreM3, maxFcatScoreM4 = cursor.fetchone()
+
+            cursor.execute(
+                "SELECT COUNT(*) FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analysesMilts.analysisID=analyses.id",
+                (assembly["id"],),
+            )
+            milts = cursor.fetchone()[0]
+
+            cursor.execute(
+                "SELECT COUNT(*), AVG(analysesRepeatmasker.total_repetitive_length_percent) FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analysesRepeatmasker.analysisID=analyses.id",
+                (assembly["id"],),
+            )
+            repeatmaskers, averageRepetitiveness = cursor.fetchone()
+
+            assembly.update(
+                {
+                    "annotations": annotations,
+                    "mappings": mappings,
+                    "buscos": buscos,
+                    "maxBuscoScore": maxBuscoScore,
+                    "fcats": fcats,
+                    "maxFcatScoreM1": maxFcatScoreM1,
+                    "maxFcatScoreM2": maxFcatScoreM2,
+                    "maxFcatScoreM3": maxFcatScoreM3,
+                    "maxFcatScoreM4": maxFcatScoreM4,
+                    "milts": milts,
+                    "repeatmaskers": repeatmaskers,
+                    "averageRepetitiveness": averageRepetitiveness
+                }
+            )
+
+        if filter:
+            if "taxonIDs" in filter:
+                assemblies = [x for x in assemblies if x["taxonID"] in filter["taxonIDs"]]
+            if "userIDs" in filter:
+                assemblies = [x for x in assemblies if x["userID"] in filter["userIDs"]]
+            if "hasAnnotation" in filter:
+                assemblies = [x for x in assemblies if x["annotations"]]
+            if "hasMapping" in filter:
+                assemblies = [x for x in assemblies if x["mappings"]]
+            if "hasBusco" in filter:
+                assemblies = [x for x in assemblies if x["buscos"]]
+            if "hasFcat" in filter:
+                assemblies = [x for x in assemblies if x["fcats"]]
+            if "hasMilts" in filter:
+                assemblies = [x for x in assemblies if x["milts"]]
+            if "hasRepeatmasker" in filter:
+                assemblies = [x for x in assemblies if x["repeatmaskers"]]
+
+        number_of_elements = len(assemblies)
+        if number_of_elements % range:
+            pages = (number_of_elements // range) + 1
+        else:
+            pages = number_of_elements // range
 
         assemblies = assemblies[offset * range : offset * range + range]
 
         return (
             assemblies,
-            {"offset": offset, "range": range, "pages": number_of_elements // range + 1, "search": search},
-            {},
+            {"offset": offset, "range": range, "pages": pages, "search": search},
+            [],
         )
     except Exception as err:
-        return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
 
 # update assembly label
@@ -640,6 +724,7 @@ def updateAssemblyLabel(assembly_id: int, label: str, userID: int):
             return 1, createNotification("Info", f"Default name restored", "info")
     except Exception as err:
         return 0, createNotification(message=f"AssemblyLabelUpdateError: {str(err)}")
+
 
 # fetches all assemblies for specific taxon
 def fetchAssembliesByTaxonID(taxonID):

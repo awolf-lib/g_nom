@@ -8,13 +8,13 @@ export function Button(props: IButtonProps): JSX.Element {
   const buttonContainerClass = classNames(
     "py-2 h-full rounded-lg active:cursor-pointer focus:outline-none disabled:bg-gray-500 disabled:opacity-50 active:ring-2 w-full transition duration-500",
     {
-      "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600 shadow border border-gray-100 border-outset":
+      "px-3 bg-blue-500 hover:bg-blue-400 text-white active:ring-blue-600 shadow border border-blue-500 border-outset":
         props.color === "primary",
-      "px-3 bg-gray-500 hover:bg-gray-400 text-white active:ring-gray-600 shadow border border-gray-100 border-outset":
+      "px-3 bg-gray-600 hover:bg-gray-400 text-white active:ring-gray-600 shadow border border-gray-400 border-outset":
         props.color === "secondary",
-      "px-3 bg-green-500 hover:bg-green-400 text-white active:ring-green-600 shadow border border-gray-100 border-outset":
+      "px-3 bg-green-500 hover:bg-green-400 text-white active:ring-green-600 shadow border border-green-500 border-outset":
         props.color === "confirm",
-      "px-3 bg-red-500 hover:bg-red-400 text-white active:ring-red-600 shadow border border-gray-100 border-outset":
+      "px-3 bg-red-500 hover:bg-red-400 text-white active:ring-red-600 shadow border border-red-500 border-outset":
         props.color === "cancel",
       "px-3 hover:bg-gray-600 text-gray-700 hover:text-white font-semibold active:ring-gray-700":
         props.color === "nav",
@@ -31,7 +31,7 @@ export function Button(props: IButtonProps): JSX.Element {
   const getContent = () => {
     if (props.label && props.children) {
       return showChildren ? (
-        <div className="animate-grow-y">{props.children}</div>
+        <div className="animate-grow-y flex items-center justify-center">{props.children}</div>
       ) : (
         <div>{props.label}</div>
       );

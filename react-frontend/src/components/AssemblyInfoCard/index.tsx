@@ -68,7 +68,7 @@ export interface IAssemblyInfoCardProps {
   taxonID: number;
   assemblyName: string;
   types: string[];
-  imagePath: boolean;
+  imagePath: string;
 }
 
 AssemblyInfoCard.defaultProps = {
