@@ -3,14 +3,23 @@ import { fetchAssemblies, Filter, Pagination, Sorting } from "../../../../api";
 import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
 import AssembliesListElement from "./components/AssembliesListElement";
 import AssembliesFilterForm from "./components/AssembliesFilterForm";
-import { CaretNext, CaretPrevious, Next, Previous } from "grommet-icons";
+import { Ascend, CaretNext, CaretPrevious, Descend, Next, Previous } from "grommet-icons";
 import Button from "../../../../components/Button";
 import Input from "../../../../components/Input";
 import { useNotification } from "../../../../components/NotificationProvider";
 import classNames from "classnames";
 import AssembliesGridElement from "./components/AssembliesGridElement";
+import LoadingSpinner from "../../../../components/LoadingSpinner";
 
-const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
+const AssembliesList = ({
+  title = "All assemblies",
+  initialView = "list",
+  bookmarks = 0,
+}: {
+  title: string;
+  initialView: "list" | "grid";
+  bookmarks?: 0 | 1;
+}) => {
   const [assemblies, setAssemblies] = useState<AssemblyInterface[]>([]);
 
   const [view, setView] = useState<"list" | "grid">("list");
@@ -27,15 +36,33 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
     pages: 0,
   });
 
+  const [loadAssembliesTimeout, setLoadAssembliesTimeout] = useState<any>(null);
+  const [loadingAssemblies, setLoadingAssemblies] = useState<boolean>(false);
+  const [onLoadingAssembliesTimeout, setOnLoadingAssemblies] = useState<boolean>(false);
+
   const [fcatMode, setFcatMode] = useState<number>(1);
 
   useEffect(() => {
-    loadAssemblies();
-  }, [sortBy, search, filter, offset, range, bookmarks]);
+    setView(initialView);
+    setAssemblies([]);
+  }, [initialView]);
+
+  useEffect(() => {
+    setOnLoadingAssemblies(true);
+    if (loadAssembliesTimeout) {
+      clearTimeout(loadAssembliesTimeout);
+    }
+    setLoadAssembliesTimeout(
+      setTimeout(() => {
+        loadAssemblies();
+        setOnLoadingAssemblies(false);
+      }, 1000)
+    );
+  }, [sortBy, filter, offset, range, bookmarks, search]);
 
   useEffect(() => {
     setOffset(0);
-  }, [filter, search, sortBy, range]);
+  }, [filter, sortBy, range]);
 
   // notifications
   const dispatch = useNotification();
@@ -52,6 +79,8 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
+    setLoadingAssemblies(true);
+
     await fetchAssemblies(userID, token, offset, range, search, filter, sortBy, bookmarks).then(
       (response) => {
         if (response?.payload) {
@@ -65,6 +94,7 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
         }
       }
     );
+    setLoadingAssemblies(false);
   };
 
   const handleRangeChange = (input: number) => {
@@ -96,14 +126,22 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
   return (
     <div className="mb-16 animate-grow-y">
       <div className="h-1 bg-gradient-to-t from-gray-500 to-indigo-200" />
-      <div className="bg-gradient-to-b from-gray-500 via-gray-500 to-gray-700 flex justify-between items-center font-bold text-xl px-4 py-4 text-white">
-        <div className="w-64">All assemblies</div>
+      <div className="bg-gradient-to-b from-gray-500 via-gray-500 to-gray-700 flex justify-between items-start font-bold text-xl px-4 py-4 text-white">
+        <div className="w-64 flex items-center">
+          <div>{title}</div>
+          {loadingAssemblies ||
+            (onLoadingAssembliesTimeout && (
+              <div className="px-4 text-xs">
+                <LoadingSpinner label="Loading..." />
+              </div>
+            ))}
+        </div>
         <label className="flex items-center">
           <span className="text-xs px-2">View type:</span>
           <select
             className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 py-1 text-sm"
             onChange={(e) => setView(e.target.value as "list" | "grid")}
-            defaultValue="list"
+            value={view}
           >
             <option className="text-sm py-1" value="list">
               List
@@ -124,7 +162,7 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
       </div>
       <hr className="border-gray-400" />
       {view === "list" && (
-        <div className="flex w-full px-4 text-center bg-gray-600 text-white font-semibold py-2 text-sm animate-grow-y">
+        <div className="sticky top-16 flex w-full px-4 text-center bg-gray-600 text-white font-semibold py-2 text-xs animate-grow-y">
           <div className="w-16 mr-4 flex items-center justify-center">Image</div>
           <div
             className="w-2/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
@@ -136,10 +174,19 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
               )
             }
           >
+            {sortBy.column === "scientificName" && (
+              <div className="flex items-center mr-4">
+                {sortBy.order ? (
+                  <Ascend className="stroke-current animate-grow-y" color="blank" size="small" />
+                ) : (
+                  <Descend className="stroke-current animate-grow-y" color="blank" size="small" />
+                )}
+              </div>
+            )}
             Taxon
           </div>
           <div
-            className="w-4/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+            className="w-3/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
             onClick={() =>
               setSortBy((prevState) =>
                 prevState.column === "label"
@@ -148,6 +195,15 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
               )
             }
           >
+            {sortBy.column === "label" && (
+              <div className="flex items-center mr-4">
+                {sortBy.order ? (
+                  <Ascend className="stroke-current animate-grow-y" color="blank" size="small" />
+                ) : (
+                  <Descend className="stroke-current animate-grow-y" color="blank" size="small" />
+                )}
+              </div>
+            )}
             Name/Alias
           </div>
           <div className="w-1/12 flex items-center justify-center">Annotation</div>
@@ -159,7 +215,7 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
             >
               <CaretPrevious className="stroke-current" color="blank" size="small" />
             </div>
-            <div className="px-1">fCats (M{fcatMode})</div>
+            <div>fCats (M{fcatMode})</div>
             <div
               className="py-2 px-1 hover:bg-gray-500 hover:text-white cursor-pointer flex items-center rounded-lg"
               onClick={(e) => setFcatMode((prevState) => (prevState + 1 > 4 ? 1 : prevState + 1))}
@@ -179,7 +235,37 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
               )
             }
           >
-            Username
+            {sortBy.column === "username" && (
+              <div className="flex items-center mr-4">
+                {sortBy.order ? (
+                  <Ascend className="stroke-current animate-grow-y" color="blank" size="small" />
+                ) : (
+                  <Descend className="stroke-current animate-grow-y" color="blank" size="small" />
+                )}
+              </div>
+            )}
+            Added by
+          </div>
+          <div
+            className="w-1/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg truncate"
+            onClick={() =>
+              setSortBy((prevState) =>
+                prevState.column === "addedOn"
+                  ? { ...prevState, order: !prevState.order }
+                  : { column: "addedOn", order: true }
+              )
+            }
+          >
+            {sortBy.column === "addedOn" && (
+              <div className="flex items-center mr-4">
+                {sortBy.order ? (
+                  <Ascend className="stroke-current animate-grow-y" color="blank" size="small" />
+                ) : (
+                  <Descend className="stroke-current animate-grow-y" color="blank" size="small" />
+                )}
+              </div>
+            )}
+            Added on
           </div>
         </div>
       )}
@@ -206,8 +292,12 @@ const AssembliesList = ({ bookmarks = 0 }: { bookmarks?: 0 | 1 }) => {
             }
           })
         ) : (
-          <div className="w-full flex justify-center items-center border py-8 shadow">
-            No assemblies!
+          <div className="w-full flex justify-center items-center border py-8 shadow col-span-3">
+            {loadingAssemblies || onLoadingAssembliesTimeout ? (
+              <LoadingSpinner label="Loading..." />
+            ) : (
+              "No assemblies!"
+            )}
           </div>
         )}
       </div>

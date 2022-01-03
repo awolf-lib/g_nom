@@ -1,6 +1,6 @@
 export interface AssemblyInterface {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   charCountString: string;
   commonName?: string;
   cumulativeSequenceLength: number;

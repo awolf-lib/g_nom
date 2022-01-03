@@ -130,17 +130,17 @@ def updateTaxonTree():
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            "SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imagePath FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
+            f"SELECT assemblies.taxonID, taxa.ncbiTaxonID, taxa.parentNcbiTaxonID, taxa.scientificName, taxa.taxonRank, taxa.imagePath FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id"
         )
         taxa = [x for x in cursor.fetchall()]
         taxa = set(taxa)
         taxa = list(taxa)
 
         if len(taxa) == 0:
-            with open(f"{BASE_PATH_TO_STORAGE}taxa/tree.json", "w") as treeFile:
+            with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "w") as treeFile:
                 treeFile.write("")
                 treeFile.close()
-            return {}, createNotification("Info", "No assemblies in database!", "info")
+            return 1, createNotification("Info", "No assemblies in database!", "info")
 
         taxonSqlString = "(" + ",".join([str(x[2]) for x in taxa]) + ")"
 
@@ -164,16 +164,17 @@ def updateTaxonTree():
                 children.append(taxon[1])
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"Error while fetching taxa in database! {str(err)}")
 
     try:
         connection, cursor, error = connect()
         safetyCounter = 0
-        while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
+        while (
+            len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa
+        ) and safetyCounter < 100:
             level += 1
             cursor.execute(
-                "SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN %s",
-                (taxonSqlString,),
+                f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
             )
             taxa = cursor.fetchall()
             taxonSqlString = "(" + ",".join([str(x[1]) for x in taxa]) + ")"
@@ -195,12 +196,15 @@ def updateTaxonTree():
                 if taxon[1] not in lineageDict:
                     lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
                 else:
-                    if taxon[0] not in lineageDict[taxon[1]]["children"] and taxon[0] != 1:
+                    if (
+                        taxon[0] not in lineageDict[taxon[1]]["children"]
+                        and taxon[0] != 1
+                    ):
                         children = lineageDict[taxon[1]]["children"]
                         children.append(taxon[0])
 
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"Error while fetching parent nodes! {str(err)}")
 
     for id in taxonInfo:
         if id in lineageDict:
@@ -218,10 +222,10 @@ def updateTaxonTree():
         currentLevel += 1
 
     with open(f"{BASE_PATH_TO_STORAGE}/taxa/tree.json", "w") as treeFile:
-        treeFile.write(dumps(lineageDict[1], separators=(",", ":")))
+        treeFile.write(dumps(lineageDict[1]))
         treeFile.close()
 
-    return lineageDict[1], []
+    return lineageDict[1], {}
 
 
 # FETCH TAXON TREE

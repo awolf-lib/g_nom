@@ -3,12 +3,13 @@ module.exports = {
   purge: false,
   theme: {
     extend: {
+      inset: { 16: "4rem" },
       transitionPropery: { width: "width", height: "height" },
       transitionDuration: {
         2000: "2000ms",
         3000: "3000ms",
       },
-        maxHeight: {
+      maxHeight: {
         50: "50vh",
         25: "25vh",
         75: "75vh",

@@ -271,7 +271,7 @@ const AssembliesFilterForm = ({
           <div>
             Tracks
             <hr className="shadow border-gray-300 -mx-2" />
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"
@@ -279,7 +279,7 @@ const AssembliesFilterForm = ({
               />
               <span className="px-4">has Annotation</span>
             </label>
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"
@@ -292,7 +292,7 @@ const AssembliesFilterForm = ({
           <div>
             Analyses
             <hr className="shadow border-gray-300 -mx-2" />
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"
@@ -300,7 +300,7 @@ const AssembliesFilterForm = ({
               />
               <span className="px-4">has Busco</span>
             </label>
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"
@@ -308,7 +308,7 @@ const AssembliesFilterForm = ({
               />
               <span className="px-4">has fCat</span>
             </label>
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"
@@ -316,7 +316,7 @@ const AssembliesFilterForm = ({
               />
               <span className="px-4">has Milts</span>
             </label>
-            <label className="flex items-center text-xs py-1">
+            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
                 type="checkbox"

@@ -582,11 +582,11 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
 
         if not userID:
             cursor.execute(
-                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name"
+                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) AS tags FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name"
             )
         else:
             cursor.execute(
-                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id INNER JOIN bookmarks ON bookmarks.userID=%s AND assemblies.id=bookmarks.assemblyID LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name",
+                "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) AS tags FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id INNER JOIN bookmarks ON bookmarks.userID=%s AND assemblies.id=bookmarks.assemblyID LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name",
                 (userID,),
             )
 
@@ -752,28 +752,25 @@ def fetchAssembliesByTaxonID(taxonID):
 
 
 # FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
-def fetchAssembliesByTaxonIDs(taxonIDsString):
+def fetchAssembliesByTaxonIDs(taxonIDs):
     """
     Fetches assemblies by multiple taxon ID
     """
     try:
         connection, cursor, error = connect()
-        taxonIDs = taxonIDsString.split(",")
-        taxonSqlString = "(" + ",".join([x for x in taxonIDs]) + ")"
         cursor.execute(
-            "SELECT assemblies.id, assemblies.name, taxa.scientificName, taxa.imagePath, assemblies.taxonID, taxa.ncbiTaxonID FROM assemblies, taxa WHERE assemblies.taxonID = taxa.id AND taxa.id IN %s",
-            (taxonSqlString,),
+            f"SELECT taxa.*, assemblies.*, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID = taxa.id AND assemblies.addedBy=users.id AND taxa.id IN ({taxonIDs})",
         )
         row_headers = [x[0] for x in cursor.description]
         assemblies = cursor.fetchall()
 
     except Exception as err:
-        return {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
 
     if len(assemblies):
         return [dict(zip(row_headers, x)) for x in assemblies], []
     else:
-        return {}, createNotification("Info", "No assemblies found!", "info")
+        return [], createNotification("Info", "No assemblies found!", "info")
 
 
 # FETCHES ONE ASSEMBLY BY ITS ID

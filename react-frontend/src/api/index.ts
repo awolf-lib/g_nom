@@ -919,7 +919,7 @@ export async function fetchAnnotationsByAssemblyID(
 
 export interface IAnnotation {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   assemblyID: number;
   id: number;
   name: string;
@@ -1028,7 +1028,7 @@ export async function fetchMappingsByAssemblyID(
 
 export interface IMapping {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   assemblyID: number;
   id: number;
   name: string;
@@ -1118,7 +1118,7 @@ export async function deleteAnalysesByAnalysesID(
 
 export interface IBuscoAnalysis {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   analysisID: number;
   assemblyID: number;
   buscoMode: string;
@@ -1143,7 +1143,7 @@ export interface IBuscoAnalysis {
 
 export interface IFcatAnalysis {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   analysisID: number;
   assemblyID: number;
   genomeID: string;
@@ -1198,7 +1198,7 @@ export interface IFcatAnalysis {
 
 export interface IMiltsAnalysis {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   analysisID: number;
   assemblyID: number;
   id: number;
@@ -1211,7 +1211,7 @@ export interface IMiltsAnalysis {
 
 export interface IRepeatmaskerAnalysis {
   addedBy: number;
-  addedOn: string;
+  addedOn: Date;
   analysisID: number;
   assemblyID: number;
   dna_elements: number;

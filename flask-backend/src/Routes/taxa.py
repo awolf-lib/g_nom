@@ -18,6 +18,7 @@ from modules.taxa import (
     import_image,
     removeImageByTaxonID,
     updateTaxonGeneralInformationByID,
+    updateTaxonTree,
 )
 from modules.notifications import createNotification
 
@@ -340,6 +341,21 @@ def taxa_bp_deleteTaxonGeneralInformationByID():
     if request.method == "GET":
         id = request.args.get("id")
         data, notification = deleteTaxonGeneralInformationByID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# DELETES GENERAL INFORMATION
+@taxa_bp.route("/updateTaxonTree", methods=["GET"])
+def taxa_bp_updateTaxonTree():
+    if request.method == "GET":
+        id = request.args.get("id")
+        data, notification = updateTaxonTree()
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

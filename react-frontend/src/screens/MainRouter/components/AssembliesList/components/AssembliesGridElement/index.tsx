@@ -3,16 +3,15 @@ import classNames from "classnames";
 
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
-import { Checkmark, Close } from "grommet-icons";
 import { useEffect, useState } from "react";
 
 const AssembliesGridElement = ({
   assembly,
-  fcatMode,
-  renderDelay,
+  fcatMode = 1,
+  renderDelay = 1,
 }: {
   assembly: AssemblyInterface;
-  fcatMode: number;
+  fcatMode?: number;
   renderDelay?: number;
 }) => {
   const {
@@ -99,8 +98,10 @@ const AssembliesGridElement = ({
                 )}
 
                 {scientificName && (
-                  <div className="text-white text-xs truncate w-96">{scientificName}</div>
+                  <div className="text-white text-xs truncate w-full">{scientificName}</div>
                 )}
+
+                {/* PLOT CAROUSSEL */}
               </div>
             </div>
           </div>

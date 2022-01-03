@@ -41,7 +41,7 @@ const Navbar = () => {
 
   return (
     <nav className="sticky w-full top-0 bg-gradient-to-b from-indigo-300 to-indigo-200 z-50 shadow">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             {/* LOGO */}
@@ -55,8 +55,11 @@ const Navbar = () => {
                 <Link to="/g-nom/dashboard">
                   <Button label="Dashboard" color="nav" />
                 </Link>
-                <Link to="/g-nom/assemblies">
+                <Link to="/g-nom/assemblies/list">
                   <Button label="Assemblies" color="nav" />
+                </Link>
+                <Link to="/g-nom/assemblies/tree">
+                  <Button label="Tree" color="nav" />
                 </Link>
                 <a
                   to={"/g-nom/download"}
@@ -71,19 +74,12 @@ const Navbar = () => {
                     <Button label="Data" color="nav" />
                   </Link>
                 )}
-                {userRole === "admin" && (
-                  <Link to="/g-nom/tools">
-                    <Button label="Tools" color="nav" />
-                  </Link>
-                )}
               </div>
             </div>
           </div>
 
-          {/* BELL & PROFILEPICTURE */}
           <div className="" ref={dropdownRef}>
             <div className="ml-4 flex items-center md:ml-6">
-              {/* PROFILEPICTURE */}
               <div className="ml-3 relative">
                 <div>
                   <Button

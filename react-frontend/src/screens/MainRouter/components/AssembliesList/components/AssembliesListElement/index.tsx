@@ -30,6 +30,7 @@ const AssembliesListElement = ({
     milts,
     repeatmaskers,
     username,
+    addedOn,
   } = assembly;
 
   const buscoCheckmarkClass = () =>
@@ -59,6 +60,12 @@ const AssembliesListElement = ({
       "text-green-600": value && value > 75,
     });
   };
+
+  const formatDate = (date: Date) => {
+    date = new Date(date);
+    return date.toLocaleDateString();
+  };
+
   return (
     <Link
       to={"/g-nom/assemblies/assembly:" + id}
@@ -75,7 +82,7 @@ const AssembliesListElement = ({
           </div>
         </div>
         <div className="w-2/12 truncate">{scientificName}</div>
-        <div className="w-4/12 truncate">{label || name}</div>
+        <div className="w-3/12 truncate">{label || name}</div>
         {annotations && annotations > 0 ? (
           <div className="w-1/12 text-green-600">
             <Checkmark className="stroke-current" color="blank" />
@@ -122,6 +129,7 @@ const AssembliesListElement = ({
           </div>
         )}
         <div className="w-1/12 truncate">{username}</div>
+        <div className="w-1/12 truncate">{formatDate(addedOn)}</div>
       </div>
     </Link>
   );

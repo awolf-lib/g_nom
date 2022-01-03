@@ -10,6 +10,7 @@ import Settings from "./components/Settings";
 import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
 import AssembliesList from "./components/AssembliesList";
+import AssembliesTreeViewer from "./components/AssembliesTreeViewer";
 
 const MainRouter = () => {
   const { token, userID, setToken, setUserID, setUserRole, setUserName } = useToken();
@@ -27,12 +28,16 @@ const MainRouter = () => {
       <Routes>
         <Route exact path="/" element={<Navigate to="/g-nom/dashboard" />} />
         <Route exact path="/g-nom" element={<Navigate to="/g-nom/dashboard" />} />
-        <Route exact path="/g-nom/dashboard" element={<AssembliesList bookmarks={1} />} />
+        <Route
+          exact
+          path="/g-nom/dashboard"
+          element={<AssembliesList initialView="grid" bookmarks={1} />}
+        />
         <Route exact path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
         <Route exact path="/g-nom/assemblies/list" element={<AssembliesList />} />
+        <Route exact path="/g-nom/assemblies/tree" element={<AssembliesTreeViewer />} />
         <Route exact path="/g-nom/assemblies/manage" element={<DataAssistant />} />
         <Route exact path="/g-nom/assemblies/assembly:id" element={<AssemblyInformation />} />
-        <Route exact path="/g-nom/tools" element={<div className="p-4">Tools</div>} />
         <Route exact path="/g-nom/settings" element={<Settings />} />
         <Route path="/logout" element={<Logout setToken={setToken} />} />
       </Routes>

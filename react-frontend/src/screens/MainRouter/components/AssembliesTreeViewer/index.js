@@ -1,15 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
-import "../../App.css";
-import { useNotification } from "../NotificationProvider";
-import { fetchAssembliesByTaxonID, fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../api";
-import SpeciesProfilePictureViewer from "../SpeciesProfilePictureViewer";
+import "../../../../App.css";
+import { useNotification } from "../../../../components/NotificationProvider";
+import { fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../../../api";
+import SpeciesProfilePictureViewer from "../../../../components/SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
 import Tree from "react-d3-tree";
-import AssemblyInfoCard from "../AssemblyInfoCard";
-import LoadingSpinner from "../LoadingSpinner";
-import Button from "../Button";
+import LoadingSpinner from "../../../../components/LoadingSpinner";
+import Button from "../../../../components/Button";
+import AssembliesGridElement from "../AssembliesList/components/AssembliesGridElement";
 
 const AssembliesTreeViewer = () => {
   const [tree, setTree] = useState({});
@@ -114,7 +114,6 @@ const AssembliesTreeViewer = () => {
         todo = todo.concat(current.children);
       }
     }
-
     return taxIds;
   };
 
@@ -148,8 +147,9 @@ const AssembliesTreeViewer = () => {
             {nodeDatum.imagePath || !nodeDatum.children ? (
               <div className="border border-black rounded-lg overflow-hidden">
                 <SpeciesProfilePictureViewer
-                  taxonID={nodeDatum.ncbiID}
+                  taxonID={nodeDatum.id}
                   imagePath={nodeDatum.imagePath}
+                  useTimestamp={false}
                 />
               </div>
             ) : (
@@ -202,16 +202,6 @@ const AssembliesTreeViewer = () => {
                   transitionDuration={800}
                 />
                 <div className="absolute bottom-0 right-0 mb-4 flex justify-end w-full">
-                  {/* <ZoomIn
-                    className="stroke-current opacity-25 hover:opacity-100 cursor-pointer"
-                    color="blank"
-                    onClick={() => setZoom((prevState) => prevState + 0.1)}
-                  />
-                  <ZoomOut
-                    className="stroke-current opacity-25 hover:opacity-100 cursor-pointer"
-                    color="blank"
-                    onClick={() => setZoom((prevState) => prevState - 0.1)}
-                  /> */}
                   <Vulnerability
                     className="stroke-current opacity-25 hover:opacity-100 cursor-pointer mr-4"
                     color="blank"
@@ -255,19 +245,15 @@ const AssembliesTreeViewer = () => {
               <span className="font-bold text-xl ml-2">{currentNode}</span>
             </div>
             <hr className="m-8 mt-2 shadow" />
-            <div className="animate-grow-y rounded-lg grid gap-8 lg:grid-cols-2 xl:grid-cols-3 mt-8">
+            <div className="animate-grow-y rounded-lg grid gap-8 lg:grid-cols-2 xl:grid-cols-3 mt-8 px-8">
               {taxa.map((assembly, index) => {
                 if (index < showElements) {
                   return (
                     <div key={assembly.id} className="animate-fade-in">
-                      <AssemblyInfoCard
-                        id={assembly.id}
-                        scientificName={assembly.scientificName}
-                        taxonID={assembly.ncbiTaxonID}
-                        assemblyName={assembly.label || assembly.name}
-                        types={assembly.types}
-                        imagePath={assembly.imagePath}
-                        key={assembly.id}
+                      <AssembliesGridElement
+                        assembly={assembly}
+                        fcatMode={1}
+                        renderDelay={index + 1}
                       />
                     </div>
                   );
