@@ -21,7 +21,7 @@ export function Button(props: IButtonProps): JSX.Element {
       "text-gray-800 hover:text-blue-700 cursor-pointer": props.color === "link",
     },
     {
-      "text-sm transform scale-75 md:scale-100": props.size === "sm",
+      "text-sm transform scale-100": props.size === "sm",
       "text-base": props.size === "md" || !props.size,
       "text-lg": props.size === "lg",
       "text-xl": props.size === "xl",

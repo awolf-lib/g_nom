@@ -683,6 +683,16 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                 assemblies = [x for x in assemblies if x["milts"]]
             if "hasRepeatmasker" in filter:
                 assemblies = [x for x in assemblies if x["repeatmaskers"]]
+            if "minBuscoComplete" in filter:
+                assemblies = [
+                    x for x in assemblies if f"maxBuscoScore" in x and x["maxBuscoScore"] >= filter["minBuscoComplete"]
+                ]
+            if "minFcatSimilar" in filter:
+                mode = filter["minFcatSimilar"]["mode"]
+                value = filter["minFcatSimilar"]["value"]
+                assemblies = [
+                    x for x in assemblies if f"maxFcatScoreM{mode}" in x and x[f"maxFcatScoreM{mode}"] >= value
+                ]
 
         number_of_elements = len(assemblies)
         if number_of_elements % range:

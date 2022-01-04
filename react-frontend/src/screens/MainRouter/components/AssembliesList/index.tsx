@@ -134,32 +134,19 @@ const AssembliesList = ({
     <div className="mb-16 animate-grow-y">
       <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-indigo-200" />
       <div className={headerClass}>
-        <div className="w-64 flex items-center">
+        <div className="w-80 flex items-center">
           <div>{title}</div>
           {loadingAssemblies ||
             (onLoadingAssembliesTimeout && (
-              <div className="flex h-full px-4 text-xs">
+              <div className="flex h-full px-4">
                 <LoadingSpinner label="Loading..." />
               </div>
             ))}
         </div>
-        <label className="flex items-center">
-          <span className="text-xs px-2">View type:</span>
-          <select
-            className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 py-1 text-sm"
-            onChange={(e) => setView(e.target.value as "list" | "grid")}
-            value={view}
-          >
-            <option className="text-sm py-1" value="list">
-              List
-            </option>
-            <option className="text-sm py-1" value="grid">
-              Grid
-            </option>
-          </select>
-        </label>
-        <div className="w-2/3 text-base decoration-default">
+        <div className="w-full text-base decoration-default">
           <AssembliesFilterForm
+            viewType={view}
+            setViewType={setView}
             search={search}
             setSearch={setSearch}
             filter={filter}

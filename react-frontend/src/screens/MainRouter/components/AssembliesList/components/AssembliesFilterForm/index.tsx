@@ -10,14 +10,19 @@ import {
 import Button from "../../../../../../components/Button";
 import Input from "../../../../../../components/Input";
 import { useNotification } from "../../../../../../components/NotificationProvider";
+import Slider from "../../../../../../components/Slider";
 
 const AssembliesFilterForm = ({
+  viewType,
+  setViewType,
   search,
   setSearch,
   filter,
   setFilter,
   isFilterOpen,
 }: {
+  viewType: "grid" | "list";
+  setViewType: Dispatch<SetStateAction<"grid" | "list">>;
   setSearch: (search: string) => void;
   search: string;
   setFilter: Dispatch<SetStateAction<Filter>>;
@@ -30,6 +35,9 @@ const AssembliesFilterForm = ({
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
   const [users, setUsers] = useState<IUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
+  const [minBuscoComplete, setMinBuscoComplete] = useState<number>(0);
+  const [minFcatSimilar, setMinFcatSimilar] = useState<number>(0);
+  const [fcatMode, setFcatMode] = useState<1 | 2 | 3 | 4>(1);
   useEffect(() => {
     if (search === "") {
       setSearch("");
@@ -43,6 +51,14 @@ const AssembliesFilterForm = ({
   useEffect(() => {
     loadUsers();
   }, [toggleFilterSelection]);
+
+  useEffect(() => {
+    handleSetMinBusco();
+  }, [minBuscoComplete]);
+
+  useEffect(() => {
+    handleSetMinFcat();
+  }, [minFcatSimilar, fcatMode]);
 
   // notifications
   const dispatch = useNotification();
@@ -150,6 +166,32 @@ const AssembliesFilterForm = ({
     }
   };
 
+  const handleSetMinBusco = () => {
+    if (minBuscoComplete === 0) {
+      setFilter((prevState) => {
+        delete prevState.minBuscoComplete;
+        return { ...prevState };
+      });
+    } else {
+      setFilter((prevState) => {
+        return { ...prevState, minBuscoComplete: minBuscoComplete };
+      });
+    }
+  };
+
+  const handleSetMinFcat = () => {
+    if (minFcatSimilar === 0) {
+      setFilter((prevState) => {
+        delete prevState.minFcatSimilar;
+        return { ...prevState };
+      });
+    } else {
+      setFilter((prevState) => {
+        return { ...prevState, minFcatSimilar: { mode: fcatMode, value: minFcatSimilar } };
+      });
+    }
+  };
+
   const handleChangeTaxaSearch = (search: string) => {
     if (search) {
       setFilteredTaxa((prevState) =>
@@ -184,7 +226,22 @@ const AssembliesFilterForm = ({
   return (
     <div>
       <div className="w-full h-10 flex justify-around items-center">
-        <div className="w-2/3 flex items-center">
+        <label className="flex items-center w-56">
+          <span className="text-sm px-2">View type:</span>
+          <select
+            className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 py-1 text-sm"
+            onChange={(e) => setViewType(e.target.value as "list" | "grid")}
+            value={viewType}
+          >
+            <option className="text-sm py-1" value="list">
+              List
+            </option>
+            <option className="text-sm py-1" value="grid">
+              Grid
+            </option>
+          </select>
+        </label>
+        <div className="w-96 flex items-center">
           <div className="w-full px-2">
             <Input placeholder="Search..." onChange={(e) => setSearch(e.target.value)} />
           </div>
@@ -225,7 +282,7 @@ const AssembliesFilterForm = ({
             </div>
             <select
               multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1"
+              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
               onChange={(e) => handleSelectTaxa(e.target.options)}
             >
               <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
@@ -257,7 +314,7 @@ const AssembliesFilterForm = ({
             </div>
             <select
               multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1"
+              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
               onChange={(e) => handleSelectUsers(e.target.options)}
             >
               <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
@@ -279,7 +336,7 @@ const AssembliesFilterForm = ({
 
           <div>
             Tracks
-            <hr className="shadow border-gray-300 -mx-2" />
+            <hr className="shadow border-gray-300 -mx-2 mb-2" />
             <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
               <input
                 className="ring-1 ring-white"
@@ -299,40 +356,98 @@ const AssembliesFilterForm = ({
           </div>
 
           <div>
-            Analyses
-            <hr className="shadow border-gray-300 -mx-2" />
-            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
-              <input
-                className="ring-1 ring-white"
-                type="checkbox"
-                onChange={(e) => handleChangeCheckbox("hasBusco", e.target.checked)}
-              />
-              <span className="px-4">has Busco</span>
-            </label>
-            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
-              <input
-                className="ring-1 ring-white"
-                type="checkbox"
-                onChange={(e) => handleChangeCheckbox("hasFcat", e.target.checked)}
-              />
-              <span className="px-4">has fCat</span>
-            </label>
-            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
-              <input
-                className="ring-1 ring-white"
-                type="checkbox"
-                onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
-              />
-              <span className="px-4">has Milts</span>
-            </label>
-            <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
-              <input
-                className="ring-1 ring-white"
-                type="checkbox"
-                onChange={(e) => handleChangeCheckbox("hasRepeatmasker", e.target.checked)}
-              />
-              <span className="px-4">has Repeatmasker</span>
-            </label>
+            <div>
+              Analyses
+              <hr className="shadow border-gray-300 -mx-2 mb-2" />
+              <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <input
+                  className="ring-1 ring-white"
+                  type="checkbox"
+                  onChange={(e) => handleChangeCheckbox("hasBusco", e.target.checked)}
+                />
+                <span className="px-4">has Busco</span>
+              </label>
+              <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <input
+                  className="ring-1 ring-white"
+                  type="checkbox"
+                  onChange={(e) => handleChangeCheckbox("hasFcat", e.target.checked)}
+                />
+                <span className="px-4">has fCat</span>
+              </label>
+              <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <input
+                  className="ring-1 ring-white"
+                  type="checkbox"
+                  onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
+                />
+                <span className="px-4">has Milts</span>
+              </label>
+              <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <input
+                  className="ring-1 ring-white"
+                  type="checkbox"
+                  onChange={(e) => handleChangeCheckbox("hasRepeatmasker", e.target.checked)}
+                />
+                <span className="px-4">has Repeatmasker</span>
+              </label>
+              <hr className="shadow border-gray-300 -mx-2 my-4 border-dashed" />
+              <label className="flex justify-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <span className="mr-4 py-1 w-44">Min. complete Busco (%):</span>
+                <div className="w-48">
+                  <Slider getValue={setMinBuscoComplete} showValues={true} />
+                </div>
+              </label>
+              <label className="flex justify-center items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
+                <span className="mr-4 w-44">Min. similar fCat (% / mode):</span>
+                <div>
+                  <div className="flex justify-between items-center font-thin py-1">
+                    <label className="flex justify-between items-center mx-1">
+                      M1
+                      <input
+                        type="radio"
+                        className="ml-1"
+                        checked={fcatMode === 1}
+                        onChange={() => setFcatMode(1)}
+                      />
+                    </label>
+                    <div className="h-4 w-px bg-white mx-1" />
+                    <label className="flex justify-between items-center mx-1">
+                      M2
+                      <input
+                        type="radio"
+                        className="ml-1"
+                        checked={fcatMode === 2}
+                        onChange={() => setFcatMode(2)}
+                      />
+                    </label>
+                    <div className="h-4 w-px bg-white mx-1" />
+                    <label className="flex justify-between items-center mx-1">
+                      M3
+                      <input
+                        type="radio"
+                        className="ml-1"
+                        checked={fcatMode === 3}
+                        onChange={() => setFcatMode(3)}
+                      />
+                    </label>
+                    <div className="h-4 w-px bg-white mx-1" />
+                    <label className="flex justify-between items-center mx-1">
+                      M4
+                      <input
+                        type="radio"
+                        className="ml-1"
+                        checked={fcatMode === 4}
+                        onChange={() => setFcatMode(4)}
+                      />
+                    </label>
+                  </div>
+                  <div className="w-48">
+                    <Slider getValue={setMinFcatSimilar} showValues={true} />
+                  </div>
+                </div>
+              </label>
+            </div>
           </div>
         </div>
       )}

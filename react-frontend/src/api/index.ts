@@ -402,8 +402,8 @@ export interface Filter {
   hasFcat?: boolean;
   hasMilts?: boolean;
   hasRepeatmasker?: boolean;
-  buscoComplete?: number;
-  fcatSimilar?: number;
+  minBuscoComplete?: number;
+  minFcatSimilar?: { mode: number; value: number };
   sequenceHeader?: string[];
   featureAttribute?: any[]; // TODO: add feature attribute search
 }
