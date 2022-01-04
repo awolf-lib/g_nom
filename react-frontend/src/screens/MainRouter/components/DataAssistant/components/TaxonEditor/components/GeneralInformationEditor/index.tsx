@@ -517,7 +517,7 @@ const GeneralInformationEditor = ({
                     value={newGeneralInformationLabel}
                   />
                   <div className="absolute bottom-0 right-0 m-2 text-xs">
-                    {newGeneralInformationLabel && newGeneralInformationLabel.length + "/500"}
+                    {newGeneralInformationLabel && newGeneralInformationLabel.length + "/50"}
                   </div>
                 </div>
                 <div className="flex justify-around py-2">
@@ -540,7 +540,7 @@ const GeneralInformationEditor = ({
                 <div className="relative">
                   <Input
                     type="textarea"
-                    placeholder="Max. 2000 characters..."
+                    placeholder="Max. 500 characters..."
                     onChange={(e: React.FormEvent<HTMLInputElement>) =>
                       handleChangeNewGeneralInformationDescription(e.currentTarget.value)
                     }

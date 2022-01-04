@@ -72,7 +72,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             return 0, error
 
         # zip
-        run(args=["bgzip", new_file_path])
+        run(args=["bgzip", "--force", new_file_path])
         new_file_path += ".gz"
 
         imported_status, error = __importDB(assembly_id, annotation_name, new_file_path, userID, gff_content)
@@ -188,9 +188,10 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
     try:
         connection, cursor, error = connect()
 
+        featureCount = dumps(file_content["featureCountDistinct"])
         cursor.execute(
-            "INSERT INTO genomicAnnotations (assemblyID, name, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, NOW())",
-            (assembly_id, annotation_name, path, userID),
+            "INSERT INTO genomicAnnotations (assemblyID, name, path, featureCount, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, NOW())",
+            (assembly_id, annotation_name, path, featureCount, userID),
         )
         annotationID = cursor.lastrowid
         connection.commit()
@@ -202,7 +203,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         sql = "INSERT INTO genomicAnnotationFeatures (annotationID, seqID, source, type, start, end, score, strand, phase, attributes) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
         values = []
 
-        for feature in file_content:
+        for feature in file_content["features"]:
             seqID = feature["seqID"]
             type = feature["feature"] if feature["feature"] != "." else "N/A"
             start = feature["start"]
@@ -228,7 +229,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
-        return 0, createNotification(message=str(err))
+        return 0, createNotification(message=f"AnnotationImportDbError: {str(err)}")
 
     return 1, []
 
@@ -360,66 +361,79 @@ def parseGff(path):
             "info": dumps(info, separators=(",", ":")),
         }
 
-    file_name = basename(path)
-
-    print(f"Parsing file: {file_name}")
-
-    # check file extension
-    if not GFF3_EXTENSION_PATTERN.match(file_name):
-        print("Warning: File extension did not match '.gff' or '.gff3'! Searching for fingerprint...")
-
-    # open file
     try:
-        with open(path) as gff3:
-            data = gff3.readlines()
-            gff3.close()
+        file_name = basename(path)
+
+        print(f"Parsing file: {file_name}")
+
+        # check file extension
+        if not GFF3_EXTENSION_PATTERN.match(file_name):
+            print("Warning: File extension did not match '.gff' or '.gff3'! Searching for fingerprint...")
+
+        # open file
+        try:
+            with open(path) as gff3:
+                data = gff3.readlines()
+                gff3.close()
+        except Exception as err:
+            return 0, createNotification(message=str(err))
+
+        # for % processed
+        number_of_rows = len(data)
+
+        number_of_regions = 0
+        number_of_features = 0
+        features = []
+        featureCountDistinct = {}
+        for index, row in enumerate(data):
+            if not index % 100:
+                print(f"Parsed: {round((index / number_of_rows) * 100)}%", end="\r")
+            row = row.strip()
+            # only '#' or empty row
+            if GFF3_SKIPABLE.match(row):
+                continue
+
+            # fingerprint: '##gff-version 3'
+            match = GFF3_FINGERPRINT_PATTERN.match(row)
+            if match:
+                print("Fingerprint found...")
+                continue
+
+            # # '##sequence-region' scaffold/contig start end
+            # match = GFF3_SEQUENCE_REGION_PATTERN.match(row)
+            # if match:
+            #     number_of_regions += 1
+            #     sequence_region = parseSequenceRegion(match)
+            #     # print(sequence_region)
+            #     continue
+
+            # scaffold/contig method feature start end ? strand offset id/parent/infos
+            match = GFF3_FEATURE_PATTERN.match(row)
+            if match:
+                number_of_features += 1
+                feature = parseFeature(match)
+                if feature["feature"] in featureCountDistinct:
+                    featureCountDistinct.update({feature["feature"]: featureCountDistinct[feature["feature"]] + 1})
+                else:
+                    featureCountDistinct.update({feature["feature"]: 0})
+                features.append(feature)
+                continue
+
+            # no matching pattern
+            else:
+                # print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
+                continue
+
+        featureCountDistinct.update({"total": number_of_features})
+
+        print(f"Parsed: 100%", end="\r")
+
+        return {"features": features, "featureCountDistinct": featureCountDistinct}, []
+
     except Exception as err:
-        return 0, createNotification(message=str(err))
-
-    # for % processed
-    number_of_rows = len(data)
-
-    number_of_regions = 0
-    number_of_features = 0
-    features = []
-    for index, row in enumerate(data):
-        if not index % 100:
-            print(f"Parsed: {round((index / number_of_rows) * 100)}%", end="\r")
-        row = row.strip()
-        # only '#' or empty row
-        if GFF3_SKIPABLE.match(row):
-            continue
-
-        # fingerprint: '##gff-version 3'
-        match = GFF3_FINGERPRINT_PATTERN.match(row)
-        if match:
-            print("Fingerprint found...")
-            continue
-
-        # # '##sequence-region' scaffold/contig start end
-        # match = GFF3_SEQUENCE_REGION_PATTERN.match(row)
-        # if match:
-        #     number_of_regions += 1
-        #     sequence_region = parseSequenceRegion(match)
-        #     # print(sequence_region)
-        #     continue
-
-        # scaffold/contig method feature start end ? strand offset id/parent/infos
-        match = GFF3_FEATURE_PATTERN.match(row)
-        if match:
-            number_of_features += 1
-            feature = parseFeature(match)
-            features.append(feature)
-            continue
-
-        # no matching pattern
-        else:
-            # print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
-            continue
-
-    print(f"Parsed: 100%", end="\r")
-
-    return features, []
+        return {"features": [], "featureCountDistinct": {}}, createNotification(
+            message=f"AnnotationParsingError: {str(err)}"
+        )
 
 
 # update annotation label

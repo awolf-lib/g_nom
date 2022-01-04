@@ -16,11 +16,13 @@ const AssembliesFilterForm = ({
   setSearch,
   filter,
   setFilter,
+  isFilterOpen,
 }: {
   setSearch: (search: string) => void;
   search: string;
   setFilter: Dispatch<SetStateAction<Filter>>;
   filter: Filter;
+  isFilterOpen?: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(false);
 
@@ -172,6 +174,13 @@ const AssembliesFilterForm = ({
     }
   };
 
+  const handleToggleFilterSelection = () => {
+    if (isFilterOpen) {
+      isFilterOpen(!toggleFilterSelection);
+    }
+    setToggleFilterSelection((prevState) => !prevState);
+  };
+
   return (
     <div>
       <div className="w-full h-10 flex justify-around items-center">
@@ -194,7 +203,7 @@ const AssembliesFilterForm = ({
             label={toggleFilterSelection ? "Hide advanced filters..." : "Show advanced filters..."}
             color="secondary"
             size="sm"
-            onClick={() => setToggleFilterSelection((prevState) => !prevState)}
+            onClick={() => handleToggleFilterSelection()}
           />
         </div>
         <div className="flex justify-center items-center">

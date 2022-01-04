@@ -40,6 +40,7 @@ export interface AssemblyInterface {
   milts?: number;
   repeatmaskers?: number;
   averageRepetitiveness?: number;
+  bookmarked?: boolean;
 }
 
 export interface AssemblyTagInterface {

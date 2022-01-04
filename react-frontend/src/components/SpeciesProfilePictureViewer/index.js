@@ -50,7 +50,7 @@ const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }
 
   return (
     <img
-      className="w-full h-full object-fill"
+      className="w-full h-full object-contain object-top"
       alt="Species profile"
       src={imagePath && image ? getImageURL() : picPlacerholder}
     />

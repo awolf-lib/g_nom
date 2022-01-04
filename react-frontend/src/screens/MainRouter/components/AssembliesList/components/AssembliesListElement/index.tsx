@@ -68,7 +68,7 @@ const AssembliesListElement = ({
 
   return (
     <Link
-      to={"/g-nom/assemblies/assembly:" + id}
+      to={"/g-nom/assemblies/assembly?assemblyID=" + id}
       className="text-center hover:bg-blue-100 hover:text-blue-600 py-1 px-4 flex shadow border transition duration-300 animate-grow-y"
     >
       <div className="flex items-center text-center w-full">

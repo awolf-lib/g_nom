@@ -1,14 +1,22 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
-import { fetchFileByPath } from "../../../../../../api";
+import { fetchFileByPath, IMiltsAnalysis } from "../../../../../../api";
+import { URL } from "url";
 
-const TaxonomicAssignmentViewer = ({ milts, setTaxonomicAssignmentLoading }) => {
-  const [index, setIndex] = useState(0);
-  const [plot, setPlot] = useState();
+const TaxonomicAssignmentViewer = ({
+  milts,
+  setTaxonomicAssignmentLoading,
+}: {
+  milts: IMiltsAnalysis[];
+  setTaxonomicAssignmentLoading: Dispatch<SetStateAction<boolean>>;
+}) => {
+  const [index, setIndex] = useState<number>(0);
+  const [plot, setPlot] = useState<any>();
 
   useEffect(() => {
     getPlot();
+    setTaxonomicAssignmentLoading(true);
   }, [index]);
 
   const getPlot = async () => {
@@ -22,13 +30,13 @@ const TaxonomicAssignmentViewer = ({ milts, setTaxonomicAssignmentLoading }) => 
   };
 
   return (
-    <div className="mx-8 animate-grow-y shadow-lg rounded-lg overflow-hidden border bg-white relative">
+    <div className="animate-grow-y overflow-hidden relative">
       <div className="animate-fade-in">
         {milts && milts[index] && (
           <iframe
             onLoad={() => setTaxonomicAssignmentLoading(false)}
             title="MiltsPlot"
-            className="w-full h-screen"
+            className="w-full h-75"
             src={plot}
           />
         )}
@@ -82,7 +90,3 @@ const TaxonomicAssignmentViewer = ({ milts, setTaxonomicAssignmentLoading }) => 
 };
 
 export default TaxonomicAssignmentViewer;
-
-TaxonomicAssignmentViewer.defaultProps = {};
-
-TaxonomicAssignmentViewer.propTypes = {};

@@ -1,5 +1,11 @@
 import "../../App.css";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useSearchParams,
+} from "react-router-dom";
 
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
@@ -37,7 +43,7 @@ const MainRouter = () => {
         <Route exact path="/g-nom/assemblies/list" element={<AssembliesList />} />
         <Route exact path="/g-nom/assemblies/tree" element={<AssembliesTreeViewer />} />
         <Route exact path="/g-nom/assemblies/manage" element={<DataAssistant />} />
-        <Route exact path="/g-nom/assemblies/assembly:id" element={<AssemblyInformation />} />
+        <Route exact path="/g-nom/assemblies/assembly" element={<AssemblyInformation />} />
         <Route exact path="/g-nom/settings" element={<Settings />} />
         <Route path="/logout" element={<Logout setToken={setToken} />} />
       </Routes>

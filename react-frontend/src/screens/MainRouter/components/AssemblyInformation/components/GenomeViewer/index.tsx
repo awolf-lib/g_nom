@@ -2,15 +2,27 @@ import { createViewState, JBrowseLinearGenomeView } from "@jbrowse/react-linear-
 import "@fontsource/roboto";
 import { useEffect, useState } from "react";
 import { Expand } from "grommet-icons";
+import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
+import { IAnnotation, IMapping } from "../../../../../../api";
 
-const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" }) => {
-  const [assembly, setAssembly] = useState({});
-  const [tracks, setTracks] = useState([]);
-  const [defaultSession, setDefaultSession] = useState({});
-  const [configuration, setConfiguration] = useState({});
-  const [aggregateTextSearchAdapters, setAggregateTextSearchAdapters] = useState([]);
+const GenomeViewer = ({
+  assemblyDetails,
+  annotations,
+  mappings,
+  location = "",
+}: {
+  assemblyDetails: AssemblyInterface;
+  annotations: IAnnotation[];
+  mappings: IMapping[];
+  location?: string;
+}) => {
+  const [assembly, setAssembly] = useState<any>({});
+  const [tracks, setTracks] = useState<any[]>([]);
+  const [defaultSession, setDefaultSession] = useState<any>({});
+  const [configuration, setConfiguration] = useState<any>({});
+  const [aggregateTextSearchAdapters, setAggregateTextSearchAdapters] = useState<any[]>([]);
 
-  const [locationState, setLocationState] = useState("");
+  const [locationState, setLocationState] = useState<string>("");
 
   useEffect(() => {
     setLocationState(location);
@@ -107,7 +119,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
       };
     });
 
-    setTracks(annotationsTracks.concat(mappingTracks));
+    setTracks([...annotationsTracks, ...mappingTracks]);
   }, [annotations, mappings]);
 
   useEffect(() => {
@@ -141,7 +153,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
     setAggregateTextSearchAdapters([
       {
         type: "TrixTextSearchAdapter",
-        textSearchAdapterId: "text_search_adapter_annotation_" + annotations.id,
+        textSearchAdapterId: "text_search_adapter_annotation_" + assemblyDetails.id,
         ixFilePath: {
           uri: `${process.env.REACT_APP_JBROWSE_ADRESS}/assemblies/${assemblyDetails.name}/trix/${assemblyDetails.name}.ix`,
           locationType: "UriLocation",
@@ -160,7 +172,7 @@ const GenomeViewer = ({ assemblyDetails, annotations, mappings, location = "" })
   }, [assemblyDetails]);
 
   return (
-    <div className="relative mx-8">
+    <div className="relative">
       {assemblyDetails?.id && defaultSession.name && configuration.theme && (
         <JBrowseLinearGenomeView
           viewState={createViewState({

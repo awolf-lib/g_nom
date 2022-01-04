@@ -1,3 +1,4 @@
+import { off } from "process";
 import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
 // =============================== users =============================== //
@@ -308,7 +309,7 @@ export async function addAssemblyGeneralInformation(
     });
 }
 
-// =====  UPDATE TAXON GENERAL INFORMATION ===== //
+// =====  UPDATE ASSEMBLY GENERAL INFORMATION ===== //
 export async function updateAssemblyGeneralInformationByID(
   id: number,
   key: string,
@@ -336,7 +337,7 @@ export async function updateAssemblyGeneralInformationByID(
     });
 }
 
-// ===== DELETE TAXON GENERAL INFORMATION ===== //
+// ===== DELETE ASSEMBLY GENERAL INFORMATION ===== //
 export async function deleteAssemblyGeneralInformationByID(
   id: number,
   userID: number,
@@ -570,6 +571,44 @@ export async function updateAssemblyLabel(
     .catch((error) => {
       console.error(error);
     });
+}
+
+// ===== UPDATE ASSEMBLY LABEL BY ASSEMBLY ID ===== //
+export async function fetchAssemblySequenceHeaders(
+  assemblyID: number,
+  number: number,
+  offset: number,
+  userID: number,
+  token: string
+): Promise<IResponse<IAssemblySequenceHeader[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchAssemblySequenceHeaders?assemblyID=" +
+      assemblyID +
+      "&number=" +
+      number +
+      "&offset=" +
+      offset +
+      "&userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface IAssemblySequenceHeader {
+  assemblyID: number;
+  gcPercentLocal: number;
+  gcPercentMaskedLocal: number;
+  header: string;
+  headerIdx: number;
+  id: number;
+  sequenceLength: number;
 }
 
 // =============================== taxa =============================== //
@@ -924,6 +963,7 @@ export interface IAnnotation {
   id: number;
   name: string;
   path: string;
+  featureCount: string;
   username: string;
   label?: string;
 }
@@ -1464,7 +1504,7 @@ export async function scanFiles(userID: number, token: string): Promise<IRespons
 }
 
 // ===== FETCH TAXON IMAGE BY TAXON ID ===== //
-export function fetchFileByPath(path: string, userID: number, token: string): Promise<unknown> {
+export function fetchFileByPath(path: string, userID: number, token: string): Promise<any> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchFileByPath?userID=" +

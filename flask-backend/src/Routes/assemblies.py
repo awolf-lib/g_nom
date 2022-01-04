@@ -11,6 +11,7 @@ from modules.assemblies import (
     fetchAssembliesByTaxonIDs,
     fetchAssemblyByAssemblyID,
     fetchAssemblyGeneralInformationByAssemblyID,
+    fetchAssemblySequenceHeaders,
     fetchAssemblyTagsByAssemblyID,
     import_assembly,
     fetchAssemblies,
@@ -142,8 +143,6 @@ def assemblies_bp_fetchAssemblies():
         range = req.get("range", None)
         filter = req.get("filter", None)
         onlyBookmarked = req.get("onlyBookmarked", None)
-
-        print(onlyBookmarked)
 
         if int(onlyBookmarked):
             data, pagination, notification = fetchAssemblies(search, filter, sortBy, offset, range, userID)
@@ -390,10 +389,47 @@ def assemblies_bp_updateTaxonGeneralInformationByID():
 
 # DELETES GENERAL INFORMATION
 @assemblies_bp.route("/deleteAssemblyGeneralInformationByID", methods=["GET"])
-def assemblies_bp_deleteTaxonGeneralInformationByID():
+def assemblies_bp_deleteAssemblyGeneralInformationByID():
     if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
         id = request.args.get("id")
         data, notification = deleteAssemblyGeneralInformationByID(id)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCHES ASSEMBLY SEQUENCE HEADERS
+@assemblies_bp.route("/fetchAssemblySequenceHeaders", methods=["GET"])
+def assemblies_bp_fetchAssemblySequenceHeaders():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        assemblyID = request.args.get("assemblyID")
+        number = request.args.get("number")
+        offset = request.args.get("offset")
+        data, notification = fetchAssemblySequenceHeaders(assemblyID, number, offset)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

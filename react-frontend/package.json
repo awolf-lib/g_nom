@@ -16,12 +16,13 @@
     "bcryptjs": "^2.4.3",
     "classnames": "^2.3.1",
     "grommet-icons": "^4.7.0",
+    "install": "^0.13.0",
+    "npm": "^8.3.0",
     "plotly.js": "^2.8.3",
     "react": "^17.0.2",
     "react-app-polyfill": "^3.0.0",
     "react-d3-tree": "^3.2.0",
     "react-dom": "^17.0.2",
-    "react-plotly.js": "^2.5.1",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
     "styled-components": "^5.3.3",
@@ -52,6 +53,7 @@
     ]
   },
   "devDependencies": {
+    "@types/plotly.js": "^1.54.18",
     "assert": "^2.0.0",
     "autoprefixer": "^9.8.8",
     "browserify-zlib": "^0.2.0",

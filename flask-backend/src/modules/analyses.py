@@ -346,7 +346,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m1_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m1_total = fcatData[mode]["total"]
                 m1_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M1_{floor(m1_similarPercent)}")
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_{floor(m1_similarPercent)}")
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_2":
@@ -362,7 +362,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m2_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m2_total = fcatData[mode]["total"]
                 m2_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M2_{floor(m2_similarPercent)}")
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_{floor(m2_similarPercent)}")
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_3":
@@ -378,7 +378,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m3_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m3_total = fcatData[mode]["total"]
                 m3_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M3_{floor(m3_similarPercent)}")
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_{floor(m3_similarPercent)}")
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_4":
@@ -394,7 +394,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m4_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m4_total = fcatData[mode]["total"]
                 m4_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_SIMILAR_M4_{floor(m4_similarPercent)}")
+                tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_{floor(m4_similarPercent)}")
                 if not tagAddedStatus:
                     notifications += notification
 

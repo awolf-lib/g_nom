@@ -376,7 +376,7 @@ def parseFasta(path):
             lines[idx] = line.replace("\n", "")
             # header
             if line[0] == ">":
-                sequence_header = lines[idx]
+                sequence_header = lines[idx][1:].split(" ")[0]
                 sequence_header_idx = idx
                 sequence = ""
                 sequence_length = 0
@@ -602,10 +602,14 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                     filtered_assemblies.append(x)
             assemblies = filtered_assemblies
 
-        if (sortBy["column"] == "label"):
-            assemblies = sorted(assemblies, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"])
+        if sortBy["column"] == "label":
+            assemblies = sorted(
+                assemblies, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
+            )
         else:
-            assemblies = sorted(assemblies, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"])
+            assemblies = sorted(
+                assemblies, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
+            )
 
         # get annotations, mappings, analyses
         for assembly in assemblies:
@@ -658,7 +662,7 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                     "maxFcatScoreM4": maxFcatScoreM4,
                     "milts": milts,
                     "repeatmaskers": repeatmaskers,
-                    "averageRepetitiveness": averageRepetitiveness
+                    "averageRepetitiveness": averageRepetitiveness,
                 }
             )
 
@@ -939,7 +943,7 @@ def updateAssemblyGeneralInformationByID(id, key, value):
 # DELETE GENERAL INFO
 def deleteAssemblyGeneralInformationByID(id):
     """
-    deletes general information and id
+    Deletes general information and id
     """
 
     try:
@@ -950,3 +954,40 @@ def deleteAssemblyGeneralInformationByID(id):
         return [], createNotification(message=str(err))
 
     return 1, createNotification("Success", "Successfully removed general information!", "success")
+
+
+def fetchAssemblySequenceHeaders(assembly_id=-1, number=-1, offset=0):
+    """
+    Fetches sequence headers (from specific assembly)
+    """
+    try:
+        connection, cursor, error = connect()
+        if assembly_id == -1:
+            if number == -1:
+                cursor.execute("SELECT * FROM assembliesSequences ORDER BY sequenceLength DESC")
+            else:
+                cursor.execute(
+                    "SELECT * FROM assembliesSequences ORDER BY sequenceLength DESC LIMIT %s OFFSET %s",
+                    (int(number), int(offset)),
+                )
+        else:
+            if number == -1:
+                cursor.execute(
+                    "SELECT * FROM assembliesSequences WHERE assemblyID=%s ORDER BY sequenceLength DESC", (assembly_id,)
+                )
+            else:
+                cursor.execute(
+                    "SELECT * FROM assembliesSequences WHERE assemblyID=%s ORDER BY sequenceLength DESC LIMIT %s OFFSET %s",
+                    (assembly_id, int(number), int(offset)),
+                )
+
+        row_headers = [x[0] for x in cursor.description]
+        sequenceHeaders = cursor.fetchall()
+        sequenceHeaders = [dict(zip(row_headers, x)) for x in sequenceHeaders]
+
+        if len(sequenceHeaders):
+            return sequenceHeaders, []
+        else:
+            return [], []
+    except Exception as err:
+        return [], createNotification(message=f"FetchAssemblySequenceHeadersError: {str(err)}")

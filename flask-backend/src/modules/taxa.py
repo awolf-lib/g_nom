@@ -169,9 +169,7 @@ def updateTaxonTree():
     try:
         connection, cursor, error = connect()
         safetyCounter = 0
-        while (
-            len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa
-        ) and safetyCounter < 100:
+        while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
             level += 1
             cursor.execute(
                 f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
@@ -196,10 +194,7 @@ def updateTaxonTree():
                 if taxon[1] not in lineageDict:
                     lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
                 else:
-                    if (
-                        taxon[0] not in lineageDict[taxon[1]]["children"]
-                        and taxon[0] != 1
-                    ):
+                    if taxon[0] not in lineageDict[taxon[1]]["children"] and taxon[0] != 1:
                         children = lineageDict[taxon[1]]["children"]
                         children.append(taxon[0])
 
@@ -389,7 +384,9 @@ def fetchTaxaWithAssemblies():
     connection, cursor, error = connect()
 
     try:
-        cursor.execute("SELECT taxa.id, taxa.ncbiTaxonID, taxa.scientificName, taxa.commonName FROM taxa, assemblies WHERE taxa.id=assemblies.taxonID GROUP BY taxa.id")
+        cursor.execute(
+            "SELECT taxa.id, taxa.ncbiTaxonID, taxa.scientificName, taxa.commonName FROM taxa, assemblies WHERE taxa.id=assemblies.taxonID GROUP BY taxa.id"
+        )
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchall()
 

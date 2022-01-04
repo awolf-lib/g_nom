@@ -1,22 +1,28 @@
-import { useEffect, useState } from "react";
-import Plot from "react-plotly.js";
-import propTypes from "prop-types";
+import { useEffect } from "react";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
+import { newPlot } from "plotly.js";
 
-const MaskingsViewer = ({ repeatmasker }) => {
-  const [elementsData, setElementsData] = useState([]);
-  const [elementsLayout, setElementsLayout] = useState([]);
-  const [repetitivenessData, setRepetitivenessData] = useState([]);
-  const [repetitivenessLayout, setRepetitivenessLayout] = useState([]);
-
+const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
+  const plotlyDivElements = document.getElementById("plotlyRepeatElements");
   useEffect(() => {
-    getElementsData();
-    getElementsLayout();
-    getRepetitivenessData();
-    getRepetitivenessLayout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (plotlyDivElements) {
+      newPlot("plotlyRepeatElements", getElementsData(), getElementsLayout(), {
+        responsive: true,
+        useResizeHandler: true,
+      });
+    }
+  }, [plotlyDivElements]);
+
+  const plotlyDivRepet = document.getElementById("plotlyRepetitiveness");
+  useEffect(() => {
+    if (plotlyDivRepet) {
+      newPlot("plotlyRepetitiveness", getRepetitivenessData(), getRepetitivenessLayout(), {
+        responsive: true,
+        useResizeHandler: true,
+      });
+    }
+  }, [plotlyDivRepet]);
 
   const getElementsData = () => {
     let tracks = [];
@@ -263,11 +269,11 @@ const MaskingsViewer = ({ repeatmasker }) => {
       width: 0.5,
     });
 
-    setElementsData(tracks);
+    return tracks;
   };
 
   const getElementsLayout = () => {
-    setElementsLayout({
+    return {
       title: "Repeats",
       barmode: "stack",
       margin: { pad: 6 },
@@ -292,7 +298,7 @@ const MaskingsViewer = ({ repeatmasker }) => {
           size: 10,
         },
       },
-    });
+    };
   };
 
   const getRepetitivenessData = () => {
@@ -353,11 +359,11 @@ const MaskingsViewer = ({ repeatmasker }) => {
       width: 0.5,
     });
 
-    setRepetitivenessData(tracks);
+    return tracks;
   };
 
   const getRepetitivenessLayout = () => {
-    setRepetitivenessLayout({
+    return {
       title: "Repetitiveness",
       barmode: "stack",
       margin: { pad: 6 },
@@ -382,51 +388,36 @@ const MaskingsViewer = ({ repeatmasker }) => {
         xanchor: "left",
         y: -0.5,
       },
-    });
+    };
   };
 
   return (
-    <div className="mx-8 animate-grow-y">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
-        <div className="shadow-lg rounded-lg p-2 bg-white">
-          <Plot
-            data={elementsData}
-            layout={elementsLayout}
-            config={{ responsive: true, displayModeBar: false }}
-            useResizeHandler={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-        <div className="shadow-lg rounded-lg p-2 bg-white relative">
-          <Plot
-            data={repetitivenessData}
-            layout={repetitivenessLayout}
-            config={{ responsive: true, displayModeBar: false }}
-            useResizeHandler={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
-            <a
-              href={process.env.REACT_APP_FILE_SERVER_ADRESS}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex justify-center items-center"
-            >
-              <Button color="link">
-                <Download className="stroke-current" color="blank" />
-              </Button>
-            </a>
-          </div>
-        </div>
+    <div className="animate-grow-y relative">
+      <div className="flex">
+        <div id="plotlyRepeatElements" className="w-full h-full" />
+        <div id="plotlyRepetitiveness" className="w-full h-full" />
+      </div>
+      <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
+        <a
+          href={
+            process.env.REACT_APP_FILE_SERVER_ADRESS +
+            "/apps/files/?dir=/GnomData/taxa/" +
+            taxon.scientificName.replace(/[^a-zA-Z0-9\S]/gi, "_") +
+            "/" +
+            assembly.name +
+            "/analyses/repeatmasker"
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-0 right-0 m-4 opacity-50 hover:opacity-100 flex justify-center items-center"
+        >
+          <Button color="link">
+            <Download className="stroke-current" color="blank" />
+          </Button>
+        </a>
       </div>
     </div>
   );
 };
 
 export default MaskingsViewer;
-
-MaskingsViewer.defaultProps = { repeatmasker: [] };
-
-MaskingsViewer.propTypes = {
-  repeatmasker: propTypes.array,
-};

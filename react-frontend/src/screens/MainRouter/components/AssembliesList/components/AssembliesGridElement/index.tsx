@@ -73,7 +73,11 @@ const AssembliesGridElement = ({
   return (
     <div>
       {renderActivation && (
-        <Link className="flex justify-center" to={"/g-nom/assemblies/assembly:" + id} key={id}>
+        <Link
+          className="flex justify-center"
+          to={"/g-nom/assemblies/assembly?assemblyID=" + id}
+          key={id}
+        >
           <div className="h-64 my-4 border border-gray-300 w-full animate-fade-in transition duration-500 ease-in-out bg-gradient-to-b from-gray-600 to-gray-400 transform hover:-translate-y-1 hover:scale-110 flex shadow">
             {taxonID && (
               <div className="w-32 h-32 min-w-max m-1 border border-gray-300 shadow">

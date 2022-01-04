@@ -42,6 +42,8 @@ const AssembliesList = ({
 
   const [fcatMode, setFcatMode] = useState<number>(1);
 
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
   useEffect(() => {
     setView(initialView);
     setAssemblies([]);
@@ -123,15 +125,20 @@ const AssembliesList = ({
     "grid xl:grid-cols-2 2xl:grid-cols-3 p-8 gap-8": view === "grid",
   });
 
+  const headerClass = classNames(
+    "bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 flex justify-between font-bold text-xl px-4 py-6 text-white",
+    { "items-center": !isFilterOpen, "items-start": isFilterOpen }
+  );
+
   return (
     <div className="mb-16 animate-grow-y">
-      <div className="h-1 bg-gradient-to-t from-gray-500 to-indigo-200" />
-      <div className="bg-gradient-to-b from-gray-500 via-gray-500 to-gray-700 flex justify-between items-start font-bold text-xl px-4 py-4 text-white">
+      <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-indigo-200" />
+      <div className={headerClass}>
         <div className="w-64 flex items-center">
           <div>{title}</div>
           {loadingAssemblies ||
             (onLoadingAssembliesTimeout && (
-              <div className="px-4 text-xs">
+              <div className="flex h-full px-4 text-xs">
                 <LoadingSpinner label="Loading..." />
               </div>
             ))}
@@ -157,6 +164,7 @@ const AssembliesList = ({
             setSearch={setSearch}
             filter={filter}
             setFilter={setFilter}
+            isFilterOpen={setIsFilterOpen}
           />
         </div>
       </div>
