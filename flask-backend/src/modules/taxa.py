@@ -418,7 +418,7 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
     if len(generalInfos):
         return [dict(zip(row_headers, x)) for x in generalInfos], []
     else:
-        return [], createNotification("Info", "No general information!", "info")
+        return [], createNotification("Info", "No taxon general information!", "info")
 
 
 # ADD GENERAL INFO

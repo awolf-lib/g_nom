@@ -108,7 +108,7 @@ const Navbar = () => {
                     >
                       <Link
                         to="/g-nom/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         role="menuitem"
                         onClick={() => handleChangeProfileDropdownVisible()}
                       >
@@ -116,7 +116,7 @@ const Navbar = () => {
                       </Link>
                       <Link
                         to="/logout"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                         role="menuitem"
                         onClick={() => handleChangeProfileDropdownVisible()}
                       >

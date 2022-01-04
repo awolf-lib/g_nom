@@ -16,9 +16,9 @@ export function Button(props: IButtonProps): JSX.Element {
         props.color === "confirm",
       "px-3 bg-red-500 hover:bg-red-400 text-white active:ring-red-600 shadow border border-red-500 border-outset":
         props.color === "cancel",
-      "px-3 hover:bg-gray-600 text-gray-700 hover:text-white font-semibold active:ring-gray-700":
+      "px-3 hover:bg-gray-600 text-gray-800 hover:text-white font-semibold active:ring-gray-700":
         props.color === "nav",
-      "text-gray-900 hover:text-blue-700 cursor-pointer": props.color === "link",
+      "text-gray-800 hover:text-blue-700 cursor-pointer": props.color === "link",
     },
     {
       "text-sm transform scale-75 md:scale-100": props.size === "sm",

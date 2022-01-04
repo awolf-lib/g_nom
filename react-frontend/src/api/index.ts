@@ -628,6 +628,28 @@ export async function reloadTaxonIDsFromFile(userID: number, token: string): Pro
     });
 }
 
+// ===== UPDATE TAXA TREE ===== //
+export async function updateTaxonTree(): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/updateTaxonTree")
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH TAXA TREE ===== //
+export async function fetchTaxonTree(userID: number, token: string): Promise<IResponse> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/fetchTaxonTree?userID=" + userID + "&token=" + token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== IMPORT NEW IMAGE ===== //
 export async function importImage(data: FormData): Promise<IResponse> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/import_image", {
@@ -1514,181 +1536,6 @@ export function fetchFileByPath(path: string, userID: number, token: string): Pr
       "&path=" +
       path
   );
-}
-
-export interface IAssemblyAdded {
-  assemblyId: number;
-  taxonID: number;
-  name: string;
-  path: string;
-  additionalFilesPath: string;
-}
-
-// ===== ADD NEW ANNOTATION ===== //
-export function addNewAnnotation(
-  assemblyId: number,
-  name: string,
-  path: string,
-  userID: number,
-  additionalFilesPath = ""
-): Promise<IResponse<IAnnotionationAdded>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/addNewAnnotation?id=" +
-      assemblyId +
-      "&name=" +
-      name +
-      "&path=" +
-      path +
-      "&userID=" +
-      userID +
-      "&additionalFilesPath=" +
-      additionalFilesPath
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-export interface IAnnotionationAdded {
-  assemblyID: number;
-  name: string;
-  path: string;
-  additionalFilesPath: string;
-}
-
-// ===== ADD NEW MAPPING ===== //
-export function addNewMapping(
-  assemblyId: number,
-  name: string,
-  path: string,
-  userID: number,
-  additionalFilesPath = ""
-): Promise<IResponse<IMappingAdded>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/addNewMapping?id=" +
-      assemblyId +
-      "&name=" +
-      name +
-      "&path=" +
-      path +
-      "&userID=" +
-      userID +
-      "&additionalFilesPath=" +
-      additionalFilesPath
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-export interface IMappingAdded {
-  assemblyID: number;
-  name: string;
-  path: string;
-  additionalFilesPath: string;
-}
-
-// ===== ADD NEW ANALYSIS ===== //
-export function addNewAnalysis(
-  assemblyId: number,
-  name: string,
-  path: string,
-  userID: number,
-  additionalFilesPath = ""
-): Promise<IResponse<IAnalysisAdded>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/addNewAnalysis?id=" +
-      assemblyId +
-      "&name=" +
-      name +
-      "&path=" +
-      path +
-      "&userID=" +
-      userID +
-      "&additionalFilesPath=" +
-      additionalFilesPath
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-interface IAnalysisAdded {
-  assemblyID: number;
-  name: string;
-  path: string;
-  additionalFilesPath: string;
-}
-
-// ===== REMOVE ANNOTATION BY ID ===== //
-export async function removeAnnotationByAnnotationID(id: number): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/removeAnnotationByAnnotationID?id=" + id)
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-// ===== REMOVE MAPPING BY ID ===== //
-export async function removeMappingByMappingID(id: number): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/removeMappingByMappingID?id=" + id)
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-// ===== REMOVE ANALYSIS BY ID ===== //
-export async function removeAnalysisByAnalysisID(id: number): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/removeAnalysisByAnalysisID?id=" + id)
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-// ===== RELOAD TAXA DATABASE ===== //
-export async function reloadTaxonIDsFromFile_old(userID: number): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/reloadTaxonIDsFromFile?userID=" + userID)
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-// ===== UPDATE TAXA TREE ===== //
-export async function updateTaxonTree(): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/updateTaxonTree")
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
-// ===== FETCH TAXA TREE ===== //
-export async function fetchTaxonTree(userID: number, token: string): Promise<IResponse> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/fetchTaxonTree?userID=" + userID + "&token=" + token
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
 }
 
 export type Response<T = unknown> = IResponse<T> | IErrorResponse;

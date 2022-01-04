@@ -6,16 +6,23 @@ import { newPlot } from "plotly.js";
 
 const FcatViewer = ({ taxon, assembly, fcat }) => {
   const [mode, setMode] = useState(1);
+  const [data, setData] = useState({});
+  const [layout, setLayout] = useState({});
 
   const plotlyDiv = document.getElementById("plotlyFcat");
   useEffect(() => {
     if (plotlyDiv) {
-      newPlot("plotlyFcat", getFcatData(), getFcatLayout(), {
+      newPlot("plotlyFcat", data, layout, {
         responsive: true,
         useResizeHandler: true,
       });
     }
-  }, [plotlyDiv, mode]);
+  }, [plotlyDiv, mode, data, layout]);
+
+  useEffect(() => {
+    getFcatData();
+    getFcatLayout();
+  }, [assembly?.id, mode]);
 
   const getFcatData = () => {
     let activeMode = mode;
@@ -139,11 +146,11 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       width: 0.5,
     });
 
-    return tracks;
+    setData(tracks);
   };
 
   const getFcatLayout = () => {
-    return {
+    setLayout({
       title: "fCat completeness",
       barmode: "stack",
       margin: { pad: 6 },
@@ -170,13 +177,13 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
         xanchor: "left",
         y: -0.3,
       },
-    };
+    });
   };
 
   return (
     <div className="animate-grow-y relative">
       <div id="plotlyFcat" className="w-full h-full" />
-      <div className="absolute top-0 right-0 mx-4 my-2 z-10">
+      <div className="absolute bottom-0 left-0 m-4 z-10">
         <select
           value={mode}
           onChange={(e) => setMode(e.target.value)}

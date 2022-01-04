@@ -528,7 +528,8 @@ const AssemblyInformation = () => {
           <div className="text-sm">
             {(fetchingAssemblyGeneralInformation ||
               fetchingAssembly ||
-              fetchingAssemblyHeaders) && <LoadingSpinner label="Loading assembly data..." />}
+              fetchingAssemblyHeaders ||
+              fetchingAssemblyTags) && <LoadingSpinner label="Loading assembly data..." />}
           </div>
           <div className="flex items-center w-96 justify-end">
             {toggleAssembly ? (
@@ -673,7 +674,9 @@ const AssemblyInformation = () => {
         >
           <div className="w-96">Annotation completeness</div>
           <div className="text-sm">
-            {fetchingBuscoAnalyses && <LoadingSpinner label="Loading busco/fcat data..." />}
+            {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
+              <LoadingSpinner label="Loading busco/fcat data..." />
+            )}
           </div>
           <div className="flex items-center w-96 justify-end">
             {toggleBuscoAnalyses ? (
@@ -684,7 +687,7 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        <div className="flex justify-center col-span-5">
+        <div className="flex justify-center col-span-3">
           {toggleBuscoAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {buscoAnalyses && buscoAnalyses.length > 0 ? (
@@ -696,7 +699,13 @@ const AssemblyInformation = () => {
           )}
         </div>
 
-        <div className="flex justify-center col-span-5">
+        <div className="flex justify-center col-span-2 row-span-2">
+          {(toggleBuscoAnalyses || toggleFcatAnalyses) && (
+            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden"></div>
+          )}
+        </div>
+
+        <div className="flex justify-center col-span-3">
           {toggleFcatAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {fcatAnalyses && fcatAnalyses.length > 0 ? (

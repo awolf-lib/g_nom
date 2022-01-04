@@ -1,13 +1,18 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
 import { newPlot } from "plotly.js";
 
 const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
+  const [data1, setData1] = useState({});
+  const [layout1, setLayout1] = useState({});
+  const [data2, setData2] = useState({});
+  const [layout2, setLayout2] = useState({});
+
   const plotlyDivElements = document.getElementById("plotlyRepeatElements");
   useEffect(() => {
     if (plotlyDivElements) {
-      newPlot("plotlyRepeatElements", getElementsData(), getElementsLayout(), {
+      newPlot("plotlyRepeatElements", data1, layout1, {
         responsive: true,
         useResizeHandler: true,
       });
@@ -17,12 +22,19 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
   const plotlyDivRepet = document.getElementById("plotlyRepetitiveness");
   useEffect(() => {
     if (plotlyDivRepet) {
-      newPlot("plotlyRepetitiveness", getRepetitivenessData(), getRepetitivenessLayout(), {
+      newPlot("plotlyRepetitiveness", data2, layout2, {
         responsive: true,
         useResizeHandler: true,
       });
     }
   }, [plotlyDivRepet]);
+
+  useEffect(() => {
+    getElementsData();
+    getElementsLayout();
+    getRepetitivenessData();
+    getRepetitivenessLayout();
+  }, [assembly?.id]);
 
   const getElementsData = () => {
     let tracks = [];
@@ -269,11 +281,11 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       width: 0.5,
     });
 
-    return tracks;
+    setData1(tracks);
   };
 
   const getElementsLayout = () => {
-    return {
+    setLayout1({
       title: "Repeats",
       barmode: "stack",
       margin: { pad: 6 },
@@ -298,7 +310,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
           size: 10,
         },
       },
-    };
+    });
   };
 
   const getRepetitivenessData = () => {
@@ -359,11 +371,11 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       width: 0.5,
     });
 
-    return tracks;
+    setData2(tracks);
   };
 
   const getRepetitivenessLayout = () => {
-    return {
+    setLayout2({
       title: "Repetitiveness",
       barmode: "stack",
       margin: { pad: 6 },
@@ -388,7 +400,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
         xanchor: "left",
         y: -0.5,
       },
-    };
+    });
   };
 
   return (

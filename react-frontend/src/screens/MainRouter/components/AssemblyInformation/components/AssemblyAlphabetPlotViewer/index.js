@@ -1,13 +1,21 @@
 import { newPlot } from "plotly.js";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const AssemblyAlphabetPlotViewer = ({ assembly }) => {
+  const [data, setData] = useState({});
+  const [layout, setLayout] = useState({});
+
   const plotlyDiv = document.getElementById("plotlyAssemblyAlphabet");
   useEffect(() => {
     if (plotlyDiv) {
-      newPlot("plotlyAssemblyAlphabet", getData(), getLayout(), { responsive: true });
+      newPlot("plotlyAssemblyAlphabet", data, layout, { responsive: true, useResizeHandler: true });
     }
-  }, [plotlyDiv]);
+  }, [plotlyDiv, data, layout]);
+
+  useEffect(() => {
+    getData();
+    getLayout();
+  }, [assembly?.id]);
 
   const getData = () => {
     const charCount = JSON.parse(assembly.charCountString);
@@ -19,7 +27,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
       values.push(charCount[char]);
     });
 
-    return [
+    setData([
       {
         values: values,
         labels: labels,
@@ -36,12 +44,14 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
           ],
         },
       },
-    ];
+    ]);
   };
 
   const getLayout = () => {
-    let layout = {
+    setLayout({
       showlegend: true,
+      automargin: true,
+      autosize: true,
       title: "Alphabet",
       legend: {
         x: 1,
@@ -49,8 +59,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
         xanchor: "center",
         orientation: "v",
       },
-    };
-    return layout;
+    });
   };
 
   return (

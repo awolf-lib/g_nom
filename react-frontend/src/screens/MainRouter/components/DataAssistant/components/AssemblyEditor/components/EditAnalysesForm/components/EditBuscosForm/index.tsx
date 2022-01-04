@@ -8,6 +8,7 @@ import {
   updateAnalysisLabel,
 } from "../../../../../../../../../../api";
 import Input from "../../../../../../../../../../components/Input";
+import LoadingSpinner from "../../../../../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import { AssemblyInterface } from "../../../../../../../../../../tsInterfaces/tsInterfaces";
 import EditLabelForm from "../../../EditAssemblyLabelForm/components/EditLabelForm";
@@ -23,6 +24,7 @@ const EditBuscosForm = ({
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
   const [toggleEditLabel, setToggleEditLabel] = useState<number>(-1);
+  const [isRemoving, setIsRemoving] = useState<boolean>(false);
 
   // notifications
   const dispatch = useNotification();
@@ -58,6 +60,7 @@ const EditBuscosForm = ({
     setConfirmDeletion(confirmationString);
 
     if (confirmationString === "REMOVE") {
+      setIsRemoving(true);
       const userID = JSON.parse(sessionStorage.getItem("userID") || "");
       const token = JSON.parse(sessionStorage.getItem("token") || "");
 
@@ -70,6 +73,7 @@ const EditBuscosForm = ({
         if (response.notification && response.notification.length > 0) {
           response.notification.map((n: any) => handleNewNotification(n));
         }
+        setIsRemoving(false);
       }
     }
   };
@@ -136,18 +140,26 @@ const EditBuscosForm = ({
                 <div className="flex justify-center animate-grow-y">
                   <div className="mx-4 my-8">
                     <div className="flex justify-between items-center">
-                      <label className="flex">
-                        <span className="flex items-center mx-4 font-semibold text-sm">
-                          CONFIRM DELETION:
-                        </span>
-                        <div className="flex items-center justify-center w-96">
-                          <Input
-                            placeholder="Type REMOVE..."
-                            onChange={(e) => handleDeleteAnalyses(busco.analysisID, e.target.value)}
-                            value={confirmDeletion}
-                          />
+                      {!isRemoving ? (
+                        <label className="flex">
+                          <span className="flex items-center mx-4 font-semibold text-sm">
+                            CONFIRM DELETION:
+                          </span>
+                          <div className="flex items-center justify-center w-96">
+                            <Input
+                              placeholder="Type REMOVE..."
+                              onChange={(e) =>
+                                handleDeleteAnalyses(busco.analysisID, e.target.value)
+                              }
+                              value={confirmDeletion}
+                            />
+                          </div>
+                        </label>
+                      ) : (
+                        <div>
+                          <LoadingSpinner label="Removing..." />
                         </div>
-                      </label>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,18 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
 import { newPlot } from "plotly.js";
 
 const BuscoViewer = ({ assembly, taxon, busco }) => {
+  const [data, setData] = useState({});
+  const [layout, setLayout] = useState({});
+
   const plotlyDiv = document.getElementById("plotlyBusco");
   useEffect(() => {
     if (plotlyDiv) {
-      newPlot("plotlyBusco", getBuscoData(), getBuscoLayout(), {
+      newPlot("plotlyBusco", data, layout, {
         responsive: true,
         useResizeHandler: true,
       });
     }
-  }, [plotlyDiv]);
+  }, [plotlyDiv, data, layout]);
+
+  useEffect(() => {
+    getBuscoData();
+    getBuscoLayout();
+  }, [assembly?.id]);
 
   const getBuscoData = () => {
     let tracks = [];
@@ -116,11 +124,11 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       width: 0.5,
     });
 
-    return tracks;
+    setData(tracks);
   };
 
   const getBuscoLayout = () => {
-    return {
+    setLayout({
       title: "Busco completeness",
       barmode: "stack",
       margin: { pad: 6 },
@@ -145,7 +153,7 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         xanchor: "left",
         y: -0.3,
       },
-    };
+    });
   };
 
   return (
