@@ -4,9 +4,11 @@ import { IGenomicAnnotationFeature } from "../../../../../../api";
 const FeaturesListElement = ({
   feature,
   noAssemblyDetails = 0,
+  showAllAttributes = false,
 }: {
   feature: IGenomicAnnotationFeature;
   noAssemblyDetails?: number;
+  showAllAttributes?: boolean;
 }) => {
   const {
     assemblyID,
@@ -42,7 +44,30 @@ const FeaturesListElement = ({
         <div
           className={noAssemblyDetails ? "w-full truncate text-left" : "w-3/12 truncate text-left"}
         >
-          {JSON.stringify(attributes)}
+          {Object.keys(attributes) && Object.keys(attributes).length > 0 ? (
+            <div>
+              {showAllAttributes ? (
+                <div>
+                  {Object.keys(attributes).map((attr) => (
+                    <div className="w-full flex items-center justify-between border-b animate-grow-y">
+                      <div className="px-2">{attr + ":"}</div>
+                      <div className="px-2">{attributes[attr]}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <div className="w-full flex items-center justify-between border-b animate-grow-y">
+                    <div className="px-2">{Object.keys(attributes)[0] + ":"}</div>
+                    <div className="px-2 truncate">{attributes[Object.keys(attributes)[0]]}</div>
+                  </div>
+                  {Object.keys(attributes).length > 1 && <div className="text-center">{"..."}</div>}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full text-center">No attributes!</div>
+          )}
         </div>
         {!noAssemblyDetails && <div className="w-2/12 truncate">{scientificName}</div>}
         {!noAssemblyDetails && <div className="w-2/12 truncate">{label || name}</div>}

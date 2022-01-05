@@ -290,11 +290,14 @@ def fetchMappingsByAssemblyID(assemblyID):
         )
 
         row_headers = [x[0] for x in cursor.description]
-        annotations = cursor.fetchall()
-        annotations = [dict(zip(row_headers, x)) for x in annotations]
+        mappings = cursor.fetchall()
+        mappings = [dict(zip(row_headers, x)) for x in mappings]
+
+        if not len(mappings):
+            return [], createNotification("Info", "No mappings for this assembly", "info")
 
         return (
-            annotations,
+            mappings,
             [],
         )
     except Exception as err:

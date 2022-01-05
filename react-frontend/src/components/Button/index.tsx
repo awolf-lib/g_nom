@@ -47,7 +47,7 @@ export function Button({
   const getContent = () => {
     if (label && children) {
       return showChildren ? (
-        <div className="animate-grow-y flex items-center justify-center">{children}</div>
+        <div className="flex items-center justify-center">{children}</div>
       ) : (
         <div>{label}</div>
       );

@@ -4,6 +4,7 @@ import {
   deleteAssemblyByAssemblyID,
   fetchAssembliesByTaxonID,
   INcbiTaxon,
+  NotificationObject,
 } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
@@ -41,7 +42,7 @@ const AssemblyPicker = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -79,7 +80,9 @@ const AssemblyPicker = ({
           setAssemblies(response.payload);
         }
         if (response.notification && response.notification.length) {
-          response.notification.map((notification: any) => handleNewNotification(notification));
+          response.notification.forEach((notification: NotificationObject) =>
+            handleNewNotification(notification)
+          );
         }
       }
     }

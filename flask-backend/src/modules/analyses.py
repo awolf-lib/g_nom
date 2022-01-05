@@ -924,7 +924,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
 
         return analyses, []
     except Exception as err:
-        return {}, createNotification(message=str(err))
+        return {}, createNotification(message=f"FetchAnalysesError: {str(err)}")
 
 
 # fetches busco analyses for specific assembly
@@ -945,12 +945,15 @@ def fetchBuscoAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         buscoList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
+        if not len(buscoList):
+            return [], createNotification("Info", "No Busco analyses for this assembly", "info")
+
         return (
             buscoList,
             [],
         )
     except Exception as err:
-        return [], createNotification(message=str(err))
+        return [], createNotification(message=f"FetchBuscoAnalysesError: {str(err)}")
 
 
 # fetches all analyses for specific assembly
@@ -971,12 +974,15 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         fcatList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
+        if not len(fcatList):
+            return [], createNotification("Info", "No fCat analyses for this assembly", "info")
+
         return (
             fcatList,
             [],
         )
     except Exception as err:
-        return [], createNotification(message=str(err))
+        return [], createNotification(message=f"FetchFcatAnalysesError: {str(err)}")
 
 
 # fetches all analyses for specific assembly
@@ -997,12 +1003,15 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         miltsList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
+        if not len(miltsList):
+            return [], createNotification("Info", "No Milts analyses for this assembly", "info")
+
         return (
             miltsList,
             [],
         )
     except Exception as err:
-        return [], createNotification(message=str(err))
+        return [], createNotification(message=f"FetchMiltsAnalysesError: {str(err)}")
 
 
 # fetches all analyses for specific assembly
@@ -1023,9 +1032,12 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         repeatmaskerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
+        if not len(repeatmaskerList):
+            return [], createNotification("Info", "No Repeatmasker analyses for this assembly", "info")
+
         return (
             repeatmaskerList,
             [],
         )
     except Exception as err:
-        return [], createNotification(message=str(err))
+        return [], createNotification(message=f"FetchRepeatmaskerAnalysesError: {str(err)}")

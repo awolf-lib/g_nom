@@ -2,24 +2,20 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import "../../App.css";
 
 const Slider = ({
+  value,
   getValue,
   label = "",
-  min = 1,
+  min = 0,
   max = 100,
   showValues = false,
 }: {
+  value?: number;
   getValue: Dispatch<SetStateAction<number>>;
   label?: string;
   min?: number;
   max?: number;
   showValues?: boolean;
 }) => {
-  const [value, setValue] = useState<number>(0);
-
-  useEffect(() => {
-    getValue(value);
-  }, [value]);
-
   return (
     <div className="w-full">
       <label className="flex items-center w-full">
@@ -30,7 +26,7 @@ const Slider = ({
           min={min}
           max={max}
           value={value}
-          onChange={(e) => setValue(parseInt(e.target.value))}
+          onChange={(e) => getValue(parseInt(e.target.value))}
         />
       </label>
       {showValues && (

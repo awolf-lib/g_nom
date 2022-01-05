@@ -610,7 +610,7 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
             )
 
         # get annotations, mappings, analyses
-        for assembly in assemblies:
+        for index, assembly in enumerate(assemblies):
             cursor.execute(
                 "SELECT COUNT(*) FROM genomicAnnotations WHERE genomicAnnotations.assemblyID=%s",
                 (assembly["id"],),
@@ -664,6 +664,8 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                 }
             )
 
+            assemblies[index] = {key: value for key, value in assembly.items() if value is not None}
+
         if filter:
             if "taxonIDs" in filter:
                 assemblies = [x for x in assemblies if x["taxonID"] in filter["taxonIDs"]]
@@ -699,6 +701,13 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
             pages = number_of_elements // range
 
         assemblies = assemblies[offset * range : offset * range + range]
+
+        if not len(assemblies):
+            return (
+                [],
+                {"offset": offset, "range": range, "pages": pages, "search": search},
+                createNotification("Info", "No assemblies found!", "info"),
+            )
 
         return (
             assemblies,
@@ -755,9 +764,11 @@ def fetchAssembliesByTaxonID(taxonID):
         assemblies = cursor.fetchall()
         assemblies = [dict(zip(row_headers, x)) for x in assemblies]
 
+        if not len(assemblies):
+            return [], createNotification("Info", "No asssemblies for given taxon IDs!", "info")
         return (
             assemblies,
-            {},
+            [],
         )
     except Exception as err:
         return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
@@ -872,7 +883,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
         tags = [dict(zip(row_headers, x)) for x in tags]
 
         if len(tags) == 0:
-            return [], createNotification("Info", "No tags in database!", "info")
+            return [], createNotification("Info", "No tags for this assembly!", "info")
         else:
             return tags, []
 
@@ -996,9 +1007,9 @@ def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0)
         if search:
             sequenceHeaders = [x for x in sequenceHeaders if search == str(x).lower() or search in str(x).lower()]
 
-        if len(sequenceHeaders):
-            return sequenceHeaders, []
+        if not len(sequenceHeaders):
+            return [], createNotification("Info", "No sequence headers found!", "info")
         else:
-            return [], []
+            return sequenceHeaders, []
     except Exception as err:
         return [], createNotification(message=f"FetchAssemblySequenceHeadersError: {str(err)}")

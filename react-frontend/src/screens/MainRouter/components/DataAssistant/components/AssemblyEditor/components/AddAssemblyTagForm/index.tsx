@@ -4,6 +4,7 @@ import {
   addAssemblyTag,
   fetchAssemblyTagsByAssemblyID,
   INcbiTaxon,
+  NotificationObject,
   removeAssemblyTagbyTagID,
 } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
@@ -29,7 +30,7 @@ const AddAssemblyTagForm = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

@@ -1,6 +1,12 @@
 import { CaretNext, CaretPrevious } from "grommet-icons";
 import { useState } from "react";
-import { IAnalyses, IAnnotation, IMapping, IResponse } from "../../../../../../../../../../api";
+import {
+  IAnalyses,
+  IAnnotation,
+  IMapping,
+  IResponse,
+  NotificationObject,
+} from "../../../../../../../../../../api";
 import Button from "../../../../../../../../../../components/Button";
 import Input from "../../../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
@@ -37,7 +43,7 @@ const EditLabelForm = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -57,9 +63,9 @@ const EditLabelForm = ({
     if (userID && token) {
       if (id) {
         if (label) {
-          await updateLabel(id, label, userID, token).then((response: any) => {
+          await updateLabel(id, label, userID, token).then((response) => {
             if (response.notification) {
-              response.notification.forEach((n: Notification) => handleNewNotification(n));
+              response.notification.forEach((not) => handleNewNotification(not));
             }
 
             if (response.payload) {
@@ -79,9 +85,9 @@ const EditLabelForm = ({
     const token = JSON.parse(sessionStorage.getItem("token") || "");
     if (userID && token) {
       if (id) {
-        await updateLabel(id, "", userID, token).then((response: any) => {
+        await updateLabel(id, "", userID, token).then((response) => {
           if (response.notification) {
-            response.notification.forEach((n: Notification) => handleNewNotification(n));
+            response.notification.forEach((not) => handleNewNotification(not));
           }
 
           if (response.payload) {

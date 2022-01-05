@@ -3,11 +3,12 @@ import {
   fetchFeatures,
   Filter,
   IGenomicAnnotationFeature,
+  NotificationObject,
   Pagination,
   Sorting,
 } from "../../../../api";
 import GenomicAnnotationFeaturesFilterForm from "./components/GenomicAnnotationFeaturesFilterForm";
-import { Ascend, Descend, Next, Previous } from "grommet-icons";
+import { Ascend, Descend, Expand, Next, Previous } from "grommet-icons";
 import Button from "../../../../components/Button";
 import Input from "../../../../components/Input";
 import { useNotification } from "../../../../components/NotificationProvider";
@@ -42,6 +43,8 @@ const FeaturesList = ({
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
+  const [expandAttributes, setExpandAttributes] = useState<boolean>(false);
+
   useEffect(() => {
     setOnLoadingFeaturesTimeout(true);
     if (loadFeaturesTimeout) {
@@ -62,7 +65,7 @@ const FeaturesList = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -246,12 +249,16 @@ const FeaturesList = ({
           End
         </div>
         <div
+          onClick={() => setExpandAttributes((prevState) => !prevState)}
           className={
             assemblyID
-              ? "w-full flex items-center justify-center"
-              : "w-3/12 flex items-center justify-center"
+              ? "w-full flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+              : "w-3/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
           }
         >
+          <div className="flex items-center mr-4">
+            <Expand className="stroke-current" color="blank" size="small" />
+          </div>
           Attributes
         </div>
         {!assemblyID && (
@@ -305,7 +312,11 @@ const FeaturesList = ({
         {features && features.length > 0 ? (
           features.map((feature) => (
             <div key={feature.id}>
-              <FeaturesListElement feature={feature} noAssemblyDetails={assemblyID || 0} />
+              <FeaturesListElement
+                feature={feature}
+                noAssemblyDetails={assemblyID || 0}
+                showAllAttributes={expandAttributes}
+              />
             </div>
           ))
         ) : (
@@ -344,7 +355,7 @@ const FeaturesList = ({
               </div>
               <hr className="shadow -mx-4 my-1" />
               <label className="flex items-center">
-                <span className="mr-2 text-sm">Assemblies/page:</span>
+                <span className="mr-2 text-sm">Features/page:</span>
                 <div className="w-24">
                   <Input
                     borderless={true}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchAssemblies, Filter, Pagination, Sorting } from "../../../../api";
+import { fetchAssemblies, Filter, NotificationObject, Pagination, Sorting } from "../../../../api";
 import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
 import AssembliesListElement from "./components/AssembliesListElement";
 import AssembliesFilterForm from "./components/AssembliesFilterForm";
@@ -69,7 +69,7 @@ const AssembliesList = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

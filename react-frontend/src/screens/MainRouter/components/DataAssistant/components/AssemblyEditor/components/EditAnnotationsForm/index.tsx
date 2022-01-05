@@ -5,6 +5,7 @@ import {
   fetchAnnotationsByAssemblyID,
   IAnnotation,
   INcbiTaxon,
+  NotificationObject,
   updateAnnotationLabel,
 } from "../../../../../../../../api";
 import Input from "../../../../../../../../components/Input";
@@ -29,7 +30,7 @@ const EditAnnotationsForm = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

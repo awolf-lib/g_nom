@@ -1,5 +1,5 @@
-import { Book, Bookmark, Close, Contract, Down, Expand, LinkTop, Up } from "grommet-icons";
-import { useEffect, useRef, useState } from "react";
+import { Book, Bookmark, Close, Contract, Down, LinkTop, Up } from "grommet-icons";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import {
@@ -25,6 +25,7 @@ import {
   IMiltsAnalysis,
   INcbiTaxon,
   IRepeatmaskerAnalysis,
+  NotificationObject,
   removeBookmark,
 } from "../../../../api";
 import Button from "../../../../components/Button";
@@ -103,7 +104,7 @@ const AssemblyInformation = () => {
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -448,6 +449,7 @@ const AssemblyInformation = () => {
     setToggleMiltsAnalyses(false);
     setToggleRepeatmaskerAnalyses(false);
     setToggleGenomeViewer(false);
+    window.scrollTo(0, 0);
   };
 
   return (
@@ -670,7 +672,7 @@ const AssemblyInformation = () => {
                   setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
                 />
               ) : (
-                <div>No taxonomic assignemnt!</div>
+                <div className="text-center py-4 font-semibold">No taxonomic assignemnt!</div>
               )}
             </div>
           )}
@@ -694,17 +696,21 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        <div className="flex justify-center col-span-5">
+        <div className="col-span-1" />
+
+        <div className="flex justify-center col-span-3">
           {toggleAnnotations && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {annotations && annotations.length > 0 ? (
                 <AnnotationStatisticsPlotViewer annotations={annotations} />
               ) : (
-                <div>No annotation!</div>
+                <div className="text-center py-4 font-semibold">No annotation!</div>
               )}
             </div>
           )}
         </div>
+
+        <div className="col-span-1" />
 
         <div className="flex justify-center col-span-5">
           {toggleAnnotations && (
@@ -712,7 +718,7 @@ const AssemblyInformation = () => {
               {assembly?.id && annotations && annotations.length > 0 ? (
                 <FeaturesList title="Assembly features" assemblyID={assembly.id} />
               ) : (
-                <div>No features for this assembly!</div>
+                <div className="text-center py-4 font-semibold">No features for this assembly!</div>
               )}
             </div>
           )}
@@ -740,25 +746,29 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        <div className="flex justify-center col-span-5">
+        <div className="flex justify-center col-span-4">
           {toggleBuscoAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {buscoAnalyses && buscoAnalyses.length > 0 ? (
                 <BuscoViewer taxon={taxon} assembly={assembly} busco={buscoAnalyses} />
               ) : (
-                <div>No busco analyses!</div>
+                <div className="text-center py-4 font-semibold">No busco analyses!</div>
               )}
             </div>
           )}
         </div>
 
-        <div className="flex justify-center col-span-5">
+        <div className="col-span-1" />
+
+        <div className="col-span-1" />
+
+        <div className="flex justify-center col-span-4">
           {toggleFcatAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {fcatAnalyses && fcatAnalyses.length > 0 ? (
                 <FcatViewer taxon={taxon} assembly={assembly} fcat={fcatAnalyses} />
               ) : (
-                <div>No fCat analyses!</div>
+                <div className="text-center py-4 font-semibold">No fCat analyses!</div>
               )}
             </div>
           )}
@@ -793,7 +803,7 @@ const AssemblyInformation = () => {
                   repeatmasker={repeatmaskerAnalyses}
                 />
               ) : (
-                <div>No repeatmasker analyses!</div>
+                <div className="text-center py-4 font-semibold">No repeatmasker analyses!</div>
               )}
             </div>
           )}

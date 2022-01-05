@@ -1071,8 +1071,14 @@ export async function fetchFeatures(
 
 export interface FilterFeatures {
   types?: string[];
-  featureAttributes?: string[];
+  featureAttributes?: ITargetAttribute[];
   taxonIDs?: number[];
+}
+
+export interface ITargetAttribute {
+  target: string;
+  operator?: string;
+  value?: string | number;
 }
 
 export interface IGenomicAnnotationFeature {

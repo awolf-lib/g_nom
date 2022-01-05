@@ -1,5 +1,6 @@
-import { newPlot } from "plotly.js";
+import { newPlot, relayout } from "plotly.js";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
 const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   const [data, setData] = useState({});
@@ -8,10 +9,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   const plotlyDiv = document.getElementById("plotlyAnnotationFeatureTypes");
   useEffect(() => {
     if (plotlyDiv) {
-      newPlot("plotlyAnnotationFeatureTypes", data, layout, {
-        responsive: true,
-        useResizeHandler: true,
-      });
+      newPlot("plotlyAnnotationFeatureTypes", data, layout);
     }
   }, [plotlyDiv, data, layout]);
 
@@ -68,7 +66,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
         xanchor: "center",
       },
       xaxis: {
-        title: { text: "Number", standoff: 10 },
+        title: { text: "Number", standoff: 20 },
       },
       yaxis: {
         title: {
@@ -76,6 +74,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           text: "Features",
           standoff: 20,
         },
+        tickangle: 45,
         side: "left",
         overlaying: "y",
         color: "grey",
@@ -85,8 +84,8 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   };
 
   return (
-    <div className="animate-grow-y w-full h-full">
-      <div id="plotlyAnnotationFeatureTypes" className="w-full h-full" />
+    <div className="animate-grow-y w-full h-full flex items-center">
+      <div id="plotlyAnnotationFeatureTypes" className="w-full" />
     </div>
   );
 };

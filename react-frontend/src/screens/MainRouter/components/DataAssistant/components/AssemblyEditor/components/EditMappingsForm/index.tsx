@@ -5,6 +5,7 @@ import {
   fetchMappingsByAssemblyID,
   IMapping,
   INcbiTaxon,
+  NotificationObject,
   updateMappingLabel,
 } from "../../../../../../../../api";
 import Input from "../../../../../../../../components/Input";
@@ -29,7 +30,7 @@ const EditMappingsForm = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

@@ -4,6 +4,7 @@ import {
   fetchTaxonBySearch,
   fetchTaxonByTaxonID,
   INcbiTaxon,
+  NotificationObject,
 } from "../../../../../../api";
 import Input from "../../../../../../components/Input";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
@@ -27,7 +28,7 @@ const TaxonPicker = ({
 
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

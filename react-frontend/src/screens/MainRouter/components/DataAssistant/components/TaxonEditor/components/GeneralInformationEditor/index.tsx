@@ -11,6 +11,7 @@ import {
   updateAssemblyGeneralInformationByID,
   addAssemblyGeneralInformation,
   deleteAssemblyGeneralInformationByID,
+  NotificationObject,
 } from "../../../../../../../../api";
 import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
@@ -68,7 +69,7 @@ const GeneralInformationEditor = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

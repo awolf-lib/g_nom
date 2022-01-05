@@ -5,6 +5,7 @@ from re import compile, sub
 from json import dumps, loads
 from subprocess import run
 from glob import glob
+from operator import contains, is_, is_not, lt, le, eq, ne, ge, gt
 
 from flask.json import load
 
@@ -485,6 +486,9 @@ def fetchAnnotationsByAssemblyID(assemblyID):
         annotations = cursor.fetchall()
         annotations = [dict(zip(row_headers, x)) for x in annotations]
 
+        if not len(annotations):
+            return [], createNotification("Info", "No annotations for this assembly!", "info")
+
         return (
             annotations,
             [],
@@ -532,13 +536,54 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
             if "attributes" in feature:
                 features[idx]["attributes"] = loads(features[idx]["attributes"])
 
-        features = sorted(
-            features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
-        )
+
+        if sortBy["column"] == "label":
+            features = sorted(
+                features, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
+            )
+        else:
+            features = sorted(
+                features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
+            )
+
+        numberOperatorsDict = {"=": eq, "!=": ne, "<": lt, ">": gt, "<=": le, ">=": ge }
+        stringOperatorsDict = {"contains": contains, "is": is_, "is_not": is_not, }
 
         if filter:
             if "taxonIDs" in filter:
                 features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
+            if "featureAttributes" in filter:
+                filtered = []
+                for feature in features:
+                    if "attributes" in feature:
+                        feature_attributes = feature["attributes"]
+                        for attribute in filter["featureAttributes"]:
+                            if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
+                                continue
+
+                            target, operatorString, valueString = attribute["target"], attribute["operator"], attribute["value"]
+
+                            if target in feature_attributes:
+                                check = False
+                                try:
+                                    target_value = feature_attributes[target]
+                                    if operatorString in numberOperatorsDict:
+                                        try:
+                                            target_value = float(str(target_value).replace("%", "").replace(",", ""))
+                                            valueString = float(str(valueString).replace("%", "").replace(",", ""))
+                                        except Exception as err:
+                                            print(str(err))
+
+                                        check = numberOperatorsDict[operatorString](target_value, valueString)
+                                    elif operatorString in stringOperatorsDict:
+                                        check = stringOperatorsDict[operatorString](target_value, valueString)
+                                except Exception as err:
+                                    print(str(err))
+
+                                if check:
+                                    filtered.append(feature)
+
+                features = filtered
 
         number_of_elements = len(features)
         if number_of_elements % range:

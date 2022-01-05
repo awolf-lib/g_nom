@@ -1,11 +1,12 @@
-import { Search } from "grommet-icons";
+import { Search, StatusGood } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   fetchFeatureAttributeKeys,
   fetchTaxaWithAssemblies,
-  Filter,
   FilterFeatures,
   INcbiTaxon,
+  ITargetAttribute,
+  NotificationObject,
 } from "../../../../../../api";
 import Button from "../../../../../../components/Button";
 import Input from "../../../../../../components/Input";
@@ -30,6 +31,11 @@ const GenomicAnnotationFeaturesFilterForm = ({
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
   const [attributes, setAttributes] = useState<string[]>([]);
   const [filteredAttributes, setFilteredAttributes] = useState<string[]>([]);
+  const [targetAttributes, setTargetAttributes] = useState<ITargetAttribute[]>([]);
+  const [triggerSetFilter, setTriggerSetFilter] = useState<boolean>(false);
+
+  const [taxonSearch, setTaxonSearch] = useState<string>("");
+  const [attributeSearch, setAttributeSearch] = useState<string>("");
 
   useEffect(() => {
     if (search === "") {
@@ -45,10 +51,31 @@ const GenomicAnnotationFeaturesFilterForm = ({
     loadAttributes();
   }, [toggleFilterSelection]);
 
+  useEffect(() => {
+    if (triggerSetFilter) {
+      if (targetAttributes?.length) {
+        setFilter((prevState) => {
+          return {
+            ...prevState,
+            featureAttributes: targetAttributes.filter(
+              (element) => element.target && element.operator && element.value
+            ),
+          };
+        });
+      } else {
+        setFilter((prevState) => {
+          delete prevState.featureAttributes;
+          return { ...prevState };
+        });
+      }
+      setTriggerSetFilter(false);
+    }
+  }, [triggerSetFilter]);
+
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -90,7 +117,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       });
   };
 
-  const handleSelectTaxa = (taxa: any) => {
+  const handleSelectTaxa = (taxa: HTMLOptionsCollection) => {
     var values: number[] = [];
     for (var i = 0, l = taxa.length; i < l; i++) {
       if (taxa[i].value === "-1" && taxa[i].selected) {
@@ -114,41 +141,29 @@ const GenomicAnnotationFeaturesFilterForm = ({
     }
   };
 
-  const handleSelectAttributes = (attributes: any) => {
-    var values: string[] = [];
+  const handleSelectAttributes = (attributes: HTMLOptionsCollection) => {
+    var values: ITargetAttribute[] = targetAttributes.filter((element) => {
+      for (var i = 0, l = attributes.length; i < l; i++) {
+        if (attributes[i].selected && attributes[i].value === element.target) {
+          return true;
+        }
+      }
+      return false;
+    });
+
     for (var i = 0, l = attributes.length; i < l; i++) {
       if (attributes[i].value === "-1" && attributes[i].selected) {
         values = [];
         break;
       }
-      if (attributes[i].selected) {
-        values.push(attributes[i].value);
+      if (
+        attributes[i].selected &&
+        !values.find((element) => element.target === attributes[i].value)
+      ) {
+        values.push({ target: attributes[i].value });
       }
     }
-
-    if (values.length) {
-      setFilter((prevState) => {
-        return { ...prevState, featureAttributes: values };
-      });
-    } else {
-      setFilter((prevState) => {
-        delete prevState.featureAttributes;
-        return { ...prevState };
-      });
-    }
-  };
-
-  const handleChangeCheckbox = (target: keyof FilterFeatures, checked: boolean) => {
-    if (checked) {
-      setFilter((prevState) => {
-        return { ...prevState, [target]: checked };
-      });
-    } else {
-      setFilter((prevState) => {
-        delete prevState[target];
-        return { ...prevState };
-      });
-    }
+    setTargetAttributes(values);
   };
 
   const handleChangeTaxaSearch = (search: string) => {
@@ -167,7 +182,9 @@ const GenomicAnnotationFeaturesFilterForm = ({
     if (search) {
       setFilteredAttributes((prevState) =>
         prevState.filter(
-          (attribute) => attribute.includes(search) || filter.featureAttributes?.includes(attribute)
+          (attribute) =>
+            attribute.includes(search) ||
+            targetAttributes.find((element) => element.target === attribute)
         )
       );
     } else {
@@ -182,12 +199,66 @@ const GenomicAnnotationFeaturesFilterForm = ({
     setToggleFilterSelection((prevState) => !prevState);
   };
 
+  const handleChangeTargetAttribute = (
+    target: string,
+    operator?: string,
+    value?: string | number
+  ) => {
+    let targets: ITargetAttribute[] = targetAttributes.map((attr) => {
+      if (attr.target === target) {
+        if (operator) {
+          if (value) {
+            setTriggerSetFilter(true);
+            return { target: target, operator: operator, value: value };
+          } else {
+            return { target: target, operator: operator };
+          }
+        } else {
+          return { target: target };
+        }
+      } else {
+        return { ...attr };
+      }
+    });
+
+    setTargetAttributes(targets);
+  };
+
+  const numberOperators = ["=", "!=", "<", ">", ">=", "<="];
+  const stringOperators = ["contains", "is", "is not"];
+
+  const checkAttributeFilterStatus = (attr: ITargetAttribute) => {
+    if (filter.featureAttributes?.length) {
+      let index = filter.featureAttributes?.findIndex((element) => attr.target === element.target);
+
+      if (index !== -1) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
+
+  const handleFilterReset = () => {
+    setSearch("");
+    setFilter({});
+    setTargetAttributes([]);
+    setFilteredAttributes(attributes);
+    setFilteredTaxa(taxa);
+    setTaxonSearch("");
+    setAttributeSearch("");
+  };
+
   return (
     <div>
       <div className="w-full h-10 flex justify-around items-center">
         <div className="w-96 flex items-center">
           <div className="w-full px-2">
-            <Input placeholder="Search..." onChange={(e) => setSearch(e.target.value)} />
+            <Input
+              placeholder="Search..."
+              onChange={(e) => setSearch(e.target.value)}
+              value={search}
+            />
           </div>
           <div>
             <Button color="primary" size="sm" onClick={() => setSearch(search)}>
@@ -208,7 +279,12 @@ const GenomicAnnotationFeaturesFilterForm = ({
           />
         </div>
         <div className="flex justify-center items-center">
-          <Button label="Reset filter" color="secondary" size="sm" onClick={() => setFilter({})} />
+          <Button
+            label="Reset filter"
+            color="secondary"
+            size="sm"
+            onClick={() => handleFilterReset()}
+          />
         </div>
       </div>
       {toggleFilterSelection && <hr className="shadow my-2 border-gray-300 animate-grow-y" />}
@@ -222,6 +298,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                 size="sm"
                 placeholder="Search..."
                 onChange={(e) => handleChangeTaxaSearch(e.target.value)}
+                value={taxonSearch}
               />
             </div>
             <select
@@ -249,46 +326,100 @@ const GenomicAnnotationFeaturesFilterForm = ({
           <div>
             Attributes
             <hr className="shadow border-gray-300 -mx-2" />
-            <div className="mt-2 w-48">
-              <Input
-                size="sm"
-                placeholder="Search..."
-                onChange={(e) => handleChangeAttributeSearch(e.target.value)}
-              />
-            </div>
-            <select
-              multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-              onChange={(e) => handleSelectAttributes(e.target.options)}
-            >
-              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
-                All
-              </option>
-              {filteredAttributes &&
-                filteredAttributes.length > 0 &&
-                filteredAttributes.map((attribute) => (
-                  <option
-                    key={attribute}
-                    value={attribute}
-                    className="px-4 py-1 border-b text-sm font-semibold truncate"
-                  >
-                    {attribute}
+            <div className="flex mt-2">
+              <div>
+                <div className="w-48">
+                  <Input
+                    size="sm"
+                    placeholder="Search..."
+                    onChange={(e) => handleChangeAttributeSearch(e.target.value)}
+                    value={attributeSearch}
+                  />
+                </div>
+                <select
+                  multiple
+                  className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+                  onChange={(e) => handleSelectAttributes(e.target.options)}
+                >
+                  <option value="-1" className="px-4 py-1 border-b text-sm font-semibold">
+                    None
                   </option>
-                ))}
-            </select>
-          </div>
+                  {filteredAttributes &&
+                    filteredAttributes.length > 0 &&
+                    filteredAttributes.map((attribute) => (
+                      <option
+                        key={attribute}
+                        value={attribute}
+                        className="px-4 py-1 border-b text-sm font-semibold truncate"
+                      >
+                        {attribute}
+                      </option>
+                    ))}
+                </select>
+              </div>
 
-          <div>
-            Tracks
-            <hr className="shadow border-gray-300 -mx-2 mb-2" />
-            {/* <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
-              <input
-                className="ring-1 ring-white"
-                type="checkbox"
-                onChange={(e) => handleChangeCheckbox("hasAnnotation", e.target.checked)}
-              />
-              <span className="px-4">has Annotation</span>
-            </label> */}
+              {targetAttributes?.length > 0 && (
+                <div className="px-4 ">
+                  <div>Selected attributes:</div>
+                  <hr className="shadow border-gray-300 -mx-2 mb-2 border-dotted" />
+                  {targetAttributes.map((attr) => (
+                    <div key={attr.target}>
+                      <div className="flex items-center py-1">
+                        <div className="w-px bg-gray-300 h-4 mr-4" />
+                        <div className="w-80 text-sm truncate text-right">{attr.target}</div>
+                        <div className="w-px bg-gray-300 h-4 ml-4" />
+                        <select
+                          className="text-gray-700 text-center w-32 mx-4 text-xs rounded-lg h-6 shadow"
+                          onChange={(e) =>
+                            handleChangeTargetAttribute(attr.target, e.target.value, attr.value)
+                          }
+                          value={attr.operator || ""}
+                        >
+                          <option value="">{"None"}</option>
+                          <option value="=">{"="}</option>
+                          <option value="!=">{"!="}</option>
+                          <option value=">=">{">="}</option>
+                          <option value="<=">{"<="}</option>
+                          <option value="<">{"<"}</option>
+                          <option value=">">{">"}</option>
+                          <option value="contains">{"contains"}</option>
+                          <option value="is">{"is"}</option>
+                          <option value="is_not">{"is not"}</option>
+                        </select>
+                        {attr.operator &&
+                          (numberOperators.includes(attr.operator) ||
+                            stringOperators.includes(attr.operator)) && (
+                            <div className="w-56 text-sm truncate">
+                              <Input
+                                size="sm"
+                                type={numberOperators.includes(attr.operator) ? "number" : "text"}
+                                onChange={(e) =>
+                                  handleChangeTargetAttribute(
+                                    attr.target,
+                                    attr.operator,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder={
+                                  numberOperators.includes(attr.operator)
+                                    ? "Input number..."
+                                    : "Input text..."
+                                }
+                              />
+                            </div>
+                          )}
+                        {checkAttributeFilterStatus(attr) && (
+                          <div className="text-green-600 mx-2 flex items-center">
+                            <StatusGood className="stroke-current" color="blank" />
+                          </div>
+                        )}
+                      </div>
+                      <hr className="shadow border-gray-300 -mx-2 my-2 border-dotted" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

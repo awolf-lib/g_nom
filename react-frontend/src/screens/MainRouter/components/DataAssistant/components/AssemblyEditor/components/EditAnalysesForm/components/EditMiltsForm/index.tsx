@@ -5,6 +5,7 @@ import {
   fetchMiltsAnalysesByAssemblyID,
   IMiltsAnalysis,
   INcbiTaxon,
+  NotificationObject,
   updateAnalysisLabel,
 } from "../../../../../../../../../../api";
 import Input from "../../../../../../../../../../components/Input";
@@ -23,7 +24,7 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,

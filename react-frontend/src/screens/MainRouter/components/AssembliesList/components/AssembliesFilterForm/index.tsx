@@ -6,6 +6,7 @@ import {
   Filter,
   INcbiTaxon,
   IUser,
+  NotificationObject,
 } from "../../../../../../api";
 import Button from "../../../../../../components/Button";
 import Input from "../../../../../../components/Input";
@@ -38,6 +39,10 @@ const AssembliesFilterForm = ({
   const [minBuscoComplete, setMinBuscoComplete] = useState<number>(0);
   const [minFcatSimilar, setMinFcatSimilar] = useState<number>(0);
   const [fcatMode, setFcatMode] = useState<1 | 2 | 3 | 4>(1);
+
+  const [taxonFilterSearch, setTaxonFilterSearch] = useState<string>("");
+  const [userFilterSearch, setUserFilterSearch] = useState<string>("");
+
   useEffect(() => {
     if (search === "") {
       setSearch("");
@@ -63,7 +68,7 @@ const AssembliesFilterForm = ({
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification: any) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -193,6 +198,7 @@ const AssembliesFilterForm = ({
   };
 
   const handleChangeTaxaSearch = (search: string) => {
+    setTaxonFilterSearch(search);
     if (search) {
       setFilteredTaxa((prevState) =>
         prevState.filter(
@@ -205,6 +211,7 @@ const AssembliesFilterForm = ({
   };
 
   const handleChangeUserSearch = (search: string) => {
+    setUserFilterSearch(search);
     if (search) {
       setFilteredUsers((prevState) =>
         prevState.filter(
@@ -223,9 +230,17 @@ const AssembliesFilterForm = ({
     setToggleFilterSelection((prevState) => !prevState);
   };
 
+  const handleResetFilter = () => {
+    setFilter({});
+    setSearch("");
+    setFcatMode(1);
+    setMinBuscoComplete(0);
+    setMinFcatSimilar(0);
+  };
+
   return (
     <div>
-      <div className="w-full h-10 flex justify-around items-center">
+      <div className="w-full flex justify-around items-center">
         <label className="flex items-center w-56">
           <span className="text-sm px-2">View type:</span>
           <select
@@ -243,7 +258,11 @@ const AssembliesFilterForm = ({
         </label>
         <div className="w-96 flex items-center">
           <div className="w-full px-2">
-            <Input placeholder="Search..." onChange={(e) => setSearch(e.target.value)} />
+            <Input
+              value={search}
+              placeholder="Search..."
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
           <div>
             <Button color="primary" size="sm" onClick={() => setSearch(search)}>
@@ -264,7 +283,12 @@ const AssembliesFilterForm = ({
           />
         </div>
         <div className="flex justify-center items-center">
-          <Button label="Reset filter" color="secondary" size="sm" onClick={() => setFilter({})} />
+          <Button
+            label="Reset filter"
+            color="secondary"
+            size="sm"
+            onClick={() => handleResetFilter()}
+          />
         </div>
       </div>
       {toggleFilterSelection && <hr className="shadow my-2 border-gray-300 animate-grow-y" />}
@@ -278,6 +302,7 @@ const AssembliesFilterForm = ({
                 size="sm"
                 placeholder="Search..."
                 onChange={(e) => handleChangeTaxaSearch(e.target.value)}
+                value={taxonFilterSearch}
               />
             </div>
             <select
@@ -310,6 +335,7 @@ const AssembliesFilterForm = ({
                 size="sm"
                 placeholder="Search..."
                 onChange={(e) => handleChangeUserSearch(e.target.value)}
+                value={userFilterSearch}
               />
             </div>
             <select
@@ -342,6 +368,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasAnnotation", e.target.checked)}
+                checked={filter.hasAnnotation}
               />
               <span className="px-4">has Annotation</span>
             </label>
@@ -350,6 +377,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasMapping", e.target.checked)}
+                checked={filter.hasMapping}
               />
               <span className="px-4">has Mapping</span>
             </label>
@@ -364,6 +392,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasBusco", e.target.checked)}
+                  checked={filter.hasBusco}
                 />
                 <span className="px-4">has Busco</span>
               </label>
@@ -372,6 +401,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasFcat", e.target.checked)}
+                  checked={filter.hasFcat}
                 />
                 <span className="px-4">has fCat</span>
               </label>
@@ -380,6 +410,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
+                  checked={filter.hasMilts}
                 />
                 <span className="px-4">has Milts</span>
               </label>
@@ -388,6 +419,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasRepeatmasker", e.target.checked)}
+                  checked={filter.hasRepeatmasker}
                 />
                 <span className="px-4">has Repeatmasker</span>
               </label>
@@ -395,7 +427,11 @@ const AssembliesFilterForm = ({
               <label className="flex justify-center text-xs py-1 hover:text-gray-200 cursor-pointer">
                 <span className="mr-4 py-1 w-44">Min. complete Busco (%):</span>
                 <div className="w-48">
-                  <Slider getValue={setMinBuscoComplete} showValues={true} />
+                  <Slider
+                    getValue={setMinBuscoComplete}
+                    value={minBuscoComplete}
+                    showValues={true}
+                  />
                 </div>
               </label>
               <label className="flex justify-center items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
@@ -443,7 +479,7 @@ const AssembliesFilterForm = ({
                     </label>
                   </div>
                   <div className="w-48">
-                    <Slider getValue={setMinFcatSimilar} showValues={true} />
+                    <Slider getValue={setMinFcatSimilar} value={minFcatSimilar} showValues={true} />
                   </div>
                 </div>
               </label>
