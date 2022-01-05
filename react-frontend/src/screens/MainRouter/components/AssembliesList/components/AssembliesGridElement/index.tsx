@@ -50,9 +50,9 @@ const AssembliesGridElement = ({
           to={"/g-nom/assemblies/assembly?assemblyID=" + id}
           key={id}
         >
-          <div className="h-48 border border-gray-300 w-full animate-fade-in transition duration-500 ease-in-out bg-gradient-to-tr from-gray-800 via-gray-700 to-gray-500 transform hover:-translate-y-1 hover:scale-110 flex">
+          <div className="h-48 border border-gray-300 w-full animate-fade-in transition duration-500 ease-in-out bg-gradient-to-tr from-gray-800 via-gray-700 to-gray-500 transform hover:-translate-y-1 hover:scale-105 flex">
             {taxonID && (
-              <div className="min-w-max m-1 border border-double border-gray-300">
+              <div className="m-1 min-w-max">
                 <SpeciesProfilePictureViewer taxonID={taxonID} imagePath={imagePath} />
               </div>
             )}

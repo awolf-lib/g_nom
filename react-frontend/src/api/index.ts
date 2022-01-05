@@ -1,4 +1,5 @@
 import { off } from "process";
+import { NotificationType } from "../components/Notification";
 import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
 // =============================== users =============================== //
@@ -10,6 +11,22 @@ export function login(username: string, password: string): Promise<IResponse> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ username: username, password: password }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// USER AUTHENTIFCATION
+export function logout(userID: number, token: string): Promise<IResponse> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ userID: userID, token: token }),
   })
     .then((request) => request.json())
     .then((data) => data)
@@ -671,7 +688,7 @@ export function fetchTaxonImageByTaxonID(
   taxonID: number,
   userID: number,
   token: string
-): Promise<unknown> {
+): Promise<any> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
       "/fetchTaxonImageByTaxonID?userID=" +
@@ -1639,8 +1656,10 @@ interface IErrorResponse {
 }
 
 interface INotification {
+  id?: string;
   label: string;
   message: string;
+  tyoe: NotificationType;
 }
 
 export type Notification = IInfoNotification | ISuccessNotification | IErrorNotification;
@@ -1658,6 +1677,7 @@ interface IErrorNotification extends INotification {
 }
 
 export interface NotificationObject {
+  id?: string;
   label: string;
   message: string;
   type: string;

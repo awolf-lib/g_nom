@@ -20,7 +20,7 @@ const FeaturesList = ({
   assemblyID,
 }: {
   title?: string;
-  assemblyID: number;
+  assemblyID?: number;
 }) => {
   const [features, setFeatures] = useState<IGenomicAnnotationFeature[]>([]);
 
@@ -347,7 +347,7 @@ const FeaturesList = ({
                 <span className="mr-2 text-sm">Assemblies/page:</span>
                 <div className="w-24">
                   <Input
-                    borderless
+                    borderless={true}
                     type="number"
                     size="sm"
                     onChange={(e) => handleRangeChange(e.target.value)}

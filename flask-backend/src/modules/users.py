@@ -2,6 +2,7 @@ from secrets import token_hex
 from hashlib import sha512
 from sys import argv
 from os import getenv
+from datetime import datetime
 
 from modules.db_connection import connect
 from modules.notifications import createNotification, notify_fileserver_user
@@ -24,6 +25,52 @@ def login(username, password):
         )
         row_headers = [x[0] for x in cursor.description]
         user = cursor.fetchone()
+
+        notifcations = []
+
+        if user:
+            user = dict(zip(row_headers, user))
+            username = user["username"]
+
+            if (
+                "activeToken" in user
+                and user["activeToken"]
+                and "tokenCreationTime" in user
+                and user["tokenCreationTime"]
+            ):
+                time_passed = datetime.now() - user["tokenCreationTime"]
+                time_passed_minutes = time_passed.total_seconds() / 60
+
+                if time_passed_minutes > 30:
+                    token = token_hex(16)
+                    token_stored, error = __updateToken(user["id"], token)
+
+                    if not token_stored or not token:
+                        return 0, error
+                else:
+                    notifcations += createNotification("Info", "You are still logged in!", "info")
+                    token = user["activeToken"]
+            else:
+                token = token_hex(16)
+                token_stored, error = __updateToken(user["id"], token)
+
+                if not token_stored or not token:
+                    return 0, error
+
+            notifcations += createNotification(f"Welcome {username}!", "You successfully logged in!", "success")
+
+            return {
+                "userID": user["id"],
+                "role": user["userRole"],
+                "userName": username,
+                "token": token,
+            }, notifcations
+
+        else:
+            return {"userID": "", "role": "", "userName": "", "token": ""}, createNotification(
+                message="Incorrect username/password!"
+            )
+
     except Exception as err:
         return {
             "userID": "",
@@ -31,29 +78,29 @@ def login(username, password):
             "userName": "",
             "passwordHash": "",
             "token": "",
-        }, createNotification(message=str(err))
+        }, createNotification(message=f"LoginError: {str(err)}")
 
-    if user:
-        user = dict(zip(row_headers, user))
-        username = user["username"]
 
-        token = token_hex(16)
-        token_stored, error = __updateToken(user["id"], token)
+# logging out
+def logout(userID):
+    """
+    Logging out of Gnom.
+    """
+    try:
+        if not userID:
+            return 0, createNotification(message=f"No userID supplied")
 
-        if not token_stored or not token:
-            return 0, error
-
-        return {
-            "userID": user["id"],
-            "role": user["userRole"],
-            "userName": username,
-            "token": token,
-        }, createNotification(f"Welcome {username}!", "You successfully logged in!", "success")
-
-    else:
-        return {"userID": "", "role": "", "userName": "", "token": ""}, createNotification(
-            message="Incorrect username/password!"
+        connection, cursor, error = connect()
+        cursor.execute(
+            "UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE users.id=%s",
+            (userID,),
         )
+        connection.commit()
+
+        return 1, createNotification("Success", "Successfully logged out!", "success")
+
+    except Exception as err:
+        return 0, createNotification(message=f"LogoutError: {str(err)}")
 
 
 # add current token to db

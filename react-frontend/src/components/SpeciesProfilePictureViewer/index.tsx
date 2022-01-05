@@ -2,10 +2,18 @@ import "../../App.css";
 import PropTypes from "prop-types";
 import picPlacerholder from "../../images/blankProfilePicture.png";
 import { useEffect, useState } from "react";
-import { fetchTaxonImageByTaxonID } from "../../api";
+import { fetchTaxonImageByTaxonID, NotificationObject } from "../../api";
 import { useNotification } from "../NotificationProvider";
 
-const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }) => {
+const SpeciesProfilePictureViewer = ({
+  taxonID,
+  imagePath,
+  useTimestamp = true,
+}: {
+  taxonID: number;
+  imagePath: string;
+  useTimestamp?: boolean;
+}) => {
   const [image, setImage] = useState("");
 
   useEffect(() => {
@@ -15,7 +23,7 @@ const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }
   // notifications
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -31,7 +39,7 @@ const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }
       const response = await fetchTaxonImageByTaxonID(taxonID, userID, token);
 
       if (response && response.notification) {
-        response.notification.forEach((not) => handleNewNotification(not));
+        response.notification.forEach((not: NotificationObject) => handleNewNotification(not));
       }
 
       if (response && !response.notification) {
@@ -55,12 +63,6 @@ const SpeciesProfilePictureViewer = ({ taxonID, imagePath, useTimestamp = true }
       src={imagePath && image ? getImageURL() : picPlacerholder}
     />
   );
-};
-
-SpeciesProfilePictureViewer.defaultProps = {};
-
-SpeciesProfilePictureViewer.propTypes = {
-  taxonID: PropTypes.number.isRequired,
 };
 
 export default SpeciesProfilePictureViewer;

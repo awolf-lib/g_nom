@@ -54,6 +54,7 @@
   },
   "devDependencies": {
     "@types/plotly.js": "^1.54.18",
+    "@types/uuid": "^8.3.3",
     "assert": "^2.0.0",
     "autoprefixer": "^9.8.8",
     "browserify-zlib": "^0.2.0",

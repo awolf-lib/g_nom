@@ -1,11 +1,5 @@
 import "../../App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useSearchParams,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./components/Login";
 import Navbar from "./components/Navbar";
@@ -33,20 +27,19 @@ const MainRouter = () => {
     <Router>
       <Navbar />
       <Routes>
-        <Route exact path="/" element={<Navigate to="/g-nom/dashboard" />} />
-        <Route exact path="/g-nom" element={<Navigate to="/g-nom/dashboard" />} />
+        <Route path="/" element={<Navigate to="/g-nom/dashboard" />} />
+        <Route path="/g-nom" element={<Navigate to="/g-nom/dashboard" />} />
         <Route
-          exact
           path="/g-nom/dashboard"
           element={<AssembliesList initialView="grid" bookmarks={1} />}
         />
-        <Route exact path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
-        <Route exact path="/g-nom/assemblies/list" element={<AssembliesList />} />
-        <Route exact path="/g-nom/assemblies/tree" element={<AssembliesTreeViewer />} />
-        <Route exact path="/g-nom/assemblies/data" element={<DataAssistant />} />
-        <Route exact path="/g-nom/assemblies/assembly" element={<AssemblyInformation />} />
-        <Route exact path="/g-nom/features" element={<FeaturesList />} />
-        <Route exact path="/g-nom/settings" element={<Settings />} />
+        <Route path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
+        <Route path="/g-nom/assemblies/list" element={<AssembliesList />} />
+        <Route path="/g-nom/assemblies/tree" element={<AssembliesTreeViewer />} />
+        <Route path="/g-nom/assemblies/data" element={<DataAssistant />} />
+        <Route path="/g-nom/assemblies/assembly" element={<AssemblyInformation />} />
+        <Route path="/g-nom/features" element={<FeaturesList />} />
+        <Route path="/g-nom/settings" element={<Settings />} />
         <Route path="/logout" element={<Logout setToken={setToken} />} />
       </Routes>
       <Footer />

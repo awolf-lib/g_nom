@@ -121,7 +121,7 @@ const FileTree = ({
       </div>
       {loadingFiles ? (
         <div className="ml-4">
-          <LoadingSpinner />
+          <LoadingSpinner label="Loading..." />
         </div>
       ) : (
         <div>{fileTree && <FileTreeConstructor data={[fileTree]} />}</div>

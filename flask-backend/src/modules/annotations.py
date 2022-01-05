@@ -583,7 +583,9 @@ def fetchFeatureAttributeKeys():
                 keys += loads(key_list[0])
                 keys = list(set(keys))
             except Exception as err:
-                notifications += createNotification("Warning", "One attribute could not be extracted for filter", "warning")
+                notifications += createNotification(
+                    "Warning", "One attribute could not be extracted for filter", "warning"
+                )
 
         return keys, [] + notifications
     except Exception as err:

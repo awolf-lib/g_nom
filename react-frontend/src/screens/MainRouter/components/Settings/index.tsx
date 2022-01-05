@@ -6,7 +6,7 @@ import ManageUserForm from "./components/ManageUserForm";
 const Settings = () => {
   const [toggleSection, setToggleSection] = useState(0);
 
-  const userRole = JSON.parse(sessionStorage.getItem("userRole"));
+  const userRole = JSON.parse(sessionStorage.getItem("userRole") || "");
 
   return (
     <div className="mb-16">
@@ -27,9 +27,9 @@ const Settings = () => {
             {toggleSection === 1 && (
               <div className="animate-grow-y">
                 <hr className="mx-8 my-4 shadow" />
-                <div className="p-4 grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
+                <div className="p-4 grid grid-cols-3 gap-8">
                   <AddUserForm />
-                  <div className="mt-8 lg:mt-0 lg:col-span-2">
+                  <div className="mt-0 col-span-2">
                     <ManageUserForm />
                   </div>
                 </div>

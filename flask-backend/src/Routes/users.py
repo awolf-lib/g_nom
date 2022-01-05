@@ -8,6 +8,7 @@ from modules.users import (
     deleteUserByUserID,
     fetchUsers,
     login,
+    logout,
     removeBookmark,
     updateUserRoleByUserID,
     validateActiveToken,
@@ -41,11 +42,36 @@ def users_bp_login():
     else:
         return {
             "payload": {"userID": "", "role": "", "userName": "", "token": ""},
-            "notification": {
-                "label": "Error",
-                "message": "Wrong request method. Please contact support!",
-                "type": "error",
-            },
+            "notification": REQUESTMETHODERROR,
+        }
+
+
+# fetch token if username is correct
+@users_bp.route("/logout", methods=["POST"])
+def users_bp_logout():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+
+        userID = req.get("userID", None)
+        token = req.get("token", None)
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": [], "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = logout(userID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return {
+            "payload": {"userID": "", "role": "", "userName": "", "token": ""},
+            "notification": REQUESTMETHODERROR,
         }
 
 

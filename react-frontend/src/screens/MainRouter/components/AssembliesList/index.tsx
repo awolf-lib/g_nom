@@ -16,8 +16,8 @@ const AssembliesList = ({
   initialView = "list",
   bookmarks = 0,
 }: {
-  title: string;
-  initialView: "list" | "grid";
+  title?: string;
+  initialView?: "list" | "grid";
   bookmarks?: 0 | 1;
 }) => {
   const [assemblies, setAssemblies] = useState<AssemblyInterface[]>([]);
@@ -326,7 +326,7 @@ const AssembliesList = ({
                 <span className="mr-2 text-sm">Assemblies/page:</span>
                 <div className="w-24">
                   <Input
-                    borderless
+                    borderless={true}
                     type="number"
                     size="sm"
                     onChange={(e) => handleRangeChange(e.target.value)}

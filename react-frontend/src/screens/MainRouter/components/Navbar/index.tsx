@@ -11,10 +11,10 @@ const Navbar = () => {
   const [userRole, setUserRole] = useState("");
   const [userName, setUserName] = useState("");
 
-  const userRoleStorage = JSON.parse(sessionStorage.getItem("userRole"));
-  const userNameStorage = JSON.parse(sessionStorage.getItem("userName"));
+  const userRoleStorage = JSON.parse(sessionStorage.getItem("userRole") || "");
+  const userNameStorage = JSON.parse(sessionStorage.getItem("userName") || "");
 
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setUserRole(userRoleStorage);
@@ -33,7 +33,7 @@ const Navbar = () => {
     setProfileDropdownVisible((prevState) => !prevState);
   };
 
-  const handleClickOutside = (event) => {
+  const handleClickOutside = (event: any) => {
     if (dropdownRef && dropdownRef.current && !dropdownRef.current.contains(event.target)) {
       setProfileDropdownVisible(false);
     }
@@ -70,10 +70,9 @@ const Navbar = () => {
                   </Link>
                 )}
                 <a
-                  to={"/g-nom/download"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  href={process.env.REACT_APP_FILE_SERVER_ADRESS + "/login"}
+                  href={process.env.REACT_APP_FILE_SERVER_ADRESS}
                 >
                   <Button label="Downloads" color="nav" />
                 </a>
@@ -87,7 +86,6 @@ const Navbar = () => {
                 <div>
                   <Button
                     color="link"
-                    id="user-menu"
                     aria-expanded="false"
                     aria-haspopup="true"
                     onClick={() => handleChangeProfileDropdownVisible()}

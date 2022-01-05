@@ -3,22 +3,23 @@ import { Save, Trash, Edit, FormClose } from "grommet-icons";
 import { useEffect, useState } from "react";
 import {
   deleteUserByUserID,
-  fetchAllUsers,
   fetchUsers,
+  IUser,
+  NotificationObject,
   updateUserRoleByUserID,
 } from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
 const ManageUserForm = () => {
-  const loggedInUserID = parseInt(sessionStorage.getItem("userID"));
+  const loggedInUserID = parseInt(sessionStorage.getItem("userID") || "");
 
-  const [users, setUsers] = useState();
-  const [toggleSelectRole, setToggleSelectRole] = useState(false);
-  const [userRole, setUserRole] = useState(false);
-  const [toggleDeleteUserConfirmation, setToggleDeleteUserConfirmation] = useState(false);
-  const [deleteUserConfirmation, setDeleteUserConfirmation] = useState("");
-  const [fetching, setFetching] = useState(false);
+  const [users, setUsers] = useState<IUser[]>();
+  const [toggleSelectRole, setToggleSelectRole] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<"admin" | "user">();
+  const [toggleDeleteUserConfirmation, setToggleDeleteUserConfirmation] = useState<number>(-1);
+  const [deleteUserConfirmation, setDeleteUserConfirmation] = useState<string>("");
+  const [fetching, setFetching] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
@@ -42,7 +43,7 @@ const ManageUserForm = () => {
     setTimeout(() => setFetching(false), 750);
   };
 
-  const handleDeleteUser = async (id, confirmation) => {
+  const handleDeleteUser = async (id: number, confirmation: string) => {
     if (id !== loggedInUserID) {
       if (confirmation === "REMOVE") {
         const userID = JSON.parse(sessionStorage.getItem("userID") || "");
@@ -53,29 +54,32 @@ const ManageUserForm = () => {
           response.notification.map((not) => handleNewNotification(not));
         }
 
-        setToggleDeleteUserConfirmation(0);
+        setToggleDeleteUserConfirmation(-1);
         loadData();
       }
     }
   };
 
-  const handleSaveNewUserRole = async (id) => {
+  const handleSaveNewUserRole = async (id: number) => {
     if (id !== loggedInUserID) {
       const userID = JSON.parse(sessionStorage.getItem("userID") || "");
       const token = JSON.parse(sessionStorage.getItem("token") || "");
-      const response = await updateUserRoleByUserID(id, userRole, userID, token);
 
-      if (response && response.notification && response.notification.length > 0) {
-        response.notification.map((not) => handleNewNotification(not));
+      if (id && userID && userRole && token) {
+        const response = await updateUserRoleByUserID(id, userRole, userID, token);
+
+        if (response && response.notification && response.notification.length > 0) {
+          response.notification.map((not) => handleNewNotification(not));
+        }
+
+        loadData();
       }
-
-      loadData();
     }
   };
 
   const dispatch = useNotification();
 
-  const handleNewNotification = (notification) => {
+  const handleNewNotification = (notification: NotificationObject) => {
     dispatch({
       label: notification.label,
       message: notification.message,
@@ -112,7 +116,7 @@ const ManageUserForm = () => {
           </tr>
         </thead>
         <tbody>
-          {!fetching && users?.length > 0 ? (
+          {!fetching && users && users.length > 0 ? (
             users.map((user) => {
               return (
                 <tr key={user.id} className={rowClass}>
@@ -122,7 +126,7 @@ const ManageUserForm = () => {
                     {toggleSelectRole ? (
                       <div className="flex justify-center items-center">
                         <select
-                          onChange={(e) => setUserRole(e.target.value)}
+                          onChange={(e) => setUserRole(e.target.value as "admin" | "user")}
                           value={userRole || user.userRole}
                           className={inputClass}
                         >
