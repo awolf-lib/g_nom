@@ -40,7 +40,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky w-full top-0 bg-gradient-to-b from-indigo-300 to-indigo-200 z-50 shadow">
+    <nav className="sticky w-full top-0 bg-gradient-to-b from-gray-400 to-gray-100 z-50 shadow">
       <div className="mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -61,6 +61,14 @@ const Navbar = () => {
                 <Link to="/g-nom/assemblies/tree">
                   <Button label="Tree" color="nav" />
                 </Link>
+                <Link to="/g-nom/features">
+                  <Button label="Features" color="nav" />
+                </Link>
+                {userRole === "admin" && (
+                  <Link to={"/g-nom/assemblies/data"}>
+                    <Button label="Data" color="nav" />
+                  </Link>
+                )}
                 <a
                   to={"/g-nom/download"}
                   target="_blank"
@@ -69,11 +77,6 @@ const Navbar = () => {
                 >
                   <Button label="Downloads" color="nav" />
                 </a>
-                {userRole === "admin" && (
-                  <Link to={"/g-nom/assemblies/manage"}>
-                    <Button label="Data" color="nav" />
-                  </Link>
-                )}
               </div>
             </div>
           </div>

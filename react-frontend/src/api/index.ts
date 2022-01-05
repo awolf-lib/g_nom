@@ -578,6 +578,7 @@ export async function fetchAssemblySequenceHeaders(
   assemblyID: number,
   number: number,
   offset: number,
+  search: string,
   userID: number,
   token: string
 ): Promise<IResponse<IAssemblySequenceHeader[]>> {
@@ -587,6 +588,8 @@ export async function fetchAssemblySequenceHeaders(
       assemblyID +
       "&number=" +
       number +
+      "&search=" +
+      search +
       "&offset=" +
       offset +
       "&userID=" +
@@ -1015,6 +1018,84 @@ export async function updateAnnotationLabel(
     });
 }
 
+// ===== FETCH ALL FEATURES ===== //
+export async function fetchFeatures(
+  offset: number = 0,
+  range: number = 10,
+  search: string = "",
+  filter: FilterFeatures = {},
+  sortBy: Sorting = { column: "seqID", order: true },
+  userID: number,
+  token: string,
+  assemblyID: number = -1
+): Promise<IResponse<IGenomicAnnotationFeature[]>> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatures", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      assemblyID: assemblyID,
+      userID: userID,
+      token: token,
+      offset: offset,
+      range: range,
+      search: search,
+      filter: filter,
+      sortBy: sortBy,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface FilterFeatures {
+  types?: string[];
+  featureAttributes?: string[];
+  taxonIDs?: number[];
+}
+
+export interface IGenomicAnnotationFeature {
+  annotationID: number;
+  assemblyID: number;
+  attributes: any;
+  end: number;
+  id: number;
+  label?: string;
+  name: string;
+  phase?: string;
+  scientificName: string;
+  score?: number;
+  seqID: string;
+  source?: string;
+  start: number;
+  strand?: string;
+  taxonID: number;
+  type: string;
+}
+
+// ===== FETCH ALL KEYS IN ATTRIBUTE SECTION ===== //
+export async function fetchFeatureAttributeKeys(
+  userID: number,
+  token: string
+): Promise<IResponse<string[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchFeatureAttributeKeys?userID=" +
+      userID +
+      "&token=" +
+      token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // =============================== mappings =============================== //
 // ===== IMPORT NEW MAPPING ===== //
 export async function importMapping(
@@ -1125,8 +1206,7 @@ export async function updateMappingLabel(
 }
 
 // =============================== ANALYSES =============================== //
-// =============================== annotations =============================== //
-// ===== IMPORT NEW ANNOTATION ===== //
+// ===== IMPORT NEW ANALYSES ===== //
 export async function importAnalyses(
   taxon: INcbiTaxon,
   dataset: Dataset,

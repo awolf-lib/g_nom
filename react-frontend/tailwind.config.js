@@ -2,6 +2,7 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   purge: false,
   theme: {
+    screens: {},
     extend: {
       inset: { 16: "4rem" },
       transitionPropery: { width: "width", height: "height" },

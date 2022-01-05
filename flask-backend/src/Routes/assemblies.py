@@ -429,7 +429,8 @@ def assemblies_bp_fetchAssemblySequenceHeaders():
         assemblyID = request.args.get("assemblyID")
         number = request.args.get("number")
         offset = request.args.get("offset")
-        data, notification = fetchAssemblySequenceHeaders(assemblyID, number, offset)
+        search = request.args.get("search")
+        data, notification = fetchAssemblySequenceHeaders(search, assemblyID, number, offset)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

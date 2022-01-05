@@ -245,7 +245,7 @@ const AssembliesTreeViewer = () => {
               <span className="font-bold text-xl ml-2">{currentNode}</span>
             </div>
             <hr className="m-8 mt-2 shadow" />
-            <div className="animate-grow-y rounded-lg grid gap-8 lg:grid-cols-2 xl:grid-cols-3 mt-8 px-8">
+            <div className="animate-grow-y rounded-lg grid gap-8 grid-cols-2 mt-8 px-8">
               {taxa.map((assembly, index) => {
                 if (index < showElements) {
                   return (
@@ -258,7 +258,7 @@ const AssembliesTreeViewer = () => {
                     </div>
                   );
                 } else {
-                  return <div />;
+                  return <div key={assembly.id} />;
                 }
               })}
             </div>

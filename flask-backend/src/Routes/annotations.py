@@ -7,6 +7,8 @@ from modules.notifications import createNotification
 from modules.annotations import (
     deleteAnnotationByAnnotationID,
     fetchAnnotationsByAssemblyID,
+    fetchFeatureAttributeKeys,
+    fetchFeatures,
     import_annotation,
     updateAnnotationLabel,
 )
@@ -128,6 +130,62 @@ def annotations_bp_fetchAnnotationsByAssemblyID():
 
         assemblyID = request.args.get("assemblyID")
         data, notification = fetchAnnotationsByAssemblyID(assemblyID)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL ASSEMBLIES
+@annotations_bp.route("/fetchFeatures", methods=["POST"])
+def annotations_bp_fetchFeatures():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        search = req.get("search", None)
+        sortBy = req.get("sortBy", None)
+        offset = req.get("offset", None)
+        range = req.get("range", None)
+        filter = req.get("filter", None)
+        assembly_id = req.get("assemblyID", None)
+
+        data, pagination, notification = fetchFeatures(assembly_id, search, filter, sortBy, offset, range)
+
+        response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL KEYS IN ATTRIBUTE SECTION
+@annotations_bp.route("/fetchFeatureAttributeKeys", methods=["GET"])
+def annotations_bp_fetchFeatureAttributeKeys():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = fetchFeatureAttributeKeys()
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

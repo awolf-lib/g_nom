@@ -63,7 +63,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
   };
 
   return (
-    <div className="animate-grow-y w-full h-full">
+    <div className="animate-grow-y w-full h-full" style={{ minHeight: "25rem" }}>
       <div id="plotlyAssemblyAlphabet" className="w-full h-full" />
     </div>
   );

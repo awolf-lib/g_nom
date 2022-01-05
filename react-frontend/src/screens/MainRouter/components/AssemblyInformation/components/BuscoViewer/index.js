@@ -23,6 +23,14 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
   }, [assembly?.id]);
 
   const getBuscoData = () => {
+    const colors = [
+      "rgb(56, 75, 126)",
+      "rgb(18, 36, 37)",
+      "rgb(34, 53, 101)",
+      "rgb(36, 55, 57)",
+      "rgb(6, 4, 4)",
+    ];
+
     let tracks = [];
     let complete = [];
     let complete_absolute = [];
@@ -40,7 +48,7 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
           analysis.completeDuplicated +
           analysis.fragmented +
           analysis.missing;
-        names.push(analysis.name);
+        names.push(analysis.dataset || analysis.label || analysis.name);
         complete.push((analysis.completeSingle * 100) / total);
         complete_absolute.push(analysis.completeSingle + "/" + total);
         duplicated.push((analysis.completeDuplicated * 100) / total);
@@ -63,11 +71,10 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#5D8233",
+        color: colors[0],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: duplicated,
@@ -81,11 +88,10 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#BECA5C",
+        color: colors[1],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: fragmented,
@@ -99,11 +105,10 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#ECD662",
+        color: colors[2],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: missing,
@@ -117,11 +122,10 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#284E78",
+        color: colors[3],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
 
     setData(tracks);

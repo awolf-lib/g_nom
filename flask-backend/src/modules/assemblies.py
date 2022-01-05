@@ -578,8 +578,6 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
         range = int(range)
         userID = int(userID)
 
-        print(userID)
-
         if not userID:
             cursor.execute(
                 "SELECT taxa.*, assemblies.*, users.id AS userID, users.username, GROUP_CONCAT(tags.tag) AS tags FROM taxa RIGHT JOIN assemblies ON assemblies.taxonID=taxa.id LEFT JOIN users ON assemblies.addedBy=users.id LEFT JOIN tags ON assemblies.id=tags.assemblyID GROUP BY assemblies.name"
@@ -966,7 +964,7 @@ def deleteAssemblyGeneralInformationByID(id):
     return 1, createNotification("Success", "Successfully removed general information!", "success")
 
 
-def fetchAssemblySequenceHeaders(assembly_id=-1, number=-1, offset=0):
+def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0):
     """
     Fetches sequence headers (from specific assembly)
     """
@@ -994,6 +992,9 @@ def fetchAssemblySequenceHeaders(assembly_id=-1, number=-1, offset=0):
         row_headers = [x[0] for x in cursor.description]
         sequenceHeaders = cursor.fetchall()
         sequenceHeaders = [dict(zip(row_headers, x)) for x in sequenceHeaders]
+
+        if search:
+            sequenceHeaders = [x for x in sequenceHeaders if search == str(x).lower() or search in str(x).lower()]
 
         if len(sequenceHeaders):
             return sequenceHeaders, []

@@ -50,7 +50,7 @@ const DataAssistant: React.FC = () => {
 
   return (
     <div className="mb-16">
-      <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-indigo-200" />
+      <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-gray-200" />
       <header className="z-20 flex justify-between items-center bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-white sticky top-16 py-6 px-4 text-xl font-bold shadow-lg border-b border-gray-500">
         <div className="flex justify-between items-center">
           <h1 className="mr-4 flex items-center">

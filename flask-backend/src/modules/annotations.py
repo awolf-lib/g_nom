@@ -2,9 +2,11 @@ from os.path import exists, isdir, isfile
 from os import remove
 from posixpath import basename
 from re import compile, sub
-from json import dumps
+from json import dumps, loads
 from subprocess import run
 from glob import glob
+
+from flask.json import load
 
 from .notifications import createNotification, notify_annotation
 from .db_connection import connect, DB_NAME
@@ -229,6 +231,7 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
+        print(str(err))
         return 0, createNotification(message=f"AnnotationImportDbError: {str(err)}")
 
     return 1, []
@@ -488,3 +491,100 @@ def fetchAnnotationsByAssemblyID(assemblyID):
         )
     except Exception as err:
         return [], createNotification(message=str(err))
+
+
+# fetches all features (includes filtering by search, offset, range)
+def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID", "order": True}, offset=0, range=10):
+    """
+    Fetches all features from database. Filtering by assembly, search term, offset and/or range.
+    """
+
+    try:
+        connection, cursor, error = connect()
+
+        offset = int(offset)
+        range = int(range)
+        assembly_id = int(assembly_id)
+
+        if assembly_id < 0:
+            cursor.execute(
+                "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id AS taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=genomicAnnotations.assemblyID AND assemblies.taxonID=taxa.id AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID"
+            )
+        else:
+            cursor.execute(
+                "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id as taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id AND assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID",
+                (assembly_id,),
+            )
+
+        row_headers = [x[0] for x in cursor.description]
+        features = cursor.fetchall()
+        features = [dict(zip(row_headers, x)) for x in features]
+
+        if search:
+            search = str(search).lower()
+            filtered_features = []
+            for x in features:
+                if len([s for s in x.values() if search == str(s).lower() or search in str(s).lower()]):
+                    filtered_features.append(x)
+            features = filtered_features
+
+        for idx, feature in enumerate(features):
+            if "attributes" in feature:
+                features[idx]["attributes"] = loads(features[idx]["attributes"])
+
+        features = sorted(
+            features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
+        )
+
+        if filter:
+            if "taxonIDs" in filter:
+                features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
+
+        number_of_elements = len(features)
+        if number_of_elements % range:
+            pages = (number_of_elements // range) + 1
+        else:
+            pages = number_of_elements // range
+
+        features = features[offset * range : offset * range + range]
+
+        if len(features):
+            return (
+                features,
+                {"offset": offset, "range": range, "pages": pages, "search": search},
+                [],
+            )
+        else:
+            return (
+                [],
+                {"offset": 0, "range": 10, "pages": 0, "search": search},
+                createNotification("Info", "No features found!", "info"),
+            )
+    except Exception as err:
+        return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
+
+
+# gets all unique attribute keys from all features
+def fetchFeatureAttributeKeys():
+    """
+    Fetches all unique keys in attribute section of features.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        cursor.execute("SELECT DISTINCT(JSON_EXTRACT(JSON_KEYS(attributes),'$[*]')) FROM genomicAnnotationFeatures")
+
+        notifications = []
+
+        key_lists = cursor.fetchall()
+        keys = []
+        for key_list in key_lists:
+            try:
+                keys += loads(key_list[0])
+                keys = list(set(keys))
+            except Exception as err:
+                notifications += createNotification("Warning", "One attribute could not be extracted for filter", "warning")
+
+        return keys, [] + notifications
+    except Exception as err:
+        return [], createNotification(message=f"FeatureAttributeTypeFetchingError: {str(err)}")

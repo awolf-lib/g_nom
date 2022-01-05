@@ -31,6 +31,7 @@ const GenomeViewer = ({
   useEffect(() => {
     setAssembly({
       name: assemblyDetails.name,
+      active: true,
       sequence: {
         type: "ReferenceSequenceTrack",
         trackId: assemblyDetails.name + "-ReferenceSequenceTrack",
@@ -123,10 +124,39 @@ const GenomeViewer = ({
   }, [annotations, mappings]);
 
   useEffect(() => {
+    const annotationsTracks = annotations.map((annotation) => {
+      return {
+        type: "FeatureTrack",
+        configuration: "track_annotation_" + annotation.id,
+        displays: [
+          {
+            type: "LinearBasicDisplay",
+            height: 150,
+            configuration: "track_annotation_" + annotation.id + "-LinearBasicDisplay",
+          },
+        ],
+      };
+    });
     setDefaultSession({
-      name: "Gnom - " + assemblyDetails.name,
+      name: "My session",
       view: {
-        type: "linearGenomeView",
+        id: "linearGenomeView",
+        type: "LinearGenomeView",
+        tracks: [
+          {
+            type: "ReferenceSequenceTrack",
+            configuration: assemblyDetails.name + "-ReferenceSequenceTrack",
+            displays: [
+              {
+                type: "LinearReferenceSequenceDisplay",
+                height: 140,
+                configuration:
+                  assemblyDetails.name + "-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+              },
+            ],
+          },
+          ...annotationsTracks,
+        ],
       },
     });
   }, [assemblyDetails]);
@@ -139,7 +169,7 @@ const GenomeViewer = ({
             main: "#3b82f6",
           },
           secondary: {
-            main: "#c7d2fe",
+            main: "#464957",
           },
           tertiary: {
             main: "#c7d2fe",
@@ -171,14 +201,21 @@ const GenomeViewer = ({
     ]);
   }, [assemblyDetails]);
 
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo(0, document.body.scrollHeight - 800);
+    }, 1000);
+  }, [defaultSession.name, locationState]);
+
   return (
-    <div className="relative">
+    <div className="relative -mx-1">
       {assemblyDetails?.id && defaultSession.name && configuration.theme && (
         <JBrowseLinearGenomeView
           viewState={createViewState({
             assembly: assembly,
             tracks: tracks,
             configuration: configuration,
+            defaultSession: defaultSession,
             location: locationState,
             aggregateTextSearchAdapters: aggregateTextSearchAdapters,
           })}

@@ -1,4 +1,4 @@
-import { Book, Bookmark, Close, Down, Up } from "grommet-icons";
+import { Book, Bookmark, Close, Contract, Down, Expand, LinkTop, Up } from "grommet-icons";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -44,6 +44,8 @@ import AssemblySequenceHeaderTable from "./components/AssemblySequenceHeaderTabl
 import BuscoViewer from "./components/BuscoViewer";
 import FcatViewer from "./components/FcatViewer";
 import AssemblyTagList from "./components/AssemblyTagList";
+import FeaturesList from "../FeaturesList";
+import AnnotationStatisticsPlotViewer from "./components/AnnotationStatisticsPlotViewer";
 
 const AssemblyInformation = () => {
   const [assembly, setAssembly] = useState<AssemblyInterface>();
@@ -90,12 +92,13 @@ const AssemblyInformation = () => {
 
   const [taxonomicAssignmentLoading, setTaxonomicAssignmentLoading] = useState<boolean>(false);
 
+  const [sequenceHeaderSearch, setSequenceHeaderSearch] = useState<string>("");
+
   const [location, setLocation] = useState<string>("");
 
   const [searchParams, setSearchParams] = useSearchParams();
   const assemblyID = searchParams.get("assemblyID");
-
-  const genomeViewerRef = useRef<HTMLDivElement>(null);
+  const queryLocation = searchParams.get("location");
 
   // notifications
   const dispatch = useNotification();
@@ -118,7 +121,7 @@ const AssemblyInformation = () => {
     if (toggleAssembly) {
       loadAssemblySequenceHeaders();
     }
-  }, [assembly?.id, toggleAssembly, assemblyHeadersOffset]);
+  }, [assembly?.id, toggleAssembly, assemblyHeadersOffset, sequenceHeaderSearch]);
 
   useEffect(() => {
     if (toggleAssembly) {
@@ -152,7 +155,15 @@ const AssemblyInformation = () => {
 
   useEffect(() => {
     if (toggleGenomeViewer) {
-      loadMappings();
+      if (!assembly?.id) {
+        loadAssembly();
+      }
+      if (!annotations.length) {
+        loadAnnotations();
+      }
+      if (!mappings.length) {
+        loadMappings();
+      }
     }
   }, [assembly?.id, toggleGenomeViewer]);
 
@@ -181,13 +192,16 @@ const AssemblyInformation = () => {
   }, [assembly?.id, toggleRepeatmaskerAnalyses]);
 
   useEffect(() => {
-    if (location?.length) {
+    if (location) {
       setToggleGenomeViewer(true);
-      if (genomeViewerRef?.current) {
-        genomeViewerRef.current.scrollIntoView();
-      }
     }
-  }, [location?.length, assembly?.id]);
+  }, [location, assembly?.id]);
+
+  useEffect(() => {
+    if (queryLocation) {
+      setLocation(queryLocation);
+    }
+  }, [queryLocation]);
 
   const loadAssembly = async () => {
     setFetchingAssembly(true);
@@ -216,6 +230,7 @@ const AssemblyInformation = () => {
         assembly.id,
         10,
         assemblyHeadersOffset,
+        sequenceHeaderSearch,
         userID,
         token
       ).then((response) => {
@@ -424,10 +439,21 @@ const AssemblyInformation = () => {
     }
   };
 
+  const shrinkAll = () => {
+    setToggleTaxon(true);
+    setToggleAssembly(false);
+    setToggleAnnotations(false);
+    setToggleBuscoAnalyses(false);
+    setToggleFcatAnalyses(false);
+    setToggleMiltsAnalyses(false);
+    setToggleRepeatmaskerAnalyses(false);
+    setToggleGenomeViewer(false);
+  };
+
   return (
     <div className="pb-32 bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-gray-800">
       {/* Header */}
-      <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-indigo-200" />
+      <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-gray-200" />
       <div className="z-20 flex justify-between items-center bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-white sticky top-16 h-16 px-4 text-xl font-bold shadow-lg border-b border-gray-500">
         {taxon?.scientificName ? (
           <div className="flex justify-between items-center">
@@ -455,23 +481,35 @@ const AssemblyInformation = () => {
               ))}
           </div>
         )}
-        <div
-          onMouseEnter={() => setHoverBookmark(true)}
-          onMouseLeave={() => setHoverBookmark(false)}
-        >
-          <Button onClick={() => handleBookmarkAssembly()} color="secondary">
-            {!assembly?.bookmarked ? (
-              <Bookmark className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <div>
-                {!hoverBookmark ? (
-                  <Book className="stroke-current animate-grow-y" color="blank" />
-                ) : (
-                  <Close className="stroke-current animate-grow-y" color="blank" />
-                )}
-              </div>
-            )}
-          </Button>
+        <div className="flex items-center">
+          <div>
+            <Button onClick={() => shrinkAll()} color="secondary">
+              <Contract className="stroke-current animate-grow-y" color="blank" />
+            </Button>
+          </div>
+          <div className="mx-4">
+            <Button onClick={() => window.scrollTo(0, 0)} color="secondary">
+              <LinkTop className="stroke-current animate-grow-y" color="blank" />
+            </Button>
+          </div>
+          <div
+            onMouseEnter={() => setHoverBookmark(true)}
+            onMouseLeave={() => setHoverBookmark(false)}
+          >
+            <Button onClick={() => handleBookmarkAssembly()} color="secondary">
+              {!assembly?.bookmarked ? (
+                <Bookmark className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <div>
+                  {!hoverBookmark ? (
+                    <Book className="stroke-current animate-grow-y" color="blank" />
+                  ) : (
+                    <Close className="stroke-current animate-grow-y" color="blank" />
+                  )}
+                </div>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -574,6 +612,7 @@ const AssemblyInformation = () => {
               {assembly?.id && (
                 <AssemblySequenceHeaderTable
                   sequenceHeaders={assemblyHeaders}
+                  setSequenceHeaderSearch={setSequenceHeaderSearch}
                   setLocation={setLocation}
                   setOffset={setAssemblyHeaderOffset}
                 />
@@ -621,6 +660,7 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
+        {/* MILTS */}
         <div className="flex justify-center col-span-5">
           {toggleMiltsAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
@@ -636,6 +676,7 @@ const AssemblyInformation = () => {
           )}
         </div>
 
+        {/* ANNOTATION */}
         <div
           onClick={() => setToggleAnnotations((prevState) => !prevState)}
           className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
@@ -657,9 +698,21 @@ const AssemblyInformation = () => {
           {toggleAnnotations && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {annotations && annotations.length > 0 ? (
-                <div></div>
+                <AnnotationStatisticsPlotViewer annotations={annotations} />
               ) : (
-                <div>No taxonomic assignemnt!</div>
+                <div>No annotation!</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-center col-span-5">
+          {toggleAnnotations && (
+            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+              {assembly?.id && annotations && annotations.length > 0 ? (
+                <FeaturesList title="Assembly features" assemblyID={assembly.id} />
+              ) : (
+                <div>No features for this assembly!</div>
               )}
             </div>
           )}
@@ -687,7 +740,7 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        <div className="flex justify-center col-span-3">
+        <div className="flex justify-center col-span-5">
           {toggleBuscoAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {buscoAnalyses && buscoAnalyses.length > 0 ? (
@@ -699,13 +752,7 @@ const AssemblyInformation = () => {
           )}
         </div>
 
-        <div className="flex justify-center col-span-2 row-span-2">
-          {(toggleBuscoAnalyses || toggleFcatAnalyses) && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden"></div>
-          )}
-        </div>
-
-        <div className="flex justify-center col-span-3">
+        <div className="flex justify-center col-span-5">
           {toggleFcatAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {fcatAnalyses && fcatAnalyses.length > 0 ? (
@@ -757,6 +804,11 @@ const AssemblyInformation = () => {
           className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
         >
           <div className="w-96">Genome viewer</div>
+          <div className="text-sm">
+            {(fetchingAnnotations || fetchingMappings || fetchingAssembly) && (
+              <LoadingSpinner label="Loading viewer data..." />
+            )}
+          </div>
           <div className="flex items-center w-96 justify-end">
             {toggleGenomeViewer ? (
               <Down className="stroke-current animate-grow-y" color="blank" />
@@ -767,9 +819,9 @@ const AssemblyInformation = () => {
         </div>
 
         {/* GENOME VIEWER */}
-        <div className="flex justify-center col-span-5" ref={genomeViewerRef}>
-          {toggleGenomeViewer && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+        <div className="flex justify-center col-span-5">
+          {toggleGenomeViewer && !fetchingAssembly && !fetchingAnnotations && !fetchingMappings ? (
+            <div className="w-full h-full animate-fade-in overflow-hidden">
               {assembly && assembly.id && (
                 <GenomeViewer
                   assemblyDetails={assembly}
@@ -779,6 +831,8 @@ const AssemblyInformation = () => {
                 />
               )}
             </div>
+          ) : (
+            <div className="w-full flex justify-center items center h-32" />
           )}
         </div>
       </div>

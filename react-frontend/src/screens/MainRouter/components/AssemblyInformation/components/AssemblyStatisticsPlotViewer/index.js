@@ -119,8 +119,8 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
   };
 
   return (
-    <div className="animate-grow-y w-full">
-      <div id="plotlyAssemblyStatistics" className="w-full" />
+    <div className="animate-grow-y w-full h-full">
+      <div id="plotlyAssemblyStatistics" className="w-full h-full" />
     </div>
   );
 };

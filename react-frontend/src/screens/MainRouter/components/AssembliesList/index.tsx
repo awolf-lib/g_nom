@@ -81,22 +81,23 @@ const AssembliesList = ({
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-    setLoadingAssemblies(true);
-
-    await fetchAssemblies(userID, token, offset, range, search, filter, sortBy, bookmarks).then(
-      (response) => {
-        if (response?.payload) {
-          setAssemblies(response.payload);
+    if (userID && token) {
+      setLoadingAssemblies(true);
+      await fetchAssemblies(userID, token, offset, range, search, filter, sortBy, bookmarks).then(
+        (response) => {
+          if (response?.payload) {
+            setAssemblies(response.payload);
+          }
+          if (response?.pagination) {
+            setPagination(response?.pagination);
+          }
+          if (response?.notification) {
+            response.notification.forEach((n) => handleNewNotification(n));
+          }
         }
-        if (response?.pagination) {
-          setPagination(response?.pagination);
-        }
-        if (response?.notification) {
-          response.notification.forEach((n) => handleNewNotification(n));
-        }
-      }
-    );
-    setLoadingAssemblies(false);
+      );
+      setLoadingAssemblies(false);
+    }
   };
 
   const handleRangeChange = (input: number) => {
@@ -122,7 +123,7 @@ const AssembliesList = ({
   };
 
   const viewTypeClass = classNames("animate-grow-y", {
-    "grid xl:grid-cols-2 2xl:grid-cols-3 p-8 gap-8": view === "grid",
+    "grid grid-cols-2 2xl:grid-cols-3 p-8 gap-8": view === "grid",
   });
 
   const headerClass = classNames(

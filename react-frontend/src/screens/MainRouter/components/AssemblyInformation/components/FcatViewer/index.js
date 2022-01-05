@@ -25,6 +25,14 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
   }, [assembly?.id, mode]);
 
   const getFcatData = () => {
+    const colors = [
+      "rgb(56, 75, 126)",
+      "rgb(18, 36, 37)",
+      "rgb(34, 53, 101)",
+      "rgb(36, 55, 57)",
+      "rgb(6, 4, 4)",
+    ];
+
     let activeMode = mode;
     let tracks = [];
     let similar = [];
@@ -70,11 +78,10 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#5D8233",
+        color: colors[0],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: duplicated,
@@ -88,10 +95,10 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#BECA5C",
+        color: colors[1],
         line: { width: 1, color: "#515E63" },
       },
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: dissimilar,
@@ -105,11 +112,10 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#ECD662",
+        color: colors[2],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: missing,
@@ -123,11 +129,10 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#284E78",
+        color: colors[3],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
     tracks.push({
       x: ignored,
@@ -139,11 +144,10 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "grey",
+        color: colors[4],
         line: { width: 1, color: "#515E63" },
       },
-      opacity: 0.7,
-      width: 0.5,
+      width: 0.4,
     });
 
     setData(tracks);
