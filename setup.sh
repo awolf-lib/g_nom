@@ -66,6 +66,9 @@ echo ""
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:enable files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/data "GnomData" 'local' null::null
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable password_policy
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable photos
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install announcementcenter
 
 # setup nextcloud defaults
 echo "Remove default nextcloud files and setup group folders..."

@@ -70,7 +70,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       }
       setTriggerSetFilter(false);
     }
-  }, [triggerSetFilter]);
+  }, [triggerSetFilter, targetAttributes]);
 
   // notifications
   const dispatch = useNotification();
