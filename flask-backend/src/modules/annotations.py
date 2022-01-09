@@ -430,7 +430,7 @@ def parseGff(path):
                 print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
                 continue
 
-        featureCountDistinct.update({"total": number_of_features})
+        featureCountDistinct.update({"total": len(features)})
 
         print(f"Parsed: 100%", end="\r")
 

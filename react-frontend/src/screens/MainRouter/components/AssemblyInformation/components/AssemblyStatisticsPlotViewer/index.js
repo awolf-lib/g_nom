@@ -118,6 +118,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
           color: "black",
         },
         ticklen: 12,
+        automargin: true,
       },
       yaxis2: {
         title: {
@@ -131,6 +132,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
           color: "black",
         },
         ticklen: 12,
+        automargin: true,
       },
     };
     return layout;

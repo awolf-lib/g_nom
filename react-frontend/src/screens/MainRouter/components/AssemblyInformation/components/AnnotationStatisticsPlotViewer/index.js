@@ -31,9 +31,9 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
 
     let traces = [];
     if (annotations && annotations.length > 0) {
-      let x = [];
-      let y = [];
       annotations.forEach((annotation, index) => {
+        let x = [];
+        let y = [];
         let features = JSON.parse(annotation.featureCount);
 
         Object.keys(features).forEach((type) => {
@@ -73,6 +73,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           color: "black",
         },
         ticklen: 12,
+        automargin: true,
       },
       yaxis: {
         title: {
@@ -90,6 +91,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           color: "black",
         },
         ticklen: 12,
+        automargin: true,
       },
     };
     setLayout(layout);
