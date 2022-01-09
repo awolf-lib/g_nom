@@ -1,9 +1,29 @@
 #!/bin/bash
 
-sudo /etc/init.d/mysql start
-screen -dmS "frontend" "npm" "start" "--prefix" "react-frontend/"
-cd flask-backend/
-screen -dmS "backend" "./run_main.sh"
-screen -dmS "jbrowse" "npm" "start" "--prefix" "./storage/externalTools/jbrowse/"
-cd storage/files
-screen -dmS "cloudcmd" "cloudcmd" "--save" "--port" "5003" "--one-file-panel" "--no-contact" "--root" "." "--prefix" "/g-nom/portal"
+# check if docker daemon is running
+if ! docker info > /dev/null 2>&1; then
+  echo "This script uses docker, and it isn't running - please start docker and try again!"
+  exit 1
+fi
+
+source ./default.config
+source ./local.config
+
+#start RabbitMQ Docker container
+docker start $RABBIT_CONTAINER_NAME
+
+# start MySQL Docker container
+docker start $MYSQL_CONTAINER_NAME
+
+# start File Server Docker container
+docker start $FILE_SERVER_CONTAINER_NAME
+# docker start $NEXTCLOUD_CONTAINER_NAME
+
+# start React Docker container
+docker start $FRONTEND_CONTAINER_NAME
+
+# start Flask Docker container
+docker start $API_CONTAINER_NAME
+
+# start jBrowse Docker container
+docker start $JBROWSE_CONTAINER_NAME

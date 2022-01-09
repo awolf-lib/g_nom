@@ -1,8 +1,10 @@
 module.exports = {
-  purge: ["./src/**/*.{js,jsx,ts,tsx}", "./public/index.html"],
-  darkMode: false, // or 'media' or 'class'
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+  purge: false,
   theme: {
+    screens: {},
     extend: {
+      inset: { 16: "4rem" },
       transitionPropery: { width: "width", height: "height" },
       transitionDuration: {
         2000: "2000ms",
@@ -94,6 +96,7 @@ module.exports = {
       display: ["responsive", "hover"],
       ringWidth: ["responsive", "hover", "focus"],
       animation: ["responsive", "hover", "focus"],
+      maxHeight: ["responsive", "hover"],
     },
   },
   plugins: [],
