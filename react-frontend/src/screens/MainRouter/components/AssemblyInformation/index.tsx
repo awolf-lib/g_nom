@@ -710,11 +710,23 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
+        <div className="flex justify-center col-span-5">
+          {toggleAnnotations && (
+            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+              {assembly?.id && annotations && annotations.length > 0 ? (
+                <FeaturesList title="Features by assembly" assemblyID={assembly.id} />
+              ) : (
+                <div className="text-center py-4 font-semibold">No features for this assembly!</div>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="col-span-1" />
 
         <div className="flex justify-center col-span-3">
           {toggleAnnotations && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+            <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {annotations && annotations.length > 0 ? (
                 <AnnotationStatisticsPlotViewer annotations={annotations} />
               ) : (
@@ -725,18 +737,6 @@ const AssemblyInformation = () => {
         </div>
 
         <div className="col-span-1" />
-
-        <div className="flex justify-center col-span-5">
-          {toggleAnnotations && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && annotations && annotations.length > 0 ? (
-                <FeaturesList title="Assembly features" assemblyID={assembly.id} />
-              ) : (
-                <div className="text-center py-4 font-semibold">No features for this assembly!</div>
-              )}
-            </div>
-          )}
-        </div>
 
         <div
           onClick={() => {

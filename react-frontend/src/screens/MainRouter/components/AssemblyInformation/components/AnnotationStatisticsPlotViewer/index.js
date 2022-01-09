@@ -1,6 +1,5 @@
-import { newPlot, relayout } from "plotly.js";
+import { newPlot } from "plotly.js";
 import { useEffect, useState } from "react";
-import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 
 const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   const [data, setData] = useState({});
@@ -34,18 +33,26 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
       annotations.forEach((annotation, index) => {
         let x = [];
         let y = [];
+        let types = [];
         let features = JSON.parse(annotation.featureCount);
 
+        types.push("TOTAL");
+        y.push(annotation.label || "id: " + annotation.id + " - ");
+        x.push(features.total);
+
         Object.keys(features).forEach((type) => {
-          y.push(type);
-          x.push(features[type]);
+          if (type !== "total") {
+            types.push(type.toUpperCase());
+            y.push(annotation.label || "id: " + annotation.id + " - ");
+            x.push(features[type]);
+          }
         });
 
         traces.push({
-          x: x,
-          y: y,
-          orientation: "h",
           name: annotation.label || annotation.name,
+          x: x,
+          y: [types, y],
+          orientation: "h",
           type: "bar",
           marker: {
             color: colors[index],
@@ -59,12 +66,13 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
 
   const getLayout = () => {
     let layout = {
+      title: "Feature types",
       showlegend: true,
       legend: {
-        x: 0.1,
-        y: -0.7,
-        xanchor: "center",
+        x: -0.37,
+        y: -0.25,
       },
+      barmode: "bar",
       xaxis: {
         title: { text: "Number", standoff: 20 },
         tickfont: {
@@ -73,6 +81,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           color: "black",
         },
         ticklen: 12,
+        tickson: 2,
         automargin: true,
       },
       yaxis: {
@@ -81,7 +90,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           text: "Features",
           standoff: 20,
         },
-        tickangle: 45,
+        showgrid: true,
         side: "left",
         overlaying: "y",
         color: "grey",
@@ -98,8 +107,8 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   };
 
   return (
-    <div className="animate-grow-y w-full h-full flex items-center">
-      <div id="plotlyAnnotationFeatureTypes" className="w-full" />
+    <div className="animate-grow-y w-full h-full">
+      <div id="plotlyAnnotationFeatureTypes" className="w-full h-full" />
     </div>
   );
 };
