@@ -12,7 +12,7 @@
 **/.pnp.js
 
 # config
-**/local.conf
+**/local.config
 
 # production
 **/build
@@ -26,6 +26,10 @@
 **/yarn-error.log*
 *.log
 
+**/setup_dev.sh
+
 # VS CODE
 **/.vscode
-local.config
+
+
+**/setup_dev.sh

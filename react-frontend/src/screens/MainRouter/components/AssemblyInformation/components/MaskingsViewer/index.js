@@ -1,22 +1,40 @@
 import { useEffect, useState } from "react";
-import Plot from "react-plotly.js";
-import propTypes from "prop-types";
 import Button from "../../../../../../components/Button";
 import { Download } from "grommet-icons";
+import { newPlot } from "plotly.js";
 
-const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
-  const [elementsData, setElementsData] = useState([]);
-  const [elementsLayout, setElementsLayout] = useState([]);
-  const [repetitivenessData, setRepetitivenessData] = useState([]);
-  const [repetitivenessLayout, setRepetitivenessLayout] = useState([]);
+const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
+  const [data1, setData1] = useState({});
+  const [layout1, setLayout1] = useState({});
+  const [data2, setData2] = useState({});
+  const [layout2, setLayout2] = useState({});
+
+  const plotlyDivElements = document.getElementById("plotlyRepeatElements");
+  useEffect(() => {
+    if (plotlyDivElements) {
+      newPlot("plotlyRepeatElements", data1, layout1, {
+        responsive: true,
+        useResizeHandler: true,
+      });
+    }
+  }, [plotlyDivElements]);
+
+  const plotlyDivRepet = document.getElementById("plotlyRepetitiveness");
+  useEffect(() => {
+    if (plotlyDivRepet) {
+      newPlot("plotlyRepetitiveness", data2, layout2, {
+        responsive: true,
+        useResizeHandler: true,
+      });
+    }
+  }, [plotlyDivRepet]);
 
   useEffect(() => {
     getElementsData();
     getElementsLayout();
     getRepetitivenessData();
     getRepetitivenessLayout();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [assembly?.id]);
 
   const getElementsData = () => {
     let tracks = [];
@@ -45,36 +63,24 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       repeatmasker.forEach((analysis) => {
         names.push(analysis.name);
         sines_lengths.push(analysis["sines_length"]);
-        sines_numbers.push(
-          analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        sines_numbers.push(analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         lines_lengths.push(analysis["lines_length"]);
-        lines_numbers.push(
-          analysis["lines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        );
+        lines_numbers.push(analysis["lines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         ltr_elements_lengths.push(analysis["ltr_elements_length"]);
         ltr_elements_numbers.push(
-          analysis["ltr_elements"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["ltr_elements"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         dna_elements_lengths.push(analysis["dna_elements_length"]);
         dna_elements_numbers.push(
-          analysis["dna_elements"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["dna_elements"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         rolling_circles_lengths.push(analysis["rolling_circles_length"]);
         rolling_circles_numbers.push(
-          analysis["rolling_circles"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["rolling_circles"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         unclassified_lengths.push(analysis["unclassified_length"]);
         unclassified_numbers.push(
-          analysis["unclassified"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["unclassified"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         small_rna_lengths.push(analysis["small_rna_length"]);
         small_rna_numbers.push(
@@ -82,21 +88,15 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         );
         satellites_lengths.push(analysis["satellites_length"]);
         satellites_numbers.push(
-          analysis["satellites"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["satellites"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         simple_repeats_lengths.push(analysis["simple_repeats_length"]);
         simple_repeats_numbers.push(
-          analysis["simple_repeats"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["simple_repeats"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
         low_complexity_lengths.push(analysis["low_complexity_length"]);
         low_complexity_numbers.push(
-          analysis["low_complexity"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["low_complexity"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 
@@ -281,25 +281,36 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       width: 0.5,
     });
 
-    setElementsData(tracks);
+    setData1(tracks);
   };
 
   const getElementsLayout = () => {
-    setElementsLayout({
+    setLayout1({
       title: "Repeats",
       barmode: "stack",
       margin: { pad: 6 },
-      dragmode: false,
       separator: true,
       yaxis: {
         tickangle: 45,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       xaxis: {
         automargin: true,
         title: { text: "Bases masked", standoff: 10 },
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       legend: {
         orientation: "h",
@@ -322,25 +333,15 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
     let names = [];
     repeatmasker.length > 0 &&
       repeatmasker.forEach((analysis) => {
-        let total =
-          analysis.total_repetitive_length +
-          analysis.total_non_repetitive_length;
+        let total = analysis.total_repetitive_length + analysis.total_non_repetitive_length;
         names.push(analysis.name);
-        total_repetitive_length.push(
-          (analysis["total_repetitive_length"] * 100) / total
-        );
+        total_repetitive_length.push((analysis["total_repetitive_length"] * 100) / total);
         total_repetitive_length_absolute.push(
-          analysis["total_repetitive_length"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["total_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
-        total_non_repetitive_length.push(
-          (analysis["total_non_repetitive_length"] * 100) / total
-        );
+        total_non_repetitive_length.push((analysis["total_non_repetitive_length"] * 100) / total);
         total_non_repetitive_length_absolute.push(
-          analysis["total_non_repetitive_length"]
-            .toString()
-            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          analysis["total_non_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
 
@@ -381,21 +382,26 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
       width: 0.5,
     });
 
-    setRepetitivenessData(tracks);
+    setData2(tracks);
   };
 
   const getRepetitivenessLayout = () => {
-    setRepetitivenessLayout({
+    setLayout2({
       title: "Repetitiveness",
       barmode: "stack",
       margin: { pad: 6 },
-      dragmode: false,
       separator: true,
       yaxis: {
         tickangle: 45,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -403,6 +409,12 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
         range: [0, 100],
         tick0: 0,
         dtick: 10,
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       legend: {
         orientation: "h",
@@ -414,47 +426,32 @@ const MaskingsViewer = ({ repeatmasker, assemblyName }) => {
   };
 
   return (
-    <div className="mx-8 animate-grow-y">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
-        <div className="shadow-lg rounded-lg p-2 bg-white">
-          <Plot
-            data={elementsData}
-            layout={elementsLayout}
-            config={{ responsive: true, displayModeBar: false }}
-            useResizeHandler={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-        <div className="shadow-lg rounded-lg p-2 bg-white relative">
-          <Plot
-            data={repetitivenessData}
-            layout={repetitivenessLayout}
-            config={{ responsive: true, displayModeBar: false }}
-            useResizeHandler={true}
-            style={{ width: "100%", height: "100%" }}
-          />
-          <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
-            <a
-              href={process.env.REACT_APP_NEXTCLOUD_DOWNLOAD_ADRESS}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex justify-center items-center"
-            >
-              <Button color="link">
-                <Download className="stroke-current" color="blank" />
-              </Button>
-            </a>
-          </div>
-        </div>
+    <div className="animate-grow-y relative">
+      <div className="flex">
+        <div id="plotlyRepeatElements" className="w-full h-full" />
+        <div id="plotlyRepetitiveness" className="w-full h-full" />
+      </div>
+      <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
+        <a
+          href={
+            process.env.REACT_APP_FILE_SERVER_ADRESS +
+            "/apps/files/?dir=/GnomData/taxa/" +
+            taxon.scientificName.replace(/[^a-zA-Z0-9\S]/gi, "_") +
+            "/" +
+            assembly.name +
+            "/analyses/repeatmasker"
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-0 right-0 m-4 opacity-50 hover:opacity-100 flex justify-center items-center"
+        >
+          <Button color="link">
+            <Download className="stroke-current" color="blank" />
+          </Button>
+        </a>
       </div>
     </div>
   );
 };
 
 export default MaskingsViewer;
-
-MaskingsViewer.defaultProps = { repeatmasker: [] };
-
-MaskingsViewer.propTypes = {
-  repeatmasker: propTypes.array,
-};
