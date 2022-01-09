@@ -1,4 +1,4 @@
-from modules.notifications import notify_fileserver
+from .producer import notify_fileserver
 
 
 def scanFiles():

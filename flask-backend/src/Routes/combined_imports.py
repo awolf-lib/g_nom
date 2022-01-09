@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.notifications import createNotification
-from modules.combined_imports import fetchImportDirectory, importDataset, validateFileInfo
+from modules.combined_imports import fetchImportDirectory, import_dataset_with_queue, validateFileInfo
 from modules.users import validateActiveToken
 
 # setup blueprint name
@@ -65,7 +65,7 @@ def imports_bp_import_dataset():
         milts = req.get("milts", [])
         repeatmaskers = req.get("repeatmaskers", [])
 
-        data, notification = importDataset(
+        data, notification = import_dataset_with_queue(
             taxon, assembly, userID, annotations, mappings, buscos, fcats, milts, repeatmaskers, assemblyID
         )
 

@@ -97,6 +97,12 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
         title: { text: "Contig size (kb)", standoff: 10 },
         tickangle: 45,
         automargin: true,
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       yaxis: {
         title: {
@@ -106,6 +112,12 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
         side: "right",
         overlaying: "y2",
         color: "grey",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       yaxis2: {
         title: {
@@ -113,6 +125,12 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
           standoff: 20,
         },
         side: "left",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
     };
     return layout;

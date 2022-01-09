@@ -1,4 +1,4 @@
-import { Close, Edit, Trash } from "grommet-icons";
+import { Close, Edit, Search, Trash } from "grommet-icons";
 import { SetStateAction, useEffect, useState } from "react";
 import {
   deleteAssemblyByAssemblyID,
@@ -10,7 +10,7 @@ import Button from "../../../../../../../../components/Button";
 import Input from "../../../../../../../../components/Input";
 import { useNotification } from "../../../../../../../../components/NotificationProvider";
 import NewDataImportForm from "./components/NewDataImportForm";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { AssemblyInterface } from "../../../../../../../../tsInterfaces/tsInterfaces";
 import LoadingSpinner from "../../../../../../../../components/LoadingSpinner";
 
@@ -24,7 +24,7 @@ const AssemblyPicker = ({
   const [assemblies, setAssemblies] = useState<AssemblyInterface[]>([]);
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
-  const [isRemoving, setIsRemoving] = useState<boolean>(false);
+  const [isRemoving, setIsRemoving] = useState<number>(-1);
 
   const [targetAssembly, setTargetAssembly] = useState<any>();
 
@@ -89,28 +89,36 @@ const AssemblyPicker = ({
   };
 
   const handleDeleteAssembly = async (assemblyID: number, confirmation: string) => {
-    if (toggleConfirmDeletion !== assemblyID) {
-      setToggleConfirmDeletion(assemblyID);
-    } else {
-      setConfirmDeletion(confirmation);
+    if (isRemoving == -1) {
+      if (toggleConfirmDeletion !== assemblyID) {
+        setToggleConfirmDeletion(assemblyID);
+      } else {
+        setConfirmDeletion(confirmation);
 
-      if (confirmation === "REMOVE") {
-        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
-        const token = JSON.parse(sessionStorage.getItem("token") || "");
+        if (confirmation === "REMOVE") {
+          const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+          const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-        if (userID && token) {
-          setIsRemoving(true);
-          const response = await deleteAssemblyByAssemblyID(assemblyID, parseInt(userID), token);
-          setToggleConfirmDeletion(-1);
-          setConfirmDeletion("");
-          loadAssemblies();
+          if (userID && token) {
+            setIsRemoving(assemblyID);
+            const response = await deleteAssemblyByAssemblyID(assemblyID, parseInt(userID), token);
+            setToggleConfirmDeletion(-1);
+            setConfirmDeletion("");
+            loadAssemblies();
 
-          if (response.notification && response.notification.length > 0) {
-            response.notification.map((n: any) => handleNewNotification(n));
+            if (response.notification && response.notification.length > 0) {
+              response.notification.map((n: any) => handleNewNotification(n));
+            }
+            setIsRemoving(-1);
           }
-          setIsRemoving(false);
         }
       }
+    } else {
+      handleNewNotification({
+        label: "Info",
+        message: "There is another ongoing removal. Please wait...",
+        type: "info",
+      });
     }
   };
 
@@ -133,15 +141,25 @@ const AssemblyPicker = ({
       </div>
       <div className="animate-grow-y min-h-1/4 max-h-1/2">
         {assemblies && assemblies.length > 0 ? (
-          assemblies.map((assembly: any) => (
+          assemblies.map((assembly) => (
             <div key={assembly.id} className="border-t border-b odd:bg-indigo-50 shadow">
               <div className="flex py-4 text-center">
                 <div className="w-16">{assembly.id}</div>
                 <div className="w-2/5">{assembly.label || assembly.name}</div>
                 <div className="w-1/5">{assembly.username}</div>
                 <div className="w-2/5">{assembly.addedOn}</div>
-                {!isRemoving ? (
+                {isRemoving !== assembly.id ? (
                   <div className="flex justify-around items-center w-64">
+                    <Link
+                      to={"/g-nom/assemblies/assembly?assemblyID=" + assembly.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteAssembly(assembly.id, "");
+                      }}
+                      className="flex cursor-pointer hover:bg-gray-600 hover:text-white p-1 rounded-lg transform scale-125"
+                    >
+                      <Search className="stroke-current" color="blank" size="small" />
+                    </Link>
                     {toggleConfirmDeletion !== assembly.id ? (
                       <div className="flex justify-between items-center">
                         <div className="flex items-center justify-center">

@@ -1,7 +1,7 @@
 import pika
 from os import environ, _exit
 from json import loads
-from subprocess import PIPE, run, check_output
+from subprocess import PIPE, run
 from sys import exit
 
 
@@ -44,17 +44,26 @@ def callback(ch, method, properties, body):
     message = loads(body)
 
     try:
-        if message["action"] == "Scan":
+        task_action = message["action"]
+        task_type = message["type"]
+
+        print(f"Task received: {task_action}: {task_type}")
+
+        handle_selector = {}
+        if task_action == "Scan":
             handle_selector = {"All": handle_scan_filesystem}
-        elif message["action"] == "User":
+        elif task_action == "User":
             handle_selector = {"Create": handle_create_user, "Delete": handle_delete_user}
-
-        handler = handle_selector[message["type"]]
-
-        if handler(message):
-            ch.basic_ack(delivery_tag=method.delivery_tag)
         else:
             ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        if task_type in handle_selector:
+            handler = handle_selector[task_type]
+            handler(message)
+
+        print(f"Task done: {task_action}: {task_type}")
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as err:
         print(str(err))
         ch.basic_ack(delivery_tag=method.delivery_tag)

@@ -1,6 +1,6 @@
-import { Book, Bookmark, Close, Contract, Down, LinkTop, Up } from "grommet-icons";
+import { Book, Bookmark, Close, Configure, Contract, Down, LinkTop, Up } from "grommet-icons";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import {
   addBookmark,
@@ -83,7 +83,7 @@ const AssemblyInformation = () => {
   const [hoverBookmark, setHoverBookmark] = useState<boolean>(false);
 
   const [toggleTaxon, setToggleTaxon] = useState<boolean>(true);
-  const [toggleAssembly, setToggleAssembly] = useState<boolean>(false);
+  const [toggleAssembly, setToggleAssembly] = useState<boolean>(true);
   const [toggleAnnotations, setToggleAnnotations] = useState<boolean>(false);
   const [toggleBuscoAnalyses, setToggleBuscoAnalyses] = useState<boolean>(false);
   const [toggleFcatAnalyses, setToggleFcatAnalyses] = useState<boolean>(false);
@@ -133,6 +133,7 @@ const AssemblyInformation = () => {
   useEffect(() => {
     if (toggleTaxon) {
       loadTaxon();
+      window.scrollTo(0, 0);
     }
   }, [assembly?.taxonID, toggleTaxon]);
 
@@ -452,6 +453,8 @@ const AssemblyInformation = () => {
     window.scrollTo(0, 0);
   };
 
+  const userRole = JSON.parse(sessionStorage.getItem("userRole") || "");
+
   return (
     <div className="pb-32 bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-gray-800">
       {/* Header */}
@@ -484,12 +487,22 @@ const AssemblyInformation = () => {
           </div>
         )}
         <div className="flex items-center">
-          <div>
+          {taxon?.id && assembly?.id && userRole === "admin" && (
+            <Link
+              to={"/g-nom/assemblies/data?taxID=" + taxon.id + "&assemblyID=" + assembly.id}
+              className="mr-4 animate-fade-in"
+            >
+              <Button onClick={() => shrinkAll()} color="secondary">
+                <Configure className="stroke-current animate-grow-y" color="blank" />
+              </Button>
+            </Link>
+          )}
+          <div className="mr-4 animate-fade-in">
             <Button onClick={() => shrinkAll()} color="secondary">
               <Contract className="stroke-current animate-grow-y" color="blank" />
             </Button>
           </div>
-          <div className="mx-4">
+          <div className="mr-4 animate-fade-in">
             <Button onClick={() => window.scrollTo(0, 0)} color="secondary">
               <LinkTop className="stroke-current animate-grow-y" color="blank" />
             </Button>
@@ -497,6 +510,7 @@ const AssemblyInformation = () => {
           <div
             onMouseEnter={() => setHoverBookmark(true)}
             onMouseLeave={() => setHoverBookmark(false)}
+            className="animate-fade-in"
           >
             <Button onClick={() => handleBookmarkAssembly()} color="secondary">
               {!assembly?.bookmarked ? (

@@ -37,12 +37,12 @@ const FeaturesListElement = ({
       className="text-center hover:bg-blue-100 hover:text-blue-600 py-1 px-4 flex shadow border transition duration-300 animate-grow-y"
     >
       <div className="flex items-center w-full py-2 text-sm">
-        <div className="w-2/12 truncate">{seqID}</div>
-        <div className="w-1/12 truncate">{type}</div>
+        <div className="w-3/12 truncate">{seqID}</div>
+        <div className="w-2/12 truncate">{type}</div>
         <div className="w-1/12 truncate">{start}</div>
         <div className="w-1/12 truncate">{end}</div>
         <div
-          className={noAssemblyDetails ? "w-full truncate text-left" : "w-3/12 truncate text-left"}
+          className={noAssemblyDetails ? "w-1/2 truncate text-left" : "w-3/12 truncate text-left"}
         >
           {Object.keys(attributes) && Object.keys(attributes).length > 0 ? (
             <div>

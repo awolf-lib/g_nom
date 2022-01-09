@@ -19,4 +19,4 @@ def connect(database=DB_NAME):
         return connection, cursor, {}
     except Exception as err:
         print(str(err))
-        return 0, 0, createNotification(message=str(err))
+        return 0, 0, createNotification(message=f"DbConnectionError: {str(err)}")

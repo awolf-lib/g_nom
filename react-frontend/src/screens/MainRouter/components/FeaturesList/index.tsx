@@ -165,7 +165,7 @@ const FeaturesList = ({
       <hr className="border-gray-400" />
       <div className="sticky top-16 flex w-full px-4 text-center bg-gray-600 text-white font-semibold py-2 text-xs animate-grow-y">
         <div
-          className="w-2/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+          className="w-3/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
           onClick={() =>
             setSortBy((prevState) =>
               prevState.column === "seqID"
@@ -186,7 +186,7 @@ const FeaturesList = ({
           SeqID
         </div>
         <div
-          className="w-1/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+          className="w-2/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
           onClick={() =>
             setSortBy((prevState) =>
               prevState.column === "type"
@@ -252,7 +252,7 @@ const FeaturesList = ({
           onClick={() => setExpandAttributes((prevState) => !prevState)}
           className={
             assemblyID
-              ? "w-full flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+              ? "w-1/2 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
               : "w-3/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
           }
         >
@@ -311,7 +311,7 @@ const FeaturesList = ({
       <div>
         {features && features.length > 0 ? (
           features.map((feature) => (
-            <div key={feature.id}>
+            <div key={feature.id} className="odd:bg-white even:bg-gray-100">
               <FeaturesListElement
                 feature={feature}
                 noAssemblyDetails={assemblyID || 0}

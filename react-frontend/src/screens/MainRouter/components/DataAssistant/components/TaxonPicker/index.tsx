@@ -44,14 +44,9 @@ const TaxonPicker = ({
     if (taxon?.id) {
       let newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set("taxID", JSON.stringify(taxon.id));
-      setSearchParams(newSearchParams);
-    }
-  }, [taxon?.id]);
-
-  useEffect(() => {
-    if (taxon?.ncbiTaxonID) {
-      let newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.set("ncbiTaxID", JSON.stringify(taxon.ncbiTaxonID));
+      if (taxon?.ncbiTaxonID) {
+        newSearchParams.set("ncbiTaxID", JSON.stringify(taxon.ncbiTaxonID));
+      }
       setSearchParams(newSearchParams);
     }
   }, [taxon?.id]);

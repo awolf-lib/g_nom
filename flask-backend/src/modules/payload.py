@@ -26,7 +26,23 @@ class User:
     password: str
 
 
+@dataclass(frozen=True)
+class Data:
+    taxon: dict
+    assembly: dict
+    userID: int
+    annotations: list
+    mappings: list
+    buscos: list
+    fcats: list
+    milts: list
+    repeatmaskers: list
+    append_assembly_id: int
+
+
 Action = Union[Literal["Added"], Literal["Removed"]]
+
+# JBROWSE PAYLOADS
 
 
 @dataclass(frozen=True)
@@ -55,6 +71,11 @@ class MappingPayload:
     type: Literal["Mapping"] = "Mapping"
 
 
+Payload = Union[AssemblyPayload, AnnotationPayload, MappingPayload]
+
+# FILESERVER PAYLOADS
+
+
 @dataclass(frozen=True)
 class FileserverPayload:
     action: Action
@@ -68,4 +89,12 @@ class UserPayload:
     type: Union[Literal["Create"], Literal["Delete"]]
 
 
-Payload = Union[AssemblyPayload, AnnotationPayload, MappingPayload]
+# WORKER PAYLOADS
+
+
+@dataclass(frozen=True)
+class WorkerPayload:
+    action: Literal["Update"]
+    type: Literal["LocalTaxonTree"]
+    data: Data
+    taskID: str

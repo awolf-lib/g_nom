@@ -67,6 +67,12 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
       },
       xaxis: {
         title: { text: "Number", standoff: 20 },
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       yaxis: {
         title: {
@@ -78,6 +84,12 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
         side: "left",
         overlaying: "y",
         color: "grey",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
     };
     setLayout(layout);

@@ -4,6 +4,7 @@ from os import listdir
 from os.path import basename, isdir, join, dirname, getsize
 from re import compile
 from sys import argv
+from datetime import datetime
 
 from modules.environment import BASE_PATH_TO_IMPORT
 from modules.assemblies import deleteAssemblyByAssemblyID, import_assembly, FASTA_FILE_PATTERN
@@ -11,6 +12,8 @@ from modules.annotations import ANNOTATION_FILE_PATTERN, import_annotation
 from modules.mappings import import_mapping
 from modules.notifications import createNotification
 from modules.analyses import import_analyses
+from modules.tasks import addTask, isTaxonCurrentlyEdited, updateTask
+from .producer import notify_worker
 
 FILE_PATTERN_DICT = {
     "image": {
@@ -185,10 +188,56 @@ def validateFileInfo(file_info, forceType=""):
     return datasets, createNotification("Success", "At least one valid dataset detetcted!", "success")
 
 
-# TODO: check why text-index generation is not working sometimes
-# TODO: check if removing mapping is working
-# TODO: add analyses
-# TODO: add .sam support
+def import_dataset_with_queue(
+    taxon,
+    assembly,
+    userID,
+    annotations=[],
+    mappings=[],
+    buscos=[],
+    fcats=[],
+    milts=[],
+    repeatmaskers=[],
+    append_assembly_id=0,
+):
+    try:
+        taskID = str(uuid1())
+
+        currently_edited = isTaxonCurrentlyEdited(taxon["id"])
+        if currently_edited:
+            return {"id": taskID, "status": "aborted", "startTime": datetime.now()}, createNotification(
+                "Error", "Import not started. Taxon is currently edited!", "error"
+            )
+
+        addTask(taskID, taxon["id"])
+
+        notify_worker(
+            "Import",
+            "Dataset",
+            {
+                "taxon": taxon,
+                "assembly": assembly,
+                "userID": userID,
+                "annotations": annotations,
+                "mappings": mappings,
+                "buscos": buscos,
+                "fcats": fcats,
+                "milts": milts,
+                "repeatmaskers": repeatmaskers,
+                "append_assembly_id": append_assembly_id,
+            },
+            taskID,
+        )
+
+        return {"id": taskID, "status": "running", "startTime": datetime.now()}, createNotification(
+            "Success", "Import started. You will be notified when it finished!", "success"
+        )
+
+    except Exception as err:
+        return {"id": "", "status": "aborted", "startTime": datetime.now()}, createNotification(
+            message=f"StartImportError: {str(err)}"
+        )
+
 
 # import for all possible data
 def importDataset(
@@ -202,6 +251,7 @@ def importDataset(
     milts=[],
     repeatmaskers=[],
     append_assembly_id=0,
+    taskID="",
 ):
     """
     Imports assembly with all supported datasets (annotations, mappings, Busco, fCat, Milts, Repeatmasker)
@@ -216,6 +266,7 @@ def importDataset(
         "repeatmaskerIDs": [],
     }
     notifications = []
+    process = 0
 
     if not taxon:
         return summary, createNotification(message="Missing taxon information!")
@@ -234,7 +285,7 @@ def importDataset(
 
             assembly = assembly[0]
 
-            assembly_id, notification = import_assembly(taxon, assembly, userID)
+            assembly_id, notification = import_assembly(taxon, assembly, userID, taskID)
             if not assembly_id:
                 return summary, notification
             summary["assemblyID"] = assembly_id
@@ -246,12 +297,33 @@ def importDataset(
         assembly_id = append_assembly_id
 
     try:
-        for annotation in annotations:
+        if taskID:
+            progress = 30
+            updateTask(taskID, "running", progress)
+    except:
+        pass
+
+    try:
+        for idx, annotation in enumerate(annotations):
             annotation_id, notification = import_annotation(taxon, assembly_id, annotation, userID)
             if annotation_id:
                 summary["annotationIDs"] += [annotation_id]
             else:
                 notifications += notification
+
+            try:
+                if taskID:
+                    progress += 20 // len(annotations)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 50
+                updateTask(taskID, "running", progress)
+        except:
+            pass
 
         for mapping in mappings:
             mapping_id, notification = import_mapping(taxon, assembly_id, mapping, userID)
@@ -260,12 +332,40 @@ def importDataset(
             else:
                 notifications += notification
 
+            try:
+                if taskID:
+                    progress += 10 // len(mappings)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 60
+                updateTask(taskID, "running", progress)
+        except:
+            pass
+
         for busco in buscos:
             busco_id, notification = import_analyses(taxon, assembly_id, busco, "busco", userID)
             if busco_id:
                 summary["buscoIDs"] += [busco_id]
             else:
                 notifications += notification
+
+            try:
+                if taskID:
+                    progress += 20 // len(buscos)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 70
+                updateTask(taskID, "running", progress)
+        except:
+            pass
 
         for fcat in fcats:
             fcat_id, notification = import_analyses(taxon, assembly_id, fcat, "fcat", userID)
@@ -274,6 +374,20 @@ def importDataset(
             else:
                 notifications += notification
 
+            try:
+                if taskID:
+                    progress += 10 // len(fcats)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 80
+                updateTask(taskID, "running", progress)
+        except:
+            pass
+
         for milt in milts:
             milt_id, notification = import_analyses(taxon, assembly_id, milt, "milts", userID)
             if milt_id:
@@ -281,12 +395,40 @@ def importDataset(
             else:
                 notifications += notification
 
+            try:
+                if taskID:
+                    progress += 10 // len(milts)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 90
+                updateTask(taskID, "running", progress)
+        except:
+            pass
+
         for repeatmasker in repeatmaskers:
             repeatmasker_id, notification = import_analyses(taxon, assembly_id, repeatmasker, "repeatmasker", userID)
             if repeatmasker_id:
                 summary["repeatmaskerIDs"] += [repeatmasker_id]
             else:
                 notifications += notification
+
+            try:
+                if taskID:
+                    progress += 10 // len(repeatmaskers)
+                    updateTask(taskID, "running", round(progress))
+            except:
+                pass
+
+        try:
+            if taskID:
+                progress = 100
+                updateTask(taskID, "running", progress)
+        except:
+            pass
 
         if len(notifications) == 0:
             notifications += createNotification("Success", "All files successfully imported!", "success")

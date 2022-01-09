@@ -4,12 +4,14 @@ from os.path import exists, basename, getsize
 from subprocess import run
 from json import dumps
 from re import compile, sub
+from math import floor
 
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
 from .db_connection import DB_NAME, connect
-from .notifications import createNotification, notify_assembly
-from .taxa import updateTaxonTree
+from .notifications import createNotification
 from .files import scanFiles
+from .producer import notify_assembly, notify_worker
+from .tasks import updateTask
 
 FASTA_FILE_PATTERN = {
     "main_file": compile(
@@ -21,7 +23,7 @@ FASTA_FILE_PATTERN = {
 
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of .fasta
-def import_assembly(taxon, dataset, userID):
+def import_assembly(taxon, dataset, userID, taskID=""):
     """
     Import workflow for new assemblies.
     """
@@ -50,7 +52,7 @@ def import_assembly(taxon, dataset, userID):
             deleteAssemblyByAssemblyID(assembly_id)
             return 0, error
 
-        fasta_content, error = parseFasta(main_file_path)
+        fasta_content, error = parseFasta(main_file_path, taskID)
 
         if not fasta_content:
             deleteAssemblyByAssemblyID(assembly_id)
@@ -67,14 +69,29 @@ def import_assembly(taxon, dataset, userID):
         imported_status, error = __importDB(taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content)
 
         if not imported_status:
-            d_status, d_error = deleteAssemblyByAssemblyID(assembly_id)
-            return 0, error + d_error
+            deleteAssemblyByAssemblyID(assembly_id)
+            return 0, error
 
-        tree, error = updateTaxonTree()
+        try:
+            connection, cursor, error = connect()
+            cursor.execute(
+                "SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id", (taxon["id"],)
+            )
+            assemblyCountPerTaxon = cursor.fetchone()
+
+            if not assemblyCountPerTaxon:
+                print("UPDATING TAXON TREE... (FALLBACK)", flush=True)
+                notify_worker("Update", "LocalTaxonTree")
+            else:
+                if assemblyCountPerTaxon[0] == 1:
+                    print("UPDATING TAXON TREE... (ADD)", flush=True)
+                    notify_worker("Update", "LocalTaxonTree")
+        except Exception as err:
+            print(str(err), flush=True)
 
         scanFiles()
 
-        print(f"New assembly ({basename(main_file_path)}) added!")
+        print(f"New assembly ({basename(main_file_path)}) added!", flush=True)
         return assembly_id, createNotification(
             "Success", f"Successfully imported {basename(main_file_path)}!", "success"
         )
@@ -99,6 +116,9 @@ def __get_new_assembly_ID():
             next_id = 1
         else:
             next_id = auto_increment_counter
+
+        cursor.execute("ALTER TABLE assemblies AUTO_INCREMENT = %s", (next_id + 1,))
+        connection.commit()
     except Exception as err:
         return 0, createNotification(message=f"AssemblyCreationError: {str(err)}")
 
@@ -117,7 +137,7 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
             return 0, "", createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
-            run(["gunzip", old_file_path])
+            run(["gunzip", "-q", old_file_path])
             old_file_path = old_file_path[:-3]
 
         # # check if file exists already in db
@@ -200,11 +220,7 @@ def deleteAssemblyByAssemblyID(assembly_id):
         if not status:
             return 0, error
 
-        notify_assembly(assembly_id, assembly_name, "", "Remove")
-
-        tree, error = updateTaxonTree()
-        if not tree:
-            return 0, error
+        notify_assembly(assembly_id, assembly_name, "", "Removed")
 
         scanFiles()
 
@@ -236,6 +252,18 @@ def __deleteAssemblyEntryByAssemblyID(id):
         connection, cursor, error = connect()
         cursor.execute("DELETE FROM assemblies WHERE id=%s", (id,))
         connection.commit()
+
+        cursor.execute("SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id", (id,))
+        assemblyCountPerTaxon = cursor.fetchone()
+
+        if not assemblyCountPerTaxon:
+            print("UPDATING TAXON TREE... (FALLBACK)")
+            notify_worker("Update", "LocalTaxonTree")
+        else:
+            if assemblyCountPerTaxon[0] == 1:
+                print("UPDATING TAXON TREE... (ADD)")
+                notify_worker("Update", "LocalTaxonTree")
+
         return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDelitionError3: {str(err)}")
@@ -264,8 +292,9 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         charCountString = dumps(file_content["statistics"]["cumulative_char_counts"], separators=(",", ":"))
 
         cursor.execute(
-            "INSERT INTO assemblies (taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, numberOfSequences, sequenceType, cumulativeSequenceLength, n50, n90, shortestSequence, largestSequence, meanSequence, medianSequence, gcPercent, gcPercentMasked, lengthDistributionString, charCountString) VALUES (%s, %s, %s, %s, NOW(), %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO assemblies (id, taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, numberOfSequences, sequenceType, cumulativeSequenceLength, n50, n90, shortestSequence, largestSequence, meanSequence, medianSequence, gcPercent, gcPercentMasked, lengthDistributionString, charCountString) VALUES (%s, %s, %s, %s, %s, NOW(), %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (
+                assembly_id,
                 taxonID,
                 assembly_name,
                 path,
@@ -312,13 +341,14 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
+        print(str(err), flush=True)
         return 0, createNotification(message=f"AssemblyImportDbError: {str(err)}")
 
     return 1, []
 
 
 # parse fasta
-def parseFasta(path):
+def parseFasta(path, taskID=""):
     """
     Reads content of .fa/.fasta/.faa/.fna
     """
@@ -329,7 +359,7 @@ def parseFasta(path):
         return 0, createNotification(message="Path not found.")
 
     filename = basename(path)
-    print(f"Parsing {filename}...")
+    print(f"Parsing {filename}...", flush=True)
 
     extensionMatch = FASTA_FILE_PATTERN["main_file"].match(filename)
     if not extensionMatch:
@@ -441,7 +471,12 @@ def parseFasta(path):
 
                 # print progress status
                 progress = ((idx + 1) * 100) // len(lines)
-                print(f"{progress}% done", end="\r")
+                if not ((floor(progress / 10) * 10) % 10):
+                    try:
+                        if taskID:
+                            updateTask(taskID, "running", round((30 * progress) // 100))
+                    except:
+                        pass
 
         # sequence type auto detection
         DNA_RNA_ALPHABET = ["A", "a", "C", "c", "G", "g", "T", "t", "U", "u", "N", "n"]
@@ -525,10 +560,10 @@ def parseFasta(path):
         gc = gc_count / cumulative_sequence_length
         gc_masked = gc_count_masked / cumulative_sequence_length
 
-        print("\nLength distribution:")
-        for key in length_distribution:
-            print("{:10s}".format(str(key)) + f": {length_distribution[key]}")
-        print("")
+        # print("\nLength distribution:")
+        # for key in length_distribution:
+        #     print("{:10s}".format(str(key)) + f": {length_distribution[key]}")
+        # print("")
 
         statistics = {
             "cumulative_sequence_length": cumulative_sequence_length,
@@ -545,10 +580,10 @@ def parseFasta(path):
             "length_distribution": length_distribution,
         }
 
-        print("\nSequence statistics:")
-        for key in statistics:
-            print("{:30s}".format(" ".join(key.split("_"))) + f": {statistics[key]}")
-        print("")
+        # print("\nSequence statistics:")
+        # for key in statistics:
+        #     print("{:30s}".format(" ".join(key.split("_"))) + f": {statistics[key]}")
+        # print("")
 
         print(f"Done parsing {filename}!")
 

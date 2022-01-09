@@ -289,17 +289,28 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       title: "Repeats",
       barmode: "stack",
       margin: { pad: 6 },
-      dragmode: false,
       separator: true,
       yaxis: {
         tickangle: 45,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       xaxis: {
         automargin: true,
         title: { text: "Bases masked", standoff: 10 },
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       legend: {
         orientation: "h",
@@ -379,13 +390,18 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       title: "Repetitiveness",
       barmode: "stack",
       margin: { pad: 6 },
-      dragmode: false,
       separator: true,
       yaxis: {
         tickangle: 45,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -393,6 +409,12 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
         range: [0, 100],
         tick0: 0,
         dtick: 10,
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       legend: {
         orientation: "h",

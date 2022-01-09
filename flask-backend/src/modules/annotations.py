@@ -7,12 +7,11 @@ from subprocess import run
 from glob import glob
 from operator import contains, is_, is_not, lt, le, eq, ne, ge, gt
 
-from flask.json import load
-
-from .notifications import createNotification, notify_annotation
+from .notifications import createNotification
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_STORAGE, BASE_PATH_TO_IMPORT
 from .files import scanFiles
+from .producer import notify_annotation
 
 ANNOTATION_FILE_PATTERN = {
     "main_file": compile(r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff\.gz$)|(.*\.gff3\.gz$)"),
@@ -78,7 +77,9 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         run(args=["bgzip", "--force", new_file_path])
         new_file_path += ".gz"
 
-        imported_status, error = __importDB(assembly_id, annotation_name, new_file_path, userID, gff_content)
+        imported_status, error = __importDB(
+            annotation_id, assembly_id, annotation_name, new_file_path, userID, gff_content
+        )
 
         if not imported_status:
             deleteAnnotationByAnnotationID(annotation_id)
@@ -111,6 +112,9 @@ def __generate_annotation_name(assembly_name):
             next_id = 1
         else:
             next_id = auto_increment_counter
+
+        cursor.execute("ALTER TABLE genomicAnnotations AUTO_INCREMENT = %s", (next_id + 1,))
+        connection.commit()
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
@@ -131,7 +135,7 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
             return 0, createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
-            run(["gunzip", old_file_path])
+            run(["gunzip", "-q", old_file_path])
 
             if exists(old_file_path[:-3]):
                 old_file_path = old_file_path[:-3]
@@ -168,7 +172,6 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
         # check if main file was moved
         if not exists(new_file_path_main_file):
             return 0, createNotification(message="Moving annotation to storage failed!")
-        # add remove?
 
         # handle additional files
         for additional_file in dataset["additional_files"]:
@@ -184,7 +187,7 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
 
 
 # database import
-def __importDB(assembly_id, annotation_name, path, userID, file_content):
+def __importDB(annotation_id, assembly_id, annotation_name, path, userID, file_content):
     """
     G-nom database import (tables: annotations, annotationsSequences)
     """
@@ -193,8 +196,8 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
 
         featureCount = dumps(file_content["featureCountDistinct"])
         cursor.execute(
-            "INSERT INTO genomicAnnotations (assemblyID, name, path, featureCount, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, NOW())",
-            (assembly_id, annotation_name, path, featureCount, userID),
+            "INSERT INTO genomicAnnotations (id, assemblyID, name, path, featureCount, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, %s, NOW())",
+            (annotation_id, assembly_id, annotation_name, path, featureCount, userID),
         )
         annotationID = cursor.lastrowid
         connection.commit()
@@ -232,7 +235,6 @@ def __importDB(assembly_id, annotation_name, path, userID, file_content):
         cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
-        print(str(err))
         return 0, createNotification(message=f"AnnotationImportDbError: {str(err)}")
 
     return 1, []
@@ -313,7 +315,7 @@ def parseGff(path):
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
     # GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##sequence-region)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
     GFF3_FEATURE_PATTERN = compile(
-        r"^(\w+)[ \t]+([\.\w]+)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)[ \t]+([\.\d]+)[ \t]([\.+-])[ \t]+([\.012])(?:[ \t]*)?(.*)?$"
+        r"^(\w+)\s+([\.\w]+)\s+(\w+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
     GFF3_KEY_VALUE_PATTERN = compile(r"^(\w+)[:= ]+(.+)$")
 
@@ -335,23 +337,23 @@ def parseGff(path):
         phase = feature_raw[8]
         info_complete = feature_raw[9]
 
-        info_split = info_complete.split(";")
-
-        info_split_stripped = [info.strip().replace('"', "").replace("'", "") for info in info_split]
-
         info = {}
-        for i in info_split_stripped:
-            if not i:
-                continue
-            match = GFF3_KEY_VALUE_PATTERN.match(i)
-            if match:
-                try:
-                    key_value = {match[1]: float(match[2])}
-                except:
-                    key_value = {match[1]: match[2]}
-                info.update(key_value)
-            else:
-                print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
+
+        if info_complete != ".":
+            info_split = info_complete.split(";")
+            info_split_stripped = [info.strip().replace('"', "").replace("'", "") for info in info_split]
+            for i in info_split_stripped:
+                if not i:
+                    continue
+                match = GFF3_KEY_VALUE_PATTERN.match(i)
+                if match:
+                    try:
+                        key_value = {match[1]: float(match[2])}
+                    except:
+                        key_value = {match[1]: match[2]}
+                    info.update(key_value)
+                else:
+                    print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
 
         return {
             "seqID": seqID,
@@ -425,7 +427,7 @@ def parseGff(path):
 
             # no matching pattern
             else:
-                # print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
+                print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
                 continue
 
         featureCountDistinct.update({"total": number_of_features})
@@ -536,7 +538,6 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
             if "attributes" in feature:
                 features[idx]["attributes"] = loads(features[idx]["attributes"])
 
-
         if sortBy["column"] == "label":
             features = sorted(
                 features, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
@@ -546,8 +547,12 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
                 features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
             )
 
-        numberOperatorsDict = {"=": eq, "!=": ne, "<": lt, ">": gt, "<=": le, ">=": ge }
-        stringOperatorsDict = {"contains": contains, "is": is_, "is_not": is_not, }
+        numberOperatorsDict = {"=": eq, "!=": ne, "<": lt, ">": gt, "<=": le, ">=": ge}
+        stringOperatorsDict = {
+            "contains": contains,
+            "is": is_,
+            "is_not": is_not,
+        }
 
         if filter:
             if "taxonIDs" in filter:
@@ -561,7 +566,11 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
                             if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
                                 continue
 
-                            target, operatorString, valueString = attribute["target"], attribute["operator"], attribute["value"]
+                            target, operatorString, valueString = (
+                                attribute["target"],
+                                attribute["operator"],
+                                attribute["value"],
+                            )
 
                             if target in feature_attributes:
                                 check = False

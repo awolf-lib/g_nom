@@ -232,25 +232,34 @@ def callback(ch, method, properties, body):
     message = loads(body)
 
     try:
-        if message["action"] == "Added":
+        task_action = message["action"]
+        task_type = message["type"]
+
+        print(f"Task received: {task_action}: {task_type}")
+
+        handle_selector = {}
+        if task_action == "Added":
             handle_selector = {
                 "Assembly": handle_new_assembly,
                 "Mapping": handle_new_mapping,
                 "Annotation": handle_new_annotation,
             }
-        elif message["action"] == "Removed":
+        elif task_action == "Removed":
             handle_selector = {
                 "Assembly": handle_delete_assembly,
                 "Mapping": handle_delete_mapping,
                 "Annotation": handle_delete_annotation,
             }
-
-        handler = handle_selector[message["type"]]
-
-        if handler(message):
-            ch.basic_ack(delivery_tag=method.delivery_tag)
         else:
             ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        if task_type in handle_selector:
+            handler = handle_selector[task_type]
+            handler(message)
+
+        print(f"Task done: {task_action}: {task_type}")
+
+        ch.basic_ack(delivery_tag=method.delivery_tag)
     except Exception as err:
         print(str(err))
         ch.basic_ack(delivery_tag=method.delivery_tag)

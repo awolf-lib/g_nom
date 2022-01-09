@@ -9,6 +9,7 @@ import {
   Dataset,
   DatasetTypes,
   TreeNode,
+  fetchTaskStatus,
 } from "../../../../../../../../../../api";
 import { useNotification } from "../../../../../../../../../../components/NotificationProvider";
 import FileTree from "../../../../../../../../../../components/FileTree";
@@ -71,13 +72,14 @@ const NewDataImportForm = ({
     setLoadingFiles(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
-    const response = await fetchImportDirectory(userID, token);
-    if (response && response.payload) {
-      setImportDir(response.payload);
-    } else {
-      setImportDir(undefined);
-    }
-    setLoadingFiles(false);
+    await fetchImportDirectory(userID, token).then((response) => {
+      if (response && response.payload) {
+        setImportDir(response.payload);
+      } else {
+        setImportDir(undefined);
+      }
+      setLoadingFiles(false);
+    });
   };
 
   const alreadyMarkedForImport = (f: IImportFileInformation, fList: Dataset[]) => {
@@ -108,78 +110,78 @@ const NewDataImportForm = ({
     if (fileInformation && userID && token) {
       const minFileInformation = removeFileTreeAttributes(fileInformation);
 
-      const response = await validateFileInfo(minFileInformation, userID, token);
-
-      if (response && response.payload) {
-        Object.keys(response.payload).forEach((fileType) => {
-          switch (fileType) {
-            case "sequence":
-              if (!assembly?.id) {
-                if (response.payload.sequence!.length <= 1) {
-                  response.payload.sequence!.forEach((x) => {
-                    !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
-                  });
-                } else {
-                  setNewAssembly([
-                    response.payload.sequence!.reduce(function (prev, current) {
-                      return prev.main_file.size! > current.main_file.size! ? prev : current;
-                    }, response.payload.sequence![0]),
-                  ]);
-                  handleNewNotification({
-                    label: "Warning",
-                    message: "Directory contains multiple sequence files! Largest file selected!",
-                    type: "warning",
-                  });
+      await validateFileInfo(minFileInformation, userID, token).then((response) => {
+        if (response && response.payload) {
+          Object.keys(response.payload).forEach((fileType) => {
+            switch (fileType) {
+              case "sequence":
+                if (!assembly?.id) {
+                  if (response.payload.sequence!.length <= 1) {
+                    response.payload.sequence!.forEach((x) => {
+                      !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
+                    });
+                  } else {
+                    setNewAssembly([
+                      response.payload.sequence!.reduce(function (prev, current) {
+                        return prev.main_file.size! > current.main_file.size! ? prev : current;
+                      }, response.payload.sequence![0]),
+                    ]);
+                    handleNewNotification({
+                      label: "Warning",
+                      message: "Directory contains multiple sequence files! Largest file selected!",
+                      type: "warning",
+                    });
+                  }
                 }
-              }
-              break;
-            case "annotation":
-              response.payload.annotation!.length > 0 &&
-                response.payload.annotation!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newAnnotations) &&
-                    setNewAnnotations((prevState) => [...prevState, x]);
-                });
-              break;
-            case "mapping":
-              response.payload.mapping!.length > 0 &&
-                response.payload.mapping!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newMappings) &&
-                    setNewMappings((prevState) => [...prevState, x]);
-                });
-              break;
-            case "busco":
-              response.payload.busco!.length > 0 &&
-                response.payload.busco!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newBuscos) &&
-                    setNewBuscos((prevState) => [...prevState, x]);
-                });
-              break;
-            case "fcat":
-              response.payload.fcat!.length > 0 &&
-                response.payload.fcat!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newFcats) &&
-                    setNewFcats((prevState) => [...prevState, x]);
-                });
-              break;
-            case "milts":
-              response.payload.milts!.length > 0 &&
-                response.payload.milts!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newMilts) &&
-                    setNewMilts((prevState) => [...prevState, x]);
-                });
-              break;
-            case "repeatmasker":
-              response.payload.repeatmasker!.length > 0 &&
-                response.payload.repeatmasker!.forEach((x) => {
-                  !alreadyMarkedForImport(x["main_file"], newRepeatmaskers) &&
-                    setNewRepeatmaskers((prevState) => [...prevState, x]);
-                });
-              break;
-            default:
-              break;
-          }
-        });
-      }
+                break;
+              case "annotation":
+                response.payload.annotation!.length > 0 &&
+                  response.payload.annotation!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newAnnotations) &&
+                      setNewAnnotations((prevState) => [...prevState, x]);
+                  });
+                break;
+              case "mapping":
+                response.payload.mapping!.length > 0 &&
+                  response.payload.mapping!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newMappings) &&
+                      setNewMappings((prevState) => [...prevState, x]);
+                  });
+                break;
+              case "busco":
+                response.payload.busco!.length > 0 &&
+                  response.payload.busco!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newBuscos) &&
+                      setNewBuscos((prevState) => [...prevState, x]);
+                  });
+                break;
+              case "fcat":
+                response.payload.fcat!.length > 0 &&
+                  response.payload.fcat!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newFcats) &&
+                      setNewFcats((prevState) => [...prevState, x]);
+                  });
+                break;
+              case "milts":
+                response.payload.milts!.length > 0 &&
+                  response.payload.milts!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newMilts) &&
+                      setNewMilts((prevState) => [...prevState, x]);
+                  });
+                break;
+              case "repeatmasker":
+                response.payload.repeatmasker!.length > 0 &&
+                  response.payload.repeatmasker!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newRepeatmaskers) &&
+                      setNewRepeatmaskers((prevState) => [...prevState, x]);
+                  });
+                break;
+              default:
+                break;
+            }
+          });
+        }
+      });
     }
   };
 
@@ -258,13 +260,13 @@ const NewDataImportForm = ({
     return { ...node };
   };
 
-  const handleSubmitImport = async () => {
+  const handleSubmitImport = () => {
     setImporting(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (assembly?.id || (newAssembly && newAssembly?.length === 1)) {
-      const response = await importDataset(
+      importDataset(
         taxon,
         newAssembly,
         newAnnotations,
@@ -276,25 +278,57 @@ const NewDataImportForm = ({
         userID,
         token,
         assembly?.id
-      );
-
-      if (loadAssemblies) {
-        loadAssemblies();
-      }
-      loadImportDir();
-      handleResetForm();
-
-      if (response && response.notification && response.notification.length > 0) {
-        response.notification.forEach((element) => handleNewNotification(element));
-      }
+      ).subscribe((response) => {
+        if (response && response.payload) {
+          handleResetForm();
+          const intervalID = setInterval(() => {
+            checkTaskStatus(response.payload.id, intervalID);
+          }, 30000);
+        }
+        if (response && response.notification) {
+          response.notification.forEach((not) => handleNewNotification(not));
+        }
+        setImporting(false);
+      });
     } else {
       handleNewNotification({
         label: "Error",
-        message: "Only one assembly at once can be imported!",
+        message: "No or too much assemblies selected!",
         type: "error",
       });
     }
     setImporting(false);
+  };
+
+  const checkTaskStatus = async (taskID: string, intervalID: any) => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    await fetchTaskStatus(userID, token, taskID).then((response) => {
+      if (!response.payload) {
+        clearInterval(intervalID);
+      }
+
+      if (response.notification) {
+        response.notification.forEach((not) => handleNewNotification(not));
+      }
+      switch (response.payload.status) {
+        case "done":
+          clearInterval(intervalID);
+          if (loadAssemblies) {
+            loadAssemblies();
+          }
+          return 1;
+        case "running":
+          return 0;
+        case "aborted":
+          clearInterval(intervalID);
+          return 0;
+        default:
+          clearInterval(intervalID);
+          return 0;
+      }
+    });
   };
 
   const handleResetForm = () => {
@@ -367,14 +401,6 @@ const NewDataImportForm = ({
             e.stopPropagation();
             handleDropFileInformation(JSON.parse(e.dataTransfer.getData("fileInfos")));
           }}
-          // onDragEnter={(e) => {
-          //   e.stopPropagation();
-          //   setDropHover(true);
-          // }}
-          // onDragLeave={(e) => {
-          //   e.stopPropagation();
-          //   setDropHover(false);
-          // }}
         >
           <h1 className="font-bold text-xl">
             {dropHover ? "Drop now to mark for import..." : "Marked for import..."}

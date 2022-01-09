@@ -8,6 +8,7 @@ from modules.environment import BASE_PATH_TO_STORAGE
 from modules.db_connection import connect
 from modules.notifications import createNotification
 from modules.files import scanFiles
+from .producer import notify_worker
 
 IMAGE_FILE_PATTERN = {
     "main_file": compile(r"^image/(png|jfif|jpg|jpeg)$", IGNORECASE),
@@ -266,6 +267,8 @@ def import_image(taxonID, taxonScientificName, image, userID):
         connection.commit()
 
         scanFiles()
+
+        notify_worker("Update", "LocalTaxonTree")
 
         return 1, createNotification("Success", f"Successfully imported image!", "success")
     except Exception as err:

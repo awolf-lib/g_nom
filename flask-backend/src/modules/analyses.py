@@ -76,7 +76,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         # zip
         if analyses_type != "milts":
             tar_dir = new_path_to_directory[:-1] + ".tar.gz"
-            run(args=["tar", "-zcvf", tar_dir, new_path_to_directory])
+            run(args=["tar", "-zcf", tar_dir, new_path_to_directory])
             if not exists(tar_dir):
                 deleteAnalysesByAnalysesID(analyses_id)
                 return 0, createNotification(message=f"Compressing files failed")
@@ -84,7 +84,9 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             run(args=["rm", "-r", new_path_to_directory])
             new_file_path = tar_dir
 
-        import_status, error = __importAnalyses(assembly_id, analyses_name, new_file_path, analyses_type, userID)
+        import_status, error = __importAnalyses(
+            analyses_id, assembly_id, analyses_name, new_file_path, analyses_type, userID
+        )
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
             return 0, error
@@ -127,6 +129,9 @@ def __generate_analyses_name(assembly_name, analyses_type):
             next_id = 1
         else:
             next_id = auto_increment_counter
+
+        cursor.execute("ALTER TABLE analyses AUTO_INCREMENT = %s", (next_id + 1,))
+        connection.commit()
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
@@ -147,7 +152,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
             return "", "", createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
-            run(["gunzip", old_file_path])
+            run(["gunzip", "-q", old_file_path])
 
             if exists(old_file_path[:-3]):
                 old_file_path = old_file_path[:-3]
@@ -231,12 +236,12 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
 
 
 # import Analyses
-def __importAnalyses(assembly_id, analyses_name, analyses_path, analyses_type, userID):
+def __importAnalyses(analyses_id, assembly_id, analyses_name, analyses_path, analyses_type, userID):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            "INSERT INTO analyses (assemblyID, name, type, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, NOW())",
-            (assembly_id, analyses_name, analyses_type, analyses_path, userID),
+            "INSERT INTO analyses (id, assemblyID, name, type, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, %s, NOW())",
+            (analyses_id, assembly_id, analyses_name, analyses_type, analyses_path, userID),
         )
         connection.commit()
         return 1, []

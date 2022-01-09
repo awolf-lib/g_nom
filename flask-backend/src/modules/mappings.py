@@ -5,10 +5,11 @@ from re import compile, sub
 from subprocess import run
 from glob import glob
 
-from .notifications import createNotification, notify_mapping
+from .notifications import createNotification
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_STORAGE, BASE_PATH_TO_IMPORT
 from .files import scanFiles
+from .producer import notify_mapping
 
 ANNOTATION_FILE_PATTERN = {
     "main_file": compile(r"^(.*\.gff$)|(.*\.gff3$)|(.*\.gff\.gz$)|(.*\.gff3\.gz$)"),
@@ -55,7 +56,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             deleteMappingByMappingID(mapping_id)
             return 0, error
 
-        imported_status, error = __importDB(assembly_id, mapping_name, new_file_path, userID)
+        imported_status, error = __importDB(mapping_id, assembly_id, mapping_name, new_file_path, userID)
 
         if not imported_status:
             deleteMappingByMappingID(mapping_id)
@@ -88,6 +89,9 @@ def __generate_mapping_name(assembly_name):
             next_id = 1
         else:
             next_id = auto_increment_counter
+
+        cursor.execute("ALTER TABLE mappings AUTO_INCREMENT = %s", (next_id + 1,))
+        connection.commit()
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 
@@ -108,7 +112,7 @@ def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentic
             return 0, createNotification(message="Import path not found!")
 
         if old_file_path.lower().endswith(".gz"):
-            run(["gunzip", old_file_path])
+            run(["gunzip", "-q", old_file_path])
 
             if exists(old_file_path[:-3]):
                 old_file_path = old_file_path[:-3]
@@ -161,7 +165,7 @@ def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentic
 
 
 # database import
-def __importDB(assembly_id, annotation_name, path, userID):
+def __importDB(mapping_id, assembly_id, annotation_name, path, userID):
     """
     G-nom database import (table: mappings)
     """
@@ -169,8 +173,8 @@ def __importDB(assembly_id, annotation_name, path, userID):
         connection, cursor, error = connect()
 
         cursor.execute(
-            "INSERT INTO mappings (assemblyID, name, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, NOW())",
-            (assembly_id, annotation_name, path, userID),
+            "INSERT INTO mappings (id, assemblyID, name, path, addedBy, addedOn) VALUES (%s, %s, %s, %s, %s, NOW())",
+            (mapping_id, assembly_id, annotation_name, path, userID),
         )
         connection.commit()
     except Exception as err:

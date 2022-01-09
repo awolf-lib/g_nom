@@ -141,6 +141,12 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         automargin: true,
         type: "category",
         title: { text: "Analysis", standoff: 10 },
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -148,6 +154,12 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         range: [0, 100],
         tick0: 0,
         dtick: 10,
+        tickfont: {
+          family: "Old Standard TT, serif",
+          size: 14,
+          color: "black",
+        },
+        ticklen: 12,
       },
       dragmode: false,
       separator: true,

@@ -244,7 +244,7 @@ const AssembliesFilterForm = ({
         <label className="flex items-center w-56">
           <span className="text-sm px-2">View type:</span>
           <select
-            className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 py-1 text-sm"
+            className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 text-sm"
             onChange={(e) => setViewType(e.target.value as "list" | "grid")}
             value={viewType}
           >
@@ -291,7 +291,7 @@ const AssembliesFilterForm = ({
           />
         </div>
       </div>
-      {toggleFilterSelection && <hr className="shadow my-2 border-gray-300 animate-grow-y" />}
+      {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
           <div>

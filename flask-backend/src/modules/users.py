@@ -5,7 +5,8 @@ from os import getenv
 from datetime import datetime
 
 from modules.db_connection import connect
-from modules.notifications import createNotification, notify_fileserver_user
+from modules.notifications import createNotification
+from .producer import notify_fileserver_user
 
 # ====== FETCH FROM USER ====== #
 # fetch token if username/password is correct

@@ -287,7 +287,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
           />
         </div>
       </div>
-      {toggleFilterSelection && <hr className="shadow my-2 border-gray-300 animate-grow-y" />}
+      {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
           <div>

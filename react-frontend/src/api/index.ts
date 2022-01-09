@@ -1,6 +1,9 @@
-import { off } from "process";
 import { NotificationType } from "../components/Notification";
 import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
+
+import { Observable, of, pipe, UnaryFunction } from "rxjs";
+import { fromFetch } from "rxjs/fetch";
+import { catchError, map, switchMap } from "rxjs/operators";
 
 // =============================== users =============================== //
 // USER AUTHENTIFCATION
@@ -1578,7 +1581,7 @@ export interface IImportFileInformation {
 }
 
 // ===== IMPORT COMBINED ===== //
-export async function importDataset(
+export function importDataset(
   taxon: INcbiTaxon,
   assembly: Dataset[],
   annotations: Dataset[],
@@ -1590,8 +1593,8 @@ export async function importDataset(
   userID: number,
   token: string,
   assemblyID: number | undefined = undefined
-): Promise<IResponse> {
-  return fetch(process.env.REACT_APP_API_ADRESS + "/import_dataset", {
+): Observable<IResponse<ITask>> {
+  return fromFetch(process.env.REACT_APP_API_ADRESS + "/import_dataset", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1609,12 +1612,13 @@ export async function importDataset(
       token: token,
       assemblyID: assemblyID,
     }),
-  })
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
+  }).pipe(
+    switchMap((request) => request.json()),
+    catchError((error) => {
       console.error(error);
-    });
+      return of(error);
+    })
+  );
 }
 
 // =============================== FILES =============================== //
@@ -1639,6 +1643,39 @@ export function fetchFileByPath(path: string, userID: number, token: string): Pr
       "&path=" +
       path
   );
+}
+
+// ===== FETCH TASK STATUS TASK ID ===== //
+export function fetchTaskStatus(
+  userID: number,
+  token: string,
+  taskID: string
+): Promise<IResponse<ITask>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS +
+      "/fetchTaskStatus?userID=" +
+      userID +
+      "&token=" +
+      token +
+      "&taskID=" +
+      taskID
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+export interface ITask {
+  id: string;
+  status: "running" | "done" | "aborted";
+  startTime: Date;
+  updateTime?: Date;
+  endTime?: Date;
+  targetTaxon?: number;
+  targetAssembly?: number;
+  progress?: number;
 }
 
 export type Response<T = unknown> = IResponse<T> | IErrorResponse;
