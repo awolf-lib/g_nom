@@ -487,7 +487,7 @@ const GeneralInformationEditor = ({
           <div className="w-72">
             <Button
               size="sm"
-              label="Toggle add new General Information..."
+              label="Add new General Information..."
               onClick={() => setToggleAddNewGeneralInforamtion((prevState) => !prevState)}
             />
           </div>

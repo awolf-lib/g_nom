@@ -40,7 +40,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky w-full top-0 bg-gradient-to-b from-gray-400 to-gray-100 z-50 shadow">
+    <nav className="sticky w-full top-0 bg-gradient-to-b from-gray-400 to-gray-100 z-40 shadow">
       <div className="mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">

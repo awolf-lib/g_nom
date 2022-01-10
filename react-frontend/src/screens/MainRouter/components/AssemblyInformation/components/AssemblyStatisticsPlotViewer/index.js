@@ -41,8 +41,6 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
       cumulativeLengths.pop();
     }
 
-    console.log(cumulativeLengths);
-
     let cumulative = 0;
     cumulativeLengths.forEach((element) => {
       cumulative = sequence_length - element.y;

@@ -30,7 +30,7 @@ const NotificationProvider = (props) => {
 
   return (
     <NotificationContext.Provider value={dispatch}>
-      <div className="fixed right-0 bottom-0 mt-8 mb-16 z-50">
+      <div className="fixed top-0 right-0 mt-4 z-50">
         {state.map((notification) => (
           <div key={notification.id} className="flex justify-end">
             <Notification dispatch={dispatch} {...notification} />

@@ -231,7 +231,7 @@ const AssemblyPicker = ({
         <div className="w-72">
           <Button
             size="sm"
-            label="Toggle add new assembly..."
+            label="Add new assembly..."
             onClick={() => setToggleNewAssemblyImportForm((prevState) => !prevState)}
           />
         </div>

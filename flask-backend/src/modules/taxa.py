@@ -268,8 +268,6 @@ def import_image(taxonID, taxonScientificName, image, userID):
 
         scanFiles()
 
-        notify_worker("Update", "LocalTaxonTree")
-
         return 1, createNotification("Success", f"Successfully imported image!", "success")
     except Exception as err:
         return 0, createNotification(message=f"ImageImportError: {str(err)}")

@@ -256,14 +256,6 @@ def __deleteAssemblyEntryByAssemblyID(id):
         cursor.execute("SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id", (id,))
         assemblyCountPerTaxon = cursor.fetchone()
 
-        if not assemblyCountPerTaxon:
-            print("UPDATING TAXON TREE... (FALLBACK)")
-            notify_worker("Update", "LocalTaxonTree")
-        else:
-            if assemblyCountPerTaxon[0] == 1:
-                print("UPDATING TAXON TREE... (ADD)")
-                notify_worker("Update", "LocalTaxonTree")
-
         return 1, []
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDelitionError3: {str(err)}")
