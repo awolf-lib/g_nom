@@ -318,9 +318,9 @@ def parseGff(path):
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
     # GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##sequence-region)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
     GFF3_FEATURE_PATTERN = compile(
-        r"^([\w\.-]+)\s+([\.\w-]+)\s+([\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
+        r"^([%\w\.-]+)\s+([%\.\w-]+)\s+([%\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
-    GFF3_KEY_VALUE_PATTERN = compile(r"^([\w\.-]+)[:= ]+(.+)$")
+    GFF3_KEY_VALUE_PATTERN = compile(r"^([%\w\.-]+)[:= ]+(.+)$")
 
     def parseSequenceRegion(sequence_region_raw):
         seqID = sequence_region_raw[2]
