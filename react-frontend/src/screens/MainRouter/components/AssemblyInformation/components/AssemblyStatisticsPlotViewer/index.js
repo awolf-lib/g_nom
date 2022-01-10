@@ -36,7 +36,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
 
     while (
       cumulativeLengths[cumulativeLengths.length - 1].y == 0 ||
-      isNaN(cumulativeLengths[cumulativeLengths.length - 1].y)
+      (isNaN(cumulativeLengths[cumulativeLengths.length - 1].y) && cumulativeLengths.length)
     ) {
       cumulativeLengths.pop();
     }
@@ -66,7 +66,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
 
     while (
       numbersequences[numbersequences.length - 1].y === 0 ||
-      isNaN(numbersequences[numbersequences.length - 1].y)
+      (isNaN(numbersequences[numbersequences.length - 1].y) && numbersequences.length)
     ) {
       numbersequences.pop();
     }
