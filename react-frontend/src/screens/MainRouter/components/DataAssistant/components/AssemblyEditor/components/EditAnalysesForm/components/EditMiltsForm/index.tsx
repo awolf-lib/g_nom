@@ -34,6 +34,7 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
 
   useEffect(() => {
     loadMiltsAnalyses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadMiltsAnalyses = async () => {

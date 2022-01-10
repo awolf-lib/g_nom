@@ -17,6 +17,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
         useResizeHandler: true,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plotlyDivElements]);
 
   const plotlyDivRepet = document.getElementById("plotlyRepetitiveness");
@@ -27,6 +28,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
         useResizeHandler: true,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plotlyDivRepet]);
 
   useEffect(() => {
@@ -34,6 +36,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
     getElementsLayout();
     getRepetitivenessData();
     getRepetitivenessLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id]);
 
   const getElementsData = () => {

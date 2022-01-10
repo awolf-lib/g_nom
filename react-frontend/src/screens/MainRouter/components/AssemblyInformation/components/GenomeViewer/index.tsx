@@ -121,6 +121,7 @@ const GenomeViewer = ({
     });
 
     setTracks([...annotationsTracks, ...mappingTracks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotations, mappings]);
 
   useEffect(() => {
@@ -159,6 +160,7 @@ const GenomeViewer = ({
         ],
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assemblyDetails]);
 
   useEffect(() => {
@@ -177,6 +179,7 @@ const GenomeViewer = ({
         },
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assemblyDetails]);
 
   useEffect(() => {
@@ -199,12 +202,14 @@ const GenomeViewer = ({
         assemblyNames: [assemblyDetails.name],
       },
     ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assemblyDetails]);
 
   useEffect(() => {
     setTimeout(() => {
       window.scrollTo(0, document.body.scrollHeight - 800);
     }, 1000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultSession.name, locationState]);
 
   return (

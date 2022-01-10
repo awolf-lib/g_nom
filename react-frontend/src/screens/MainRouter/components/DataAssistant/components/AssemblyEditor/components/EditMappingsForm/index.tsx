@@ -40,6 +40,7 @@ const EditMappingsForm = ({
 
   useEffect(() => {
     loadMappings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadMappings = async () => {

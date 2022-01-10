@@ -60,6 +60,7 @@ const AssembliesList = ({
         setOnLoadingAssemblies(false);
       }, 1000)
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, filter, offset, range, bookmarks, search]);
 
   useEffect(() => {
@@ -286,6 +287,7 @@ const AssembliesList = ({
                 </div>
               );
             }
+            return <div />;
           })
         ) : (
           <div className="w-full flex justify-center items-center border py-8 shadow col-span-3">

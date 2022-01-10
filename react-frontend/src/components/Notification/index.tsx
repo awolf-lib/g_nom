@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "../../App.css";
 import classNames from "classnames";
-import PropTypes from "prop-types";
 
 import { Alert, CircleInformation, StatusCritical, Validate, FormClose } from "grommet-icons";
 

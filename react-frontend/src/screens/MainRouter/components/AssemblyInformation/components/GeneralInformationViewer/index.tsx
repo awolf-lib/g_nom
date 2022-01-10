@@ -25,6 +25,7 @@ const GeneralInformationViewer = ({ generalInfos }: { generalInfos: IGeneralInfo
       }, 10000)
     );
     return () => clearInterval(taxonGeneralInfoInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [generalInfos.length]);
 
   const handlePauseTaxonGeneralInfoInterval = () => {

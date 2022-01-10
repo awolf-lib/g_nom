@@ -1,9 +1,9 @@
 import { NotificationType } from "../components/Notification";
 import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInterfaces";
 
-import { Observable, of, pipe, UnaryFunction } from "rxjs";
+import { Observable, of } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
-import { catchError, map, switchMap } from "rxjs/operators";
+import { catchError, switchMap } from "rxjs/operators";
 
 // =============================== users =============================== //
 // USER AUTHENTIFCATION
@@ -383,9 +383,9 @@ export async function deleteAssemblyGeneralInformationByID(
 export async function fetchAssemblies(
   userID: number,
   token: number,
-  offset: number = 0,
-  range: number = 10,
-  search: string = "",
+  offset = 0,
+  range = 10,
+  search = "",
   filter: Filter = {},
   sortBy: Sorting = { column: "scientificName", order: true },
   onlyBookmarked: 1 | 0 = 0
@@ -1040,14 +1040,14 @@ export async function updateAnnotationLabel(
 
 // ===== FETCH ALL FEATURES ===== //
 export async function fetchFeatures(
-  offset: number = 0,
-  range: number = 10,
-  search: string = "",
+  offset = 0,
+  range = 10,
+  search = "",
   filter: FilterFeatures = {},
   sortBy: Sorting = { column: "seqID", order: true },
   userID: number,
   token: string,
-  assemblyID: number = -1
+  assemblyID = -1
 ): Promise<IResponse<IGenomicAnnotationFeature[]>> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatures", {
     method: "POST",

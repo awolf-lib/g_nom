@@ -10,18 +10,7 @@ const FeaturesListElement = ({
   noAssemblyDetails?: number;
   showAllAttributes?: boolean;
 }) => {
-  const {
-    assemblyID,
-    annotationID,
-    seqID,
-    type,
-    start,
-    end,
-    attributes,
-    scientificName,
-    name,
-    label,
-  } = feature;
+  const { assemblyID, seqID, type, start, end, attributes, scientificName, name, label } = feature;
   return (
     <Link
       to={

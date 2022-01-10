@@ -34,6 +34,7 @@ const EditFcatsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
 
   useEffect(() => {
     loadFcats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadFcats = async () => {

@@ -40,6 +40,7 @@ const EditRepeatmaskersForm = ({
 
   useEffect(() => {
     loadRepeatmaskerAnalyses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadRepeatmaskerAnalyses = async () => {

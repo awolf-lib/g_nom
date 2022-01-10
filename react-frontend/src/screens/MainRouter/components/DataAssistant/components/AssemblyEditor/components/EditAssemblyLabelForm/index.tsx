@@ -1,19 +1,5 @@
-import { CaretNext, CaretPrevious, Checkmark, Close, Trash } from "grommet-icons";
-import { useEffect, useState } from "react";
-import {
-  addAssemblyTag,
-  fetchAssemblyTagsByAssemblyID,
-  INcbiTaxon,
-  removeAssemblyTagbyTagID,
-  updateAssemblyLabel,
-} from "../../../../../../../../api";
-import Button from "../../../../../../../../components/Button";
-import Input from "../../../../../../../../components/Input";
-import { useNotification } from "../../../../../../../../components/NotificationProvider";
-import {
-  AssemblyInterface,
-  AssemblyTagInterface,
-} from "../../../../../../../../tsInterfaces/tsInterfaces";
+import { INcbiTaxon, updateAssemblyLabel } from "../../../../../../../../api";
+import { AssemblyInterface } from "../../../../../../../../tsInterfaces/tsInterfaces";
 import EditLabelForm from "./components/EditLabelForm";
 
 const EditAssemblyLabelForm = ({

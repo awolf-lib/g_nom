@@ -1,4 +1,4 @@
-import { Contract, Document, Expand, Folder, Refresh } from "grommet-icons";
+import { Document, Folder, Refresh } from "grommet-icons";
 import { useEffect, useState } from "react";
 import { IImportFileInformation, TreeNode } from "../../api";
 import LoadingSpinner from "../LoadingSpinner";
@@ -18,6 +18,7 @@ const FileTree = ({
 
   useEffect(() => {
     setFileTree(addFileTreeAttributes(files));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
   useEffect(() => {

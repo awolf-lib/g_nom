@@ -40,6 +40,7 @@ const EditAnnotationsForm = ({
 
   useEffect(() => {
     loadAnnotations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadAnnotations = async () => {

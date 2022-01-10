@@ -7,6 +7,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
     if (plotlyDiv) {
       newPlot("plotlyAssemblyStatistics", getData(), getLayout(), { responsive: true });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plotlyDiv]);
 
   const getData = () => {
@@ -33,6 +34,15 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
       return 0;
     });
 
+    while (
+      cumulativeLengths[cumulativeLengths.length - 1].y == 0 ||
+      isNaN(cumulativeLengths[cumulativeLengths.length - 1].y)
+    ) {
+      cumulativeLengths.pop();
+    }
+
+    console.log(cumulativeLengths);
+
     let cumulative = 0;
     cumulativeLengths.forEach((element) => {
       cumulative = sequence_length - element.y;
@@ -53,6 +63,13 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
     numbersequences = numbersequences.sort((a, b) => {
       return a.x > b.x ? 0 : -1;
     });
+
+    while (
+      numbersequences[numbersequences.length - 1].y === 0 ||
+      isNaN(numbersequences[numbersequences.length - 1].y)
+    ) {
+      numbersequences.pop();
+    }
 
     numbersequences.forEach((element) => {
       x2.push(">" + (element.x / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));

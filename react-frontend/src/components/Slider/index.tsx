@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import "../../App.css";
 
 const Slider = ({
@@ -39,9 +39,5 @@ const Slider = ({
     </div>
   );
 };
-
-interface ISliderProps {
-  label?: string;
-}
 
 export default Slider;

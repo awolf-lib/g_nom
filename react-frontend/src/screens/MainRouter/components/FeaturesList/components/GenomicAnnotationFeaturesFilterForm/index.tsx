@@ -41,14 +41,17 @@ const GenomicAnnotationFeaturesFilterForm = ({
     if (search === "") {
       setSearch("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   useEffect(() => {
     loadTaxa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
   useEffect(() => {
     loadAttributes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
   useEffect(() => {
@@ -70,6 +73,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       }
       setTriggerSetFilter(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [triggerSetFilter, targetAttributes]);
 
   // notifications
@@ -118,8 +122,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
   };
 
   const handleSelectTaxa = (taxa: HTMLOptionsCollection) => {
-    var values: number[] = [];
-    for (var i = 0, l = taxa.length; i < l; i++) {
+    let values: number[] = [];
+    for (let i = 0, l = taxa.length; i < l; i++) {
       if (taxa[i].value === "-1" && taxa[i].selected) {
         values = [];
         break;
@@ -142,8 +146,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
   };
 
   const handleSelectAttributes = (attributes: HTMLOptionsCollection) => {
-    var values: ITargetAttribute[] = targetAttributes.filter((element) => {
-      for (var i = 0, l = attributes.length; i < l; i++) {
+    let values: ITargetAttribute[] = targetAttributes.filter((element) => {
+      for (let i = 0, l = attributes.length; i < l; i++) {
         if (attributes[i].selected && attributes[i].value === element.target) {
           return true;
         }
@@ -151,16 +155,18 @@ const GenomicAnnotationFeaturesFilterForm = ({
       return false;
     });
 
-    for (var i = 0, l = attributes.length; i < l; i++) {
-      if (attributes[i].value === "-1" && attributes[i].selected) {
+    let index: number;
+    let l: number;
+    for (index = 0, l = attributes.length; index < l; index++) {
+      if (attributes[index].value === "-1" && attributes[index].selected) {
         values = [];
         break;
       }
       if (
-        attributes[i].selected &&
-        !values.find((element) => element.target === attributes[i].value)
+        attributes[index].selected &&
+        !values.find((element) => element.target === attributes[index].value)
       ) {
-        values.push({ target: attributes[i].value });
+        values.push({ target: attributes[index].value });
       }
     }
     setTargetAttributes(values);
@@ -204,7 +210,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
     operator?: string,
     value?: string | number
   ) => {
-    let targets: ITargetAttribute[] = targetAttributes.map((attr) => {
+    const targets: ITargetAttribute[] = targetAttributes.map((attr) => {
       if (attr.target === target) {
         if (operator) {
           if (value) {
@@ -229,7 +235,9 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
   const checkAttributeFilterStatus = (attr: ITargetAttribute) => {
     if (filter.featureAttributes?.length) {
-      let index = filter.featureAttributes?.findIndex((element) => attr.target === element.target);
+      const index = filter.featureAttributes?.findIndex(
+        (element) => attr.target === element.target
+      );
 
       if (index !== -1) {
         return true;

@@ -7,7 +7,6 @@ import {
   NotificationObject,
 } from "../../../../../../api";
 import Input from "../../../../../../components/Input";
-import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import { useSearchParams } from "react-router-dom";
@@ -22,9 +21,8 @@ const TaxonPicker = ({
   const [requestTimeoutTaxonID, setRequestTimeoutTaxonID] = useState<any>();
   const [taxa, setTaxa] = useState<any>([]);
   const [taxon, setTaxon] = useState<INcbiTaxon | undefined>();
-  const [loadingTaxa, setLoadingTaxa] = useState<boolean>(false);
 
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const dispatch = useNotification();
 
@@ -38,33 +36,35 @@ const TaxonPicker = ({
 
   useEffect(() => {
     if (parentTaxon?.imagePath !== taxon?.imagePath) setTaxon(parentTaxon);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentTaxon?.imagePath]);
 
   useEffect(() => {
     if (taxon?.id) {
-      let newSearchParams = new URLSearchParams(searchParams);
+      const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set("taxID", JSON.stringify(taxon.id));
       if (taxon?.ncbiTaxonID) {
         newSearchParams.set("ncbiTaxID", JSON.stringify(taxon.ncbiTaxonID));
       }
       setSearchParams(newSearchParams);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taxon?.id]);
 
   useEffect(() => {
-    let taxIdString = searchParams.get("taxID");
-    let taxID = Number(taxIdString);
-    let ncbiTaxIdString = searchParams.get("ncbiTaxID");
-    let ncbiTaxID = Number(ncbiTaxIdString);
+    const taxIdString = searchParams.get("taxID");
+    const taxID = Number(taxIdString);
+    const ncbiTaxIdString = searchParams.get("ncbiTaxID");
+    const ncbiTaxID = Number(ncbiTaxIdString);
     if (taxID) {
       fetchTaxonByID(taxID);
     } else if (ncbiTaxID) {
       fetchTaxaByNcbiID(ncbiTaxID);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const fetchTaxonByID = (taxonID: number) => {
-    setLoadingTaxa(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
     fetchTaxonByTaxonID(taxonID, userID, token).then((response) => {
@@ -74,12 +74,11 @@ const TaxonPicker = ({
       }
 
       if (response?.notification) {
-        response?.notification.map((n) => {
+        response?.notification.forEach((n) => {
           handleNewNotification(n);
         });
       }
     });
-    setLoadingTaxa(false);
   };
 
   const fetchTaxaByNcbiID = (ncbiID: number) => {
@@ -116,11 +115,9 @@ const TaxonPicker = ({
         type: "error",
       });
     }
-    setLoadingTaxa(false);
   };
 
   const fetchTaxaByIDTimeout = (id: number | undefined) => {
-    setLoadingTaxa(true);
     clearTimeout(requestTimeoutTaxonID);
     setTaxa([]);
     getTaxon(undefined);
@@ -140,7 +137,6 @@ const TaxonPicker = ({
     if (search) {
       setRequestTimeoutTaxonID(
         setTimeout(() => {
-          setLoadingTaxa(true);
           const userID = JSON.parse(sessionStorage.getItem("userID") || "");
           const token = JSON.parse(sessionStorage.getItem("token") || "");
 
@@ -174,7 +170,6 @@ const TaxonPicker = ({
               type: "error",
             });
           }
-          setLoadingTaxa(false);
         }, 3000)
       );
     }

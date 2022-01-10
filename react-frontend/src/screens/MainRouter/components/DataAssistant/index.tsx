@@ -11,11 +11,11 @@ const DataAssistant: React.FC = () => {
   const [taxon, setTaxon] = useState<INcbiTaxon>();
   const [assembly, setAssembly] = useState<AssemblyInterface | undefined>();
 
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const handleBackToTaxonLevel = () => {
     setAssembly(undefined);
-    let newSearchParams = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("assemblyID", JSON.stringify(undefined));
     setSearchParams(newSearchParams);
   };

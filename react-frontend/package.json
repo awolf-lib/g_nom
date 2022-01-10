@@ -3,30 +3,45 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^6.4.3",
-    "@fontsource/roboto": "^4.5.1",
-    "@jbrowse/react-linear-genome-view": "^1.5.3",
-    "@testing-library/jest-dom": "^5.16.1",
-    "@testing-library/react": "^12.1.2",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.0.3",
-    "@types/node": "^16.11.17",
-    "@types/react": "^17.0.38",
-    "@types/react-dom": "^17.0.11",
-    "bcryptjs": "^2.4.3",
-    "classnames": "^2.3.1",
-    "grommet-icons": "^4.7.0",
-    "install": "^0.13.0",
-    "npm": "^8.3.0",
-    "plotly.js": "^2.8.3",
-    "react": "^17.0.2",
-    "react-app-polyfill": "^3.0.0",
-    "react-d3-tree": "^3.2.0",
-    "react-dom": "^17.0.2",
-    "react-router-dom": "^6.2.1",
+    "@craco/craco": "6.4.3",
+    "@fontsource/roboto": "4.5.1",
+    "@jbrowse/core": "1.5.3",
+    "@jbrowse/plugin-alignments": "1.5.3",
+    "@jbrowse/plugin-bed": "1.5.3",
+    "@jbrowse/plugin-circular-view": "1.5.3",
+    "@jbrowse/plugin-config": "1.5.3",
+    "@jbrowse/plugin-data-management": "1.5.3",
+    "@jbrowse/plugin-gff3": "1.5.3",
+    "@jbrowse/plugin-linear-genome-view": "1.5.3",
+    "@jbrowse/plugin-sequence": "1.5.3",
+    "@jbrowse/plugin-svg": "1.5.3",
+    "@jbrowse/plugin-trix": "1.5.3",
+    "@jbrowse/plugin-variants": "1.5.3",
+    "@jbrowse/plugin-wiggle": "1.5.3",
+    "@jbrowse/react-linear-genome-view": "1.5.3",
+    "react-use-dimensions": "1.2.1",
+    "@testing-library/jest-dom": "5.16.1",
+    "@testing-library/react": "12.1.2",
+    "@testing-library/user-event": "13.5.0",
+    "@types/jest": "27.0.3",
+    "@types/node": "16.11.17",
+    "@types/react": "17.0.38",
+    "@types/react-dom": "17.0.11",
+    "bcryptjs": "2.4.3",
+    "classnames": "2.3.1",
+    "grommet-icons": "4.7.0",
+    "install": "0.13.0",
+    "npm": "8.3.0",
+    "plotly.js": "2.8.3",
+    "react": "17.0.2",
+    "react-app-polyfill": "3.0.0",
+    "react-d3-tree": "3.2.0",
+    "react-dom": "17.0.2",
+    "react-router-dom": "6.2.1",
     "react-scripts": "5.0.0",
-    "styled-components": "^5.3.3",
-    "typescript": "^4.5.4"
+    "rxjs": "7.5.1",
+    "styled-components": "5.3.3",
+    "typescript": "4.5.4"
   },
   "scripts": {
     "start": "craco start",
@@ -35,9 +50,47 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+      "@typescript-eslint"
+    ],
     "extends": [
       "react-app",
-      "react-app/jest"
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-use-before-define": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "**/*.stories.*"
+        ],
+        "rules": {
+          "import/no-anonymous-default-export": "off"
+        }
+      },
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "rules": {
+          "@typescript-eslint/explicit-module-boundary-types": [
+            "warn"
+          ],
+          "@typescript-eslint/no-unused-vars": [
+            "warn"
+          ],
+          "@typescript-eslint/no-use-before-define": [
+            "warn"
+          ]
+        }
+      }
     ]
   },
   "browserslist": {

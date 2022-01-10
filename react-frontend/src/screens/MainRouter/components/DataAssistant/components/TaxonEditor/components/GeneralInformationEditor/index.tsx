@@ -89,7 +89,7 @@ const GeneralInformationEditor = ({
             if (response && response.payload) {
               setGeneralInfos(response.payload);
               if (response.notification && response.notification.length) {
-                response.notification.map((not) => {
+                response.notification.forEach((not) => {
                   handleNewNotification(not);
                 });
               }
@@ -101,7 +101,7 @@ const GeneralInformationEditor = ({
             if (response && response.payload) {
               setGeneralInfos(response.payload);
               if (response.notification && response.notification.length) {
-                response.notification.map((not) => {
+                response.notification.forEach((not) => {
                   handleNewNotification(not);
                 });
               }
@@ -173,7 +173,7 @@ const GeneralInformationEditor = ({
                 token
               ).then((response) => {
                 if (response && response.notification && response.notification.length) {
-                  response.notification.map((element: any) => {
+                  response.notification.forEach((element: NotificationObject) => {
                     handleNewNotification(element);
                   });
                 } else {
@@ -194,7 +194,7 @@ const GeneralInformationEditor = ({
                 token
               ).then((response) => {
                 if (response && response.notification && response.notification.length) {
-                  response.notification.map((element: any) => {
+                  response.notification.forEach((element: NotificationObject) => {
                     handleNewNotification(element);
                   });
                 } else {
@@ -254,7 +254,7 @@ const GeneralInformationEditor = ({
                 token
               ).then((response) => {
                 if (response && response.notification && response.notification.length) {
-                  response.notification.map((element: any) => {
+                  response.notification.forEach((element) => {
                     handleNewNotification(element);
                   });
                 }
@@ -269,7 +269,7 @@ const GeneralInformationEditor = ({
                 token
               ).then((response) => {
                 if (response && response.notification && response.notification.length) {
-                  response.notification.map((element: any) => {
+                  response.notification.forEach((element) => {
                     handleNewNotification(element);
                   });
                 }
@@ -317,7 +317,7 @@ const GeneralInformationEditor = ({
         case "taxon":
           await deleteTaxonGeneralInformationByID(id, userID, token).then((response) => {
             if (response && response.notification && response.notification.length) {
-              response.notification.map((element: any) => {
+              response.notification.forEach((element: NotificationObject) => {
                 handleNewNotification(element);
               });
             }
@@ -326,7 +326,7 @@ const GeneralInformationEditor = ({
         case "assembly":
           await deleteAssemblyGeneralInformationByID(id, userID, token).then((response) => {
             if (response && response.notification && response.notification.length) {
-              response.notification.map((element: any) => {
+              response.notification.forEach((element: NotificationObject) => {
                 handleNewNotification(element);
               });
             }

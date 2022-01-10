@@ -1,5 +1,4 @@
 import "../../App.css";
-import PropTypes from "prop-types";
 import picPlacerholder from "../../images/blankProfilePicture.png";
 import { useEffect, useState } from "react";
 import { fetchTaxonImageByTaxonID, NotificationObject } from "../../api";
@@ -18,6 +17,7 @@ const SpeciesProfilePictureViewer = ({
 
   useEffect(() => {
     getImage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taxonID]);
 
   // notifications

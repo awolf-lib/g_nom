@@ -17,6 +17,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
       getData();
       getLayout();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annotations.length]);
 
   const getData = () => {

@@ -15,6 +15,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
   useEffect(() => {
     getData();
     getLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id]);
 
   const getData = () => {

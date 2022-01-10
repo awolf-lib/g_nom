@@ -2,7 +2,6 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
 import { fetchFileByPath, IMiltsAnalysis } from "../../../../../../api";
-import { URL } from "url";
 
 const TaxonomicAssignmentViewer = ({
   milts,
@@ -17,6 +16,7 @@ const TaxonomicAssignmentViewer = ({
   useEffect(() => {
     getPlot();
     setTaxonomicAssignmentLoading(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
 
   const getPlot = async () => {

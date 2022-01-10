@@ -15,11 +15,13 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         useResizeHandler: true,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plotlyDiv, data, layout]);
 
   useEffect(() => {
     getBuscoData();
     getBuscoLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id]);
 
   const getBuscoData = () => {

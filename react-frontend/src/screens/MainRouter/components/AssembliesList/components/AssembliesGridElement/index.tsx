@@ -2,37 +2,16 @@ import { Link } from "react-router-dom";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
 import { useEffect, useState } from "react";
-import { CaretNext, Radial, RadialSelected } from "grommet-icons";
 
 const AssembliesGridElement = ({
   assembly,
-  fcatMode = 1,
   renderDelay = 1,
 }: {
   assembly: AssemblyInterface;
   fcatMode?: number;
   renderDelay?: number;
 }) => {
-  const {
-    id,
-    taxonID,
-    imagePath,
-    scientificName,
-    name,
-    label,
-    addedOn,
-    annotations,
-    buscos,
-    maxBuscoScore,
-    fcats,
-    maxFcatScoreM1,
-    maxFcatScoreM2,
-    maxFcatScoreM3,
-    maxFcatScoreM4,
-    milts,
-    repeatmaskers,
-    username,
-  } = assembly;
+  const { id, taxonID, imagePath, scientificName, name, label, addedOn, username } = assembly;
 
   const [renderActivation, setRenderActivation] = useState<boolean>(false);
 

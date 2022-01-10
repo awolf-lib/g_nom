@@ -17,11 +17,13 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
         useResizeHandler: true,
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plotlyDiv, mode, data, layout]);
 
   useEffect(() => {
     getFcatData();
     getFcatLayout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, mode]);
 
   const getFcatData = () => {

@@ -2,8 +2,6 @@ import propTypes from "prop-types";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
 
 const AssemblyStatisticsTable = ({ assembly }: { assembly: AssemblyInterface }) => {
-  const length_distribution = JSON.parse(assembly.lengthDistributionString);
-
   const formatNumbers = (num: number) => {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };

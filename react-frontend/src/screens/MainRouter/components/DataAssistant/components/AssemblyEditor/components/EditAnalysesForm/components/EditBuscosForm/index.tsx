@@ -40,6 +40,7 @@ const EditBuscosForm = ({
 
   useEffect(() => {
     loadBuscos();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
   const loadBuscos = async () => {

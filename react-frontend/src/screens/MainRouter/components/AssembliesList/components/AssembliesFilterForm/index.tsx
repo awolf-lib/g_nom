@@ -1,4 +1,4 @@
-import { CaretDown, Search } from "grommet-icons";
+import { Search } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   fetchTaxaWithAssemblies,
@@ -47,22 +47,27 @@ const AssembliesFilterForm = ({
     if (search === "") {
       setSearch("");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   useEffect(() => {
     loadTaxa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
   useEffect(() => {
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
   useEffect(() => {
     handleSetMinBusco();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minBuscoComplete]);
 
   useEffect(() => {
     handleSetMinFcat();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minFcatSimilar, fcatMode]);
 
   // notifications
@@ -111,8 +116,8 @@ const AssembliesFilterForm = ({
   };
 
   const handleSelectTaxa = (taxa: any) => {
-    var values: number[] = [];
-    for (var i = 0, l = taxa.length; i < l; i++) {
+    let values: number[] = [];
+    for (let i = 0, l = taxa.length; i < l; i++) {
       if (taxa[i].value === "-1" && taxa[i].selected) {
         values = [];
         break;
@@ -135,8 +140,8 @@ const AssembliesFilterForm = ({
   };
 
   const handleSelectUsers = (users: any) => {
-    var values: number[] = [];
-    for (var i = 0, l = users.length; i < l; i++) {
+    let values: number[] = [];
+    for (let i = 0, l = users.length; i < l; i++) {
       if (users[i].value === "-1" && users[i].selected) {
         values = [];
         break;

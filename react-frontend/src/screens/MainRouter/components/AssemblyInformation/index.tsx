@@ -116,18 +116,21 @@ const AssemblyInformation = () => {
     if (toggleAssembly || !assembly?.id) {
       loadAssembly();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assemblyID, toggleAssembly]);
 
   useEffect(() => {
     if (toggleAssembly) {
       loadAssemblySequenceHeaders();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleAssembly, assemblyHeadersOffset, sequenceHeaderSearch]);
 
   useEffect(() => {
     if (toggleAssembly) {
       loadAssemblyGeneralInformation();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleAssembly]);
 
   useEffect(() => {
@@ -135,24 +138,28 @@ const AssemblyInformation = () => {
       loadTaxon();
       window.scrollTo(0, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.taxonID, toggleTaxon]);
 
   useEffect(() => {
     if (toggleTaxon) {
       loadTaxonGeneralInformation();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.taxonID, toggleTaxon]);
 
   useEffect(() => {
     if (toggleTaxon) {
       loadAssemblyTags();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.taxonID, toggleTaxon]);
 
   useEffect(() => {
     if (toggleAnnotations) {
       loadAnnotations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleAnnotations]);
 
   useEffect(() => {
@@ -167,42 +174,49 @@ const AssemblyInformation = () => {
         loadMappings();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleGenomeViewer]);
 
   useEffect(() => {
     if (toggleBuscoAnalyses) {
       loadBuscoAnalyses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleBuscoAnalyses]);
 
   useEffect(() => {
     if (toggleFcatAnalyses) {
       loadFcatAnalysees();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleFcatAnalyses]);
 
   useEffect(() => {
     if (toggleMiltsAnalyses) {
       loadMiltsAnalyses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleMiltsAnalyses]);
 
   useEffect(() => {
     if (toggleRepeatmaskerAnalyses) {
       loadRepeatmaskerAnalyses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id, toggleRepeatmaskerAnalyses]);
 
   useEffect(() => {
     if (location) {
       setToggleGenomeViewer(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location, assembly?.id]);
 
   useEffect(() => {
     if (queryLocation) {
       setLocation(queryLocation);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryLocation]);
 
   const loadAssembly = async () => {

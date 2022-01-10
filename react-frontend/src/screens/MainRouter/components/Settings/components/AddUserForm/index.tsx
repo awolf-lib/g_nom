@@ -6,8 +6,6 @@ import { addUser, NotificationObject } from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const AddUserForm = () => {
-  const loggedInRole = sessionStorage.getItem("userRole");
-
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

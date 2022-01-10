@@ -37,7 +37,6 @@ const NewDataImportForm = ({
   const [newRepeatmaskers, setNewRepeatmaskers] = useState<Dataset[]>([]);
 
   const [importing, setImporting] = useState<boolean>(false);
-  const [loadingFiles, setLoadingFiles] = useState<boolean>(false);
 
   const [dropHover, setDropHover] = useState<boolean>(false);
 
@@ -69,7 +68,6 @@ const NewDataImportForm = ({
   }, [newAssemblyFormRef]);
 
   const loadImportDir = async () => {
-    setLoadingFiles(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
     await fetchImportDirectory(userID, token).then((response) => {
@@ -78,7 +76,6 @@ const NewDataImportForm = ({
       } else {
         setImportDir(undefined);
       }
-      setLoadingFiles(false);
     });
   };
 

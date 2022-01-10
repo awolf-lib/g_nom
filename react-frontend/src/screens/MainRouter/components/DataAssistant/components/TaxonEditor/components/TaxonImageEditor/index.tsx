@@ -1,5 +1,5 @@
-import { CaretNext, Trash } from "grommet-icons";
-import { SetStateAction, useEffect, useRef, useState } from "react";
+import { Trash } from "grommet-icons";
+import { SetStateAction, useRef, useState } from "react";
 import {
   fetchTaxonByTaxonID,
   importImage,
@@ -50,7 +50,7 @@ const TaxonImageEditor = ({
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-    let data = new FormData();
+    const data = new FormData();
     data.append("image", file);
     data.append("taxonID", taxon.id + "");
     data.append("taxonScientificName", taxon.scientificName);
@@ -122,7 +122,7 @@ const TaxonImageEditor = ({
         <div className="w-64 mx-4">
           <div className="text-center py-2 font-semibold">Preview:</div>
           <div className="w-64 animate-fade-in rounded-lg overflow-hidden shadow">
-            <img src={preview || picPlacerholder} />
+            <img src={preview || picPlacerholder} alt="PrewiewImage" />
           </div>
           {inputRef && (
             <div className="flex justify-between mt-4">

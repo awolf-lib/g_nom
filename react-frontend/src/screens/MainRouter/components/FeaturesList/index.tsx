@@ -56,6 +56,7 @@ const FeaturesList = ({
         setOnLoadingFeaturesTimeout(false);
       }, 1000)
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, filter, offset, range, search]);
 
   useEffect(() => {

@@ -30,7 +30,7 @@ const AssemblyPicker = ({
 
   const [toggleNewAssemblyImportForm, setToggleNewAssemblyImportForm] = useState<boolean>(false);
 
-  let [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     loadAssemblies();
@@ -52,21 +52,23 @@ const AssemblyPicker = ({
 
   useEffect(() => {
     if (targetAssembly?.id) {
-      let newSearchParams = new URLSearchParams(searchParams);
+      const newSearchParams = new URLSearchParams(searchParams);
       newSearchParams.set("assemblyID", JSON.stringify(targetAssembly.id));
       setSearchParams(newSearchParams);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetAssembly?.id]);
 
   useEffect(() => {
-    let assemblyIdString = searchParams.get("assemblyID");
-    let assemblyID = Number(assemblyIdString);
+    const assemblyIdString = searchParams.get("assemblyID");
+    const assemblyID = Number(assemblyIdString);
     if (assemblyID) {
-      let target = assemblies.find((element) => element.id === assemblyID);
+      const target = assemblies.find((element) => element.id === assemblyID);
       if (target?.id) {
         getAssembly(target);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, assemblies?.length]);
 
   const loadAssemblies = async () => {
@@ -89,7 +91,7 @@ const AssemblyPicker = ({
   };
 
   const handleDeleteAssembly = async (assemblyID: number, confirmation: string) => {
-    if (isRemoving == -1) {
+    if (isRemoving === -1) {
       if (toggleConfirmDeletion !== assemblyID) {
         setToggleConfirmDeletion(assemblyID);
       } else {
@@ -123,7 +125,7 @@ const AssemblyPicker = ({
   };
 
   const handleEditAssembly = (assembly: AssemblyInterface) => {
-    let newSearchParams = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("assemblyID", JSON.stringify(assembly.id));
     setTargetAssembly(assembly);
     getAssembly(assembly);
@@ -183,6 +185,7 @@ const AssemblyPicker = ({
                           <Input
                             size="sm"
                             placeholder="Type REMOVE..."
+                            value={confirmDeletion}
                             onChange={(e) => handleDeleteAssembly(assembly.id, e.target.value)}
                           />
                         </div>

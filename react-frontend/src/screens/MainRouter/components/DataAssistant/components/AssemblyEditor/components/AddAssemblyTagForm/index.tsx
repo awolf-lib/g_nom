@@ -40,6 +40,7 @@ const AddAssemblyTagForm = ({
 
   useEffect(() => {
     loadTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadTags = async () => {
@@ -116,16 +117,16 @@ const AddAssemblyTagForm = ({
 
   const createColorCombination = () => {
     // Generate random RGB values
-    var r = Math.floor(Math.random() * 15 - 1);
-    var g = Math.floor(Math.random() * 175 - 1);
-    var b = Math.floor(Math.random() * 150 - 1);
+    const r = Math.floor(Math.random() * 15 - 1);
+    const g = Math.floor(Math.random() * 175 - 1);
+    const b = Math.floor(Math.random() * 150 - 1);
     // Calculate brightness of randomized colour
-    var brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     // Calculate brightness of white and black text
-    var lightText = (255 * 299 + 255 * 587 + 255 * 114) / 1000;
-    var darkText = (0 * 299 + 0 * 587 + 0 * 114) / 1000;
+    const lightText = (255 * 299 + 255 * 587 + 255 * 114) / 1000;
+    const darkText = (0 * 299 + 0 * 587 + 0 * 114) / 1000;
 
-    let backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
+    const backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
 
     let color;
     if (Math.abs(brightness - lightText) > Math.abs(brightness - darkText)) {
