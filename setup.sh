@@ -124,6 +124,10 @@ cd ./jbrowse
 docker build -t gnom/jbrowse .
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
 docker run --name $JBROWSE_CONTAINER_NAME --network $DOCKER_NETWORK_NAME --restart on-failure:5 -d -p 8082:80 -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa --env-file .env gnom/jbrowse
+
+docker exec $JBROWSE_CONTAINER_NAME bash -c "npm i -g @jbrowse/cli@1.5.3"
+docker exec $JBROWSE_CONTAINER_NAME bash -c "jbrowse create -f /usr/local/apache2/htdocs"
+
 cd ..
 
 # setup missing directories

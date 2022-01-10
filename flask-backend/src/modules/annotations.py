@@ -89,7 +89,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
         scanFiles()
 
-        print(f"New annotation {annotation_name} added!")
+        print(f"New annotation {annotation_name} added!", flush=True)
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
     except Exception as err:
         deleteAnnotationByAnnotationID(annotation_id)
@@ -179,7 +179,7 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
             if exists(old_additional_file_path):
                 run(["cp", "-r", old_additional_file_path, new_file_path])
 
-        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!")
+        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!", flush=True)
         return new_file_path_main_file, []
 
     except Exception as err:
@@ -192,6 +192,7 @@ def __importDB(annotation_id, assembly_id, annotation_name, path, userID, file_c
     G-nom database import (tables: annotations, annotationsSequences)
     """
     try:
+        print(file_content["featureCountDistinct"], flush=True)
         connection, cursor, error = connect()
 
         featureCount = dumps(file_content["featureCountDistinct"])
@@ -235,6 +236,7 @@ def __importDB(annotation_id, assembly_id, annotation_name, path, userID, file_c
         cursor.executemany(sql, values)
         connection.commit()
     except Exception as err:
+        print(str(err), flush=True)
         return 0, createNotification(message=f"AnnotationImportDbError: {str(err)}")
 
     return 1, []
@@ -315,7 +317,7 @@ def parseGff(path):
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
     # GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##sequence-region)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
     GFF3_FEATURE_PATTERN = compile(
-        r"^(\w+)\s+([\.\w]+)\s+(\w+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
+        r"^([\w\.-]+)\s+([\.\w-]+)\s+([\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
     GFF3_KEY_VALUE_PATTERN = compile(r"^(\w+)[:= ]+(.+)$")
 
@@ -353,7 +355,7 @@ def parseGff(path):
                         key_value = {match[1]: match[2]}
                     info.update(key_value)
                 else:
-                    print(f"Warning: Info did not match pattern. Skipping...\n'{i}'")
+                    print(f"Warning: Info did not match pattern. Skipping...\n'{i}'", flush=True)
 
         return {
             "seqID": seqID,
@@ -370,7 +372,7 @@ def parseGff(path):
     try:
         file_name = basename(path)
 
-        print(f"Parsing file: {file_name}")
+        print(f"Parsing file: {file_name}", flush=True)
 
         # check file extension
         if not GFF3_EXTENSION_PATTERN.match(file_name):
@@ -427,7 +429,7 @@ def parseGff(path):
 
             # no matching pattern
             else:
-                print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'")
+                print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'", flush=True)
                 continue
 
         featureCountDistinct.update({"total": len(features)})
@@ -581,13 +583,13 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
                                             target_value = float(str(target_value).replace("%", "").replace(",", ""))
                                             valueString = float(str(valueString).replace("%", "").replace(",", ""))
                                         except Exception as err:
-                                            print(str(err))
+                                            print(str(err), flush=True)
 
                                         check = numberOperatorsDict[operatorString](target_value, valueString)
                                     elif operatorString in stringOperatorsDict:
                                         check = stringOperatorsDict[operatorString](target_value, valueString)
                                 except Exception as err:
-                                    print(str(err))
+                                    print(str(err), flush=True)
 
                                 if check:
                                     filtered.append(feature)

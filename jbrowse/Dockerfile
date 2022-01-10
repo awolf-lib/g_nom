@@ -5,8 +5,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt install -y genometools samtools tabix nodejs npm python3 python3-pip
 RUN pip3 install pika
 
-RUN npm i -g @jbrowse/cli
-RUN jbrowse create -f /usr/local/apache2/htdocs
 RUN mkdir -p /usr/local/apache2/htdocs/assemblies
 
 EXPOSE 80
