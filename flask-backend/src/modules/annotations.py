@@ -92,6 +92,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         print(f"New annotation {annotation_name} added!", flush=True)
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
     except Exception as err:
+        print(str(err), flush=True)
         deleteAnnotationByAnnotationID(annotation_id)
         return 0, createNotification(message=f"AnnotationImportError2: {str(err)}")
 
@@ -319,7 +320,7 @@ def parseGff(path):
     GFF3_FEATURE_PATTERN = compile(
         r"^([\w\.-]+)\s+([\.\w-]+)\s+([\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
-    GFF3_KEY_VALUE_PATTERN = compile(r"^([\w-\.]+)[:= ]+(.+)$")
+    GFF3_KEY_VALUE_PATTERN = compile(r"^([\w\.-]+)[:= ]+(.+)$")
 
     def parseSequenceRegion(sequence_region_raw):
         seqID = sequence_region_raw[2]
@@ -341,33 +342,37 @@ def parseGff(path):
 
         info = {}
 
-        if info_complete != ".":
-            info_split = info_complete.split(";")
-            info_split_stripped = [info.strip().replace('"', "").replace("'", "") for info in info_split]
-            for i in info_split_stripped:
-                if not i:
-                    continue
-                match = GFF3_KEY_VALUE_PATTERN.match(i)
-                if match:
-                    try:
-                        key_value = {match[1]: float(match[2])}
-                    except:
-                        key_value = {match[1]: match[2]}
-                    info.update(key_value)
-                else:
-                    print(f"Warning: Info did not match pattern. Skipping...\n'{i}'", flush=True)
+        try:
+            if info_complete != ".":
+                info_split = info_complete.split(";")
+                info_split_stripped = [info.strip().replace('"', "").replace("'", "") for info in info_split]
+                for i in info_split_stripped:
+                    if not i:
+                        continue
+                    match = GFF3_KEY_VALUE_PATTERN.match(i)
+                    if match:
+                        try:
+                            key_value = {match[1]: float(match[2])}
+                        except:
+                            key_value = {match[1]: match[2]}
+                        info.update(key_value)
+                    else:
+                        print(f"Warning: Info did not match pattern. Skipping...\n'{i}'", flush=True)
 
-        return {
-            "seqID": seqID,
-            "method": method,
-            "feature": feature,
-            "start": start,
-            "end": end,
-            "score": score,
-            "strand": strand,
-            "phase": phase,
-            "info": dumps(info, separators=(",", ":")),
-        }
+            return {
+                "seqID": seqID,
+                "method": method,
+                "feature": feature,
+                "start": start,
+                "end": end,
+                "score": score,
+                "strand": strand,
+                "phase": phase,
+                "info": dumps(info, separators=(",", ":")),
+            }
+        except Exception as err:
+            print(str(err), flush=True)
+            return {}
 
     try:
         file_name = basename(path)
@@ -420,6 +425,11 @@ def parseGff(path):
             if match:
                 number_of_features += 1
                 feature = parseFeature(match)
+
+                if not feature:
+                    print(f"Warning: A feature could not be parsed. Skipping...", flush=True)
+                    continue
+
                 if feature["feature"] in featureCountDistinct:
                     featureCountDistinct.update({feature["feature"]: featureCountDistinct[feature["feature"]] + 1})
                 else:
