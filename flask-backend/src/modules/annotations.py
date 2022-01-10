@@ -319,7 +319,7 @@ def parseGff(path):
     GFF3_FEATURE_PATTERN = compile(
         r"^([\w\.-]+)\s+([\.\w-]+)\s+([\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
-    GFF3_KEY_VALUE_PATTERN = compile(r"^(\w+)[:= ]+(.+)$")
+    GFF3_KEY_VALUE_PATTERN = compile(r"^([\w-\.]+)[:= ]+(.+)$")
 
     def parseSequenceRegion(sequence_region_raw):
         seqID = sequence_region_raw[2]
