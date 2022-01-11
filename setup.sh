@@ -53,11 +53,11 @@ mkdir -p ${DATA_DIR}
 echo "Start ${FILE_SERVER_CONTAINER_NAME} container..."
 cd ./fileserver
 docker build --no-cache -t gnom/nextcloud .
-docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -v ${DATA_DIR}:/var/www/data/ -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -d -p 8080:80 gnom/nextcloud
+docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -v ${DATA_DIR}:/var/www/data/ -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -e NEXTCLOUD_TRUSTED_DOMAINS="${SERVER_ADRESS}" -d -p 8080:80 gnom/nextcloud
 cd ..
 
 echo "Waiting for nextcloud installation..."
-until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${FILE_SERVER_ADRESS}:${FILE_SERVER_PORT}/login) -eq 200 ]; do
+until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${SERVER_ADRESS}:${FILE_SERVER_PORT}/login) -eq 200 ]; do
   printf "."
   sleep 3;
 done;
@@ -86,9 +86,9 @@ docker exec -it $FILE_SERVER_CONTAINER_NAME python3 /usr/local/j_listener/main.p
 ## Reactapp
 echo "Build reactapp docker container and install dependencies..."
 # envs
-echo "REACT_APP_API_ADRESS=http://${API_ADRESS}:${API_PORT}" > ./react-frontend/.env
-echo "REACT_APP_FILE_SERVER_ADRESS=http://${FILE_SERVER_ADRESS}:${FILE_SERVER_PORT}" >> ./react-frontend/.env
-echo "REACT_APP_JBROWSE_ADRESS=http://${JBROWSE_ADRESS}:${JBROWSE_PORT}" >> ./react-frontend/.env
+echo "REACT_APP_API_ADRESS=http://${SERVER_ADRESS}:${API_PORT}" > ./react-frontend/.env
+echo "REACT_APP_FILE_SERVER_ADRESS=http://${SERVER_ADRESS}:${FILE_SERVER_PORT}" >> ./react-frontend/.env
+echo "REACT_APP_JBROWSE_ADRESS=http://${SERVER_ADRESS}:${JBROWSE_PORT}" >> ./react-frontend/.env
 
 # build
 mkdir -p ${IMPORT_DIR}
@@ -138,6 +138,7 @@ docker exec $API_CONTAINER_NAME bash -c "touch /flask-backend/data/storage/taxa/
 docker exec $API_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/storage/taxa/tree.json"
 
 # download taxa information from NCBI
+echo "Download taxa from NCBI..."
 docker exec $API_CONTAINER_NAME bash -c "wget -q https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdmp.zip -P /flask-backend/data/storage/taxa && unzip -qq /flask-backend/data/storage/taxa/taxdmp.zip -d /flask-backend/data/storage/taxa/taxdmp"
 docker exec $API_CONTAINER_NAME bash -c "rm -r /flask-backend/data/storage/taxa/taxdmp.zip"
 
