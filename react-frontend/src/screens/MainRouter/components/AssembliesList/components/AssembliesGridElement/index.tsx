@@ -105,7 +105,7 @@ const AssembliesGridElement = ({
               <div className="h-16 w-full flex items-center"></div>
               <div className="h-16 f-full flex justify-between items-center">
                 <div>
-                  <div className="text-sm items-center">{"uploaded on " + formatDate(addedOn)}</div>
+                  <div className="text-sm items-center">{"added on " + formatDate(addedOn)}</div>
                   <div className="text-sm items-center">{"by " + username}</div>
                 </div>
               </div>
