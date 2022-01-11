@@ -31,7 +31,7 @@ const FeaturesListElement = ({
         <div className="w-1/12 truncate">{start}</div>
         <div className="w-1/12 truncate">{end}</div>
         <div
-          className={noAssemblyDetails ? "w-1/2 truncate text-left" : "w-3/12 truncate text-left"}
+          className={noAssemblyDetails ? "w-1/2 truncate text-left" : "w-2/3 truncate text-left"}
         >
           {Object.keys(attributes) && Object.keys(attributes).length > 0 ? (
             <div>
@@ -40,7 +40,7 @@ const FeaturesListElement = ({
                   {Object.keys(attributes).map((attr) => (
                     <div className="w-full flex items-center justify-between border-b animate-grow-y">
                       <div className="px-2">{attr + ":"}</div>
-                      <div className="px-2">{attributes[attr]}</div>
+                      <div className="px-2 truncate">{attributes[attr]}</div>
                     </div>
                   ))}
                 </div>

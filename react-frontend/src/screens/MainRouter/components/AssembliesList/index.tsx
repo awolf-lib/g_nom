@@ -3,7 +3,7 @@ import { fetchAssemblies, Filter, NotificationObject, Pagination, Sorting } from
 import { AssemblyInterface } from "../../../../tsInterfaces/tsInterfaces";
 import AssembliesListElement from "./components/AssembliesListElement";
 import AssembliesFilterForm from "./components/AssembliesFilterForm";
-import { Ascend, CaretNext, CaretPrevious, Descend, Next, Previous } from "grommet-icons";
+import { Ascend, CaretNext, CaretPrevious, Descend, Help, Next, Previous } from "grommet-icons";
 import Button from "../../../../components/Button";
 import Input from "../../../../components/Input";
 import { useNotification } from "../../../../components/NotificationProvider";
@@ -43,6 +43,8 @@ const AssembliesList = ({
   const [fcatMode, setFcatMode] = useState<number>(1);
 
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+  const [toggleInfo, setToggleInfo] = useState<boolean>(false);
 
   useEffect(() => {
     setView(initialView);
@@ -344,6 +346,58 @@ const AssembliesList = ({
             </div>
           </div>
         )}
+      </div>
+      <div className="fixed bottom-0 right-0 m-8 z-index-20">
+        <div
+          className="relative"
+          onMouseEnter={() => setToggleInfo(true)}
+          onMouseLeave={() => setToggleInfo(false)}
+        >
+          {toggleInfo && (
+            <div className="bg-gradient-to-b from-gray-300 via-gray-300 to-gray-400 flex items-center py-2 text-xs absolute top-0 right-0 transform -translate-y-40 animate-fade-in-fast shadow rounded-lg border border-gray-300">
+              {view === "grid" && (
+                <div className="mx-3 text-white w-32 bg-gradient-to-t from-gray-800 via-gray-700 to-gray-700 border border-gray-400 py-2 rounded-lg">
+                  <div className="py-1 text-left px-2 flex">
+                    <div className="w-6 text-center">A</div>
+                    {"- Annotations"}
+                  </div>
+                  <div className="py-1 text-left px-2 flex">
+                    <div className="w-6 text-center">B</div>
+                    {"- Busco"}
+                  </div>
+                  <div className="py-1 text-left px-2 flex">
+                    <div className="w-6 text-center">F</div>
+                    {"- fCat [mode]"}
+                  </div>
+                  <div className="py-1 text-left px-2 flex">
+                    <div className="w-6 text-center">M</div>
+                    {"- Milts"}
+                  </div>
+                  <div className="py-1 text-left px-2 flex">
+                    <div className="w-6 text-center">R</div>
+                    {"- Repeatmasker"}
+                  </div>
+                </div>
+              )}
+              <div className="mx-3">
+                <div className="flex justify-between px-4 py-2 my-1 text-white rounded-lg shadow border w-48 bg-gradient-to-t from-green-800 via-green-700 to-green-700 border-green-600">
+                  <div>has data</div>
+                  {"(score >= 75%)"}
+                </div>
+                <div className="flex justify-between px-4 py-2 my-1 text-white rounded-lg shadow border w-48 bg-gradient-to-t from-yellow-800 via-yellow-600 to-yellow-600 border-yellow-500">
+                  <div>has data</div>
+                  {"(score < 75%)"}
+                </div>
+                <div className="px-4 py-2 my-1 text-white rounded-lg shadow border w-48 bg-gradient-to-t from-red-900 via-red-700 to-red-700 border-red-500">
+                  <div>has no data</div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="cursor-pointer animate-fade-in bg-gray-600 text-white rounded-full p-2 hover:text-gray-600 hover:bg-white shadow border border-gray-300">
+            <Help className="stroke-current" color="blank" />
+          </div>
+        </div>
       </div>
     </div>
   );

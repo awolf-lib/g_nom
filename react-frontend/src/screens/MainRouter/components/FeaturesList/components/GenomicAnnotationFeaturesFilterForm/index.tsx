@@ -172,7 +172,6 @@ const GenomicAnnotationFeaturesFilterForm = ({
   };
 
   const handleSelectFeatureTypes = (featureTypes: HTMLOptionsCollection) => {
-    console.log(featureTypes);
     let values: string[] = [];
     for (let i = 0, l = featureTypes.length; i < l; i++) {
       if (featureTypes[i].value === "-1" && featureTypes[i].selected) {
@@ -183,8 +182,6 @@ const GenomicAnnotationFeaturesFilterForm = ({
         values.push(featureTypes[i].value);
       }
     }
-
-    console.log(values);
 
     if (values.length) {
       setFilter((prevState) => {

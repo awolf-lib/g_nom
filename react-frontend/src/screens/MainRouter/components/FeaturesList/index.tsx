@@ -254,7 +254,7 @@ const FeaturesList = ({
           className={
             assemblyID
               ? "w-1/2 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
-              : "w-3/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
+              : "w-2/3 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"
           }
         >
           <div className="flex items-center mr-4">
