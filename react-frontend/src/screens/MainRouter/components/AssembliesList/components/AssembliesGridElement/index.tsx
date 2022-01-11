@@ -82,7 +82,7 @@ const AssembliesGridElement = ({
 
   const formatDate = (addedOn: Date) => {
     const date = new Date(addedOn);
-    return date.toLocaleDateString();
+    return date.toLocaleDateString("en-GB", { month: "long", day: "2-digit", year: "numeric" });
   };
 
   return (
@@ -105,8 +105,8 @@ const AssembliesGridElement = ({
               <div className="h-16 w-full flex items-center"></div>
               <div className="h-16 f-full flex justify-between items-center">
                 <div>
-                  <div className="text-sm items-center">{username}</div>
-                  <div className="text-sm items-center">{formatDate(addedOn)}</div>
+                  <div className="text-sm items-center">{"uploaded on " + formatDate(addedOn)}</div>
+                  <div className="text-sm items-center">{"by " + username}</div>
                 </div>
               </div>
             </div>
