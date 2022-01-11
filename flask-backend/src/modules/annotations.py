@@ -569,6 +569,8 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         if filter:
             if "taxonIDs" in filter:
                 features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
+            if "featureTypes" in filter:
+                features = [x for x in features if x["type"] in filter["featureTypes"]]
             if "featureAttributes" in filter:
                 filtered = []
                 for feature in features:
@@ -630,6 +632,25 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
 
 
+# fetches all unique feature types from all features
+def fetchFeatureTypes():
+    """
+    Fetches all unique feature types.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        cursor.execute("SELECT DISTINCT(type) FROM genomicAnnotationFeatures")
+
+        featureTypes_list = cursor.fetchall()
+        if featureTypes_list:
+            featureTypes_list = [x[0] for x in featureTypes_list]
+
+        return featureTypes_list, []
+    except Exception as err:
+        return [], createNotification(message=f"FeatureTypesFetchingError: {str(err)}")
+
+
 # gets all unique attribute keys from all features
 def fetchFeatureAttributeKeys():
     """
@@ -640,8 +661,6 @@ def fetchFeatureAttributeKeys():
 
         cursor.execute("SELECT DISTINCT(JSON_EXTRACT(JSON_KEYS(attributes),'$[*]')) FROM genomicAnnotationFeatures")
 
-        notifications = []
-
         key_lists = cursor.fetchall()
         keys = []
         for key_list in key_lists:
@@ -649,10 +668,9 @@ def fetchFeatureAttributeKeys():
                 keys += loads(key_list[0])
                 keys = list(set(keys))
             except Exception as err:
-                notifications += createNotification(
-                    "Warning", "One attribute could not be extracted for filter", "warning"
-                )
+                    print(f"Attribute could not be extracted", flush=True)
+                    print(key_list[0], flush=True)
 
-        return keys, [] + notifications
+        return keys, []
     except Exception as err:
         return [], createNotification(message=f"FeatureAttributeTypeFetchingError: {str(err)}")

@@ -2,6 +2,7 @@ import { Search, StatusGood } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   fetchFeatureAttributeKeys,
+  fetchFeatureTypes,
   fetchTaxaWithAssemblies,
   FilterFeatures,
   INcbiTaxon,
@@ -29,12 +30,15 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
   const [taxa, setTaxa] = useState<INcbiTaxon[]>([]);
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
+  const [featureTypes, setFeatureTypes] = useState<string[]>([]);
+  const [filteredFeatureTypes, setFilteredFeatureTypes] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<string[]>([]);
   const [filteredAttributes, setFilteredAttributes] = useState<string[]>([]);
   const [targetAttributes, setTargetAttributes] = useState<ITargetAttribute[]>([]);
   const [triggerSetFilter, setTriggerSetFilter] = useState<boolean>(false);
 
   const [taxonSearch, setTaxonSearch] = useState<string>("");
+  const [featureTypeSearch, setFeatureTypeSearch] = useState<string>("");
   const [attributeSearch, setAttributeSearch] = useState<string>("");
 
   useEffect(() => {
@@ -46,6 +50,11 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
   useEffect(() => {
     loadTaxa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleFilterSelection]);
+
+  useEffect(() => {
+    loadFeatureTypes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
@@ -104,6 +113,23 @@ const GenomicAnnotationFeaturesFilterForm = ({
       });
   };
 
+  const loadFeatureTypes = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    if (userID && token)
+      await fetchFeatureTypes(userID, token).then((response) => {
+        if (response?.payload) {
+          setFeatureTypes(response.payload);
+          setFilteredFeatureTypes(response.payload);
+        }
+
+        if (response?.notification) {
+          response.notification.forEach((n) => handleNewNotification(n));
+        }
+      });
+  };
+
   const loadAttributes = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
@@ -145,6 +171,33 @@ const GenomicAnnotationFeaturesFilterForm = ({
     }
   };
 
+  const handleSelectFeatureTypes = (featureTypes: HTMLOptionsCollection) => {
+    console.log(featureTypes);
+    let values: string[] = [];
+    for (let i = 0, l = featureTypes.length; i < l; i++) {
+      if (featureTypes[i].value === "-1" && featureTypes[i].selected) {
+        values = [];
+        break;
+      }
+      if (featureTypes[i].selected) {
+        values.push(featureTypes[i].value);
+      }
+    }
+
+    console.log(values);
+
+    if (values.length) {
+      setFilter((prevState) => {
+        return { ...prevState, featureTypes: values };
+      });
+    } else {
+      setFilter((prevState) => {
+        delete prevState.featureTypes;
+        return { ...prevState };
+      });
+    }
+  };
+
   const handleSelectAttributes = (attributes: HTMLOptionsCollection) => {
     let values: ITargetAttribute[] = targetAttributes.filter((element) => {
       for (let i = 0, l = attributes.length; i < l; i++) {
@@ -173,6 +226,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
   };
 
   const handleChangeTaxaSearch = (search: string) => {
+    setTaxonSearch(search);
     if (search) {
       setFilteredTaxa((prevState) =>
         prevState.filter(
@@ -184,7 +238,19 @@ const GenomicAnnotationFeaturesFilterForm = ({
     }
   };
 
+  const handleChangeFeatureTypeSearch = (search: string) => {
+    setFeatureTypeSearch(search);
+    if (search) {
+      setFilteredFeatureTypes((prevState) =>
+        prevState.filter((type) => type.includes(search) || filter.featureTypes?.includes(type))
+      );
+    } else {
+      setFilteredFeatureTypes(featureTypes);
+    }
+  };
+
   const handleChangeAttributeSearch = (search: string) => {
+    setAttributeSearch(search);
     if (search) {
       setFilteredAttributes((prevState) =>
         prevState.filter(
@@ -298,7 +364,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
-          <div>
+          <div className="mr-4">
             Taxon
             <hr className="shadow border-gray-300 -mx-2" />
             <div className="mt-2 w-48">
@@ -311,7 +377,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
             </div>
             <select
               multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+              className="mt-4 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
               onChange={(e) => handleSelectTaxa(e.target.options)}
             >
               <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
@@ -331,7 +397,40 @@ const GenomicAnnotationFeaturesFilterForm = ({
             </select>
           </div>
 
-          <div>
+          <div className="mx-4">
+            Feature types
+            <hr className="shadow border-gray-300 -mx-2" />
+            <div className="mt-2 w-48">
+              <Input
+                size="sm"
+                placeholder="Search..."
+                onChange={(e) => handleChangeFeatureTypeSearch(e.target.value)}
+                value={featureTypeSearch}
+              />
+            </div>
+            <select
+              multiple
+              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+              onChange={(e) => handleSelectFeatureTypes(e.target.options)}
+            >
+              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
+                All
+              </option>
+              {filteredFeatureTypes &&
+                filteredFeatureTypes.length > 0 &&
+                filteredFeatureTypes.map((type) => (
+                  <option
+                    key={type}
+                    value={type}
+                    className="px-4 py-1 border-b text-sm font-semibold truncate"
+                  >
+                    {type}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="ml-2">
             Attributes
             <hr className="shadow border-gray-300 -mx-2" />
             <div className="flex mt-2">
@@ -367,14 +466,14 @@ const GenomicAnnotationFeaturesFilterForm = ({
               </div>
 
               {targetAttributes?.length > 0 && (
-                <div className="px-4 ">
+                <div className="px-8">
                   <div>Selected attributes:</div>
                   <hr className="shadow border-gray-300 -mx-2 mb-2 border-dotted" />
                   {targetAttributes.map((attr) => (
                     <div key={attr.target}>
                       <div className="flex items-center py-1">
                         <div className="w-px bg-gray-300 h-4 mr-4" />
-                        <div className="w-80 text-sm truncate text-right">{attr.target}</div>
+                        <div className="w-56 text-sm truncate text-right">{attr.target}</div>
                         <div className="w-px bg-gray-300 h-4 ml-4" />
                         <select
                           className="text-gray-700 text-center w-32 mx-4 text-xs rounded-lg h-6 shadow"

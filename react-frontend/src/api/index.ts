@@ -1073,7 +1073,7 @@ export async function fetchFeatures(
 }
 
 export interface FilterFeatures {
-  types?: string[];
+  featureTypes?: string[];
   featureAttributes?: ITargetAttribute[];
   taxonIDs?: number[];
 }
@@ -1101,6 +1101,21 @@ export interface IGenomicAnnotationFeature {
   strand?: string;
   taxonID: number;
   type: string;
+}
+
+// ===== FETCH ALL UNIQUE FEATURE TYPES IN DB ===== //
+export async function fetchFeatureTypes(
+  userID: number,
+  token: string
+): Promise<IResponse<string[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/fetchFeatureTypes?userID=" + userID + "&token=" + token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
 }
 
 // ===== FETCH ALL KEYS IN ATTRIBUTE SECTION ===== //

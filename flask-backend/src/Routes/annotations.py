@@ -8,6 +8,7 @@ from modules.annotations import (
     deleteAnnotationByAnnotationID,
     fetchAnnotationsByAssemblyID,
     fetchFeatureAttributeKeys,
+    fetchFeatureTypes,
     fetchFeatures,
     import_annotation,
     updateAnnotationLabel,
@@ -164,6 +165,30 @@ def annotations_bp_fetchFeatures():
         data, pagination, notification = fetchFeatures(assembly_id, search, filter, sortBy, offset, range)
 
         response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL UNIQUE FEATURE TYPES
+@annotations_bp.route("/fetchFeatureTypes", methods=["GET"])
+def annotations_bp_fetchFeatureTypes():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = fetchFeatureTypes()
+
+        response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
