@@ -19,12 +19,14 @@ const GenomicAnnotationFeaturesFilterForm = ({
   filter,
   setFilter,
   isFilterOpen,
+  assemblyID,
 }: {
   setSearch: (search: string) => void;
   search: string;
   setFilter: Dispatch<SetStateAction<FilterFeatures>>;
   filter: FilterFeatures;
   isFilterOpen?: Dispatch<SetStateAction<boolean>>;
+  assemblyID?: number;
 }) => {
   const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(false);
 
@@ -56,7 +58,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
   useEffect(() => {
     loadFeatureTypes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleFilterSelection]);
+  }, [toggleFilterSelection, filter.taxonIDs]);
 
   useEffect(() => {
     loadAttributes();
@@ -118,16 +120,18 @@ const GenomicAnnotationFeaturesFilterForm = ({
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token)
-      await fetchFeatureTypes(userID, token).then((response) => {
-        if (response?.payload) {
-          setFeatureTypes(response.payload);
-          setFilteredFeatureTypes(response.payload);
-        }
+      await fetchFeatureTypes(userID, token, assemblyID || 0, filter.taxonIDs || []).then(
+        (response) => {
+          if (response?.payload) {
+            setFeatureTypes(response.payload);
+            setFilteredFeatureTypes(response.payload);
+          }
 
-        if (response?.notification) {
-          response.notification.forEach((n) => handleNewNotification(n));
+          if (response?.notification) {
+            response.notification.forEach((n) => handleNewNotification(n));
+          }
         }
-      });
+      );
   };
 
   const loadAttributes = async () => {
@@ -361,38 +365,40 @@ const GenomicAnnotationFeaturesFilterForm = ({
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
-          <div className="mr-4">
-            Taxon
-            <hr className="shadow border-gray-300 -mx-2" />
-            <div className="mt-2 w-48">
-              <Input
-                size="sm"
-                placeholder="Search..."
-                onChange={(e) => handleChangeTaxaSearch(e.target.value)}
-                value={taxonSearch}
-              />
+          {!assemblyID && (
+            <div className="mr-4">
+              Taxon
+              <hr className="shadow border-gray-300 -mx-2" />
+              <div className="mt-2 w-48">
+                <Input
+                  size="sm"
+                  placeholder="Search..."
+                  onChange={(e) => handleChangeTaxaSearch(e.target.value)}
+                  value={taxonSearch}
+                />
+              </div>
+              <select
+                multiple
+                className="mt-4 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+                onChange={(e) => handleSelectTaxa(e.target.options)}
+              >
+                <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
+                  All
+                </option>
+                {filteredTaxa &&
+                  filteredTaxa.length > 0 &&
+                  filteredTaxa.map((taxon) => (
+                    <option
+                      key={taxon.id}
+                      value={taxon.id}
+                      className="px-4 py-1 border-b text-sm font-semibold truncate"
+                    >
+                      {taxon.scientificName}
+                    </option>
+                  ))}
+              </select>
             </div>
-            <select
-              multiple
-              className="mt-4 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-              onChange={(e) => handleSelectTaxa(e.target.options)}
-            >
-              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
-                All
-              </option>
-              {filteredTaxa &&
-                filteredTaxa.length > 0 &&
-                filteredTaxa.map((taxon) => (
-                  <option
-                    key={taxon.id}
-                    value={taxon.id}
-                    className="px-4 py-1 border-b text-sm font-semibold truncate"
-                  >
-                    {taxon.scientificName}
-                  </option>
-                ))}
-            </select>
-          </div>
+          )}
 
           <div className="mx-4">
             Feature types

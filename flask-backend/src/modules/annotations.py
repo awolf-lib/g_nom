@@ -648,14 +648,38 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
 
 
 # fetches all unique feature types from all features
-def fetchFeatureTypes():
+def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
     """
     Fetches all unique feature types.
     """
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("SELECT DISTINCT(type) FROM genomicAnnotationFeatures")
+        sql = "SELECT DISTINCT(genomicAnnotationFeatures.type) FROM genomicAnnotationFeatures"
+        values = tuple()
+
+        if assemblyID or len(taxonIDs):
+            sql += ", genomicAnnotations"
+
+            if len(taxonIDs):
+                sql += ", assemblies"
+
+            sql += " WHERE"
+
+            if assemblyID:
+                assemblyIDs_string = " genomicAnnotations.assemblyID=%s"
+                values += (assemblyID,)
+                sql += assemblyIDs_string
+                if len(taxonIDs):
+                    sql += " AND"
+
+            if len(taxonIDs):
+                taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
+                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                values += tuple(taxonIDs)
+                sql += taxonIDs_string
+
+        cursor.execute(sql, values)
 
         featureTypes_list = cursor.fetchall()
         if featureTypes_list:

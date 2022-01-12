@@ -160,6 +160,7 @@ const FeaturesList = ({
             filter={filter}
             setFilter={setFilter}
             isFilterOpen={setIsFilterOpen}
+            assemblyID={assemblyID}
           />
         </div>
       </div>

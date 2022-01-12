@@ -6,64 +6,6 @@
     },
     "taxon": {
       "ncbiTaxonID": 1
-    },
-    "annotations": [
-      {
-        "mainFile": "PATH/TO/ANNOTATION1.GFF3",
-        "label": "Annotation 1 label"
-      },
-      {
-        "mainFile": "PATH/TO/ANNOTATION2.GFF3",
-        "label": "Annotation 2 label"
-      }
-    ],
-    "mappings": [
-      {
-        "mainFile": "PATH/TO/MAPPING.BAM",
-        "label": "Mapping label"
-      }
-    ],
-    "buscos": [
-      {
-        "mainFile": "PATH/TO/*SHORT_SUMMARY*.txt",
-        "additionalFiles": [
-          "PATH/TO/*FULL_TABLE*.tsv",
-          "PATH/TO/*BUSCO_MISSING*.tsv",
-          "PATH/TO/*BUSCO_SEQUENCES*"
-        ],
-        "label": "Busco label"
-      }
-    ],
-    "fcats": [
-      {
-        "mainFile": "PATH/TO/*REPORT_SUMMARY*.txt",
-        "additionalFiles": [
-          "PATH/TO/*MISSING*.txt",
-          "PATH/TO/*IGNORED*.txt",
-          "PATH/TO/*REPORT_DISMISS*.txt",
-          "PATH/TO/*GENOME_DIR*",
-          "PATH/TO/*LAST_REFSPEC*.txt",
-          "PATH/TO/*PHYLOPROFILEOUTPUT*"
-        ],
-        "label": "fCat label"
-      }
-    ],
-    "milts": [
-      {
-        "mainFile": "PATH/TO/*3D_plot*.html",
-        "additionalFiles": [
-          "PATH/TO/*GENE_TABLE*.csv",
-          "PATH/TO/*PCA_LOADINGS*.csv",
-          "PATH/TO/*PCA_SUMMARY*.csv"
-        ],
-        "label": "Milts label"
-      }
-    ],
-    "repeatmaskers": [
-      {
-        "mainFile": "PATH/TO/*.tbl",
-        "label": "Repeatmasker label"
-      }
-    ]
+    }
   }
 ]

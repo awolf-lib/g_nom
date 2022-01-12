@@ -1106,11 +1106,22 @@ export interface IGenomicAnnotationFeature {
 // ===== FETCH ALL UNIQUE FEATURE TYPES IN DB ===== //
 export async function fetchFeatureTypes(
   userID: number,
-  token: string
+  token: string,
+  assemblyID: number,
+  taxonIDs: number[]
 ): Promise<IResponse<string[]>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS + "/fetchFeatureTypes?userID=" + userID + "&token=" + token
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatureTypes", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userID: userID,
+      token: token,
+      assemblyID: assemblyID,
+      taxonIDs: taxonIDs,
+    }),
+  })
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {

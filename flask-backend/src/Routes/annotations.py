@@ -173,11 +173,12 @@ def annotations_bp_fetchFeatures():
 
 
 # FETCH ALL UNIQUE FEATURE TYPES
-@annotations_bp.route("/fetchFeatureTypes", methods=["GET"])
+@annotations_bp.route("/fetchFeatureTypes", methods=["POST"])
 def annotations_bp_fetchFeatureTypes():
-    if request.method == "GET":
-        userID = request.args.get("userID", None)
-        token = request.args.get("token", None)
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
 
         # token still active
         valid_token, error = validateActiveToken(userID, token)
@@ -186,7 +187,10 @@ def annotations_bp_fetchFeatureTypes():
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 
-        data, notification = fetchFeatureTypes()
+        taxonIDs = req.get("taxonIDs", None)
+        assemblyID = req.get("assemblyID", None)
+
+        data, notification = fetchFeatureTypes(assemblyID, taxonIDs)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
