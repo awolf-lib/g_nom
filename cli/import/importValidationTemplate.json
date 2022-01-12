@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "GnomAssemblyImportValidation",
+  "title": "Assembly Import Validation",
+  "description": "Validates a JSON against dataset template",
+  "type": "array",
+  "uniqueItems": false,
+  "items": {
+    "type": "object",
+    "properties": {
+      "assembly": {
+        "type": "object",
+        "properties": {
+          "mainFile": {
+            "type": "string",
+            "description": "Define path to new assembly.fasta to create new assembly.",
+            "pattern": "^(.*\\.fasta$)|(.*\\.fa$)|(.*\\.faa$)|(.*\\.fna$)|(.*\\.fasta\\.gz$)|(.*\\.fa\\.gz$)|(.*\\.faa\\.gz$)|(.*\\.fna\\.gz$)"
+          },
+          "assemblyID": {
+            "type": "number",
+            "description": "Define Gnom assembly ID to append existing assembly."
+          },
+          "label": {
+            "type": "string",
+            "description": "Optional: Add/update label to new/existing assembly",
+            "pattern": "^[a-zA-Z0-9_]{1,50}$"
+          }
+        },
+        "oneOf": [{ "required": ["mainFile"] }, { "required": ["assemblyID"] }]
+      },
+      "taxon": {
+        "type": "object",
+        "properties": {
+          "taxonID": {
+            "type": "number",
+            "description": "Define Gnom taxon ID for linking assembly to specific taxon."
+          },
+          "ncbiTaxonID": {
+            "type": "number",
+            "description": "Define NCBI taxon ID for linking assembly to specific taxon."
+          }
+        },
+        "oneOf": [{ "required": ["taxonID"] }, { "required": ["ncbiTaxonID"] }]
+      },
+
+      "annotations": {
+        "type": "array",
+        "description": "Optional: Add a list of annotations to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^(.*\\.gff$)|(.*\\.gff3$)|(.*\\.gff\\.gz$)|(.*\\.gff3\\.gz$)"
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      },
+
+      "mappings": {
+        "type": "array",
+        "description": "Optional: Add a list of mappings to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^(.*\\.bam$)|(.*\\.bam\\.gz$)"
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      },
+
+      "buscos": {
+        "type": "array",
+        "description": "Optional: Add a list of Busco analyses to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^(.*short_summary.*\\.txt$)"
+            },
+            "additionalFiles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "(^.*full_table.*\\.tsv$)|(^.*missing(_busco_list)?.*\\.tsv$)|(^.*busco_sequences.*$)|(^.*hmmer_output.*$)"
+              }
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      },
+
+      "fcats": {
+        "type": "array",
+        "description": "Optional: Add a list of fCat analyses to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^(.*report_summary.*\\.txt$)"
+            },
+            "additionalFiles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "(^.*ignored.*\\.txt$)|(^.*missing.*\\.txt$)|(^.*report_dismiss.*\\.txt$)|(^.*last_refspec.*\\.txt$)|(^.*report_full.*\\.txt$)|(^.*genome_dir.*$)|(^.*phyloprofileOutput.*$)"
+              }
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      },
+
+      "milts": {
+        "type": "array",
+        "description": "Optional: Add a list of Milts analyses to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^.*3D_plot.*\\.html$"
+            },
+            "additionalFiles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "(^.*gene_table_taxon_assignment.*\\.csv$)|(^.*pca_summary.*\\.csv$)|(^.*pca_loadings.*\\.csv$)"
+              }
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      },
+
+      "repeatmaskers": {
+        "type": "array",
+        "description": "Optional: Add a list of Repeatmasker analyses to add.",
+        "uniqueItems": true,
+        "items": {
+          "type": "object",
+          "properties": {
+            "mainFile": {
+              "type": "string",
+              "pattern": "^.*\\.tbl$"
+            },
+            "additionalFiles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "(^.*\\.align$)|(^.*\\.out$)"
+              }
+            },
+            "label": { "type": "string", "pattern": "^[a-zA-Z0-9_]{1,50}$" }
+          },
+          "required": ["mainFile"]
+        }
+      }
+    },
+    "required": ["assembly", "taxon"]
+  }
+}

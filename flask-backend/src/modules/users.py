@@ -185,7 +185,7 @@ def fetchUsers():
     user = []
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT users.id, users.username, users.userRole from users")
+        cursor.execute("SELECT users.id, users.username, users.userRole from users WHERE users.id > 1")
 
         row_headers = [x[0] for x in cursor.description]
         user = cursor.fetchall()
@@ -204,6 +204,9 @@ def deleteUserByUserID(userID):
     Delete user from db
     """
     try:
+        if userID == 1:
+            return 0, createNotification(message="Cannot delete CLI_IMPORT_USER")
+
         connection, cursor, error = connect()
         cursor.execute("SELECT username from users WHERE id=%s", (userID,))
         user = cursor.fetchone()
@@ -275,6 +278,7 @@ def removeBookmark(userID, assemblyID):
 if __name__ == "__main__":
     if len(argv[1:]) == 1:
         if argv[1] == "addInitialUser":
+            addUser("CLI_IMPORT_USER", getenv("INITIAL_USER_PASSWORD"), "admin")
             addUser(getenv("INITIAL_USER_USERNAME"), getenv("INITIAL_USER_PASSWORD"), "admin")
     else:
         pass
