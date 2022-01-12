@@ -1,6 +1,7 @@
 [
   {
     "assembly": {
+      "assemblyID": 34,
       "mainFile": "PATH/TO/ASSEMBLY.FASTA",
       "label": "Assembly label"
     },

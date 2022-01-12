@@ -58,9 +58,10 @@ const SpeciesProfilePictureViewer = ({
 
   return (
     <img
-      className="w-full h-full object-contain object-top"
+      className="h-full object-contain"
       alt="Species profile"
       src={imagePath && image ? getImageURL() : picPlacerholder}
+      style={{ aspectRatio: "1 / 1" }}
     />
   );
 };
