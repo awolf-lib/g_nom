@@ -28,6 +28,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
     Import workflow for new assemblies.
     """
     # Check input parameters and get new ID
+    print("Start importing assembly...")
     try:
         if not taxon:
             return 0, createNotification(message="Missing taxon data!")
@@ -43,19 +44,20 @@ def import_assembly(taxon, dataset, userID, taskID=""):
             return 0, error
 
     except Exception as err:
-        return 0, createNotification(message=f"AssemblyImportError1: {str(err)}")
+        print(err)
+        return 0, createNotification(message=f"AssemblyImportError1: {err}")
 
     try:
         main_file_path, assembly_name, error = __store_assembly(dataset, taxon, assembly_id)
-
         if not main_file_path or not exists(main_file_path):
             deleteAssemblyByAssemblyID(assembly_id)
+            print(error)
             return 0, error
 
         fasta_content, error = parseFasta(main_file_path, taskID)
-
         if not fasta_content:
             deleteAssemblyByAssemblyID(assembly_id)
+            print(error)
             return 0, error
 
         try:
@@ -67,9 +69,9 @@ def import_assembly(taxon, dataset, userID, taskID=""):
         notify_assembly(assembly_id, assembly_name, main_file_path, "Added")
 
         imported_status, error = __importDB(taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content)
-
         if not imported_status:
             deleteAssemblyByAssemblyID(assembly_id)
+            print(error)
             return 0, error
 
         try:
@@ -91,11 +93,19 @@ def import_assembly(taxon, dataset, userID, taskID=""):
 
         scanFiles()
 
-        print(f"New assembly ({basename(main_file_path)}) added!", flush=True)
+        try:
+            if "label" in dataset:
+                updateAssemblyLabel(assembly_id, dataset["label"], userID)
+        except:
+            print("Change assembly label failed!")
+            pass
+
+        print(f"New assembly ({basename(main_file_path)}) added!\n", flush=True)
         return assembly_id, createNotification(
             "Success", f"Successfully imported {basename(main_file_path)}!", "success"
         )
     except Exception as err:
+        print(err)
         deleteAssemblyByAssemblyID(assembly_id)
         return 0, createNotification(message=f"AssemblyImportError2: {str(err)}")
 
@@ -179,10 +189,11 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
             pass
             # add remove?
 
-        for additional_file in dataset["additional_files"]:
-            old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
-            if exists(old_additional_file_path):
-                run(["cp", "-r", old_additional_file_path, new_file_path])
+        if "additional_files" in dataset:
+            for additional_file in dataset["additional_files"]:
+                old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
+                if exists(old_additional_file_path):
+                    run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Assembly ({new_file_name}) moved to storage!")
         return new_file_path_main_file, new_assembly_name, []
@@ -463,6 +474,7 @@ def parseFasta(path, taskID=""):
 
                 # print progress status
                 progress = ((idx + 1) * 100) // len(lines)
+                print(f"Parsed: {progress}%", end="\r")
                 if not ((floor(progress / 10) * 10) % 10):
                     try:
                         if taskID:

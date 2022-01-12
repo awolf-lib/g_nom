@@ -1,4 +1,5 @@
 from genericpath import exists
+from json import loads
 from uuid import uuid1
 from os import listdir
 from os.path import basename, isdir, join, dirname, getsize
@@ -14,6 +15,7 @@ from modules.notifications import createNotification
 from modules.analyses import import_analyses
 from modules.tasks import addTask, isTaxonCurrentlyEdited, updateTask
 from .producer import notify_worker
+from modules.taxa import fetchTaxonByNCBITaxonID, fetchTaxonByTaxonID
 
 FILE_PATTERN_DICT = {
     "image": {
@@ -440,36 +442,67 @@ def importDataset(
 
 
 def readArgs():
+    if len(argv) <= 1:
+        print("No arguments provided!")
+        print("Help!")
+        return 0
+
     args = argv[1:]
 
     if "-h" in args or "--help" in args:
         print("Help!")
         return 0
 
-    if not len(args):
-        print("No arguments provided!")
+    if len(args) != 9:
+        print("Invalid number of arguments")
+        print("Help!")
         return 0
 
-    if not exists(args[0]):
-        print("Assembly file path does not exist!")
-        return 0
+    try:
+        taxon = loads(args[0])
+        assembly = loads(args[1])
+        annotations = loads(args[2])
+        mappings = loads(args[3])
+        buscos = loads(args[4])
+        fcats = loads(args[5])
+        milts = loads(args[6])
+        repeatmaskers = loads(args[7])
+        assembly_id = int(args[8])
 
-    if BASE_PATH_TO_IMPORT not in args[0]:
-        print(f"All files need to be in the following directory to be imported:\n\n{BASE_PATH_TO_IMPORT}!")
-        return 0
+        return taxon, assembly, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
 
-    if not FILE_PATTERN_DICT["sequence"].match(args[0]):
-        print("Assembly file pattern does not match type FASTA!")
-        return 0
-
-    assembly_path = args[0]
-
-    return assembly_path
+    except Exception as err:
+        print(err)
+        return {}, {}, [], [], [], [], [], [], 0
 
 
-# if __name__ == "__main__":
-#     assembly_path = readArgs()
+if __name__ == "__main__":
+    args = readArgs()
+    if not args:
+        exit(0)
 
-#     importDataset({"scientificName": "Trichinella nelsoni"}, assembly_path, 1)
+    try:
+        taxon, assembly, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id = args
 
-# TODO: ADD CLI USER TO DATABASE
+        if "taxonID" in taxon:
+            taxon, notifcation = fetchTaxonByTaxonID(taxon["taxonID"])
+        elif "ncbiTaxonID" in taxon:
+            ncbiID = taxon["ncbiTaxonID"]
+            taxon, notifcation = fetchTaxonByNCBITaxonID(ncbiID)
+            if len(taxon) == 1:
+                taxon = taxon[0]
+            else:
+                gnom_tax_ids_string = "\n".join([x["id"] + ": " + taxon["scientificName"] for x in taxon])
+                print(
+                    f"Multiple taxon IDs for NCBI taxon id {ncbiID} found:\n{gnom_tax_ids_string}\nPlease specify parameter taxonID for this dataset with one of the above taxonIDs!"
+                )
+                exit(0)
+
+        import_summary = importDataset(
+            taxon, assembly, 1, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
+        )
+        print(import_summary)
+    except Exception as err:
+        print(err)
+
+    exit(0)

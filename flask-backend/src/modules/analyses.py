@@ -15,6 +15,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
     """
     Import workflow for new analyses.
     """
+    print("Start importing analyses...")
     try:
         if not taxon:
             return 0, createNotification(message="Missing taxon data!")
@@ -37,12 +38,14 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
 
         analyses_name, analyses_id, error = __generate_analyses_name(assembly_name, analyses_type)
         if not analyses_id:
+            print(error)
             return 0, error
     except Exception as err:
         return 0, createNotification(message=f"AnalysesImportError{analyses_type}1: {str(err)}")
 
     try:
         if not analyses_name:
+            print(error)
             return 0, error
 
         new_file_path, new_path_to_directory, error = __store_analyses(
@@ -51,17 +54,20 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
 
         if not new_file_path or not exists(new_file_path):
             deleteAnalysesByAnalysesID(analyses_id)
+            print(error)
             return 0, error
 
         if analyses_type == "busco":
             busco_content, error = parseBusco(new_file_path)
             if not busco_content:
                 deleteAnalysesByAnalysesID(analyses_id)
+                print(error)
                 return 0, error
         elif analyses_type == "fcat":
             fcat_content, error = parseFcat(new_file_path)
             if not fcat_content:
                 deleteAnalysesByAnalysesID(analyses_id)
+                print(error)
                 return 0, error
         elif analyses_type == "milts":
             pass
@@ -69,6 +75,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             repeatmasker_content, error = parseRepeatmasker(new_file_path)
             if not repeatmasker_content:
                 deleteAnalysesByAnalysesID(analyses_id)
+                print(error)
                 return 0, error
         else:
             return 0, createNotification(message=f"Invalid analyses type {analyses_type}")
@@ -89,6 +96,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         )
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
+            print(error)
             return 0, error
 
         if analyses_type == "busco":
@@ -102,14 +110,23 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
 
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
+            print(error)
             return 0, error
 
         scanFiles()
 
-        print(f"New analyses {analyses_name} ({analyses_type}) added!")
+        try:
+            if "label" in dataset:
+                updateAnalysisLabel(analyses_id, dataset["label"])
+        except:
+            print("Change analysis label failed!")
+            pass
+
+        print(f"New analyses {analyses_name} ({analyses_type}) added!\n")
         return analyses_id, createNotification("Success", f"New annotation {analyses_name} added!", "success")
     except Exception as err:
         deleteAnalysesByAnalysesID(analyses_id)
+        print(err)
         return 0, createNotification(message=f"AnalysesImportError{analyses_type}2: {str(err)}")
 
 
@@ -200,7 +217,7 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
                     plot_data = plot_data.replace('"title":"taxonomic assignment"', f'"title":"{analyses_name}"')
                     plotFile.close()
 
-                with open("src/modules/templates/milts_head_template.html", "r") as milts_template_file:
+                with open("/flask-backend/src/modules/templates/milts_head_template.html", "r") as milts_template_file:
                     milts_template = milts_template_file.readlines()
                     milts_template_file.close()
 
@@ -220,13 +237,15 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
                     plotFile.writelines(milts_template)
                     plotFile.close()
             except Exception as err:
+                print(err, flush=True)
                 return "", "", createNotification(message=f"MiltsHeaderInsertionError: {str(err)}")
 
         # handle additional files
-        for additional_file in dataset["additional_files"]:
-            old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
-            if exists(old_additional_file_path):
-                run(["cp", "-r", old_additional_file_path, new_file_path])
+        if "additional_files" in dataset:
+            for additional_file in dataset["additional_files"]:
+                old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
+                if exists(old_additional_file_path):
+                    run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Analyses ({analyses_type}; {basename(new_file_path_main_file)}) moved to storage!")
         return new_file_path_main_file, new_file_path, []

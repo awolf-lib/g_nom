@@ -23,6 +23,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
     """
     Import workflow for new mapping.
     """
+    print("Start importing mapping...")
     try:
         if not taxon:
             return 0, createNotification(message="Missing taxon data!")
@@ -42,31 +43,40 @@ def import_mapping(taxon, assembly_id, dataset, userID):
 
         mapping_name, mapping_id, error = __generate_mapping_name(assembly_name)
         if not mapping_id:
+            print(error)
             return 0, error
     except Exception as err:
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
     try:
         if not mapping_name:
+            print(error)
             return 0, error
 
         new_file_path, error = __store_mapping(dataset, taxon, assembly_name, mapping_name)
-
         if not new_file_path or not exists(new_file_path):
             deleteMappingByMappingID(mapping_id)
+            print(error)
             return 0, error
 
         imported_status, error = __importDB(mapping_id, assembly_id, mapping_name, new_file_path, userID)
-
         if not imported_status:
             deleteMappingByMappingID(mapping_id)
+            print(error)
             return 0, error
 
         notify_mapping(assembly_id, assembly_name, mapping_id, mapping_name, new_file_path, "Added")
 
         scanFiles()
 
-        print(f"New mapping {mapping_name} added!")
+        try:
+            if "label" in dataset:
+                updateMappingLabel(mapping_id, dataset["label"])
+        except:
+            print("Change annotation label failed!")
+            pass
+
+        print(f"New mapping {mapping_name} added!\n")
         return mapping_id, createNotification("Success", f"New mapping {mapping_name} added!", "success")
     except Exception as err:
         deleteMappingByMappingID(mapping_id)
@@ -152,10 +162,11 @@ def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentic
         # add remove?
 
         # handle additional files
-        for additional_file in dataset["additional_files"]:
-            old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
-            if exists(old_additional_file_path):
-                run(["cp", "-r", old_additional_file_path, new_file_path])
+        if "additional_files" in dataset:
+            for additional_file in dataset["additional_files"]:
+                old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
+                if exists(old_additional_file_path):
+                    run(["cp", "-r", old_additional_file_path, new_file_path])
 
         print(f"Mapping ({basename(new_file_path_main_file)}) moved to storage!")
         return new_file_path_main_file, []

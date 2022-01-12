@@ -25,6 +25,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
     """
     Import workflow for new annotation.
     """
+    print("Start importing annotation...")
     try:
         if not taxon:
             return 0, createNotification(message="Missing taxon data!")
@@ -44,17 +45,21 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
         annotation_name, annotation_id, error = __generate_annotation_name(assembly_name)
         if not annotation_id:
+            print(error)
             return 0, error
     except Exception as err:
+        print(err)
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
     try:
         if not annotation_name:
+            print(error)
             return 0, error
 
         new_file_path, error = __store_annotation(dataset, taxon, assembly_name, annotation_name)
 
         if not new_file_path or not exists(new_file_path):
+            print(error)
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
@@ -71,6 +76,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
         if not gff_content:
             deleteAnnotationByAnnotationID(annotation_id)
+            print(error)
             return 0, error
 
         # zip
@@ -82,6 +88,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         )
 
         if not imported_status:
+            print(error)
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
@@ -89,7 +96,14 @@ def import_annotation(taxon, assembly_id, dataset, userID):
 
         scanFiles()
 
-        print(f"New annotation {annotation_name} added!", flush=True)
+        try:
+            if "label" in dataset:
+                updateAnnotationLabel(annotation_id, dataset["label"])
+        except:
+            print("Change annotation label failed!")
+            pass
+
+        print(f"New annotation {annotation_name} added!\n", flush=True)
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
     except Exception as err:
         print(str(err), flush=True)
@@ -132,6 +146,7 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
     try:
         # check if path exists
         old_file_path = BASE_PATH_TO_IMPORT + dataset["main_file"]["path"]
+        print(old_file_path)
         if not exists(old_file_path):
             return 0, createNotification(message="Import path not found!")
 
@@ -175,12 +190,13 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
             return 0, createNotification(message="Moving annotation to storage failed!")
 
         # handle additional files
-        for additional_file in dataset["additional_files"]:
-            old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
-            if exists(old_additional_file_path):
-                run(["cp", "-r", old_additional_file_path, new_file_path])
+        if "additional_files" in dataset:
+            for additional_file in dataset["additional_files"]:
+                old_additional_file_path = BASE_PATH_TO_IMPORT + additional_file["path"]
+                if exists(old_additional_file_path):
+                    run(["cp", "-r", old_additional_file_path, new_file_path])
 
-        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!", flush=True)
+        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!\n", flush=True)
         return new_file_path_main_file, []
 
     except Exception as err:
@@ -193,7 +209,6 @@ def __importDB(annotation_id, assembly_id, annotation_name, path, userID, file_c
     G-nom database import (tables: annotations, annotationsSequences)
     """
     try:
-        print(file_content["featureCountDistinct"], flush=True)
         connection, cursor, error = connect()
 
         featureCount = dumps(file_content["featureCountDistinct"])
@@ -569,6 +584,8 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         if filter:
             if "taxonIDs" in filter:
                 features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
+            if "featureTypes" in filter:
+                features = [x for x in features if x["type"] in filter["featureTypes"]]
             if "featureAttributes" in filter:
                 filtered = []
                 for feature in features:
@@ -630,6 +647,49 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
 
 
+# fetches all unique feature types from all features
+def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
+    """
+    Fetches all unique feature types.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        sql = "SELECT DISTINCT(genomicAnnotationFeatures.type) FROM genomicAnnotationFeatures"
+        values = tuple()
+
+        if assemblyID or len(taxonIDs):
+            sql += ", genomicAnnotations"
+
+            if len(taxonIDs):
+                sql += ", assemblies"
+
+            sql += " WHERE"
+
+            if assemblyID:
+                assemblyIDs_string = " genomicAnnotations.assemblyID=%s"
+                values += (assemblyID,)
+                sql += assemblyIDs_string
+                if len(taxonIDs):
+                    sql += " AND"
+
+            if len(taxonIDs):
+                taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
+                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                values += tuple(taxonIDs)
+                sql += taxonIDs_string
+
+        cursor.execute(sql, values)
+
+        featureTypes_list = cursor.fetchall()
+        if featureTypes_list:
+            featureTypes_list = [x[0] for x in featureTypes_list]
+
+        return featureTypes_list, []
+    except Exception as err:
+        return [], createNotification(message=f"FeatureTypesFetchingError: {str(err)}")
+
+
 # gets all unique attribute keys from all features
 def fetchFeatureAttributeKeys():
     """
@@ -640,8 +700,6 @@ def fetchFeatureAttributeKeys():
 
         cursor.execute("SELECT DISTINCT(JSON_EXTRACT(JSON_KEYS(attributes),'$[*]')) FROM genomicAnnotationFeatures")
 
-        notifications = []
-
         key_lists = cursor.fetchall()
         keys = []
         for key_list in key_lists:
@@ -649,10 +707,9 @@ def fetchFeatureAttributeKeys():
                 keys += loads(key_list[0])
                 keys = list(set(keys))
             except Exception as err:
-                notifications += createNotification(
-                    "Warning", "One attribute could not be extracted for filter", "warning"
-                )
+                print(f"Attribute could not be extracted", flush=True)
+                print(key_list[0], flush=True)
 
-        return keys, [] + notifications
+        return keys, []
     except Exception as err:
         return [], createNotification(message=f"FeatureAttributeTypeFetchingError: {str(err)}")
