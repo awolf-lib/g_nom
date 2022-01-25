@@ -21,13 +21,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   }, [annotations.length]);
 
   const getData = () => {
-    const colors = [
-      "rgb(56, 75, 126)",
-      "rgb(18, 36, 37)",
-      "rgb(34, 53, 101)",
-      "rgb(36, 55, 57)",
-      "rgb(6, 4, 4)",
-    ];
+    const colors = ["#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00"];
 
     let traces = [];
     if (annotations && annotations.length > 0) {

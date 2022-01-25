@@ -36,13 +36,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
         textinfo: "label+percent",
         hoverinfo: "label+value",
         marker: {
-          colors: [
-            "rgb(56, 75, 126)",
-            "rgb(18, 36, 37)",
-            "rgb(34, 53, 101)",
-            "rgb(36, 55, 57)",
-            "rgb(6, 4, 4)",
-          ],
+          colors: ["#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00"],
         },
       },
     ]);
@@ -56,7 +50,7 @@ const AssemblyAlphabetPlotViewer = ({ assembly }) => {
       title: "Alphabet",
       legend: {
         x: 1,
-        y: 0.5,
+        y: 1,
         xanchor: "center",
         orientation: "v",
       },
