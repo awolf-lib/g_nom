@@ -21,7 +21,7 @@ docker network create ${DOCKER_NETWORK_NAME}
 echo "Build mysql docker container..."
 # start
 echo "Start ${MYSQL_CONTAINER_NAME} container..."
-docker run --name $MYSQL_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD mysql/mysql-server:8.0.27
+docker run --name $MYSQL_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD mysql/mysql-server:8.0.27
 
 echo "Waiting for database to start..."
 while [ "`docker inspect -f {{.State.Health.Status}} ${MYSQL_CONTAINER_NAME}`" != "healthy" ]; do 
@@ -42,7 +42,7 @@ cat ./mysql/create_gnom_db.sql | docker exec -i $MYSQL_CONTAINER_NAME /usr/bin/m
 # ============================================ #
 
 ## RabbitMQ
-docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 15672:15672 -p 5672:5672 --hostname gnom_rabbit_host rabbitmq:3-management-alpine
+docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p 15672:15672 -p 5672:5672 --hostname gnom_rabbit_host rabbitmq:3-management-alpine
 
 # ============================================ #
 
@@ -53,7 +53,7 @@ mkdir -p ${DATA_DIR}
 echo "Start ${FILE_SERVER_CONTAINER_NAME} container..."
 cd ./fileserver
 docker build --no-cache -t gnom/nextcloud .
-docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -v ${DATA_DIR}:/var/www/data/ -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -e NEXTCLOUD_TRUSTED_DOMAINS="${SERVER_ADRESS}" -d -p 8080:80 gnom/nextcloud
+docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -e NEXTCLOUD_TRUSTED_DOMAINS="${SERVER_ADRESS}" -d -p 8080:80 gnom/nextcloud
 cd ..
 
 echo "Waiting for nextcloud installation..."
@@ -96,7 +96,7 @@ cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
 # start
 echo "Start ${FRONTEND_CONTAINER_NAME} container..."
-docker run --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p 5000:5000 gnom/reactapp
+docker run --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p 5000:5000 gnom/reactapp
 cd ..
 
 # ============================================ #
@@ -108,7 +108,7 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${API_CONTAINER_NAME} container..."
-docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:5 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e RABBIT_WORKER_COUNT=${RABBIT_WORKER_COUNT} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e INITIAL_USER_USERNAME=${INITIAL_USER_USERNAME} -e INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} -e MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e API_ADRESS=http://${API_ADRESS} -e API_PORT=${API_PORT} -e FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS} -e JBROWSE_ADRESS=${JBROWSE_ADRESS} -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} gnom/flask
+docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e RABBIT_WORKER_COUNT=${RABBIT_WORKER_COUNT} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e INITIAL_USER_USERNAME=${INITIAL_USER_USERNAME} -e INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} -e MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e API_ADRESS=http://${API_ADRESS} -e API_PORT=${API_PORT} -e FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS} -e JBROWSE_ADRESS=${JBROWSE_ADRESS} -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
@@ -123,7 +123,7 @@ echo "Build jbrowse docker container"
 cd ./jbrowse
 docker build -t gnom/jbrowse .
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
-docker run --name $JBROWSE_CONTAINER_NAME --network $DOCKER_NETWORK_NAME --restart on-failure:5 -d -p 8082:80 -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa --env-file .env gnom/jbrowse
+docker run --name $JBROWSE_CONTAINER_NAME --network $DOCKER_NETWORK_NAME --restart on-failure:10 -d -p 8082:80 -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa --env-file .env gnom/jbrowse
 
 docker exec $JBROWSE_CONTAINER_NAME bash -c "npm i -g @jbrowse/cli@1.5.3"
 docker exec $JBROWSE_CONTAINER_NAME bash -c "jbrowse create -f /usr/local/apache2/htdocs"

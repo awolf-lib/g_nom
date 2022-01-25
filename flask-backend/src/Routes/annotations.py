@@ -201,11 +201,12 @@ def annotations_bp_fetchFeatureTypes():
 
 
 # FETCH ALL KEYS IN ATTRIBUTE SECTION
-@annotations_bp.route("/fetchFeatureAttributeKeys", methods=["GET"])
+@annotations_bp.route("/fetchFeatureAttributeKeys", methods=["Post"])
 def annotations_bp_fetchFeatureAttributeKeys():
-    if request.method == "GET":
-        userID = request.args.get("userID", None)
-        token = request.args.get("token", None)
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
 
         # token still active
         valid_token, error = validateActiveToken(userID, token)
@@ -214,7 +215,11 @@ def annotations_bp_fetchFeatureAttributeKeys():
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 
-        data, notification = fetchFeatureAttributeKeys()
+        taxonIDs = req.get("taxonIDs", None)
+        assemblyID = req.get("assemblyID", None)
+        types = req.get("types", None)
+
+        data, notification = fetchFeatureAttributeKeys(assemblyID, taxonIDs, types)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

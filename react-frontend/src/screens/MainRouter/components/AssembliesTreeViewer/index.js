@@ -145,7 +145,7 @@ const AssembliesTreeViewer = () => {
             }}
           >
             {nodeDatum.imagePath || !nodeDatum.children ? (
-              <div className="border border-black rounded-lg overflow-hidden">
+              <div className="border border-black rounded-lg overflow-hidden h-24 p-px">
                 <SpeciesProfilePictureViewer
                   taxonID={nodeDatum.id}
                   imagePath={nodeDatum.imagePath}

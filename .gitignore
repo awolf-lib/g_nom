@@ -28,6 +28,7 @@
 *.log
 
 **/setup_dev.sh
+**/testImport.json
 
 # VS CODE
 **/.vscode

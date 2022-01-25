@@ -1132,15 +1132,24 @@ export async function fetchFeatureTypes(
 // ===== FETCH ALL KEYS IN ATTRIBUTE SECTION ===== //
 export async function fetchFeatureAttributeKeys(
   userID: number,
-  token: string
+  token: string,
+  assemblyID: number,
+  taxonIDs: number[],
+  types: string[]
 ): Promise<IResponse<string[]>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchFeatureAttributeKeys?userID=" +
-      userID +
-      "&token=" +
-      token
-  )
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatureAttributeKeys", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userID: userID,
+      token: token,
+      assemblyID: assemblyID,
+      taxonIDs: taxonIDs,
+      types: types,
+    }),
+  })
     .then((request) => request.json())
     .then((data) => data)
     .catch((error) => {

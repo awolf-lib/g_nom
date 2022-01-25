@@ -1,8 +1,7 @@
 [
   {
     "assembly": {
-      "assemblyID": 34,
-      "mainFile": "PATH/TO/ASSEMBLY.FASTA",
+      "mainFile": "PATH/TO/ASSEMBLY.FASTA or use assemblyID key instead",
       "label": "Assembly label"
     },
     "taxon": {

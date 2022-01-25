@@ -247,7 +247,7 @@ def analyses_bp_fetchRepeatmaskerAnalysesByAssemblyID():
         return REQUESTMETHODERROR
 
 
-# FETCH TAXON IMAGE BY TAXON ID
+# FETCH FILES BY PATH (example: Milts plot)
 @analyses_bp.route("/fetchFileByPath", methods=["GET"])
 def analyses_bp_fetchFileByPath():
     if request.method == "GET":
