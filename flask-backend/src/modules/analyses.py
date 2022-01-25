@@ -41,6 +41,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             print(error)
             return 0, error
     except Exception as err:
+        print(f"An unknown error occured: {str(err)}")
         return 0, createNotification(message=f"AnalysesImportError{analyses_type}1: {str(err)}")
 
     try:
@@ -118,15 +119,15 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         try:
             if "label" in dataset:
                 updateAnalysisLabel(analyses_id, dataset["label"])
-        except:
-            print("Change analysis label failed!")
+        except Exception as err:
+            print(f"Change analysis label failed due to an error {str(err)}!")
             pass
 
         print(f"New analyses {analyses_name} ({analyses_type}) added!\n")
         return analyses_id, createNotification("Success", f"New annotation {analyses_name} added!", "success")
     except Exception as err:
         deleteAnalysesByAnalysesID(analyses_id)
-        print(err)
+        print(f"An unknown error occured: {str(err)}")
         return 0, createNotification(message=f"AnalysesImportError{analyses_type}2: {str(err)}")
 
 

@@ -44,7 +44,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
             return 0, error
 
     except Exception as err:
-        print(err)
+        print(f"An unknown error occured: {str(err)}")
         return 0, createNotification(message=f"AssemblyImportError1: {err}")
 
     try:
@@ -64,6 +64,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
             run(args=["bgzip", main_file_path])
             main_file_path += ".gz"
         except Exception as err:
+            print(f"An unknown error occured: {str(err)}")
             pass
 
         notify_assembly(assembly_id, assembly_name, main_file_path, "Added")
@@ -89,15 +90,15 @@ def import_assembly(taxon, dataset, userID, taskID=""):
                     print("UPDATING TAXON TREE... (ADD)", flush=True)
                     notify_worker("Update", "LocalTaxonTree")
         except Exception as err:
-            print(str(err), flush=True)
+            print(f"An unknown error occured: {str(err)}")
 
         scanFiles()
 
         try:
             if "label" in dataset:
                 updateAssemblyLabel(assembly_id, dataset["label"], userID)
-        except:
-            print("Change assembly label failed!")
+        except Exception as err:
+            print(f"Change assembly label failed due to an error: {str(err)}!")
             pass
 
         print(f"New assembly ({basename(main_file_path)}) added!\n", flush=True)
@@ -105,7 +106,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
             "Success", f"Successfully imported {basename(main_file_path)}!", "success"
         )
     except Exception as err:
-        print(err)
+        print(f"An unknown error occured: {str(err)}")
         deleteAssemblyByAssemblyID(assembly_id)
         return 0, createNotification(message=f"AssemblyImportError2: {str(err)}")
 

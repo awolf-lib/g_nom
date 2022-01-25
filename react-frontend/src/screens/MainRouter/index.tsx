@@ -31,7 +31,7 @@ const MainRouter = () => {
         <Route path="/g-nom" element={<Navigate to="/g-nom/dashboard" />} />
         <Route
           path="/g-nom/dashboard"
-          element={<AssembliesList initialView="grid" bookmarks={1} />}
+          element={<AssembliesList initialView="grid" bookmarks={1} title="Dashboard" />}
         />
         <Route path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
         <Route path="/g-nom/assemblies/list" element={<AssembliesList />} />
