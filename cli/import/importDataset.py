@@ -8,7 +8,7 @@ from os.path import basename, join, dirname, realpath
 from os import getcwd
 
 DB_NAME = "gnom_db"
-HELP_STRING = ""
+HELP_STRING = "Example call: python3 importDataset.py PATH/TO/JSON"
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
 
 __location__ = realpath(join(getcwd(), dirname(__file__)))
@@ -45,7 +45,7 @@ def loadDataset(datasets_path):
     print("Valid inputs...")
 
     try:
-        with open(join(__location__, "local.config")) as config_file:
+        with open(join(__location__, "../../local.config")) as config_file:
             config_params = config_file.readlines()
             config_file.close()
 
@@ -66,7 +66,8 @@ def loadDataset(datasets_path):
 def importDatasets(datasets, config):
     uuid = str(uuid1())
     try:
-        for dataset in datasets:
+        for idx, dataset in enumerate(datasets):
+            print(f"Starting {idx+1}/{len(datasets)}")
             if "assemblyID" in dataset["assembly"] and dataset["assembly"]["assemblyID"] > 0:
                 pass
             elif "mainFile" in dataset["assembly"] and exists(dataset["assembly"]["mainFile"]):
@@ -252,7 +253,7 @@ def importDatasets(datasets, config):
 
             print("Removing tmp files...")
             run(args=["rm", "-r", tmp_dir])
-
+            print(f"{idx+1}/{len(datasets)} imported!\n")
         return 1
 
     except Exception as err:

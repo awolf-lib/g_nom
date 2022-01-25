@@ -535,93 +535,97 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
     try:
         connection, cursor, error = connect()
 
-        offset = int(offset)
-        range = int(range)
+        sql = "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id AS taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=genomicAnnotations.assemblyID AND assemblies.taxonID=taxa.id AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID"
+        values = tuple()
+
         assembly_id = int(assembly_id)
+        if assembly_id > 0 or "taxonIDs" in filter or "featureTypes" in filter:
+            sql += " AND"
 
-        if assembly_id < 0:
-            cursor.execute(
-                "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id AS taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=genomicAnnotations.assemblyID AND assemblies.taxonID=taxa.id AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID"
-            )
-        else:
-            cursor.execute(
-                "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id as taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id AND assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID",
-                (assembly_id,),
-            )
+            if assembly_id > 0:
+                assembly_ids_string = " assemblies.id=%s"
+                values += (assembly_id,)
+                sql += assembly_ids_string
+                if "taxonIDs" in filter or "featureTypes" in filter:
+                    sql += " AND"
 
-        row_headers = [x[0] for x in cursor.description]
+            if "taxonIDs" in filter:
+                taxonIDs_string = " (" + " OR ".join(["taxa.id=%s" for x in filter["taxonIDs"]]) + ")"
+                values += tuple(filter["taxonIDs"])
+                sql += taxonIDs_string
+                if "featureTypes" in filter:
+                    sql += " AND"
+
+            if "featureTypes" in filter:
+                types_string = " (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in filter["featureTypes"]]) + ")"
+                values += tuple(filter["featureTypes"])
+                sql += types_string
+
+        if "column" in sortBy:
+            col = sortBy["column"]
+            order = "DESC" if "order" in sortBy and sortBy["order"] else "ASC"
+            if sortBy["column"] == "label":
+                sql += f" ORDER BY {col} {order}, assemblies.name {order}"
+            else:
+                sql += f" ORDER BY {col} {order}"
+
+        cursor.execute(sql, values)
         features = cursor.fetchall()
+        row_headers = [x[0] for x in cursor.description]
         features = [dict(zip(row_headers, x)) for x in features]
 
         if search:
             search = str(search).lower()
             filtered_features = []
             for x in features:
-                if len([s for s in x.values() if search == str(s).lower() or search in str(s).lower()]):
+                if search in str(x).lower():
                     filtered_features.append(x)
             features = filtered_features
-
-        for idx, feature in enumerate(features):
-            if "attributes" in feature:
-                features[idx]["attributes"] = loads(features[idx]["attributes"])
-
-        if sortBy["column"] == "label":
-            features = sorted(
-                features, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
-            )
-        else:
-            features = sorted(
-                features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
-            )
 
         numberOperatorsDict = {"=": eq, "!=": ne, "<": lt, ">": gt, "<=": le, ">=": ge}
         stringOperatorsDict = {
             "contains": contains,
             "is": is_,
-            "is_not": is_not,
+            "is not": is_not,
         }
 
-        if filter:
-            if "taxonIDs" in filter:
-                features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
-            if "featureTypes" in filter:
-                features = [x for x in features if x["type"] in filter["featureTypes"]]
-            if "featureAttributes" in filter:
-                filtered = []
-                for feature in features:
-                    if "attributes" in feature:
-                        feature_attributes = feature["attributes"]
-                        for attribute in filter["featureAttributes"]:
-                            if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
-                                continue
+        if "featureAttributes" in filter:
+            filtered = []
+            for idx, feature in enumerate(features):
+                if "attributes" in feature:
+                    features[idx]["attributes"] = loads(features[idx]["attributes"])
+                    feature_attributes = feature["attributes"]
+                    for attribute in filter["featureAttributes"]:
+                        if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
+                            continue
 
-                            target, operatorString, valueString = (
-                                attribute["target"],
-                                attribute["operator"],
-                                attribute["value"],
-                            )
+                        target, operatorString, valueString = (
+                            attribute["target"],
+                            attribute["operator"],
+                            attribute["value"],
+                        )
 
-                            if target in feature_attributes:
-                                check = False
-                                try:
-                                    target_value = feature_attributes[target]
-                                    if operatorString in numberOperatorsDict:
-                                        try:
-                                            target_value = float(str(target_value).replace("%", "").replace(",", ""))
-                                            valueString = float(str(valueString).replace("%", "").replace(",", ""))
-                                        except Exception as err:
-                                            print(str(err), flush=True)
+                        if target in feature_attributes:
+                            check = False
+                            try:
+                                target_value = feature_attributes[target]
+                                if operatorString in numberOperatorsDict:
+                                    try:
+                                        target_value = float(str(target_value).replace("%", "").replace(",", ""))
+                                        valueString = float(str(valueString).replace("%", "").replace(",", ""))
+                                    except Exception as err:
+                                        print(str(err), flush=True)
 
-                                        check = numberOperatorsDict[operatorString](target_value, valueString)
-                                    elif operatorString in stringOperatorsDict:
-                                        check = stringOperatorsDict[operatorString](target_value, valueString)
-                                except Exception as err:
-                                    print(str(err), flush=True)
+                                    check = numberOperatorsDict[operatorString](target_value, valueString)
+                                elif operatorString in stringOperatorsDict:
+                                    check = stringOperatorsDict[operatorString](target_value, valueString)
+                            except Exception as err:
+                                print(str(err), flush=True)
 
-                                if check:
-                                    filtered.append(feature)
+                            if check:
+                                filtered.append(feature)
 
-                features = filtered
+            features = filtered
 
         number_of_elements = len(features)
         if number_of_elements % range:
@@ -629,20 +633,130 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         else:
             pages = number_of_elements // range
 
+        offset = int(offset)
+        range = int(range)
+
         features = features[offset * range : offset * range + range]
 
-        if len(features):
-            return (
-                features,
-                {"offset": offset, "range": range, "pages": pages, "search": search},
-                [],
-            )
-        else:
-            return (
-                [],
-                {"offset": 0, "range": 10, "pages": 0, "search": search},
-                createNotification("Info", "No features found!", "info"),
-            )
+        if not "featureAttributes" in filter:
+            for idx, feature in enumerate(features):
+                if "attributes" in feature:
+                    features[idx]["attributes"] = loads(features[idx]["attributes"])
+
+        return (
+            features,
+            {"offset": offset, "range": range, "pages": pages, "search": search},
+            [],
+        )
+
+        # offset = int(offset)
+        # range = int(range)
+        # assembly_id = int(assembly_id)
+
+        # if assembly_id < 0:
+        #     cursor.execute(
+        #         "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id AS taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=genomicAnnotations.assemblyID AND assemblies.taxonID=taxa.id AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID"
+        #     )
+        # else:
+        #     cursor.execute(
+        #         "SELECT assemblies.id AS assemblyID, assemblies.name, assemblies.label, taxa.id as taxonID, taxa.scientificName, genomicAnnotationFeatures.* FROM assemblies, taxa, genomicAnnotations, genomicAnnotationFeatures WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id AND assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID",
+        #         (assembly_id,),
+        #     )
+
+        # row_headers = [x[0] for x in cursor.description]
+        # features = cursor.fetchall()
+        # features = [dict(zip(row_headers, x)) for x in features]
+
+        # if search:
+        #     search = str(search).lower()
+        #     filtered_features = []
+        #     for x in features:
+        #         if len([s for s in x.values() if search == str(s).lower() or search in str(s).lower()]):
+        #             filtered_features.append(x)
+        #     features = filtered_features
+
+        # for idx, feature in enumerate(features):
+        #     if "attributes" in feature:
+        #         features[idx]["attributes"] = loads(features[idx]["attributes"])
+
+        # if sortBy["column"] == "label":
+        #     features = sorted(
+        #         features, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
+        #     )
+        # else:
+        #     features = sorted(
+        #         features, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
+        #     )
+
+        # numberOperatorsDict = {"=": eq, "!=": ne, "<": lt, ">": gt, "<=": le, ">=": ge}
+        # stringOperatorsDict = {
+        #     "contains": contains,
+        #     "is": is_,
+        #     "is not": is_not,
+        # }
+
+        # if filter:
+        #     if "taxonIDs" in filter:
+        #         features = [x for x in features if x["taxonID"] in filter["taxonIDs"]]
+        #     if "featureTypes" in filter:
+        #         features = [x for x in features if x["type"] in filter["featureTypes"]]
+        #     if "featureAttributes" in filter:
+        #         filtered = []
+        #         for feature in features:
+        #             if "attributes" in feature:
+        #                 feature_attributes = feature["attributes"]
+        #                 for attribute in filter["featureAttributes"]:
+        #                     if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
+        #                         continue
+
+        #                     target, operatorString, valueString = (
+        #                         attribute["target"],
+        #                         attribute["operator"],
+        #                         attribute["value"],
+        #                     )
+
+        #                     if target in feature_attributes:
+        #                         check = False
+        #                         try:
+        #                             target_value = feature_attributes[target]
+        #                             if operatorString in numberOperatorsDict:
+        #                                 try:
+        #                                     target_value = float(str(target_value).replace("%", "").replace(",", ""))
+        #                                     valueString = float(str(valueString).replace("%", "").replace(",", ""))
+        #                                 except Exception as err:
+        #                                     print(str(err), flush=True)
+
+        #                                 check = numberOperatorsDict[operatorString](target_value, valueString)
+        #                             elif operatorString in stringOperatorsDict:
+        #                                 check = stringOperatorsDict[operatorString](target_value, valueString)
+        #                         except Exception as err:
+        #                             print(str(err), flush=True)
+
+        #                         if check:
+        #                             filtered.append(feature)
+
+        #         features = filtered
+
+        # number_of_elements = len(features)
+        # if number_of_elements % range:
+        #     pages = (number_of_elements // range) + 1
+        # else:
+        #     pages = number_of_elements // range
+
+        # features = features[offset * range : offset * range + range]
+
+        # if len(features):
+        #     return (
+        #         features,
+        #         {"offset": offset, "range": range, "pages": pages, "search": search},
+        #         [],
+        #     )
+        # else:
+        #     return (
+        #         [],
+        #         {"offset": 0, "range": 10, "pages": 0, "search": search},
+        #         createNotification("Info", "No features found!", "info"),
+        #     )
     except Exception as err:
         return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
 
@@ -667,7 +781,7 @@ def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
             sql += " WHERE"
 
             if assemblyID:
-                assemblyIDs_string = " genomicAnnotations.assemblyID=%s"
+                assemblyIDs_string = " genomicAnnotationFeatures.annotationID=genomicAnnotations.id AND genomicAnnotations.assemblyID=%s"
                 values += (assemblyID,)
                 sql += assemblyIDs_string
                 if len(taxonIDs):
@@ -691,14 +805,46 @@ def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
 
 
 # gets all unique attribute keys from all features
-def fetchFeatureAttributeKeys():
+def fetchFeatureAttributeKeys(assemblyID=0, taxonIDs=[], types=[]):
     """
     Fetches all unique keys in attribute section of features.
     """
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("SELECT DISTINCT(JSON_EXTRACT(JSON_KEYS(attributes),'$[*]')) FROM genomicAnnotationFeatures")
+        sql = "SELECT DISTINCT(JSON_EXTRACT(JSON_KEYS(attributes),'$[*]')) FROM genomicAnnotationFeatures"
+        values = tuple()
+
+        if assemblyID or len(taxonIDs) or len(types):
+            if assemblyID or len(taxonIDs):
+                sql += ", genomicAnnotations"
+
+            if len(taxonIDs):
+                sql += ", assemblies"
+
+            sql += " WHERE"
+
+            if assemblyID:
+                assemblyIDs_string = " genomicAnnotationFeatures.annotationID=genomicAnnotations.id AND genomicAnnotations.assemblyID=%s"
+                values += (assemblyID,)
+                sql += assemblyIDs_string
+                if len(taxonIDs) or len(types):
+                    sql += " AND"
+
+            if len(taxonIDs):
+                taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
+                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                values += tuple(taxonIDs)
+                sql += taxonIDs_string
+                if len(types):
+                    sql += " AND"
+
+            if len(types):
+                types_string = " (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in types]) + ")"
+                values += tuple(types)
+                sql += types_string
+
+        cursor.execute(sql, values)
 
         key_lists = cursor.fetchall()
         keys = []

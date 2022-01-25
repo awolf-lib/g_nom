@@ -55,7 +55,7 @@ const FeaturesListElement = ({
               )}
             </div>
           ) : (
-            <div className="w-full text-center">No attributes!</div>
+            <div className="w-full text-center p-2">No attributes!</div>
           )}
         </div>
         {!noAssemblyDetails && <div className="w-2/12 truncate">{scientificName}</div>}

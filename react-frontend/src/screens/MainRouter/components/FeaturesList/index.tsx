@@ -54,7 +54,7 @@ const FeaturesList = ({
       setTimeout(() => {
         loadFeatures();
         setOnLoadingFeaturesTimeout(false);
-      }, 1000)
+      }, 2000)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, filter, offset, range, search]);
@@ -92,6 +92,7 @@ const FeaturesList = ({
             if (response?.notification) {
               response.notification.forEach((n) => handleNewNotification(n));
             }
+            setLoadingFeatures(false);
           }
         );
       } else {
@@ -106,10 +107,10 @@ const FeaturesList = ({
             if (response?.notification) {
               response.notification.forEach((n) => handleNewNotification(n));
             }
+            setLoadingFeatures(false);
           }
         );
       }
-      setLoadingFeatures(false);
     }
   };
 
@@ -146,12 +147,11 @@ const FeaturesList = ({
       <div className={headerClass}>
         <div className="w-80 flex items-center">
           <div>{title}</div>
-          {loadingFeatures ||
-            (onLoadingFeaturesTimeout && (
-              <div className="flex h-full px-4">
-                <LoadingSpinner label="Loading..." />
-              </div>
-            ))}
+          {(loadingFeatures || onLoadingFeaturesTimeout) && (
+            <div className="flex h-full px-4">
+              <LoadingSpinner label="Loading..." />
+            </div>
+          )}
         </div>
         <div className="w-full text-base decoration-default">
           <GenomicAnnotationFeaturesFilterForm

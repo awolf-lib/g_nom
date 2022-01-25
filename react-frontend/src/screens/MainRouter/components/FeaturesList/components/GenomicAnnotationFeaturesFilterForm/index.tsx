@@ -63,7 +63,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
   useEffect(() => {
     loadAttributes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleFilterSelection]);
+  }, [toggleFilterSelection, filter.taxonIDs, filter.featureTypes]);
 
   useEffect(() => {
     if (triggerSetFilter) {
@@ -139,7 +139,13 @@ const GenomicAnnotationFeaturesFilterForm = ({
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (userID && token)
-      await fetchFeatureAttributeKeys(userID, token).then((response) => {
+      await fetchFeatureAttributeKeys(
+        userID,
+        token,
+        assemblyID || 0,
+        filter.taxonIDs || [],
+        filter.featureTypes || []
+      ).then((response) => {
         if (response?.payload) {
           setAttributes(response.payload);
           setFilteredAttributes(response.payload);
@@ -494,7 +500,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                           <option value=">">{">"}</option>
                           <option value="contains">{"contains"}</option>
                           <option value="is">{"is"}</option>
-                          <option value="is_not">{"is not"}</option>
+                          <option value="is not">{"is not"}</option>
                         </select>
                         {attr.operator &&
                           (numberOperators.includes(attr.operator) ||
