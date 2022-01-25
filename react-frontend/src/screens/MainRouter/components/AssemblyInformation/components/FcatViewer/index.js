@@ -27,13 +27,7 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
   }, [assembly?.id, mode]);
 
   const getFcatData = () => {
-    const colors = [
-      "rgb(56, 75, 126)",
-      "rgb(18, 36, 37)",
-      "rgb(34, 53, 101)",
-      "rgb(36, 55, 57)",
-      "rgb(6, 4, 4)",
-    ];
+    const colors = ["#009E73", "#56B4E9", "#E69F00", "#0072B2", "#D55E00"];
 
     let activeMode = mode;
     let tracks = [];

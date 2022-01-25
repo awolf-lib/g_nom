@@ -774,7 +774,9 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        <div className="flex justify-center col-span-4">
+        <div className="col-span-1" />
+
+        <div className="flex justify-center col-span-3">
           {toggleBuscoAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {buscoAnalyses && buscoAnalyses.length > 0 ? (
@@ -790,7 +792,7 @@ const AssemblyInformation = () => {
 
         <div className="col-span-1" />
 
-        <div className="flex justify-center col-span-4">
+        <div className="flex justify-center col-span-3">
           {toggleFcatAnalyses && (
             <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
               {fcatAnalyses && fcatAnalyses.length > 0 ? (
@@ -801,6 +803,8 @@ const AssemblyInformation = () => {
             </div>
           )}
         </div>
+
+        <div className="col-span-1" />
 
         <div
           onClick={() => setToggleRepeatmaskerAnalyses((prevState) => !prevState)}
@@ -823,7 +827,7 @@ const AssemblyInformation = () => {
 
         <div className="flex justify-center col-span-5">
           {toggleRepeatmaskerAnalyses && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+            <div className="w-full h-full overflow-hidden">
               {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 ? (
                 <MaskingsViewer
                   assembly={assembly}

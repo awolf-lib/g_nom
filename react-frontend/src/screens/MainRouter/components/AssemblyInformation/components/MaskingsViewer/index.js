@@ -115,7 +115,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#2F5D62",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -133,7 +132,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#2F5D62",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -151,7 +149,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#2F5D62",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -169,7 +166,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#5E8B7E",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -187,7 +183,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#A7C4BC",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -205,7 +200,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#DFEEEA",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -223,7 +217,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#E1701A",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -232,7 +225,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
     tracks.push({
       x: satellites_lengths,
       y: names,
-      name: "Satellites",
       text: satellites_lengths.map((val) => {
         return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " bp";
       }),
@@ -241,7 +233,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#F7A440",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -259,7 +250,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#476072",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -277,7 +267,6 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#AAAAAA",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -360,7 +349,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#787A91",
+        color: "#E69F00",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -378,7 +367,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       orientation: "h",
       type: "bar",
       marker: {
-        color: "#5D8233",
+        color: "#009E73",
         line: { width: 1, color: "#515E63" },
       },
       opacity: 0.7,
@@ -430,9 +419,13 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
 
   return (
     <div className="animate-grow-y relative">
-      <div className="flex">
-        <div id="plotlyRepeatElements" className="w-full h-full" />
-        <div id="plotlyRepetitiveness" className="w-full h-full" />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="border-4 border-double border-gray-300 shadow animate-fade-in">
+          <div id="plotlyRepeatElements" className="w-full h-full" />
+        </div>
+        <div className="border-4 border-double border-gray-300 shadow animate-fade-in">
+          <div id="plotlyRepetitiveness" className="w-full h-full" />
+        </div>
       </div>
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
         <a
