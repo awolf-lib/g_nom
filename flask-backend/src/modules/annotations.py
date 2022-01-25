@@ -48,7 +48,7 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             print(error)
             return 0, error
     except Exception as err:
-        print(err)
+        print(f"An unknown error occured: {str(err)}")
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
     try:
@@ -99,14 +99,14 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         try:
             if "label" in dataset:
                 updateAnnotationLabel(annotation_id, dataset["label"])
-        except:
-            print("Change annotation label failed!")
+        except Exception as err:
+            print(f"Change annotation label failed due to an error {str(err)}!")
             pass
 
         print(f"New annotation {annotation_name} added!\n", flush=True)
         return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
     except Exception as err:
-        print(str(err), flush=True)
+        print(f"An unknown error occured: {str(err)}")
         deleteAnnotationByAnnotationID(annotation_id)
         return 0, createNotification(message=f"AnnotationImportError2: {str(err)}")
 
@@ -414,7 +414,7 @@ def parseGff(path):
         features = []
         featureCountDistinct = {}
         for index, row in enumerate(data):
-            if not index % 100:
+            if not index % 10000:
                 print(f"Parsed: {round((index / number_of_rows) * 100)}%", end="\r")
             row = row.strip()
             # only '#' or empty row

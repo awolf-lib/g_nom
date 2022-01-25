@@ -46,6 +46,7 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             print(error)
             return 0, error
     except Exception as err:
+        print(f"An unknown error occured: {str(err)}")
         return 0, createNotification(message=f"AnnotationImportError1: {str(err)}")
 
     try:
@@ -72,13 +73,14 @@ def import_mapping(taxon, assembly_id, dataset, userID):
         try:
             if "label" in dataset:
                 updateMappingLabel(mapping_id, dataset["label"])
-        except:
-            print("Change annotation label failed!")
+        except Exception as err:
+            print(f"Change annotation label failed due to an error {str(err)}!")
             pass
 
         print(f"New mapping {mapping_name} added!\n")
         return mapping_id, createNotification("Success", f"New mapping {mapping_name} added!", "success")
     except Exception as err:
+        print(f"An unknown error occured: {str(err)}")
         deleteMappingByMappingID(mapping_id)
         return 0, createNotification(message=f"AnnotationImportError2: {str(err)}")
 
