@@ -331,7 +331,7 @@ def parseGff(path):
     GFF3_SKIPABLE = compile(r"^[ #]+$")
     GFF3_EXTENSION_PATTERN = compile(r".*\.gff3?$")
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
-    # GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##sequence-region)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
+    GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##[-\w:;\.\s]+)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
     GFF3_FEATURE_PATTERN = compile(
         r"^([%\w\.-]+)\s+([%\.\w-]+)\s+([%\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
@@ -414,8 +414,8 @@ def parseGff(path):
         features = []
         featureCountDistinct = {}
         for index, row in enumerate(data):
-            if not index % 10000:
-                print(f"Parsed: {round((index / number_of_rows) * 100)}%", end="\r")
+            # if not index % 10000:
+            #     print(f"Parsed: {round((index / number_of_rows) * 100)}%", end="\r")
             row = row.strip()
             # only '#' or empty row
             if GFF3_SKIPABLE.match(row):
@@ -427,13 +427,13 @@ def parseGff(path):
                 print("Fingerprint found...")
                 continue
 
-            # # '##sequence-region' scaffold/contig start end
-            # match = GFF3_SEQUENCE_REGION_PATTERN.match(row)
-            # if match:
-            #     number_of_regions += 1
-            #     sequence_region = parseSequenceRegion(match)
-            #     # print(sequence_region)
-            #     continue
+            # '##sequence-region' scaffold/contig start end
+            match = GFF3_SEQUENCE_REGION_PATTERN.match(row)
+            if match:
+                number_of_regions += 1
+                # sequence_region = parseSequenceRegion(match)
+                # print(sequence_region)
+                continue
 
             # scaffold/contig method feature start end ? strand offset id/parent/infos
             match = GFF3_FEATURE_PATTERN.match(row)
@@ -442,7 +442,7 @@ def parseGff(path):
                 feature = parseFeature(match)
 
                 if not feature:
-                    print(f"Warning: A feature could not be parsed. Skipping...", flush=True)
+                    print(f"Warning: A feature could not be parsed. Skipping feature -------> '{row}'", flush=True)
                     continue
 
                 if feature["feature"] in featureCountDistinct:
@@ -454,12 +454,13 @@ def parseGff(path):
 
             # no matching pattern
             else:
-                print(f"Warning: Row did not match any patterns. Skipping...\n'{row}'", flush=True)
+                if not row.startswith("#"):
+                    print(f"Warning: Row did not match any patterns. Skipping row -------> '{row}'", flush=True)
                 continue
 
         featureCountDistinct.update({"total": len(features)})
 
-        print(f"Parsed: 100%", end="\r")
+        # print(f"Parsed: 100%", end="\r")
 
         return {"features": features, "featureCountDistinct": featureCountDistinct}, []
 

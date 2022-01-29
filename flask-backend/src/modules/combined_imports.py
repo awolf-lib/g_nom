@@ -498,10 +498,14 @@ if __name__ == "__main__":
                 )
                 exit(0)
 
-        import_summary = importDataset(
+        import_summary, notifcations = importDataset(
             taxon, assembly, 1, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
         )
-        print(import_summary)
+
+        for n in notifcations:
+            print(n)
+
+        print("Summary: ", import_summary, "\n")
     except Exception as err:
         print(err)
 

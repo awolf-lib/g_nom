@@ -16,13 +16,13 @@ __location__ = realpath(join(getcwd(), dirname(__file__)))
 
 def loadDataset(datasets_path):
     # import validation schema
-    print("Start validating json file inputs...")
+    print("Start validating json file inputs...", flush=True)
     try:
         with open(join(__location__, "importValidationTemplate.json"), "r") as datasetValidationJson:
             schema = load(datasetValidationJson)
             datasetValidationJson.close()
     except Exception as err:
-        print(f"Error loading json schema for validation:\n{err}")
+        print(f"Error loading json schema for validation:\n{err}", flush=True)
         return 0
 
     # open dataset file
@@ -31,17 +31,17 @@ def loadDataset(datasets_path):
             datasets = load(datasets_json)
             datasets_json.close()
     except Exception as err:
-        print(f"Error opening dataset file:\n{err}")
+        print(f"Error opening dataset file:\n{err}", flush=True)
         return 0
 
     # validate dataset file
     try:
         validate(datasets, schema)
     except Exception as err:
-        print(f"ValidationError:\n{err}")
+        print(f"ValidationError:\n{err}", flush=True)
         return 0
 
-    print("Valid inputs...")
+    print("Valid inputs...", flush=True)
 
     try:
         with open(join(__location__, "../../local.config")) as config_file:
@@ -58,7 +58,7 @@ def loadDataset(datasets_path):
         return 1
 
     except Exception as err:
-        print(f"Error loading config file:\n{err}")
+        print(f"Error loading config file:\n{err}", flush=True)
         return 0
 
 
@@ -66,7 +66,7 @@ def importDatasets(datasets, config):
     uuid = str(uuid1())
     try:
         for idx, dataset in enumerate(datasets):
-            print(f"Starting {idx+1}/{len(datasets)}")
+            print(f"Starting {idx+1}/{len(datasets)}", flush=True)
             if "assemblyID" in dataset["assembly"] and dataset["assembly"]["assemblyID"] > 0:
                 pass
             elif "mainFile" in dataset["assembly"] and exists(dataset["assembly"]["mainFile"]):
@@ -76,7 +76,7 @@ def importDatasets(datasets, config):
                 return 0
 
             try:
-                print("Gathering files in temporary folder...")
+                print("Gathering files in temporary folder...", flush=True)
 
                 tmp_dir = config["IMPORT_DIR"] + uuid + "/"
 
@@ -99,7 +99,7 @@ def importDatasets(datasets, config):
                 assembly = dumps([assembly_dataset])
                 assemblyID = str(assemblyID)
             except Exception as err:
-                print(f"Error identifying assembly! {str(err)}")
+                print(f"Error identifying assembly! {str(err)}", flush=True)
                 continue
 
             # format annotations
@@ -120,11 +120,11 @@ def importDatasets(datasets, config):
                                     annotation_dataset.update({"label": annotation["label"]})
                                 annotation_datasets.append(annotation_dataset)
                             else:
-                                print("Error: " + annotation["mainFile"] + " does not exist!")
+                                print("Error: " + annotation["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_annotations = len(dataset["annotations"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing annotation {idx_annotations+1}/{len(number_annotations)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing annotation {idx_annotations+1}/{len(number_annotations)}", flush=True)
+                        print(err, flush=True)
             annotations = dumps(annotation_datasets)
 
             # format mappings
@@ -143,11 +143,11 @@ def importDatasets(datasets, config):
                                     mapping_dataset.update({"label": mapping["label"]})
                                 mapping_datasets.append(mapping_dataset)
                             else:
-                                print("Error: " + mapping["mainFile"] + " does not exist!")
+                                print("Error: " + mapping["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_mappings = len(dataset["mappings"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing mapping {idx_mappings+1}/{len(number_mappings)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing mapping {idx_mappings+1}/{len(number_mappings)}", flush=True)
+                        print(err, flush=True)
             mappings = dumps(mapping_datasets)
 
             # format buscos
@@ -176,11 +176,11 @@ def importDatasets(datasets, config):
                                     busco_dataset.update({"label": busco["label"]})
                                 busco_datasets.append(busco_dataset)
                             else:
-                                print("Error: " + busco["mainFile"] + " does not exist!")
+                                print("Error: " + busco["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_buscos = len(dataset["buscos"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_buscos+1}/{len(number_buscos)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_buscos+1}/{len(number_buscos)}", flush=True)
+                        print(err, flush=True)
             buscos = dumps(busco_datasets)
 
             # format fcats
@@ -209,11 +209,11 @@ def importDatasets(datasets, config):
                                         fcat_dataset.update({"label": fcat["label"]})
                                 fcat_datasets.append(fcat_dataset)
                             else:
-                                print("Error: " + fcat["mainFile"] + " does not exist!")
+                                print("Error: " + fcat["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_fcats = len(dataset["fcats"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_fcats+1}/{len(number_fcats)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_fcats+1}/{len(number_fcats)}", flush=True)
+                        print(err, flush=True)
             fcats = dumps(fcat_datasets)
 
             # format milts
@@ -241,11 +241,11 @@ def importDatasets(datasets, config):
                                         milts_dataset.update({"label": milt["label"]})
                                 milts_datasets.append(milts_dataset)
                             else:
-                                print("Error: " + milt["mainFile"] + " does not exist!")
+                                print("Error: " + milt["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_milts = len(dataset["milts"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_milts+1}/{len(number_milts)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_milts+1}/{len(number_milts)}", flush=True)
+                        print(err, flush=True)
             milts = dumps(milts_datasets)
 
             # format repeatmaskers
@@ -275,14 +275,14 @@ def importDatasets(datasets, config):
                                     repeatmasker_dataset.update({"label": repeatmasker["label"]})
                                 repeatmasker_datasets.append(repeatmasker_dataset)
                             else:
-                                print("Error: " + repeatmasker["mainFile"] + " does not exist!")
+                                print("Error: " + repeatmasker["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
                         number_repeatmaskers = len(dataset["repeatmaskers"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_repeatmaskers+1}/{len(number_repeatmaskers)}")
-                        print(err)
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_repeatmaskers+1}/{len(number_repeatmaskers)}", flush=True)
+                        print(err, flush=True)
             repeatmaskers = dumps(repeatmasker_datasets)
 
-            run(
+            stdout = run(
                 args=[
                     "docker",
                     "exec",
@@ -305,14 +305,15 @@ def importDatasets(datasets, config):
                 ]
             )
 
-            print("Removing tmp files...")
+            print("Removing tmp files...", flush=True)
             run(args=["rm", "-r", tmp_dir])
-            print(f"{idx+1}/{len(datasets)} imported!\n")
+            print(f"{idx+1}/{len(datasets)} imported!\n", flush=True)
+            print("=============================================================================================================================================\n", flush=True)
         return 1
 
     except Exception as err:
-        print(f"Error copying files into import directory:\n{err}")
-        print("Removing tmp files...")
+        print(f"Error copying files into import directory:\n{err}", flush=True)
+        print("Removing tmp files...", flush=True)
         run(args=["rm", "-r", tmp_dir])
         return 0
 

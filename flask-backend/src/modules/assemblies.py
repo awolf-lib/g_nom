@@ -475,7 +475,7 @@ def parseFasta(path, taskID=""):
 
                 # print progress status
                 progress = ((idx + 1) * 100) // len(lines)
-                print(f"Parsed: {progress}%", end="\r")
+                # print(f"Parsed: {progress}%", end="\r")
                 if not ((floor(progress / 10) * 10) % 10):
                     try:
                         if taskID:
