@@ -955,7 +955,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
 # fetches busco analyses for specific assembly
 def fetchBuscoAnalysesByAssemblyID(assemblyID):
     """
-    Fetches all analyses for specific assembly.
+    Fetches all busco analyses for specific assembly.
     """
     try:
         connection, cursor, error = connect()

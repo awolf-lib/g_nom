@@ -146,6 +146,9 @@ def __getSupportedFiles(file_info, type):
 
 
 def validateFileInfo(file_info, forceType=""):
+    """
+    Validates files for import!
+    """
     datasets = {}
     if not forceType or forceType not in FILE_PATTERN_DICT:
         for type in FILE_PATTERN_DICT:
@@ -498,10 +501,14 @@ if __name__ == "__main__":
                 )
                 exit(0)
 
-        import_summary = importDataset(
+        import_summary, notifcations = importDataset(
             taxon, assembly, 1, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
         )
-        print(import_summary)
+
+        for n in notifcations:
+            print(n)
+
+        print("Summary: ", import_summary, "\n")
     except Exception as err:
         print(err)
 

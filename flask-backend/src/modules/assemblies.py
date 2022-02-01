@@ -475,7 +475,7 @@ def parseFasta(path, taskID=""):
 
                 # print progress status
                 progress = ((idx + 1) * 100) // len(lines)
-                print(f"Parsed: {progress}%", end="\r")
+                # print(f"Parsed: {progress}%", end="\r")
                 if not ((floor(progress / 10) * 10) % 10):
                     try:
                         if taskID:
@@ -790,7 +790,7 @@ def updateAssemblyLabel(assembly_id: int, label: str, userID: int):
 # fetches all assemblies for specific taxon
 def fetchAssembliesByTaxonID(taxonID):
     """
-    Fetches all assemblies for specific taxon from database.
+    Fetches all assemblies for specific taxon by internal taxon ID.
     """
     try:
         connection, cursor, error = connect()
@@ -817,7 +817,7 @@ def fetchAssembliesByTaxonID(taxonID):
 # FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
 def fetchAssembliesByTaxonIDs(taxonIDs):
     """
-    Fetches assemblies by multiple taxon ID
+    Fetches all assemblies for multiple (internal) taxon IDs.
     """
     try:
         connection, cursor, error = connect()
@@ -934,7 +934,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
 def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
     """
-    Gets all general information by specific taxon ID
+    Fetches all general information for a specific assembly ID (level: assembly)
     """
 
     generalInfos = []
@@ -956,7 +956,7 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
 # ADD GENERAL INFO
 def addAssemblyGeneralInformation(assemblyID, key, value):
     """
-    add general info by level and id
+    Add general info by level and id
     """
 
     try:

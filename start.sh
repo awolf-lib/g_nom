@@ -24,6 +24,7 @@ docker start $FRONTEND_CONTAINER_NAME
 
 # start Flask Docker container
 docker start $API_CONTAINER_NAME
+docker restart $API_CONTAINER_NAME
 
 # start jBrowse Docker container
 docker start $JBROWSE_CONTAINER_NAME

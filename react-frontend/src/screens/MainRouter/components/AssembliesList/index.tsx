@@ -10,6 +10,7 @@ import { useNotification } from "../../../../components/NotificationProvider";
 import classNames from "classnames";
 import AssembliesGridElement from "./components/AssembliesGridElement";
 import LoadingSpinner from "../../../../components/LoadingSpinner";
+import AssembliesTreeViewer from "./components/AssembliesTreeViewer";
 
 const AssembliesList = ({
   title = "All assemblies",
@@ -22,7 +23,7 @@ const AssembliesList = ({
 }) => {
   const [assemblies, setAssemblies] = useState<AssemblyInterface[]>([]);
 
-  const [view, setView] = useState<"list" | "grid">("list");
+  const [view, setView] = useState<"list" | "grid" | "tree">("list");
 
   const [search, setSearch] = useState<string>("");
   const [filter, setFilter] = useState<Filter>({});
@@ -269,36 +270,45 @@ const AssembliesList = ({
         </div>
       )}
       <div className={viewTypeClass}>
-        {assemblies && assemblies.length > 0 ? (
-          assemblies.map((assembly, index) => {
-            if (view === "list") {
-              return (
-                <div key={assembly.id} className="even:bg-gray-100 odd:bg-white">
-                  <AssembliesListElement assembly={assembly} fcatMode={fcatMode} />
-                </div>
-              );
-            }
-            if (view === "grid") {
-              return (
-                <div key={assembly.id} className="">
-                  <AssembliesGridElement
-                    assembly={assembly}
-                    fcatMode={fcatMode}
-                    renderDelay={index + 1}
-                  />
-                </div>
-              );
-            }
-            return <div />;
-          })
-        ) : (
-          <div className="w-full flex justify-center items-center border py-8 shadow col-span-3">
-            {loadingAssemblies || onLoadingAssembliesTimeout ? (
-              <LoadingSpinner label="Loading..." />
-            ) : (
-              "No assemblies!"
-            )}
-          </div>
+        {view !== "tree" &&
+          (assemblies && assemblies.length > 0 ? (
+            assemblies.map((assembly, index) => {
+              if (view === "list") {
+                return (
+                  <div key={assembly.id} className="even:bg-gray-100 odd:bg-white">
+                    <AssembliesListElement assembly={assembly} fcatMode={fcatMode} />
+                  </div>
+                );
+              }
+              if (view === "grid") {
+                return (
+                  <div key={assembly.id} className="">
+                    <AssembliesGridElement
+                      assembly={assembly}
+                      fcatMode={fcatMode}
+                      renderDelay={index + 1}
+                    />
+                  </div>
+                );
+              }
+              return <div />;
+            })
+          ) : (
+            <div className="w-full flex justify-center items-center border py-8 shadow col-span-2">
+              {loadingAssemblies || onLoadingAssembliesTimeout ? (
+                <LoadingSpinner label="Loading..." />
+              ) : (
+                "No assemblies!"
+              )}
+            </div>
+          ))}
+        {view === "tree" && (
+          <AssembliesTreeViewer
+            filter={filter}
+            setFilter={setFilter}
+            assemblies={assemblies}
+            loading={loadingAssemblies || onLoadingAssembliesTimeout}
+          />
         )}
       </div>
       <div>

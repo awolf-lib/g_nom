@@ -5,7 +5,7 @@ import MainRouter from "./screens/MainRouter";
 
 export default function App() {
   return (
-    <div>
+    <div className="animate-fade-in">
       <MainRouter />
     </div>
   );

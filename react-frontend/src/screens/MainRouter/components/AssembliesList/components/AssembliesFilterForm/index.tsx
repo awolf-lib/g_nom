@@ -22,8 +22,8 @@ const AssembliesFilterForm = ({
   setFilter,
   isFilterOpen,
 }: {
-  viewType: "grid" | "list";
-  setViewType: Dispatch<SetStateAction<"grid" | "list">>;
+  viewType: "grid" | "list" | "tree";
+  setViewType: Dispatch<SetStateAction<"grid" | "list" | "tree">>;
   setSearch: (search: string) => void;
   search: string;
   setFilter: Dispatch<SetStateAction<Filter>>;
@@ -250,7 +250,7 @@ const AssembliesFilterForm = ({
           <span className="text-sm px-2">View type:</span>
           <select
             className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 text-sm"
-            onChange={(e) => setViewType(e.target.value as "list" | "grid")}
+            onChange={(e) => setViewType(e.target.value as "list" | "grid" | "tree")}
             value={viewType}
           >
             <option className="text-sm py-1" value="list">
@@ -258,6 +258,9 @@ const AssembliesFilterForm = ({
             </option>
             <option className="text-sm py-1" value="grid">
               Grid
+            </option>
+            <option className="text-sm py-1" value="tree">
+              Tree
             </option>
           </select>
         </label>
@@ -299,38 +302,40 @@ const AssembliesFilterForm = ({
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
-          <div>
-            Taxon
-            <hr className="shadow border-gray-300 -mx-2" />
-            <div className="mt-2 w-48">
-              <Input
-                size="sm"
-                placeholder="Search..."
-                onChange={(e) => handleChangeTaxaSearch(e.target.value)}
-                value={taxonFilterSearch}
-              />
+          {viewType !== "tree" && (
+            <div className="animate-fade-in">
+              Taxon
+              <hr className="shadow border-gray-300 -mx-2" />
+              <div className="mt-2 w-48">
+                <Input
+                  size="sm"
+                  placeholder="Search..."
+                  onChange={(e) => handleChangeTaxaSearch(e.target.value)}
+                  value={taxonFilterSearch}
+                />
+              </div>
+              <select
+                multiple
+                className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+                onChange={(e) => handleSelectTaxa(e.target.options)}
+              >
+                <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
+                  All
+                </option>
+                {filteredTaxa &&
+                  filteredTaxa.length > 0 &&
+                  filteredTaxa.map((taxon) => (
+                    <option
+                      key={taxon.id}
+                      value={taxon.id}
+                      className="px-4 py-1 border-b text-sm font-semibold truncate"
+                    >
+                      {taxon.scientificName}
+                    </option>
+                  ))}
+              </select>
             </div>
-            <select
-              multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-              onChange={(e) => handleSelectTaxa(e.target.options)}
-            >
-              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
-                All
-              </option>
-              {filteredTaxa &&
-                filteredTaxa.length > 0 &&
-                filteredTaxa.map((taxon) => (
-                  <option
-                    key={taxon.id}
-                    value={taxon.id}
-                    className="px-4 py-1 border-b text-sm font-semibold truncate"
-                  >
-                    {taxon.scientificName}
-                  </option>
-                ))}
-            </select>
-          </div>
+          )}
 
           <div>
             Users
