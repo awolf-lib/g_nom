@@ -146,6 +146,9 @@ def __getSupportedFiles(file_info, type):
 
 
 def validateFileInfo(file_info, forceType=""):
+    """
+    Validates files for import!
+    """
     datasets = {}
     if not forceType or forceType not in FILE_PATTERN_DICT:
         for type in FILE_PATTERN_DICT:

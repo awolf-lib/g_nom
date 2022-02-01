@@ -321,6 +321,9 @@ def fetchTaxonByTaxonID(taxonID):
 
 
 def fetchTaxonImageByTaxonID(taxonID):
+    """
+    Fetches taxon image by taxon ID.
+    """
     try:
         connection, cursor, error = connect()
         cursor.execute("SELECT imagePath FROM taxa WHERE id=%s", (taxonID,))
@@ -334,7 +337,7 @@ def fetchTaxonImageByTaxonID(taxonID):
 # FETCH TAXA BY SEARCH STRING
 def fetchTaxonBySearch(search):
     """
-    Fetches taxon by taxon ID
+    Fetches taxon by search value.
     """
     connection, cursor, error = connect()
 
@@ -359,7 +362,7 @@ def fetchTaxonBySearch(search):
 # FETCH ONE TAXON BY NCBI TAXON ID
 def fetchTaxonByNCBITaxonID(ncbiTaxonID):
     """
-    Fetches taxon by NCBI taxon id
+    Fetches taxon by NCBI taxon id.
     """
     connection, cursor, error = connect()
 
@@ -380,7 +383,7 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
 # FETCH ALL TAXA WITH AT LEAST ONE ASSEMBLY
 def fetchTaxaWithAssemblies():
     """
-    Fetches taxa with at least one assembly
+    Fetches taxa with at least one assembly.
     """
     connection, cursor, error = connect()
 
@@ -403,7 +406,7 @@ def fetchTaxaWithAssemblies():
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
 def fetchTaxonGeneralInformationByTaxonID(taxonID):
     """
-    Gets all general information by specific taxon ID
+    Gets all general information by specific taxon ID.
     """
 
     generalInfos = []

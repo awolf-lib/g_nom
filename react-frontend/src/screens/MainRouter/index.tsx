@@ -10,7 +10,6 @@ import Settings from "./components/Settings";
 import DataAssistant from "./components/DataAssistant/index";
 import AssemblyInformation from "./components/AssemblyInformation";
 import AssembliesList from "./components/AssembliesList";
-import AssembliesTreeViewer from "./components/AssembliesTreeViewer";
 import FeaturesList from "./components/FeaturesList";
 
 const MainRouter = () => {
@@ -36,7 +35,6 @@ const MainRouter = () => {
           />
           <Route path="/g-nom/assemblies" element={<Navigate to="/g-nom/assemblies/list" />} />
           <Route path="/g-nom/assemblies/list" element={<AssembliesList />} />
-          <Route path="/g-nom/assemblies/tree" element={<AssembliesTreeViewer />} />
           <Route path="/g-nom/assemblies/data" element={<DataAssistant />} />
           <Route path="/g-nom/assemblies/assembly" element={<AssemblyInformation />} />
           <Route path="/g-nom/features" element={<FeaturesList />} />

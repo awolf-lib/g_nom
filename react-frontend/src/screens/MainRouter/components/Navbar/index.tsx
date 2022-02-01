@@ -58,9 +58,6 @@ const Navbar = () => {
                 <Link to="/g-nom/assemblies/list">
                   <Button label="Assemblies" color="nav" />
                 </Link>
-                <Link to="/g-nom/assemblies/tree">
-                  <Button label="Tree" color="nav" />
-                </Link>
                 <Link to="/g-nom/features">
                   <Button label="Features" color="nav" />
                 </Link>

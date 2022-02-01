@@ -150,7 +150,7 @@ def validateActiveToken(userID, token):
 # ADD NEW USER
 def addUser(username, password, role):
     """
-    Add a user to db
+    Add a user to db.
     """
     try:
         connection, cursor, error = connect()

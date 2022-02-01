@@ -91,7 +91,7 @@ const TaxonPicker = ({
           if (response.payload) {
             setTaxa(response.payload);
 
-            if (response.payload.length === 1) {
+            if (response.payload.length >= 1) {
               setTaxon(response.payload[0]);
               getTaxon(response.payload[0]);
             }

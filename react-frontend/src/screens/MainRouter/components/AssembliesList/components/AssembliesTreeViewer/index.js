@@ -1,26 +1,24 @@
 import { useEffect, useState, useRef } from "react";
 import classNames from "classnames";
-import "../../../../App.css";
-import { useNotification } from "../../../../components/NotificationProvider";
-import { fetchAssembliesByTaxonIDs, fetchTaxonTree } from "../../../../api";
-import SpeciesProfilePictureViewer from "../../../../components/SpeciesProfilePictureViewer";
+import "../../../../../../App.css";
+import { useNotification } from "../../../../../../components/NotificationProvider";
+import { fetchTaxonTree } from "../../../../../../api";
+import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import { Expand, Vulnerability } from "grommet-icons";
 
 import Tree from "react-d3-tree";
-import LoadingSpinner from "../../../../components/LoadingSpinner";
-import Button from "../../../../components/Button";
-import AssembliesGridElement from "../AssembliesList/components/AssembliesGridElement";
+import LoadingSpinner from "../../../../../../components/LoadingSpinner";
+import Button from "../../../../../../components/Button";
+import AssembliesGridElement from "../AssembliesGridElement";
 
-const AssembliesTreeViewer = () => {
+const AssembliesTreeViewer = ({ filter, setFilter, assemblies, loading }) => {
   const [tree, setTree] = useState({});
   const [fullTree, setFullTree] = useState({});
-  const [taxa, setTaxa] = useState([]);
   const [height, setHeight] = useState(0);
   const [width, setWidth] = useState(0);
   const [expandTree, setExpandTree] = useState(false);
   const [loadingTree, setLoadingTree] = useState(false);
-  const [showElements, setShowElements] = useState(10);
-  const [currentNode, setCurrentNode] = useState("");
+  const [currentNode, setCurrentNode] = useState("root");
   const ref = useRef(null);
   const cardsRef = useRef(null);
 
@@ -30,6 +28,12 @@ const AssembliesTreeViewer = () => {
     setWidth(ref.current.clientWidth);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!filter || !filter.taxonIDs) {
+      setCurrentNode("root");
+    }
+  }, [filter]);
 
   // notifications
   const dispatch = useNotification();
@@ -83,18 +87,9 @@ const AssembliesTreeViewer = () => {
   };
 
   const loadTaxa = async (nodeDatum) => {
-    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
-    const token = JSON.parse(sessionStorage.getItem("token") || "");
-
-    const response = await fetchAssembliesByTaxonIDs(getChildrenTaxIds(nodeDatum), userID, token);
-
-    if (response && response.payload) {
-      setTaxa(response.payload);
-    }
-
-    if (response && response.notification && response.notification.length > 0) {
-      response.notification.map((not) => handleNewNotification(not));
-    }
+    setFilter((prevState) => {
+      return { ...prevState, taxonIDs: getChildrenTaxIds(nodeDatum).sort() };
+    });
   };
 
   const getChildrenTaxIds = (nodeDatum) => {
@@ -139,7 +134,6 @@ const AssembliesTreeViewer = () => {
             onClick={() => {
               loadTaxa(nodeDatum);
               executeScroll();
-              setShowElements(10);
               setCurrentNode(nodeDatum.name);
               // toggleNode();
             }}
@@ -231,14 +225,19 @@ const AssembliesTreeViewer = () => {
       </div>
       <div className="mt-8 min-h-1/2" ref={cardsRef}>
         <div className="flex">
-          <div className="w-full bg-gray-500 rounded-lg px-4 p-2 text-white font-bold mb-4">
+          <div className="w-full bg-gray-500 rounded-lg px-4 p-2 text-white font-bold mb-4 flex">
             Results:
+            {loading && (
+              <div className="px-4">
+                <LoadingSpinner label="Loading..." />
+              </div>
+            )}
           </div>
           <div className="w-32 ml-4">
             <Button label="Scroll to top" color="secondary" onClick={() => executeScrollTree()} />
           </div>
         </div>
-        {taxa && taxa.length > 0 ? (
+        {assemblies && assemblies.length > 0 ? (
           <div>
             <div className="ml-12">
               <span>Last common ancestor:</span>
@@ -246,50 +245,17 @@ const AssembliesTreeViewer = () => {
             </div>
             <hr className="m-8 mt-2 shadow" />
             <div className="animate-grow-y rounded-lg grid gap-8 grid-cols-2 mt-8 px-8">
-              {taxa.map((assembly, index) => {
-                if (index < showElements) {
-                  return (
-                    <div key={assembly.id} className="animate-fade-in">
-                      <AssembliesGridElement
-                        assembly={assembly}
-                        fcatMode={1}
-                        renderDelay={index + 1}
-                      />
-                    </div>
-                  );
-                } else {
-                  return <div key={assembly.id} />;
-                }
+              {assemblies.map((assembly, index) => {
+                return (
+                  <div key={assembly.id} className="animate-fade-in">
+                    <AssembliesGridElement
+                      assembly={assembly}
+                      fcatMode={1}
+                      renderDelay={index + 1}
+                    />
+                  </div>
+                );
               })}
-            </div>
-            <hr className="m-8 shadow" />
-            <div className="flex justify-around">
-              {showElements > 10 && (
-                <div className="mt-2">
-                  <div className="flex justify-center">
-                    <div className="w-32">
-                      <Button
-                        color="nav"
-                        label="View less..."
-                        onClick={() => setShowElements((prevState) => prevState - 10)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {showElements < taxa.length && (
-                <div className="mt-2">
-                  <div className="flex justify-center">
-                    <div className="w-32">
-                      <Button
-                        color="nav"
-                        label="View more..."
-                        onClick={() => setShowElements((prevState) => prevState + 10)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         ) : (

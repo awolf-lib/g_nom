@@ -94,7 +94,7 @@ def __check_consumer_count(channel, route):
                     if route == "worker":
                         if consumer_count < int(getenv("RABBIT_WORKER_COUNT")):
                             while consumer_count < int(getenv("RABBIT_WORKER_COUNT")):
-                                run("python3 src/worker.py &", shell=True)
+                                run("python3 worker.py &", shell=True, cwd="/flask-backend/src")
                                 consumer_count += 1
                         elif consumer_count == int(getenv("RABBIT_WORKER_COUNT")):
                             return 1, []
