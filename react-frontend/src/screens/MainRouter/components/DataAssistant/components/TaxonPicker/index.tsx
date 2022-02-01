@@ -187,7 +187,7 @@ const TaxonPicker = ({
         {taxon && taxon.id && (
           <div className="flex justify-around items-center w-full border p-2 xl:rounded-xl shadow bg-gray-100">
             <div>
-              <div className="w-32 rounded-lg overflow-hidden border-2 border-dotted border-white">
+              <div className="rounded-lg overflow-hidden border-2 border-dotted border-white">
                 <SpeciesProfilePictureViewer taxonID={taxon.id} imagePath={taxon.imagePath} />
               </div>
             </div>
