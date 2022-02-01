@@ -8,6 +8,7 @@ from modules.annotations import (
     deleteAnnotationByAnnotationID,
     fetchAnnotationsByAssemblyID,
     fetchFeatureAttributeKeys,
+    fetchFeatureSeqIDs,
     fetchFeatureTypes,
     fetchFeatures,
     import_annotation,
@@ -173,8 +174,8 @@ def annotations_bp_fetchFeatures():
 
 
 # FETCH ALL UNIQUE FEATURE TYPES
-@annotations_bp.route("/fetchFeatureTypes", methods=["POST"])
-def annotations_bp_fetchFeatureTypes():
+@annotations_bp.route("/fetchFeatureSeqIDs", methods=["POST"])
+def annotations_bp_fetchFeatureSeqIDs():
     if request.method == "POST":
         req = request.get_json(force=True)
         userID = req.get("userID", None)
@@ -190,7 +191,36 @@ def annotations_bp_fetchFeatureTypes():
         taxonIDs = req.get("taxonIDs", None)
         assemblyID = req.get("assemblyID", None)
 
-        data, notification = fetchFeatureTypes(assemblyID, taxonIDs)
+        data, notification = fetchFeatureSeqIDs(assemblyID, taxonIDs)
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL UNIQUE FEATURE TYPES
+@annotations_bp.route("/fetchFeatureTypes", methods=["POST"])
+def annotations_bp_fetchFeatureTypes():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        taxonIDs = req.get("taxonIDs", None)
+        seqIDs = req.get("seqIDs", None)
+        assemblyID = req.get("assemblyID", None)
+
+        data, notification = fetchFeatureTypes(assemblyID, taxonIDs, seqIDs)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

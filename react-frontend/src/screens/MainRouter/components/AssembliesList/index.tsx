@@ -119,7 +119,7 @@ const AssembliesList = ({
     if (input < 1) {
       input = 1;
     }
-    if (input > pagination.pages) {
+    if (input >= pagination.pages) {
       input = pagination.pages;
     }
     input -= 1;
@@ -325,22 +325,22 @@ const AssembliesList = ({
                 <span className="mr-2 text-sm">Page</span>
                 <div className="w-24">
                   <Input
-                    borderless={true}
+                    withoutborder={true}
                     type="number"
                     size="sm"
                     onChange={(e) => handlePageChange(e.target.value)}
-                    value={offset + 1}
+                    value={pagination.offset + 1}
                   />
                 </div>
                 <span className="mx-2 text-sm">of</span>
-                <span className="mr-2 text-sm">{pagination.pages}</span>
+                <span className="mr-2 text-sm">{pagination.pages || 1}</span>
               </div>
               <hr className="shadow -mx-4 my-1" />
               <label className="flex items-center">
                 <span className="mr-2 text-sm">Assemblies/page:</span>
                 <div className="w-24">
                   <Input
-                    borderless={true}
+                    withoutborder={true}
                     type="number"
                     size="sm"
                     onChange={(e) => handleRangeChange(e.target.value)}

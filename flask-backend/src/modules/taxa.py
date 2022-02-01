@@ -419,10 +419,10 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    if len(generalInfos):
-        return [dict(zip(row_headers, x)) for x in generalInfos], []
-    else:
-        return [], createNotification("Info", "No taxon general information!", "info")
+    # if not len(generalInfos):
+    #     return [], createNotification("Info", "No taxon general information!", "info")
+
+    return [dict(zip(row_headers, x)) for x in generalInfos], []
 
 
 # ADD GENERAL INFO

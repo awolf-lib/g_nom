@@ -516,8 +516,8 @@ def fetchAnnotationsByAssemblyID(assemblyID):
         annotations = cursor.fetchall()
         annotations = [dict(zip(row_headers, x)) for x in annotations]
 
-        if not len(annotations):
-            return [], createNotification("Info", "No annotations for this assembly!", "info")
+        # if not len(annotations):
+        #     return [], createNotification("Info", "No annotations for this assembly!", "info")
 
         return (
             annotations,
@@ -541,24 +541,23 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
 
         assembly_id = int(assembly_id)
         if assembly_id > 0 or "taxonIDs" in filter or "featureTypes" in filter:
-            sql += " AND"
-
             if assembly_id > 0:
-                assembly_ids_string = " assemblies.id=%s"
+                assembly_ids_string = " AND assemblies.id=%s"
                 values += (assembly_id,)
                 sql += assembly_ids_string
-                if "taxonIDs" in filter or "featureTypes" in filter:
-                    sql += " AND"
 
             if "taxonIDs" in filter:
-                taxonIDs_string = " (" + " OR ".join(["taxa.id=%s" for x in filter["taxonIDs"]]) + ")"
+                taxonIDs_string = " AND (" + " OR ".join(["taxa.id=%s" for x in filter["taxonIDs"]]) + ")"
                 values += tuple(filter["taxonIDs"])
                 sql += taxonIDs_string
-                if "featureTypes" in filter:
-                    sql += " AND"
+
+            if "featureSeqIDs" in filter:
+                seqIDs_string = " AND (" + " OR ".join(["genomicAnnotationFeatures.seqID=%s" for x in filter["featureSeqIDs"]]) + ")"
+                values += tuple(filter["featureSeqIDs"])
+                sql += seqIDs_string
 
             if "featureTypes" in filter:
-                types_string = " (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in filter["featureTypes"]]) + ")"
+                types_string = " AND (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in filter["featureTypes"]]) + ")"
                 values += tuple(filter["featureTypes"])
                 sql += types_string
 
@@ -762,15 +761,15 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
 
 
-# fetches all unique feature types from all features
-def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
+# fetches all unique feature seqIDs from all features
+def fetchFeatureSeqIDs(assemblyID=0, taxonIDs=[]):
     """
-    Fetches all unique feature types.
+    Fetches all unique feature seqIDs.
     """
     try:
         connection, cursor, error = connect()
 
-        sql = "SELECT DISTINCT(genomicAnnotationFeatures.type) FROM genomicAnnotationFeatures"
+        sql = "SELECT DISTINCT(genomicAnnotationFeatures.seqID) FROM genomicAnnotationFeatures"
         values = tuple()
 
         if assemblyID or len(taxonIDs):
@@ -793,6 +792,56 @@ def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
                 taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
                 values += tuple(taxonIDs)
                 sql += taxonIDs_string
+
+        cursor.execute(sql, values)
+
+        featureSeqIDs_list = cursor.fetchall()
+        if featureSeqIDs_list:
+            featureSeqIDs_list = [x[0] for x in featureSeqIDs_list]
+
+        return featureSeqIDs_list, []
+    except Exception as err:
+        return [], createNotification(message=f"FeatureTypesFetchingError: {str(err)}")
+
+
+# fetches all unique feature types from all features
+def fetchFeatureTypes(assemblyID=0, taxonIDs=[], seqIDs=[]):
+    """
+    Fetches all unique feature types.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        sql = "SELECT DISTINCT(genomicAnnotationFeatures.type) FROM genomicAnnotationFeatures"
+        values = tuple()
+
+        if assemblyID or len(taxonIDs):
+            sql += ", genomicAnnotations"
+
+            if len(taxonIDs):
+                sql += ", assemblies"
+
+            sql += " WHERE"
+
+            if assemblyID:
+                assemblyIDs_string = " genomicAnnotationFeatures.annotationID=genomicAnnotations.id AND genomicAnnotations.assemblyID=%s"
+                values += (assemblyID,)
+                sql += assemblyIDs_string
+                if len(taxonIDs) or len(seqIDs):
+                    sql += " AND"
+
+            if len(taxonIDs):
+                taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
+                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                values += tuple(taxonIDs)
+                sql += taxonIDs_string
+                if len(seqIDs):
+                    sql += " AND"
+
+            if len(seqIDs):
+                seqIDs_string = " (" + " OR ".join(["genomicAnnotationFeatures.seqID=%s" for x in seqIDs]) + ")"
+                values += tuple(seqIDs)
+                sql += seqIDs_string
 
         cursor.execute(sql, values)
 

@@ -970,8 +970,8 @@ def fetchBuscoAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         buscoList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        if not len(buscoList):
-            return [], createNotification("Info", "No Busco analyses for this assembly", "info")
+        # if not len(buscoList):
+        #     return [], createNotification("Info", "No Busco analyses for this assembly", "info")
 
         return (
             buscoList,
@@ -999,8 +999,8 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         fcatList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        if not len(fcatList):
-            return [], createNotification("Info", "No fCat analyses for this assembly", "info")
+        # if not len(fcatList):
+        #     return [], createNotification("Info", "No fCat analyses for this assembly", "info")
 
         return (
             fcatList,
@@ -1028,8 +1028,8 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         miltsList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        if not len(miltsList):
-            return [], createNotification("Info", "No Milts analyses for this assembly", "info")
+        # if not len(miltsList):
+        #     return [], createNotification("Info", "No Milts analyses for this assembly", "info")
 
         return (
             miltsList,
@@ -1057,8 +1057,8 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         repeatmaskerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        if not len(repeatmaskerList):
-            return [], createNotification("Info", "No Repeatmasker analyses for this assembly", "info")
+        # if not len(repeatmaskerList):
+        #     return [], createNotification("Info", "No Repeatmasker analyses for this assembly", "info")
 
         return (
             repeatmaskerList,

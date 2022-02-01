@@ -470,7 +470,7 @@ const AssemblyInformation = () => {
   const userRole = JSON.parse(sessionStorage.getItem("userRole") || "");
 
   return (
-    <div className="pb-32 bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-gray-800">
+    <div className="pb-32 bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-gray-800 animate-fade-in">
       {/* Header */}
       <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-gray-200" />
       <div className="z-20 flex justify-between items-center bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-white sticky top-16 h-16 px-4 text-xl font-bold shadow-lg border-b border-gray-500">

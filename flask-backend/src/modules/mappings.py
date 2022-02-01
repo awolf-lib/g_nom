@@ -310,8 +310,8 @@ def fetchMappingsByAssemblyID(assemblyID):
         mappings = cursor.fetchall()
         mappings = [dict(zip(row_headers, x)) for x in mappings]
 
-        if not len(mappings):
-            return [], createNotification("Info", "No mappings for this assembly", "info")
+        # if not len(mappings):
+        #     return [], createNotification("Info", "No mappings for this assembly", "info")
 
         return (
             mappings,

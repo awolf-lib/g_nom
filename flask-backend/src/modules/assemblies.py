@@ -922,10 +922,10 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
         tags = cursor.fetchall()
         tags = [dict(zip(row_headers, x)) for x in tags]
 
-        if len(tags) == 0:
-            return [], createNotification("Info", "No tags for this assembly!", "info")
-        else:
-            return tags, []
+        # if not len(tags):
+        #     return [], createNotification("Info", "No tags for this assembly!", "info")
+
+        return tags, []
 
     except Exception as err:
         return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
@@ -947,10 +947,10 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    if len(generalInfos):
-        return [dict(zip(row_headers, x)) for x in generalInfos], []
-    else:
-        return [], createNotification("Info", "No assembly general information!", "info")
+    # if not len(generalInfos):
+    #     return [], createNotification("Info", "No assembly general information!", "info")
+
+    return [dict(zip(row_headers, x)) for x in generalInfos], []
 
 
 # ADD GENERAL INFO
@@ -1047,9 +1047,9 @@ def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0)
         if search:
             sequenceHeaders = [x for x in sequenceHeaders if search == str(x).lower() or search in str(x).lower()]
 
-        if not len(sequenceHeaders):
-            return [], createNotification("Info", "No sequence headers found!", "info")
-        else:
-            return sequenceHeaders, []
+        # if not len(sequenceHeaders):
+        #     return [], createNotification("Info", "No sequence headers found!", "info")
+
+        return sequenceHeaders, []
     except Exception as err:
         return [], createNotification(message=f"FetchAssemblySequenceHeadersError: {str(err)}")

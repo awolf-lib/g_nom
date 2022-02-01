@@ -17,7 +17,7 @@ const Input = (props) => {
       "h-32 text-justify": props.type === "textarea",
     },
     {
-      "border border-gray-300 rounded-lg shadow": !props.borderless,
+      "border border-gray-300 rounded-lg shadow": !props.withoutborder,
     }
   );
   if (props.type !== "textarea") {
@@ -31,6 +31,7 @@ Input.defaultProps = {
   type: "text",
   placeholder: "Input...",
   size: "md",
+  withoutborder: false,
 };
 
 Input.propTypes = {
@@ -44,7 +45,7 @@ Input.propTypes = {
   ]),
   onChange: PropTypes.func,
   checked: PropTypes.bool,
-  borderless: PropTypes.bool,
+  withoutborder: PropTypes.bool,
 };
 
 export default Input;
