@@ -38,7 +38,10 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
+        cursor.execute(
+            "SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s",
+            (assembly_id,),
+        )
         assembly_name = cursor.fetchone()[0]
 
         mapping_name, mapping_id, error = __generate_mapping_name(assembly_name)
@@ -54,19 +57,25 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             print(error)
             return 0, error
 
-        new_file_path, error = __store_mapping(dataset, taxon, assembly_name, mapping_name)
+        new_file_path, error = __store_mapping(
+            dataset, taxon, assembly_name, mapping_name
+        )
         if not new_file_path or not exists(new_file_path):
             deleteMappingByMappingID(mapping_id)
             print(error)
             return 0, error
 
-        imported_status, error = __importDB(mapping_id, assembly_id, mapping_name, new_file_path, userID)
+        imported_status, error = __importDB(
+            mapping_id, assembly_id, mapping_name, new_file_path, userID
+        )
         if not imported_status:
             deleteMappingByMappingID(mapping_id)
             print(error)
             return 0, error
 
-        notify_mapping(assembly_id, assembly_name, mapping_id, mapping_name, new_file_path, "Added")
+        notify_mapping(
+            assembly_id, assembly_name, mapping_id, mapping_name, new_file_path, "Added"
+        )
 
         scanFiles()
 
@@ -78,7 +87,9 @@ def import_mapping(taxon, assembly_id, dataset, userID):
             pass
 
         print(f"New mapping {mapping_name} added!\n")
-        return mapping_id, createNotification("Success", f"New mapping {mapping_name} added!", "success")
+        return mapping_id, createNotification(
+            "Success", f"New mapping {mapping_name} added!", "success"
+        )
     except Exception as err:
         print(f"An unknown error occured: {str(err)}")
         deleteMappingByMappingID(mapping_id)
@@ -113,7 +124,9 @@ def __generate_mapping_name(assembly_name):
 
 
 # moves .gff3 into storage
-def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentical=False):
+def __store_mapping(
+    dataset, taxon, assembly_name, annotation_name, forceIdentical=False
+):
     """
     Moves annotation data to storage directory.
     """
@@ -146,7 +159,9 @@ def __store_mapping(dataset, taxon, assembly_name, annotation_name, forceIdentic
 
         # move to storage
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
-        new_file_path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/mappings/"
+        new_file_path = (
+            f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/mappings/"
+        )
         run(["mkdir", "-p", new_file_path])
         if not isdir(new_file_path):
             return 0, createNotification(message="Creation of new directory failed!")
@@ -210,7 +225,8 @@ def deleteMappingByMappingID(mapping_id):
         assembly_id, assembly_name, mapping_name = cursor.fetchone()
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id",
+            (assembly_id,),
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -228,11 +244,15 @@ def deleteMappingByMappingID(mapping_id):
         if not status:
             return 0, error
 
-        notify_mapping(assembly_id, assembly_name, mapping_id, mapping_name, "", "Removed")
+        notify_mapping(
+            assembly_id, assembly_name, mapping_id, mapping_name, "", "Removed"
+        )
 
         scanFiles()
 
-        return 1, createNotification("Success", "Successfully deleted mapping", "success")
+        return 1, createNotification(
+            "Success", "Successfully deleted mapping", "success"
+        )
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
@@ -275,7 +295,9 @@ def updateMappingLabel(mapping_id: int, label: str):
         LABEL_PATTERN = compile(r"^\w+$")
 
         if label and not LABEL_PATTERN.match(label):
-            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+            return 0, createNotification(
+                message="Invalid label. Use only [a-zA-Z0-9_]!"
+            )
         elif not label:
             label = None
 
@@ -285,7 +307,9 @@ def updateMappingLabel(mapping_id: int, label: str):
         )
         connection.commit()
         if label:
-            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+            return 1, createNotification(
+                "Success", f"Successfully added label: {label}", "success"
+            )
         else:
             return 1, createNotification("Info", f"Default name restored", "info")
     except Exception as err:
@@ -310,8 +334,8 @@ def fetchMappingsByAssemblyID(assemblyID):
         mappings = cursor.fetchall()
         mappings = [dict(zip(row_headers, x)) for x in mappings]
 
-        if not len(mappings):
-            return [], createNotification("Info", "No mappings for this assembly", "info")
+        # if not len(mappings):
+        #     return [], createNotification("Info", "No mappings for this assembly", "info")
 
         return (
             mappings,

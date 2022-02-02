@@ -40,10 +40,15 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             return 0, createNotification(message="Missing user ID!")
 
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
+        cursor.execute(
+            "SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s",
+            (assembly_id,),
+        )
         assembly_name = cursor.fetchone()[0]
 
-        annotation_name, annotation_id, error = __generate_annotation_name(assembly_name)
+        annotation_name, annotation_id, error = __generate_annotation_name(
+            assembly_name
+        )
         if not annotation_id:
             print(error)
             return 0, error
@@ -56,7 +61,9 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             print(error)
             return 0, error
 
-        new_file_path, error = __store_annotation(dataset, taxon, assembly_name, annotation_name)
+        new_file_path, error = __store_annotation(
+            dataset, taxon, assembly_name, annotation_name
+        )
 
         if not new_file_path or not exists(new_file_path):
             print(error)
@@ -67,7 +74,18 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         path_to_dir = "/".join(new_file_path.split("/")[:-1])
         new_file_path_sorted = path_to_dir + f"/{annotation_name}.sorted.gff3"
 
-        run(args=["gt", "gff3", "-sortlines", "-tidy", "-retainids", "-o", new_file_path_sorted, new_file_path])
+        run(
+            args=[
+                "gt",
+                "gff3",
+                "-sortlines",
+                "-tidy",
+                "-retainids",
+                "-o",
+                new_file_path_sorted,
+                new_file_path,
+            ]
+        )
         if exists(new_file_path_sorted):
             run(args=["rm", "-r", new_file_path])
             new_file_path = new_file_path_sorted
@@ -84,7 +102,12 @@ def import_annotation(taxon, assembly_id, dataset, userID):
         new_file_path += ".gz"
 
         imported_status, error = __importDB(
-            annotation_id, assembly_id, annotation_name, new_file_path, userID, gff_content
+            annotation_id,
+            assembly_id,
+            annotation_name,
+            new_file_path,
+            userID,
+            gff_content,
         )
 
         if not imported_status:
@@ -92,7 +115,14 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             deleteAnnotationByAnnotationID(annotation_id)
             return 0, error
 
-        notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, new_file_path, "Added")
+        notify_annotation(
+            assembly_id,
+            assembly_name,
+            annotation_id,
+            annotation_name,
+            new_file_path,
+            "Added",
+        )
 
         scanFiles()
 
@@ -104,7 +134,9 @@ def import_annotation(taxon, assembly_id, dataset, userID):
             pass
 
         print(f"New annotation {annotation_name} added!\n", flush=True)
-        return annotation_id, createNotification("Success", f"New annotation {annotation_name} added!", "success")
+        return annotation_id, createNotification(
+            "Success", f"New annotation {annotation_name} added!", "success"
+        )
     except Exception as err:
         print(f"An unknown error occured: {str(err)}")
         deleteAnnotationByAnnotationID(annotation_id)
@@ -128,7 +160,9 @@ def __generate_annotation_name(assembly_name):
         else:
             next_id = auto_increment_counter
 
-        cursor.execute("ALTER TABLE genomicAnnotations AUTO_INCREMENT = %s", (next_id + 1,))
+        cursor.execute(
+            "ALTER TABLE genomicAnnotations AUTO_INCREMENT = %s", (next_id + 1,)
+        )
         connection.commit()
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
@@ -139,7 +173,9 @@ def __generate_annotation_name(assembly_name):
 
 
 # moves .gff3 into storage
-def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIdentical=False):
+def __store_annotation(
+    dataset, taxon, assembly_name, annotation_name, forceIdentical=False
+):
     """
     Moves annotation data to storage directory.
     """
@@ -173,7 +209,9 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
 
         # move to storage
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
-        new_file_path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/annotations/"
+        new_file_path = (
+            f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/annotations/"
+        )
         run(["mkdir", "-p", new_file_path])
         if not isdir(new_file_path):
             return 0, createNotification(message="Creation of new directory failed!")
@@ -196,7 +234,10 @@ def __store_annotation(dataset, taxon, assembly_name, annotation_name, forceIden
                 if exists(old_additional_file_path):
                     run(["cp", "-r", old_additional_file_path, new_file_path])
 
-        print(f"Annotation ({basename(new_file_path_main_file)}) moved to storage!\n", flush=True)
+        print(
+            f"Annotation ({basename(new_file_path_main_file)}) moved to storage!\n",
+            flush=True,
+        )
         return new_file_path_main_file, []
 
     except Exception as err:
@@ -232,16 +273,37 @@ def __importDB(annotation_id, assembly_id, annotation_name, path, userID, file_c
             start = feature["start"]
             end = feature["end"]
             attributes = feature["info"]
-            source = feature["method"][:50] if feature["method"] and feature["method"] != "." else None
+            source = (
+                feature["method"][:50]
+                if feature["method"] and feature["method"] != "."
+                else None
+            )
             try:
                 score = float(feature["score"])
             except:
                 score = None
             strand = feature["strand"] if feature["strand"] in ["+", "-"] else None
-            phase = int(feature["phase"]) if feature["phase"] in [0, 1, 2, "0", "1", "2"] else None
+            phase = (
+                int(feature["phase"])
+                if feature["phase"] in [0, 1, 2, "0", "1", "2"]
+                else None
+            )
 
             if "parent" not in attributes and "Parent" not in attributes:
-                values.append((annotationID, seqID, source, type, start, end, score, strand, phase, attributes))
+                values.append(
+                    (
+                        annotationID,
+                        seqID,
+                        source,
+                        type,
+                        start,
+                        end,
+                        score,
+                        strand,
+                        phase,
+                        attributes,
+                    )
+                )
                 counter += 1
 
             if counter % 1000 == 0 and counter > 0:
@@ -272,7 +334,8 @@ def deleteAnnotationByAnnotationID(annotation_id):
         assembly_id, assembly_name, annotation_name = cursor.fetchone()
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id",
+            (assembly_id,),
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -283,18 +346,24 @@ def deleteAnnotationByAnnotationID(annotation_id):
             status, error = __deleteAnnotationEntryByAnnotationID(annotation_id)
 
         if status and taxon and assembly_name and annotation_name:
-            status, error = __deleteAnnotationFile(taxon, assembly_name, annotation_name)
+            status, error = __deleteAnnotationFile(
+                taxon, assembly_name, annotation_name
+            )
         else:
             return 0, error
 
         if not status:
             return 0, error
 
-        notify_annotation(assembly_id, assembly_name, annotation_id, annotation_name, "", "Removed")
+        notify_annotation(
+            assembly_id, assembly_name, annotation_id, annotation_name, "", "Removed"
+        )
 
         scanFiles()
 
-        return 1, createNotification("Success", "Successfully deleted annotation", "success")
+        return 1, createNotification(
+            "Success", "Successfully deleted annotation", "success"
+        )
     except Exception as err:
         return 0, createNotification(message=f"AnnotationDeletionError1: {str(err)}")
 
@@ -331,7 +400,9 @@ def parseGff(path):
     GFF3_SKIPABLE = compile(r"^[ #]+$")
     GFF3_EXTENSION_PATTERN = compile(r".*\.gff3?$")
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
-    GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##[-\w:;\.\s]+)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
+    GFF3_SEQUENCE_REGION_PATTERN = compile(
+        r"^(##[-\w:;\.\s]+)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$"
+    )
     GFF3_FEATURE_PATTERN = compile(
         r"^([%\w\.-]+)\s+([%\.\w-]+)\s+([%\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
     )
@@ -360,7 +431,10 @@ def parseGff(path):
         try:
             if info_complete != ".":
                 info_split = info_complete.split(";")
-                info_split_stripped = [info.strip().replace('"', "").replace("'", "") for info in info_split]
+                info_split_stripped = [
+                    info.strip().replace('"', "").replace("'", "")
+                    for info in info_split
+                ]
                 for i in info_split_stripped:
                     if not i:
                         continue
@@ -372,7 +446,10 @@ def parseGff(path):
                             key_value = {match[1]: match[2]}
                         info.update(key_value)
                     else:
-                        print(f"Warning: Info did not match pattern. Skipping...\n'{i}'", flush=True)
+                        print(
+                            f"Warning: Info did not match pattern. Skipping...\n'{i}'",
+                            flush=True,
+                        )
 
             return {
                 "seqID": seqID,
@@ -396,7 +473,9 @@ def parseGff(path):
 
         # check file extension
         if not GFF3_EXTENSION_PATTERN.match(file_name):
-            print("Warning: File extension did not match '.gff' or '.gff3'! Searching for fingerprint...")
+            print(
+                "Warning: File extension did not match '.gff' or '.gff3'! Searching for fingerprint..."
+            )
 
         # open file
         try:
@@ -442,11 +521,19 @@ def parseGff(path):
                 feature = parseFeature(match)
 
                 if not feature:
-                    print(f"Warning: A feature could not be parsed. Skipping feature -------> '{row}'", flush=True)
+                    print(
+                        f"Warning: A feature could not be parsed. Skipping feature -------> '{row}'",
+                        flush=True,
+                    )
                     continue
 
                 if feature["feature"] in featureCountDistinct:
-                    featureCountDistinct.update({feature["feature"]: featureCountDistinct[feature["feature"]] + 1})
+                    featureCountDistinct.update(
+                        {
+                            feature["feature"]: featureCountDistinct[feature["feature"]]
+                            + 1
+                        }
+                    )
                 else:
                     featureCountDistinct.update({feature["feature"]: 0})
                 features.append(feature)
@@ -455,7 +542,10 @@ def parseGff(path):
             # no matching pattern
             else:
                 if not row.startswith("#"):
-                    print(f"Warning: Row did not match any patterns. Skipping row -------> '{row}'", flush=True)
+                    print(
+                        f"Warning: Row did not match any patterns. Skipping row -------> '{row}'",
+                        flush=True,
+                    )
                 continue
 
         featureCountDistinct.update({"total": len(features)})
@@ -481,7 +571,9 @@ def updateAnnotationLabel(annotation_id: int, label: str):
         LABEL_PATTERN = compile(r"^\w+$")
 
         if label and not LABEL_PATTERN.match(label):
-            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+            return 0, createNotification(
+                message="Invalid label. Use only [a-zA-Z0-9_]!"
+            )
         elif not label:
             label = None
 
@@ -491,7 +583,9 @@ def updateAnnotationLabel(annotation_id: int, label: str):
         )
         connection.commit()
         if label:
-            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+            return 1, createNotification(
+                "Success", f"Successfully added label: {label}", "success"
+            )
         else:
             return 1, createNotification("Info", f"Default name restored", "info")
     except Exception as err:
@@ -516,8 +610,8 @@ def fetchAnnotationsByAssemblyID(assemblyID):
         annotations = cursor.fetchall()
         annotations = [dict(zip(row_headers, x)) for x in annotations]
 
-        if not len(annotations):
-            return [], createNotification("Info", "No annotations for this assembly!", "info")
+        # if not len(annotations):
+        #     return [], createNotification("Info", "No annotations for this assembly!", "info")
 
         return (
             annotations,
@@ -528,7 +622,14 @@ def fetchAnnotationsByAssemblyID(assemblyID):
 
 
 # fetches all features (includes filtering by search, offset, range)
-def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID", "order": True}, offset=0, range=10):
+def fetchFeatures(
+    assembly_id=-1,
+    search="",
+    filter={},
+    sortBy={"column": "seqID", "order": True},
+    offset=0,
+    range=10,
+):
     """
     Fetches all features from database. Filtering by assembly, search term, offset and/or range.
     """
@@ -541,24 +642,45 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
 
         assembly_id = int(assembly_id)
         if assembly_id > 0 or "taxonIDs" in filter or "featureTypes" in filter:
-            sql += " AND"
-
             if assembly_id > 0:
-                assembly_ids_string = " assemblies.id=%s"
+                assembly_ids_string = " AND assemblies.id=%s"
                 values += (assembly_id,)
                 sql += assembly_ids_string
-                if "taxonIDs" in filter or "featureTypes" in filter:
-                    sql += " AND"
 
             if "taxonIDs" in filter:
-                taxonIDs_string = " (" + " OR ".join(["taxa.id=%s" for x in filter["taxonIDs"]]) + ")"
+                taxonIDs_string = (
+                    " AND ("
+                    + " OR ".join(["taxa.id=%s" for x in filter["taxonIDs"]])
+                    + ")"
+                )
                 values += tuple(filter["taxonIDs"])
                 sql += taxonIDs_string
-                if "featureTypes" in filter:
-                    sql += " AND"
+
+            if "featureSeqIDs" in filter:
+                seqIDs_string = (
+                    " AND ("
+                    + " OR ".join(
+                        [
+                            "genomicAnnotationFeatures.seqID=%s"
+                            for x in filter["featureSeqIDs"]
+                        ]
+                    )
+                    + ")"
+                )
+                values += tuple(filter["featureSeqIDs"])
+                sql += seqIDs_string
 
             if "featureTypes" in filter:
-                types_string = " (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in filter["featureTypes"]]) + ")"
+                types_string = (
+                    " AND ("
+                    + " OR ".join(
+                        [
+                            "genomicAnnotationFeatures.type=%s"
+                            for x in filter["featureTypes"]
+                        ]
+                    )
+                    + ")"
+                )
                 values += tuple(filter["featureTypes"])
                 sql += types_string
 
@@ -597,7 +719,11 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
                     features[idx]["attributes"] = loads(features[idx]["attributes"])
                     feature_attributes = feature["attributes"]
                     for attribute in filter["featureAttributes"]:
-                        if not "target" in attribute or not "operator" in attribute or not "value" in attribute:
+                        if (
+                            not "target" in attribute
+                            or not "operator" in attribute
+                            or not "value" in attribute
+                        ):
                             continue
 
                         target, operatorString, valueString = (
@@ -612,14 +738,26 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
                                 target_value = feature_attributes[target]
                                 if operatorString in numberOperatorsDict:
                                     try:
-                                        target_value = float(str(target_value).replace("%", "").replace(",", ""))
-                                        valueString = float(str(valueString).replace("%", "").replace(",", ""))
+                                        target_value = float(
+                                            str(target_value)
+                                            .replace("%", "")
+                                            .replace(",", "")
+                                        )
+                                        valueString = float(
+                                            str(valueString)
+                                            .replace("%", "")
+                                            .replace(",", "")
+                                        )
                                     except Exception as err:
                                         print(str(err), flush=True)
 
-                                    check = numberOperatorsDict[operatorString](target_value, valueString)
+                                    check = numberOperatorsDict[operatorString](
+                                        target_value, valueString
+                                    )
                                 elif operatorString in stringOperatorsDict:
-                                    check = stringOperatorsDict[operatorString](target_value, valueString)
+                                    check = stringOperatorsDict[operatorString](
+                                        target_value, valueString
+                                    )
                             except Exception as err:
                                 print(str(err), flush=True)
 
@@ -762,8 +900,53 @@ def fetchFeatures(assembly_id=-1, search="", filter={}, sortBy={"column": "seqID
         return [], {}, createNotification(message=f"FeaturesFetchingError: {str(err)}")
 
 
+# fetches all unique feature seqIDs from all features
+def fetchFeatureSeqIDs(assemblyID=0, taxonIDs=[]):
+    """
+    Fetches all unique feature seqIDs.
+    """
+    try:
+        connection, cursor, error = connect()
+
+        sql = "SELECT DISTINCT(genomicAnnotationFeatures.seqID) FROM genomicAnnotationFeatures"
+        values = tuple()
+
+        if assemblyID or len(taxonIDs):
+            sql += ", genomicAnnotations"
+
+            if len(taxonIDs):
+                sql += ", assemblies"
+
+            sql += " WHERE"
+
+            if assemblyID:
+                assemblyIDs_string = " genomicAnnotationFeatures.annotationID=genomicAnnotations.id AND genomicAnnotations.assemblyID=%s"
+                values += (assemblyID,)
+                sql += assemblyIDs_string
+                if len(taxonIDs):
+                    sql += " AND"
+
+            if len(taxonIDs):
+                taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
+                taxonIDs_string += (
+                    "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                )
+                values += tuple(taxonIDs)
+                sql += taxonIDs_string
+
+        cursor.execute(sql, values)
+
+        featureSeqIDs_list = cursor.fetchall()
+        if featureSeqIDs_list:
+            featureSeqIDs_list = [x[0] for x in featureSeqIDs_list]
+
+        return featureSeqIDs_list, []
+    except Exception as err:
+        return [], createNotification(message=f"FeatureTypesFetchingError: {str(err)}")
+
+
 # fetches all unique feature types from all features
-def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
+def fetchFeatureTypes(assemblyID=0, taxonIDs=[], seqIDs=[]):
     """
     Fetches all unique feature types.
     """
@@ -785,14 +968,29 @@ def fetchFeatureTypes(assemblyID=0, taxonIDs=[]):
                 assemblyIDs_string = " genomicAnnotationFeatures.annotationID=genomicAnnotations.id AND genomicAnnotations.assemblyID=%s"
                 values += (assemblyID,)
                 sql += assemblyIDs_string
-                if len(taxonIDs):
+                if len(taxonIDs) or len(seqIDs):
                     sql += " AND"
 
             if len(taxonIDs):
                 taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
-                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                taxonIDs_string += (
+                    "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                )
                 values += tuple(taxonIDs)
                 sql += taxonIDs_string
+                if len(seqIDs):
+                    sql += " AND"
+
+            if len(seqIDs):
+                seqIDs_string = (
+                    " ("
+                    + " OR ".join(
+                        ["genomicAnnotationFeatures.seqID=%s" for x in seqIDs]
+                    )
+                    + ")"
+                )
+                values += tuple(seqIDs)
+                sql += seqIDs_string
 
         cursor.execute(sql, values)
 
@@ -834,14 +1032,20 @@ def fetchFeatureAttributeKeys(assemblyID=0, taxonIDs=[], types=[]):
 
             if len(taxonIDs):
                 taxonIDs_string = " assemblies.id=genomicAnnotations.assemblyID AND genomicAnnotations.id=genomicAnnotationFeatures.annotationID AND "
-                taxonIDs_string += "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                taxonIDs_string += (
+                    "(" + " OR ".join(["assemblies.taxonID=%s" for x in taxonIDs]) + ")"
+                )
                 values += tuple(taxonIDs)
                 sql += taxonIDs_string
                 if len(types):
                     sql += " AND"
 
             if len(types):
-                types_string = " (" + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in types]) + ")"
+                types_string = (
+                    " ("
+                    + " OR ".join(["genomicAnnotationFeatures.type=%s" for x in types])
+                    + ")"
+                )
                 values += tuple(types)
                 sql += types_string
 
@@ -859,4 +1063,6 @@ def fetchFeatureAttributeKeys(assemblyID=0, taxonIDs=[], types=[]):
 
         return keys, []
     except Exception as err:
-        return [], createNotification(message=f"FeatureAttributeTypeFetchingError: {str(err)}")
+        return [], createNotification(
+            message=f"FeatureAttributeTypeFetchingError: {str(err)}"
+        )

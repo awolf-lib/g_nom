@@ -90,7 +90,9 @@ def users_bp_addUser():
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response
 
-        data, notification = addUser(req.get("username", None), req.get("password", None), req.get("role", None))
+        data, notification = addUser(
+            req.get("username", None), req.get("password", None), req.get("role", None)
+        )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

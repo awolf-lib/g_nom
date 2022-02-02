@@ -4,7 +4,12 @@ from flask import Blueprint, jsonify, request
 # local imports
 from modules.users import validateActiveToken
 from modules.notifications import createNotification
-from modules.mappings import deleteMappingByMappingID, fetchMappingsByAssemblyID, import_mapping, updateMappingLabel
+from modules.mappings import (
+    deleteMappingByMappingID,
+    fetchMappingsByAssemblyID,
+    import_mapping,
+    updateMappingLabel,
+)
 
 # setup blueprint name
 mappings_bp = Blueprint("mappings", __name__)
@@ -12,7 +17,9 @@ mappings_bp = Blueprint("mappings", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(message="Wrong request method. Please contact support!"),
+    "notification": createNotification(
+        message="Wrong request method. Please contact support!"
+    ),
 }
 
 # IMPORT NEW ANNOTATION
@@ -38,7 +45,9 @@ def mappings_bp_import_mapping():
         if taxon and dataset and userID:
             data, notification = import_mapping(taxon, assemblyID, dataset, userID)
         else:
-            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            data, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -97,7 +106,9 @@ def mappings_bp_updateMappingLabel():
             else:
                 status, notification = updateMappingLabel(mapping_id, None)
         else:
-            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            status, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

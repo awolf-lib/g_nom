@@ -1,7 +1,9 @@
+import classNames from "classnames";
 import { Search, StatusGood } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   fetchFeatureAttributeKeys,
+  fetchFeatureSeqIDs,
   fetchFeatureTypes,
   fetchTaxaWithAssemblies,
   FilterFeatures,
@@ -11,6 +13,7 @@ import {
 } from "../../../../../../api";
 import Button from "../../../../../../components/Button";
 import Input from "../../../../../../components/Input";
+import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
 const GenomicAnnotationFeaturesFilterForm = ({
@@ -20,6 +23,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
   setFilter,
   isFilterOpen,
   assemblyID,
+  loading,
+  title,
 }: {
   setSearch: (search: string) => void;
   search: string;
@@ -27,6 +32,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
   filter: FilterFeatures;
   isFilterOpen?: Dispatch<SetStateAction<boolean>>;
   assemblyID?: number;
+  loading: boolean;
+  title: string;
 }) => {
   const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(false);
 
@@ -34,21 +41,29 @@ const GenomicAnnotationFeaturesFilterForm = ({
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
   const [featureTypes, setFeatureTypes] = useState<string[]>([]);
   const [filteredFeatureTypes, setFilteredFeatureTypes] = useState<string[]>([]);
+  const [featureSeqIDs, setFeatureSeqIDs] = useState<string[]>([]);
+  const [filteredFeatureSeqIDs, setFilteredFeatureSeqIDs] = useState<string[]>([]);
   const [attributes, setAttributes] = useState<string[]>([]);
   const [filteredAttributes, setFilteredAttributes] = useState<string[]>([]);
   const [targetAttributes, setTargetAttributes] = useState<ITargetAttribute[]>([]);
   const [triggerSetFilter, setTriggerSetFilter] = useState<boolean>(false);
 
   const [taxonSearch, setTaxonSearch] = useState<string>("");
+  const [featureSeqIDSearch, setFeatureSeqIDSearch] = useState<string>("");
   const [featureTypeSearch, setFeatureTypeSearch] = useState<string>("");
   const [attributeSearch, setAttributeSearch] = useState<string>("");
 
+  const [searchForm, setSearchForm] = useState<string>("");
+  const [filterForm, setFilterForm] = useState<FilterFeatures>({});
+
   useEffect(() => {
-    if (search === "") {
-      setSearch("");
-    }
+    setSearchForm(search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
+
+  useEffect(() => {
+    setFilterForm(filter);
+  }, [filter]);
 
   useEffect(() => {
     loadTaxa();
@@ -56,19 +71,24 @@ const GenomicAnnotationFeaturesFilterForm = ({
   }, [toggleFilterSelection]);
 
   useEffect(() => {
+    loadFeatureSeqIDs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleFilterSelection, filterForm.taxonIDs]);
+
+  useEffect(() => {
     loadFeatureTypes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleFilterSelection, filter.taxonIDs]);
+  }, [toggleFilterSelection, filterForm.taxonIDs, filterForm.featureSeqIDs]);
 
   useEffect(() => {
     loadAttributes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toggleFilterSelection, filter.taxonIDs, filter.featureTypes]);
+  }, [toggleFilterSelection, filterForm.taxonIDs, filterForm.featureTypes]);
 
   useEffect(() => {
     if (triggerSetFilter) {
       if (targetAttributes?.length) {
-        setFilter((prevState) => {
+        setFilterForm((prevState) => {
           return {
             ...prevState,
             featureAttributes: targetAttributes.filter(
@@ -77,7 +97,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
           };
         });
       } else {
-        setFilter((prevState) => {
+        setFilterForm((prevState) => {
           delete prevState.featureAttributes;
           return { ...prevState };
         });
@@ -115,16 +135,20 @@ const GenomicAnnotationFeaturesFilterForm = ({
       });
   };
 
-  const loadFeatureTypes = async () => {
+  const loadFeatureSeqIDs = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-    if (userID && token)
-      await fetchFeatureTypes(userID, token, assemblyID || 0, filter.taxonIDs || []).then(
+    if (
+      userID &&
+      token &&
+      ((filterForm && filterForm.taxonIDs && filterForm.taxonIDs.length === 1) || assemblyID)
+    )
+      await fetchFeatureSeqIDs(userID, token, assemblyID || 0, filterForm.taxonIDs || []).then(
         (response) => {
           if (response?.payload) {
-            setFeatureTypes(response.payload);
-            setFilteredFeatureTypes(response.payload);
+            setFeatureSeqIDs(response.payload);
+            setFilteredFeatureSeqIDs(response.payload);
           }
 
           if (response?.notification) {
@@ -132,6 +156,29 @@ const GenomicAnnotationFeaturesFilterForm = ({
           }
         }
       );
+  };
+
+  const loadFeatureTypes = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    if (userID && token)
+      await fetchFeatureTypes(
+        userID,
+        token,
+        assemblyID || 0,
+        filterForm.taxonIDs || [],
+        filterForm.featureSeqIDs || []
+      ).then((response) => {
+        if (response?.payload) {
+          setFeatureTypes(response.payload);
+          setFilteredFeatureTypes(response.payload);
+        }
+
+        if (response?.notification) {
+          response.notification.forEach((n) => handleNewNotification(n));
+        }
+      });
   };
 
   const loadAttributes = async () => {
@@ -143,8 +190,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
         userID,
         token,
         assemblyID || 0,
-        filter.taxonIDs || [],
-        filter.featureTypes || []
+        filterForm.taxonIDs || [],
+        filterForm.featureTypes || []
       ).then((response) => {
         if (response?.payload) {
           setAttributes(response.payload);
@@ -170,39 +217,71 @@ const GenomicAnnotationFeaturesFilterForm = ({
     }
 
     if (values.length) {
-      setFilter((prevState) => {
+      setFilterForm((prevState) => {
         return { ...prevState, taxonIDs: values };
       });
     } else {
-      setFilter((prevState) => {
+      setFilterForm((prevState) => {
         delete prevState.taxonIDs;
         return { ...prevState };
       });
     }
+
+    setFilteredFeatureSeqIDs(featureSeqIDs);
+    setFilteredFeatureTypes(featureTypes);
   };
 
-  const handleSelectFeatureTypes = (featureTypes: HTMLOptionsCollection) => {
+  const handleSelectFeatureSeqIDs = (seqIDs: HTMLOptionsCollection) => {
     let values: string[] = [];
-    for (let i = 0, l = featureTypes.length; i < l; i++) {
-      if (featureTypes[i].value === "-1" && featureTypes[i].selected) {
+    for (let i = 0, l = seqIDs.length; i < l; i++) {
+      if (seqIDs[i].value === "-1" && seqIDs[i].selected) {
         values = [];
         break;
       }
-      if (featureTypes[i].selected) {
-        values.push(featureTypes[i].value);
+      if (seqIDs[i].selected) {
+        values.push(seqIDs[i].value);
       }
     }
 
     if (values.length) {
-      setFilter((prevState) => {
+      setFilterForm((prevState) => {
+        return { ...prevState, featureSeqIDs: values };
+      });
+    } else {
+      setFilterForm((prevState) => {
+        delete prevState.featureSeqIDs;
+        return { ...prevState };
+      });
+    }
+
+    setFilteredFeatureTypes(featureTypes);
+    setFilteredAttributes(attributes);
+  };
+
+  const handleSelectFeatureTypes = (types: HTMLOptionsCollection) => {
+    let values: string[] = [];
+    for (let i = 0, l = types.length; i < l; i++) {
+      if (types[i].value === "-1" && types[i].selected) {
+        values = [];
+        break;
+      }
+      if (types[i].selected) {
+        values.push(types[i].value);
+      }
+    }
+
+    if (values.length) {
+      setFilterForm((prevState) => {
         return { ...prevState, featureTypes: values };
       });
     } else {
-      setFilter((prevState) => {
+      setFilterForm((prevState) => {
         delete prevState.featureTypes;
         return { ...prevState };
       });
     }
+
+    setFilteredAttributes(attributes);
   };
 
   const handleSelectAttributes = (attributes: HTMLOptionsCollection) => {
@@ -232,12 +311,13 @@ const GenomicAnnotationFeaturesFilterForm = ({
     setTargetAttributes(values);
   };
 
-  const handleChangeTaxaSearch = (search: string) => {
-    setTaxonSearch(search);
-    if (search) {
+  const handleChangeTaxaSearch = (searchString: string) => {
+    setTaxonSearch(searchString);
+    if (searchString) {
       setFilteredTaxa((prevState) =>
         prevState.filter(
-          (taxon) => taxon.scientificName.includes(search) || filter.taxonIDs?.includes(taxon.id)
+          (taxon) =>
+            taxon.scientificName.includes(searchString) || filterForm.taxonIDs?.includes(taxon.id)
         )
       );
     } else {
@@ -245,24 +325,39 @@ const GenomicAnnotationFeaturesFilterForm = ({
     }
   };
 
-  const handleChangeFeatureTypeSearch = (search: string) => {
-    setFeatureTypeSearch(search);
-    if (search) {
+  const handleChangeFeatureSeqIDSearch = (searchString: string) => {
+    setFeatureSeqIDSearch(searchString);
+    if (searchString) {
+      setFilteredFeatureSeqIDs((prevState) =>
+        prevState.filter(
+          (seqID) => seqID.includes(searchString) || filterForm.featureSeqIDs?.includes(seqID)
+        )
+      );
+    } else {
+      setFilteredFeatureSeqIDs(featureSeqIDs);
+    }
+  };
+
+  const handleChangeFeatureTypeSearch = (searchString: string) => {
+    setFeatureTypeSearch(searchString);
+    if (searchString) {
       setFilteredFeatureTypes((prevState) =>
-        prevState.filter((type) => type.includes(search) || filter.featureTypes?.includes(type))
+        prevState.filter(
+          (type) => type.includes(searchString) || filterForm.featureTypes?.includes(type)
+        )
       );
     } else {
       setFilteredFeatureTypes(featureTypes);
     }
   };
 
-  const handleChangeAttributeSearch = (search: string) => {
-    setAttributeSearch(search);
-    if (search) {
+  const handleChangeAttributeSearch = (searchString: string) => {
+    setAttributeSearch(searchString);
+    if (searchString) {
       setFilteredAttributes((prevState) =>
         prevState.filter(
           (attribute) =>
-            attribute.includes(search) ||
+            attribute.includes(searchString) ||
             targetAttributes.find((element) => element.target === attribute)
         )
       );
@@ -307,8 +402,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
   const stringOperators = ["contains", "is", "is not"];
 
   const checkAttributeFilterStatus = (attr: ITargetAttribute) => {
-    if (filter.featureAttributes?.length) {
-      const index = filter.featureAttributes?.findIndex(
+    if (filterForm.featureAttributes?.length) {
+      const index = filterForm.featureAttributes?.findIndex(
         (element) => attr.target === element.target
       );
 
@@ -322,27 +417,44 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
   const handleFilterReset = () => {
     setSearch("");
+    setSearchForm("");
     setFilter({});
+    setFilterForm({});
     setTargetAttributes([]);
+    setFeatureSeqIDs(featureSeqIDs);
     setFilteredAttributes(attributes);
     setFilteredTaxa(taxa);
+    setFeatureTypes(featureTypes);
     setTaxonSearch("");
     setAttributeSearch("");
+    setFeatureSeqIDSearch("");
+    setFeatureTypeSearch("");
   };
+
+  const optionClass = (target: any[], value: any) =>
+    classNames("px-2 py-1 border-b text-xs font-semibold truncate text-center", {
+      "bg-blue-600 text-white": target.includes(value),
+    });
 
   return (
     <div>
       <div className="w-full h-10 flex justify-around items-center">
+        <div>{title}</div>
+        {loading && (
+          <div className="flex h-full px-4">
+            <LoadingSpinner label="Loading..." />
+          </div>
+        )}
         <div className="w-96 flex items-center">
           <div className="w-full px-2">
             <Input
               placeholder="Search..."
-              onChange={(e) => setSearch(e.target.value)}
-              value={search}
+              onChange={(e) => setSearchForm(e.target.value)}
+              value={searchForm}
             />
           </div>
           <div>
-            <Button color="primary" size="sm" onClick={() => setSearch(search)}>
+            <Button color="primary" size="sm" onClick={() => setSearch(searchForm)}>
               <Search
                 className="stroke-current transform scale-150 mb-1"
                 color="blank"
@@ -360,181 +472,240 @@ const GenomicAnnotationFeaturesFilterForm = ({
           />
         </div>
         <div className="flex justify-center items-center">
-          <Button
-            label="Reset filter"
-            color="secondary"
-            size="sm"
-            onClick={() => handleFilterReset()}
-          />
+          <Button color="secondary" size="sm" onClick={() => handleFilterReset()}>
+            {"Reset filters (" + Object.keys(filterForm).length + ")"}
+          </Button>
         </div>
       </div>
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
-        <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
-          {!assemblyID && (
-            <div className="mr-4">
-              Taxon
-              <hr className="shadow border-gray-300 -mx-2" />
-              <div className="mt-2 w-48">
-                <Input
-                  size="sm"
-                  placeholder="Search..."
-                  onChange={(e) => handleChangeTaxaSearch(e.target.value)}
-                  value={taxonSearch}
-                />
-              </div>
-              <select
-                multiple
-                className="mt-4 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-                onChange={(e) => handleSelectTaxa(e.target.options)}
-              >
-                <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
-                  All
-                </option>
-                {filteredTaxa &&
-                  filteredTaxa.length > 0 &&
-                  filteredTaxa.map((taxon) => (
-                    <option
-                      key={taxon.id}
-                      value={taxon.id}
-                      className="px-4 py-1 border-b text-sm font-semibold truncate"
-                    >
-                      {taxon.scientificName}
-                    </option>
-                  ))}
-              </select>
-            </div>
-          )}
-
-          <div className="mx-4">
-            Feature types
-            <hr className="shadow border-gray-300 -mx-2" />
-            <div className="mt-2 w-48">
-              <Input
-                size="sm"
-                placeholder="Search..."
-                onChange={(e) => handleChangeFeatureTypeSearch(e.target.value)}
-                value={featureTypeSearch}
-              />
-            </div>
-            <select
-              multiple
-              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-              onChange={(e) => handleSelectFeatureTypes(e.target.options)}
-            >
-              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
-                All
-              </option>
-              {filteredFeatureTypes &&
-                filteredFeatureTypes.length > 0 &&
-                filteredFeatureTypes.map((type) => (
-                  <option
-                    key={type}
-                    value={type}
-                    className="px-4 py-1 border-b text-sm font-semibold truncate"
-                  >
-                    {type}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="ml-2">
-            Attributes
-            <hr className="shadow border-gray-300 -mx-2" />
-            <div className="flex mt-2">
-              <div>
-                <div className="w-48">
+        <div>
+          <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
+            {!assemblyID && (
+              <div className="mr-4 animate-fade-in">
+                Taxon
+                <hr className="shadow border-gray-300 -mx-2" />
+                <div className="mt-2 w-40">
                   <Input
                     size="sm"
                     placeholder="Search..."
-                    onChange={(e) => handleChangeAttributeSearch(e.target.value)}
-                    value={attributeSearch}
+                    onChange={(e) => handleChangeTaxaSearch(e.target.value)}
+                    value={taxonSearch}
                   />
                 </div>
                 <select
                   multiple
-                  className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
-                  onChange={(e) => handleSelectAttributes(e.target.options)}
+                  className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
+                  onChange={(e) => handleSelectTaxa(e.target.options)}
                 >
-                  <option value="-1" className="px-4 py-1 border-b text-sm font-semibold">
-                    None
+                  <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
+                    All
                   </option>
-                  {filteredAttributes &&
-                    filteredAttributes.length > 0 &&
-                    filteredAttributes.map((attribute) => (
+                  {filteredTaxa &&
+                    filteredTaxa.length > 0 &&
+                    filteredTaxa.map((taxon) => (
                       <option
-                        key={attribute}
-                        value={attribute}
-                        className="px-4 py-1 border-b text-sm font-semibold truncate"
+                        key={taxon.id}
+                        value={taxon.id}
+                        className={optionClass(filterForm.taxonIDs || [], taxon.id)}
                       >
-                        {attribute}
+                        {taxon.scientificName}
                       </option>
                     ))}
                 </select>
               </div>
+            )}
 
-              {targetAttributes?.length > 0 && (
-                <div className="px-8">
-                  <div>Selected attributes:</div>
-                  <hr className="shadow border-gray-300 -mx-2 mb-2 border-dotted" />
-                  {targetAttributes.map((attr) => (
-                    <div key={attr.target}>
-                      <div className="flex items-center py-1">
-                        <div className="w-px bg-gray-300 h-4 mr-4" />
-                        <div className="w-56 text-sm truncate text-right">{attr.target}</div>
-                        <div className="w-px bg-gray-300 h-4 ml-4" />
-                        <select
-                          className="text-gray-700 text-center w-32 mx-4 text-xs rounded-lg h-6 shadow"
-                          onChange={(e) =>
-                            handleChangeTargetAttribute(attr.target, e.target.value, attr.value)
-                          }
-                          value={attr.operator || ""}
+            {((filterForm && filterForm.taxonIDs && filterForm.taxonIDs.length === 1) ||
+              assemblyID) && (
+              <div className="mx-4 animate-fade-in">
+                Feature seq IDs
+                <hr className="shadow border-gray-300 -mx-2" />
+                <div className="mt-2 w-40">
+                  <Input
+                    size="sm"
+                    placeholder="Search..."
+                    onChange={(e) => handleChangeFeatureSeqIDSearch(e.target.value)}
+                    value={featureSeqIDSearch}
+                  />
+                </div>
+                <select
+                  multiple
+                  className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
+                  onChange={(e) => handleSelectFeatureSeqIDs(e.target.options)}
+                >
+                  <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
+                    All
+                  </option>
+                  {filteredFeatureSeqIDs &&
+                    filteredFeatureSeqIDs.length > 0 &&
+                    filteredFeatureSeqIDs
+                      .sort()
+                      .slice(0, 30)
+                      .map((seqID) => (
+                        <option
+                          key={seqID}
+                          value={seqID}
+                          className={optionClass(filterForm.featureSeqIDs || [], seqID)}
                         >
-                          <option value="">{"None"}</option>
-                          <option value="=">{"="}</option>
-                          <option value="!=">{"!="}</option>
-                          <option value=">=">{">="}</option>
-                          <option value="<=">{"<="}</option>
-                          <option value="<">{"<"}</option>
-                          <option value=">">{">"}</option>
-                          <option value="contains">{"contains"}</option>
-                          <option value="is">{"is"}</option>
-                          <option value="is not">{"is not"}</option>
-                        </select>
-                        {attr.operator &&
-                          (numberOperators.includes(attr.operator) ||
-                            stringOperators.includes(attr.operator)) && (
-                            <div className="w-56 text-sm truncate">
-                              <Input
-                                size="sm"
-                                type={numberOperators.includes(attr.operator) ? "number" : "text"}
-                                onChange={(e) =>
-                                  handleChangeTargetAttribute(
-                                    attr.target,
-                                    attr.operator,
-                                    e.target.value
-                                  )
-                                }
-                                placeholder={
-                                  numberOperators.includes(attr.operator)
-                                    ? "Input number..."
-                                    : "Input text..."
-                                }
-                              />
+                          {seqID}
+                        </option>
+                      ))}
+                  <option className={optionClass(filteredTaxa, -1)}>Search for more...</option>
+                </select>
+              </div>
+            )}
+
+            <div className="mx-4 animate-fade-in">
+              Feature types
+              <hr className="shadow border-gray-300 -mx-2" />
+              <div className="mt-2 w-40">
+                <Input
+                  size="sm"
+                  placeholder="Search..."
+                  onChange={(e) => handleChangeFeatureTypeSearch(e.target.value)}
+                  value={featureTypeSearch}
+                />
+              </div>
+              <select
+                multiple
+                className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
+                onChange={(e) => handleSelectFeatureTypes(e.target.options)}
+              >
+                <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
+                  All
+                </option>
+                {filteredFeatureTypes &&
+                  filteredFeatureTypes.length > 0 &&
+                  filteredFeatureTypes.map((type) => (
+                    <option
+                      key={type}
+                      value={type}
+                      className={optionClass(filterForm.featureTypes || [], type)}
+                    >
+                      {type}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="ml-4 animate-fade-in">
+              Attributes
+              <hr className="shadow border-gray-300 -mx-2" />
+              <div className="flex mt-2">
+                <div>
+                  <div className="w-40">
+                    <Input
+                      size="sm"
+                      placeholder="Search..."
+                      onChange={(e) => handleChangeAttributeSearch(e.target.value)}
+                      value={attributeSearch}
+                    />
+                  </div>
+                  <select
+                    multiple
+                    className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
+                    onChange={(e) => handleSelectAttributes(e.target.options)}
+                  >
+                    <option value="-1" className={optionClass(filterForm.taxonIDs || [], "-1")}>
+                      None
+                    </option>
+                    {filteredAttributes &&
+                      filteredAttributes.length > 0 &&
+                      filteredAttributes.map((attribute) => (
+                        <option
+                          key={attribute}
+                          value={attribute}
+                          className={optionClass(filterForm.featureAttributes || [], attribute)}
+                        >
+                          {attribute}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                {targetAttributes?.length > 0 && (
+                  <div className="px-8 animate-fade-in">
+                    <div>Selected attributes:</div>
+                    <hr className="shadow border-gray-300 -mx-2 mb-2 border-dotted" />
+                    {targetAttributes.map((attr) => (
+                      <div key={attr.target} className="animate-fade-in">
+                        <div className="flex items-center justify-between py-1">
+                          <div className="w-px bg-gray-300 h-4 mr-4" />
+                          <div className="w-48 text-sm truncate text-right">{attr.target}</div>
+                          <div className="w-px bg-gray-300 h-4 ml-4" />
+                          <select
+                            className="text-gray-700 text-center w-32 mx-4 text-xs rounded-lg h-6 shadow"
+                            onChange={(e) =>
+                              handleChangeTargetAttribute(attr.target, e.target.value, attr.value)
+                            }
+                            value={attr.operator || ""}
+                          >
+                            <option value="">{"None"}</option>
+                            <option value="=">{"="}</option>
+                            <option value="!=">{"!="}</option>
+                            <option value=">=">{">="}</option>
+                            <option value="<=">{"<="}</option>
+                            <option value="<">{"<"}</option>
+                            <option value=">">{">"}</option>
+                            <option value="contains">{"contains"}</option>
+                            <option value="is">{"is"}</option>
+                            <option value="is not">{"is not"}</option>
+                          </select>
+                          {attr.operator &&
+                            (numberOperators.includes(attr.operator) ||
+                              stringOperators.includes(attr.operator)) && (
+                              <div className="w-48 text-sm truncate animate-fade-in">
+                                <Input
+                                  size="sm"
+                                  type={numberOperators.includes(attr.operator) ? "number" : "text"}
+                                  onChange={(e) =>
+                                    handleChangeTargetAttribute(
+                                      attr.target,
+                                      attr.operator,
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder={
+                                    numberOperators.includes(attr.operator)
+                                      ? "Input number..."
+                                      : "Input text..."
+                                  }
+                                />
+                              </div>
+                            )}
+                          {checkAttributeFilterStatus(attr) && (
+                            <div className="text-green-600 mx-2 flex items-center animate-fade-in">
+                              <StatusGood className="stroke-current" color="blank" />
                             </div>
                           )}
-                        {checkAttributeFilterStatus(attr) && (
-                          <div className="text-green-600 mx-2 flex items-center">
-                            <StatusGood className="stroke-current" color="blank" />
-                          </div>
-                        )}
+                        </div>
+                        <hr className="shadow border-gray-300 -mx-2 my-2 border-dotted" />
                       </div>
-                      <hr className="shadow border-gray-300 -mx-2 my-2 border-dotted" />
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <hr />
+          <div className="w-full mt-6 flex justify-center w-96">
+            <div className="w-96">
+              <Button
+                label="Get data..."
+                onClick={() => {
+                  setFilter(filterForm);
+                  setSearch(searchForm);
+                  if (Object.keys(filterForm).length < 1) {
+                    handleNewNotification({
+                      label: "Info",
+                      message: "Select at least one filter...",
+                      type: "info",
+                    });
+                  }
+                }}
+                size="sm"
+              />
             </div>
           </div>
         </div>

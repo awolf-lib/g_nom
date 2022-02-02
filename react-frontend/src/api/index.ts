@@ -1076,6 +1076,7 @@ export interface FilterFeatures {
   featureTypes?: string[];
   featureAttributes?: ITargetAttribute[];
   taxonIDs?: number[];
+  featureSeqIDs?: string[];
 }
 
 export interface ITargetAttribute {
@@ -1103,12 +1104,39 @@ export interface IGenomicAnnotationFeature {
   type: string;
 }
 
+// ===== FETCH ALL UNIQUE FEATURE SEQ IDS IN DB ===== //
+export async function fetchFeatureSeqIDs(
+  userID: number,
+  token: string,
+  assemblyID: number,
+  taxonIDs: number[]
+): Promise<IResponse<string[]>> {
+  return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatureSeqIDs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userID: userID,
+      token: token,
+      assemblyID: assemblyID,
+      taxonIDs: taxonIDs,
+    }),
+  })
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
 // ===== FETCH ALL UNIQUE FEATURE TYPES IN DB ===== //
 export async function fetchFeatureTypes(
   userID: number,
   token: string,
   assemblyID: number,
-  taxonIDs: number[]
+  taxonIDs: number[],
+  seqIDs: string[]
 ): Promise<IResponse<string[]>> {
   return fetch(process.env.REACT_APP_API_ADRESS + "/fetchFeatureTypes", {
     method: "POST",
@@ -1120,6 +1148,7 @@ export async function fetchFeatureTypes(
       token: token,
       assemblyID: assemblyID,
       taxonIDs: taxonIDs,
+      seqIDs: seqIDs,
     }),
   })
     .then((request) => request.json())

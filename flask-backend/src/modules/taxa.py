@@ -28,7 +28,9 @@ def reloadTaxonIDsFromFile(userID):
 
     taxonData = []
     try:
-        with open(f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/names.dmp", "r") as taxonFile, open(
+        with open(
+            f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/names.dmp", "r"
+        ) as taxonFile, open(
             f"{BASE_PATH_TO_STORAGE}taxa/taxdmp/nodes.dmp", "r"
         ) as nodeFile:
             taxonData = taxonFile.readlines()
@@ -62,11 +64,16 @@ def reloadTaxonIDsFromFile(userID):
             if "genbank common name" in line:
                 commonName = taxonSplit[2].replace("'", "")
 
-            if index < len(taxonData) - 1 and int(taxonData[index + 1].split("\t")[0]) != taxonID:
+            if (
+                index < len(taxonData) - 1
+                and int(taxonData[index + 1].split("\t")[0]) != taxonID
+            ):
                 if not scientificName or not taxonID:
                     cursor.execute("DELETE FROM taxa")
                     connection.commit()
-                    return 0, createNotification(message="Error while inserting taxa (Missing name)!")
+                    return 0, createNotification(
+                        message="Error while inserting taxa (Missing name)!"
+                    )
 
                 nodeSplit = nodeData[counter].split("\t")
                 if int(nodeSplit[0]) != taxonID:
@@ -74,12 +81,16 @@ def reloadTaxonIDsFromFile(userID):
                     connection.commit()
                     cursor.execute("ALTER TABLE taxa AUTO_INCREMENT = 1")
                     connection.commit()
-                    return 0, createNotification(message="Error while retreiving node data (Missing node)!")
+                    return 0, createNotification(
+                        message="Error while retreiving node data (Missing node)!"
+                    )
 
                 parentTaxonID = int(nodeSplit[2])
                 rank = nodeSplit[4].replace("'", "")
 
-                values.append((taxonID, parentTaxonID, scientificName, rank, userID, commonName))
+                values.append(
+                    (taxonID, parentTaxonID, scientificName, rank, userID, commonName)
+                )
                 counter += 1
                 taxonID = None
                 scientificName = ""
@@ -111,7 +122,9 @@ def reloadTaxonIDsFromFile(userID):
 
     if taxaCount:
         print(f"{taxaCount:,} taxa imported!")
-        return taxaCount, createNotification("Success", f"{taxaCount:,} taxa imported!", "success")
+        return taxaCount, createNotification(
+            "Success", f"{taxaCount:,} taxa imported!", "success"
+        )
     else:
         cursor.execute("DELETE FROM taxa")
         connection.commit()
@@ -165,12 +178,16 @@ def updateTaxonTree():
                 children.append(taxon[1])
 
     except Exception as err:
-        return {}, createNotification(message=f"Error while fetching taxa in database! {str(err)}")
+        return {}, createNotification(
+            message=f"Error while fetching taxa in database! {str(err)}"
+        )
 
     try:
         connection, cursor, error = connect()
         safetyCounter = 0
-        while (len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa) and safetyCounter < 100:
+        while (
+            len(taxa) > 1 or (1, 1, "root", "no rank") not in taxa
+        ) and safetyCounter < 100:
             level += 1
             cursor.execute(
                 f"SELECT ncbiTaxonID, parentNcbiTaxonID, scientificName, taxonRank, id, imagePath FROM taxa WHERE ncbiTaxonID IN {taxonSqlString}"
@@ -195,12 +212,17 @@ def updateTaxonTree():
                 if taxon[1] not in lineageDict:
                     lineageDict.update({taxon[1]: {"children": [taxon[0]]}})
                 else:
-                    if taxon[0] not in lineageDict[taxon[1]]["children"] and taxon[0] != 1:
+                    if (
+                        taxon[0] not in lineageDict[taxon[1]]["children"]
+                        and taxon[0] != 1
+                    ):
                         children = lineageDict[taxon[1]]["children"]
                         children.append(taxon[0])
 
     except Exception as err:
-        return {}, createNotification(message=f"Error while fetching parent nodes! {str(err)}")
+        return {}, createNotification(
+            message=f"Error while fetching parent nodes! {str(err)}"
+        )
 
     for id in taxonInfo:
         if id in lineageDict:
@@ -257,7 +279,11 @@ def import_image(taxonID, taxonScientificName, image, userID):
         run(args=["mkdir", "-p", imagePath])
         with Image.open(image) as image:
             image.thumbnail(SIZE)
-            newPath = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/" + scientificName + ".thumbnail.jpg"
+            newPath = (
+                f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/image/"
+                + scientificName
+                + ".thumbnail.jpg"
+            )
             image.save(newPath, "JPEG")
 
         cursor.execute(
@@ -268,7 +294,9 @@ def import_image(taxonID, taxonScientificName, image, userID):
 
         scanFiles()
 
-        return 1, createNotification("Success", f"Successfully imported image!", "success")
+        return 1, createNotification(
+            "Success", f"Successfully imported image!", "success"
+        )
     except Exception as err:
         return 0, createNotification(message=f"ImageImportError: {str(err)}")
 
@@ -280,7 +308,10 @@ def removeImageByTaxonID(taxonID, userID):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id=%s", (taxonID,))
+        cursor.execute(
+            "SELECT taxa.scientificName, taxa.imagePath FROM taxa WHERE taxa.id=%s",
+            (taxonID,),
+        )
 
         row_headers = [x[0] for x in cursor.description]
         taxon = cursor.fetchone()
@@ -292,10 +323,13 @@ def removeImageByTaxonID(taxonID, userID):
         run(args=["rm", imagePath])
 
         cursor.execute(
-            "UPDATE taxa SET imagePath=NULL, lastUpdatedBy=%s, lastUpdatedOn=NOW() WHERE taxa.id=%s;", (userID, taxonID)
+            "UPDATE taxa SET imagePath=NULL, lastUpdatedBy=%s, lastUpdatedOn=NOW() WHERE taxa.id=%s;",
+            (userID, taxonID),
         )
         connection.commit()
-        return 1, createNotification("Success", f"Successfully deleted image!", "success")
+        return 1, createNotification(
+            "Success", f"Successfully deleted image!", "success"
+        )
     except Exception as err:
         return 0, createNotification(message=f"ImageDeletionError: {str(err)}")
 
@@ -315,7 +349,9 @@ def fetchTaxonByTaxonID(taxonID):
         return [], createNotification(message=str(err))
 
     if not taxa or not len(taxa):
-        return [], createNotification("Info", f"No taxon for ID {taxonID} found!", "info")
+        return [], createNotification(
+            "Info", f"No taxon for ID {taxonID} found!", "info"
+        )
 
     return dict(zip(row_headers, taxa)), []
 
@@ -348,13 +384,17 @@ def fetchTaxonBySearch(search):
         )
         row_headers = [x[0] for x in cursor.description]
         taxa = cursor.fetchall()
-        sorted_taxa = sorted([dict(zip(row_headers, x)) for x in taxa], key=lambda x: x["scientificName"])
+        sorted_taxa = sorted(
+            [dict(zip(row_headers, x)) for x in taxa], key=lambda x: x["scientificName"]
+        )
 
     except Exception as err:
         return [], createNotification(message=str(err))
 
     if not len(taxa):
-        return [], createNotification("Info", f"No taxon for search '{search}' found!", "info")
+        return [], createNotification(
+            "Info", f"No taxon for search '{search}' found!", "info"
+        )
 
     return sorted_taxa, []
 
@@ -375,7 +415,9 @@ def fetchTaxonByNCBITaxonID(ncbiTaxonID):
         return [], createNotification(message=str(err))
 
     if not len(taxa):
-        return [], createNotification("Info", f"No taxon for NCBI taxonomy ID {ncbiTaxonID} found!", "info")
+        return [], createNotification(
+            "Info", f"No taxon for NCBI taxonomy ID {ncbiTaxonID} found!", "info"
+        )
 
     return [dict(zip(row_headers, x)) for x in taxa], []
 
@@ -395,9 +437,17 @@ def fetchTaxaWithAssemblies():
         taxa = cursor.fetchall()
 
         if not len(taxa):
-            return [], createNotification("Info", f"No taxon with at least one assembly found!", "info")
+            return [], createNotification(
+                "Info", f"No taxon with at least one assembly found!", "info"
+            )
 
-        return sorted([dict(zip(row_headers, x)) for x in taxa], key=lambda x: x["scientificName"]), []
+        return (
+            sorted(
+                [dict(zip(row_headers, x)) for x in taxa],
+                key=lambda x: x["scientificName"],
+            ),
+            [],
+        )
 
     except Exception as err:
         return [], createNotification(message=str(err))
@@ -419,10 +469,10 @@ def fetchTaxonGeneralInformationByTaxonID(taxonID):
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    if len(generalInfos):
-        return [dict(zip(row_headers, x)) for x in generalInfos], []
-    else:
-        return [], createNotification("Info", "No taxon general information!", "info")
+    # if not len(generalInfos):
+    #     return [], createNotification("Info", "No taxon general information!", "info")
+
+    return [dict(zip(row_headers, x)) for x in generalInfos], []
 
 
 # ADD GENERAL INFO
@@ -461,13 +511,16 @@ def updateTaxonGeneralInformationByID(id, key, value):
         # TODO: validate string
 
         cursor.execute(
-            "UPDATE taxaGeneralInfo SET generalInfoLabel=%s, generalInfoDescription=%s WHERE id=%s", (key, value, id)
+            "UPDATE taxaGeneralInfo SET generalInfoLabel=%s, generalInfoDescription=%s WHERE id=%s",
+            (key, value, id),
         )
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, createNotification("Success", "Successfully updated general info!", "success")
+    return 1, createNotification(
+        "Success", "Successfully updated general info!", "success"
+    )
 
 
 # DELETE GENERAL INFO
@@ -483,7 +536,9 @@ def deleteTaxonGeneralInformationByID(id):
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    return 1, createNotification("Success", "Successfully removed general information!", "success")
+    return 1, createNotification(
+        "Success", "Successfully removed general information!", "success"
+    )
 
 
 # Main

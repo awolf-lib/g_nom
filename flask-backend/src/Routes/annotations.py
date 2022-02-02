@@ -8,6 +8,7 @@ from modules.annotations import (
     deleteAnnotationByAnnotationID,
     fetchAnnotationsByAssemblyID,
     fetchFeatureAttributeKeys,
+    fetchFeatureSeqIDs,
     fetchFeatureTypes,
     fetchFeatures,
     import_annotation,
@@ -20,7 +21,9 @@ annotations_bp = Blueprint("annotations", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(message="Wrong request method. Please contact support!"),
+    "notification": createNotification(
+        message="Wrong request method. Please contact support!"
+    ),
 }
 
 # IMPORT NEW ANNOTATION
@@ -46,7 +49,9 @@ def annotations_bp_import_annotation():
         if taxon and dataset and userID:
             data, notification = import_annotation(taxon, assemblyID, dataset, userID)
         else:
-            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            data, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -105,7 +110,9 @@ def annotations_bp_updateAnnotationLabel():
             else:
                 status, notification = updateAnnotationLabel(annotation_id, None)
         else:
-            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            status, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -162,9 +169,41 @@ def annotations_bp_fetchFeatures():
         filter = req.get("filter", None)
         assembly_id = req.get("assemblyID", None)
 
-        data, pagination, notification = fetchFeatures(assembly_id, search, filter, sortBy, offset, range)
+        data, pagination, notification = fetchFeatures(
+            assembly_id, search, filter, sortBy, offset, range
+        )
 
-        response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
+        response = jsonify(
+            {"payload": data, "pagination": pagination, "notification": notification}
+        )
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL UNIQUE FEATURE TYPES
+@annotations_bp.route("/fetchFeatureSeqIDs", methods=["POST"])
+def annotations_bp_fetchFeatureSeqIDs():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        taxonIDs = req.get("taxonIDs", None)
+        assemblyID = req.get("assemblyID", None)
+
+        data, notification = fetchFeatureSeqIDs(assemblyID, taxonIDs)
+
+        response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
@@ -188,9 +227,10 @@ def annotations_bp_fetchFeatureTypes():
             return response
 
         taxonIDs = req.get("taxonIDs", None)
+        seqIDs = req.get("seqIDs", None)
         assemblyID = req.get("assemblyID", None)
 
-        data, notification = fetchFeatureTypes(assemblyID, taxonIDs)
+        data, notification = fetchFeatureTypes(assemblyID, taxonIDs, seqIDs)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
