@@ -486,7 +486,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div>
-          <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
+          <div className="px-4 animate-grow-y pb-4 flex justify-between items-start">
             {!assemblyID && (
               <div className="mr-4 animate-fade-in">
                 Taxon
