@@ -18,7 +18,7 @@ import FeaturesListElement from "./components/FeaturesListElement";
 import { useSearchParams } from "react-router-dom";
 
 const FeaturesList = ({
-  title = "Parent features",
+  title = "Top level features",
   assemblyID,
 }: {
   title?: string;

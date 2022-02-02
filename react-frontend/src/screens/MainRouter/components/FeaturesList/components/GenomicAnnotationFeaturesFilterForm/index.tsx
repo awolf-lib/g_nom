@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Search, StatusGood } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
@@ -430,6 +431,11 @@ const GenomicAnnotationFeaturesFilterForm = ({
     setFeatureTypeSearch("");
   };
 
+  const optionClass = (target: any[], value: any) =>
+    classNames("px-2 py-1 border-b text-xs font-semibold truncate text-center", {
+      "bg-blue-600 text-white": target.includes(value),
+    });
+
   return (
     <div>
       <div className="w-full h-10 flex justify-around items-center">
@@ -466,15 +472,9 @@ const GenomicAnnotationFeaturesFilterForm = ({
           />
         </div>
         <div className="flex justify-center items-center">
-          <Button
-            label="Reset filter"
-            color="secondary"
-            size="sm"
-            onClick={() => handleFilterReset()}
-          />
-        </div>
-        <div className="flex justify-center items-center text-xs font-normal min-w-max px-2">
-          {Object.keys(filterForm).length + " active filters!"}
+          <Button color="secondary" size="sm" onClick={() => handleFilterReset()}>
+            {"Reset filters (" + Object.keys(filterForm).length + ")"}
+          </Button>
         </div>
       </div>
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
@@ -498,10 +498,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                   className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
                   onChange={(e) => handleSelectTaxa(e.target.options)}
                 >
-                  <option
-                    value={-1}
-                    className="px-4 py-1 border-b text-xs font-semibold text-center"
-                  >
+                  <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
                     All
                   </option>
                   {filteredTaxa &&
@@ -510,7 +507,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                       <option
                         key={taxon.id}
                         value={taxon.id}
-                        className="px-2 py-1 border-b text-xs font-semibold truncate text-center"
+                        className={optionClass(filterForm.taxonIDs || [], taxon.id)}
                       >
                         {taxon.scientificName}
                       </option>
@@ -537,10 +534,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                   className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
                   onChange={(e) => handleSelectFeatureSeqIDs(e.target.options)}
                 >
-                  <option
-                    value={-1}
-                    className="px-4 py-1 border-b text-xs font-semibold text-center"
-                  >
+                  <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
                     All
                   </option>
                   {filteredFeatureSeqIDs &&
@@ -552,14 +546,12 @@ const GenomicAnnotationFeaturesFilterForm = ({
                         <option
                           key={seqID}
                           value={seqID}
-                          className="px-2 py-1 border-b text-xs font-semibold truncate text-center"
+                          className={optionClass(filterForm.featureSeqIDs || [], seqID)}
                         >
                           {seqID}
                         </option>
                       ))}
-                  <option className="px-4 py-1 border-b text-xs font-semibold text-center">
-                    Search for more...
-                  </option>
+                  <option className={optionClass(filteredTaxa, -1)}>Search for more...</option>
                 </select>
               </div>
             )}
@@ -580,7 +572,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                 className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
                 onChange={(e) => handleSelectFeatureTypes(e.target.options)}
               >
-                <option value={-1} className="px-4 py-1 border-b text-xs font-semibold text-center">
+                <option value={-1} className={optionClass(filterForm.taxonIDs || [], -1)}>
                   All
                 </option>
                 {filteredFeatureTypes &&
@@ -589,7 +581,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                     <option
                       key={type}
                       value={type}
-                      className="px-2 py-1 border-b text-xs font-semibold truncate text-center"
+                      className={optionClass(filterForm.featureTypes || [], type)}
                     >
                       {type}
                     </option>
@@ -615,10 +607,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                     className="mt-2 text-gray-700 min-h-1/4 max-h-50 w-40 border-2 border-gray-300 px-1 rounded-lg"
                     onChange={(e) => handleSelectAttributes(e.target.options)}
                   >
-                    <option
-                      value="-1"
-                      className="px-4 py-1 border-b text-xs font-semibold text-center"
-                    >
+                    <option value="-1" className={optionClass(filterForm.taxonIDs || [], "-1")}>
                       None
                     </option>
                     {filteredAttributes &&
@@ -627,7 +616,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                         <option
                           key={attribute}
                           value={attribute}
-                          className="px-2 py-1 border-b text-xs font-semibold truncate text-center"
+                          className={optionClass(filterForm.featureAttributes || [], attribute)}
                         >
                           {attribute}
                         </option>
@@ -641,7 +630,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                     <hr className="shadow border-gray-300 -mx-2 mb-2 border-dotted" />
                     {targetAttributes.map((attr) => (
                       <div key={attr.target} className="animate-fade-in">
-                        <div className="flex items-center py-1">
+                        <div className="flex items-center justify-between py-1">
                           <div className="w-px bg-gray-300 h-4 mr-4" />
                           <div className="w-48 text-sm truncate text-right">{attr.target}</div>
                           <div className="w-px bg-gray-300 h-4 ml-4" />

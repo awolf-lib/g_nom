@@ -48,7 +48,9 @@ def import_assembly(taxon, dataset, userID, taskID=""):
         return 0, createNotification(message=f"AssemblyImportError1: {err}")
 
     try:
-        main_file_path, assembly_name, error = __store_assembly(dataset, taxon, assembly_id)
+        main_file_path, assembly_name, error = __store_assembly(
+            dataset, taxon, assembly_id
+        )
         if not main_file_path or not exists(main_file_path):
             deleteAssemblyByAssemblyID(assembly_id)
             print(error)
@@ -69,7 +71,9 @@ def import_assembly(taxon, dataset, userID, taskID=""):
 
         notify_assembly(assembly_id, assembly_name, main_file_path, "Added")
 
-        imported_status, error = __importDB(taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content)
+        imported_status, error = __importDB(
+            taxon, assembly_id, assembly_name, main_file_path, userID, fasta_content
+        )
         if not imported_status:
             deleteAssemblyByAssemblyID(assembly_id)
             print(error)
@@ -78,7 +82,8 @@ def import_assembly(taxon, dataset, userID, taskID=""):
         try:
             connection, cursor, error = connect()
             cursor.execute(
-                "SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id", (taxon["id"],)
+                "SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id",
+                (taxon["id"],),
             )
             assemblyCountPerTaxon = cursor.fetchone()
 
@@ -174,7 +179,11 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
         )
 
         if not isdir(new_file_path):
-            return 0, "", createNotification(message="Creation of new directory failed!")
+            return (
+                0,
+                "",
+                createNotification(message="Creation of new directory failed!"),
+            )
 
         if isfile(old_file_path):
             new_file_name = f"{new_assembly_name}.fasta"
@@ -185,7 +194,11 @@ def __store_assembly(dataset, taxon, assembly_id, forceIdentical=False):
 
         # check if main file was moved
         if not exists(new_file_path_main_file):
-            return 0, "", createNotification(message="Moving assembly to storage failed!")
+            return (
+                0,
+                "",
+                createNotification(message="Moving assembly to storage failed!"),
+            )
         else:
             pass
             # add remove?
@@ -210,11 +223,15 @@ def deleteAssemblyByAssemblyID(assembly_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s", (assembly_id,))
+        cursor.execute(
+            "SELECT assemblies.name FROM assemblies WHERE assemblies.id=%s",
+            (assembly_id,),
+        )
         assembly_name = cursor.fetchone()[0]
 
         cursor.execute(
-            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id", (assembly_id,)
+            "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id",
+            (assembly_id,),
         )
 
         row_headers = [x[0] for x in cursor.description]
@@ -236,7 +253,9 @@ def deleteAssemblyByAssemblyID(assembly_id):
 
         scanFiles()
 
-        return 1, createNotification("Success", "Successfully deleted assembly", "success")
+        return 1, createNotification(
+            "Success", "Successfully deleted assembly", "success"
+        )
     except Exception as err:
         return 0, createNotification(message=f"AssemblyDeletionError1: {str(err)}")
 
@@ -265,7 +284,10 @@ def __deleteAssemblyEntryByAssemblyID(id):
         cursor.execute("DELETE FROM assemblies WHERE id=%s", (id,))
         connection.commit()
 
-        cursor.execute("SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id", (id,))
+        cursor.execute(
+            "SELECT COUNT(*) FROM assemblies, taxa WHERE taxa.id=%s AND assemblies.taxonID=taxa.id",
+            (id,),
+        )
         assemblyCountPerTaxon = cursor.fetchone()
 
         return 1, []
@@ -283,7 +305,9 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         taxonID = taxon["id"]
         numberOfSequences = file_content["statistics"]["number_of_sequences"]
         sequenceType = file_content["type"]
-        cumulativeSequenceLength = file_content["statistics"]["cumulative_sequence_length"]
+        cumulativeSequenceLength = file_content["statistics"][
+            "cumulative_sequence_length"
+        ]
         n50 = file_content["statistics"]["N50"]
         n90 = file_content["statistics"]["N90"]
         shortestSequence = file_content["statistics"]["min_sequence_length"]
@@ -292,8 +316,12 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
         medianSequence = file_content["statistics"]["median_sequence_length"]
         gcPercent = file_content["statistics"]["GC"]
         gcPercentMasked = file_content["statistics"]["GC_masked"]
-        lengthDistributionString = dumps(file_content["statistics"]["length_distribution"], separators=(",", ":"))
-        charCountString = dumps(file_content["statistics"]["cumulative_char_counts"], separators=(",", ":"))
+        lengthDistributionString = dumps(
+            file_content["statistics"]["length_distribution"], separators=(",", ":")
+        )
+        charCountString = dumps(
+            file_content["statistics"]["cumulative_char_counts"], separators=(",", ":")
+        )
 
         cursor.execute(
             "INSERT INTO assemblies (id, taxonID, name, path, addedBy, addedOn, lastUpdatedBy, lastUpdatedOn, numberOfSequences, sequenceType, cumulativeSequenceLength, n50, n90, shortestSequence, largestSequence, meanSequence, medianSequence, gcPercent, gcPercentMasked, lengthDistributionString, charCountString) VALUES (%s, %s, %s, %s, %s, NOW(), %s, NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -333,7 +361,16 @@ def __importDB(taxon, assembly_id, assembly_name, path, userID, file_content):
             GC_local = seq["statistics"]["GC_local"]
             GC_local_masked = seq["statistics"]["GC_local_masked"]
 
-            values.append((assemblyID, header_name, header_idx, sequence_length, GC_local, GC_local_masked))
+            values.append(
+                (
+                    assemblyID,
+                    header_name,
+                    header_idx,
+                    sequence_length,
+                    GC_local,
+                    GC_local_masked,
+                )
+            )
             counter += 1
 
             if counter % 1000 == 0 and counter > 0:
@@ -369,7 +406,9 @@ def parseFasta(path, taskID=""):
     if not extensionMatch:
         return (
             0,
-            createNotification(message="Uncorrect filetype! Only files of type .fa/.fasta/.faa/.fna are allowed."),
+            createNotification(
+                message="Uncorrect filetype! Only files of type .fa/.fasta/.faa/.fna are allowed."
+            ),
         )
 
     lines = []
@@ -431,13 +470,19 @@ def parseFasta(path, taskID=""):
                     else:
                         char_counts[char] = 1
 
-            if (idx + 1 < len(lines) - 1 and lines[idx + 1][0] == ">") or idx == len(lines) - 1:
+            if (idx + 1 < len(lines) - 1 and lines[idx + 1][0] == ">") or idx == len(
+                lines
+            ) - 1:
                 # length distribution
                 for length in length_distribution:
                     if sequence_length >= length:
                         if "n" in length_distribution[length]:
-                            length_distribution[length]["n"] = length_distribution[length]["n"] + 1
-                            length_distribution[length]["l"] = length_distribution[length]["l"] + sequence_length
+                            length_distribution[length]["n"] = (
+                                length_distribution[length]["n"] + 1
+                            )
+                            length_distribution[length]["l"] = (
+                                length_distribution[length]["l"] + sequence_length
+                            )
                         else:
                             length_distribution[length]["n"] = 1
                             length_distribution[length]["l"] = sequence_length
@@ -490,7 +535,10 @@ def parseFasta(path, taskID=""):
             if char in cumulative_char_counts:
                 dna_rna_char_sum += cumulative_char_counts[char]
 
-        if dna_rna_char_sum * 100 // cumulative_sequence_length <= __TYPE_AUTO_DETECT_ATGCU_THRESHOLD:
+        if (
+            dna_rna_char_sum * 100 // cumulative_sequence_length
+            <= __TYPE_AUTO_DETECT_ATGCU_THRESHOLD
+        ):
             sequence_type = "protein"
         else:
             Ts = 0
@@ -510,11 +558,17 @@ def parseFasta(path, taskID=""):
         print(f"Sequence type detected: {sequence_type.upper()}")
 
         if sequence_type == "dna" or sequence_type == "rna":
-            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} bp)")
+            print(
+                f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} bp)"
+            )
         elif sequence_type == "protein":
-            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} aa)")
+            print(
+                f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} aa)"
+            )
         else:
-            print(f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} chars)")
+            print(
+                f"{len(sequences):,} sequences loaded! (Total length: {cumulative_sequence_length:,} chars)"
+            )
 
         # sorting
         print("Sorting sequences by sequence length...")
@@ -601,12 +655,21 @@ def parseFasta(path, taskID=""):
         }, []
 
     except:
-        return 0, createNotification(message=f"Something went wrong while parsing {filename}!")
+        return 0, createNotification(
+            message=f"Something went wrong while parsing {filename}!"
+        )
 
 
 ## ============================ FETCH ============================ ##
 # fetches all assemblies (includes filtering by search, offset, range, userID)
-def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": True}, offset=0, range=10, userID=0):
+def fetchAssemblies(
+    search="",
+    filter={},
+    sortBy={"column": "label", "order": True},
+    offset=0,
+    range=10,
+    userID=0,
+):
     """
     Fetches all assemblies from database. Filtering by search term, offset, range and/or userID.
     """
@@ -636,17 +699,27 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
             search = str(search).lower()
             filtered_assemblies = []
             for x in assemblies:
-                if len([s for s in x.values() if search == str(s).lower() or search in str(s).lower()]):
+                if len(
+                    [
+                        s
+                        for s in x.values()
+                        if search == str(s).lower() or search in str(s).lower()
+                    ]
+                ):
                     filtered_assemblies.append(x)
             assemblies = filtered_assemblies
 
         if sortBy["column"] == "label":
             assemblies = sorted(
-                assemblies, key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]), reverse=sortBy["order"]
+                assemblies,
+                key=lambda x: (x[sortBy["column"]] is None, x["label"], x["name"]),
+                reverse=sortBy["order"],
             )
         else:
             assemblies = sorted(
-                assemblies, key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]), reverse=sortBy["order"]
+                assemblies,
+                key=lambda x: (x[sortBy["column"]] is None, x[sortBy["column"]]),
+                reverse=sortBy["order"],
             )
 
         # get annotations, mappings, analyses
@@ -673,7 +746,13 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                 "SELECT COUNT(*), MAX(analysesFcat.m1_similarPercent), MAX(analysesFcat.m2_similarPercent), MAX(analysesFcat.m3_similarPercent), MAX(analysesFcat.m4_similarPercent) FROM analyses, analysesFcat WHERE analyses.assemblyID=%s AND analysesFcat.analysisID=analyses.id",
                 (assembly["id"],),
             )
-            fcats, maxFcatScoreM1, maxFcatScoreM2, maxFcatScoreM3, maxFcatScoreM4 = cursor.fetchone()
+            (
+                fcats,
+                maxFcatScoreM1,
+                maxFcatScoreM2,
+                maxFcatScoreM3,
+                maxFcatScoreM4,
+            ) = cursor.fetchone()
 
             cursor.execute(
                 "SELECT COUNT(*) FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analysesMilts.analysisID=analyses.id",
@@ -704,11 +783,15 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                 }
             )
 
-            assemblies[index] = {key: value for key, value in assembly.items() if value is not None}
+            assemblies[index] = {
+                key: value for key, value in assembly.items() if value is not None
+            }
 
         if filter:
             if "taxonIDs" in filter:
-                assemblies = [x for x in assemblies if x["taxonID"] in filter["taxonIDs"]]
+                assemblies = [
+                    x for x in assemblies if x["taxonID"] in filter["taxonIDs"]
+                ]
             if "userIDs" in filter:
                 assemblies = [x for x in assemblies if x["userID"] in filter["userIDs"]]
             if "hasAnnotation" in filter:
@@ -725,13 +808,19 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
                 assemblies = [x for x in assemblies if x["repeatmaskers"]]
             if "minBuscoComplete" in filter:
                 assemblies = [
-                    x for x in assemblies if f"maxBuscoScore" in x and x["maxBuscoScore"] >= filter["minBuscoComplete"]
+                    x
+                    for x in assemblies
+                    if f"maxBuscoScore" in x
+                    and x["maxBuscoScore"] >= filter["minBuscoComplete"]
                 ]
             if "minFcatSimilar" in filter:
                 mode = filter["minFcatSimilar"]["mode"]
                 value = filter["minFcatSimilar"]["value"]
                 assemblies = [
-                    x for x in assemblies if f"maxFcatScoreM{mode}" in x and x[f"maxFcatScoreM{mode}"] >= value
+                    x
+                    for x in assemblies
+                    if f"maxFcatScoreM{mode}" in x
+                    and x[f"maxFcatScoreM{mode}"] >= value
                 ]
 
         number_of_elements = len(assemblies)
@@ -755,7 +844,11 @@ def fetchAssemblies(search="", filter={}, sortBy={"column": "label", "order": Tr
             [],
         )
     except Exception as err:
-        return [], {}, createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return (
+            [],
+            {},
+            createNotification(message=f"AssembliesFetchingError: {str(err)}"),
+        )
 
 
 # update assembly label
@@ -769,7 +862,9 @@ def updateAssemblyLabel(assembly_id: int, label: str, userID: int):
         LABEL_PATTERN = compile(r"^\w+$")
 
         if label and not LABEL_PATTERN.match(label):
-            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
+            return 0, createNotification(
+                message="Invalid label. Use only [a-zA-Z0-9_]!"
+            )
         elif not label:
             label = None
 
@@ -780,7 +875,9 @@ def updateAssemblyLabel(assembly_id: int, label: str, userID: int):
         connection.commit()
 
         if label:
-            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
+            return 1, createNotification(
+                "Success", f"Successfully added label: {label}", "success"
+            )
         else:
             return 1, createNotification("Info", f"Default name restored", "info")
     except Exception as err:
@@ -805,13 +902,19 @@ def fetchAssembliesByTaxonID(taxonID):
         assemblies = [dict(zip(row_headers, x)) for x in assemblies]
 
         if not len(assemblies):
-            return [], createNotification("Info", "No asssemblies for given taxon IDs!", "info")
+            return [], createNotification(
+                "Info", "No asssemblies for given taxon IDs!", "info"
+            )
         return (
             assemblies,
             [],
         )
     except Exception as err:
-        return [], [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
+        return (
+            [],
+            [],
+            createNotification(message=f"AssembliesFetchingError: {str(err)}"),
+        )
 
 
 # FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
@@ -855,7 +958,9 @@ def fetchAssemblyByAssemblyID(id, userID):
         assembly = cursor.fetchone()
         assembly = dict(zip(row_headers, assembly))
 
-        cursor.execute("SELECT * FROM bookmarks WHERE assemblyID=%s AND userID=%s", (id, userID))
+        cursor.execute(
+            "SELECT * FROM bookmarks WHERE assemblyID=%s AND userID=%s", (id, userID)
+        )
         bookmark = cursor.fetchone()
 
         if bookmark:
@@ -878,11 +983,15 @@ def addAssemblyTag(assemblyID, tag):
     try:
         connection, cursor, error = connect()
 
-        cursor.execute("INSERT INTO tags (assemblyID, tag) VALUES (%s, %s)", (assemblyID, tag))
+        cursor.execute(
+            "INSERT INTO tags (assemblyID, tag) VALUES (%s, %s)", (assemblyID, tag)
+        )
         connection.commit()
 
         return tag, createNotification(
-            "Success", f"Successfully added tag '{tag}' to assembly with ID {assemblyID}", "success"
+            "Success",
+            f"Successfully added tag '{tag}' to assembly with ID {assemblyID}",
+            "success",
         )
 
     except Exception as err:
@@ -940,7 +1049,9 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
     generalInfos = []
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * from assembliesGeneralInfo WHERE assemblyID=%s", (assemblyID,))
+        cursor.execute(
+            "SELECT * from assembliesGeneralInfo WHERE assemblyID=%s", (assemblyID,)
+        )
 
         row_headers = [x[0] for x in cursor.description]
         generalInfos = cursor.fetchall()
@@ -996,7 +1107,9 @@ def updateAssemblyGeneralInformationByID(id, key, value):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, createNotification("Success", "Successfully updated general info!", "success")
+    return 1, createNotification(
+        "Success", "Successfully updated general info!", "success"
+    )
 
 
 # DELETE GENERAL INFO
@@ -1012,7 +1125,9 @@ def deleteAssemblyGeneralInformationByID(id):
     except Exception as err:
         return [], createNotification(message=str(err))
 
-    return 1, createNotification("Success", "Successfully removed general information!", "success")
+    return 1, createNotification(
+        "Success", "Successfully removed general information!", "success"
+    )
 
 
 def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0):
@@ -1023,7 +1138,9 @@ def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0)
         connection, cursor, error = connect()
         if assembly_id == -1:
             if number == -1:
-                cursor.execute("SELECT * FROM assembliesSequences ORDER BY sequenceLength DESC")
+                cursor.execute(
+                    "SELECT * FROM assembliesSequences ORDER BY sequenceLength DESC"
+                )
             else:
                 cursor.execute(
                     "SELECT * FROM assembliesSequences ORDER BY sequenceLength DESC LIMIT %s OFFSET %s",
@@ -1032,7 +1149,8 @@ def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0)
         else:
             if number == -1:
                 cursor.execute(
-                    "SELECT * FROM assembliesSequences WHERE assemblyID=%s ORDER BY sequenceLength DESC", (assembly_id,)
+                    "SELECT * FROM assembliesSequences WHERE assemblyID=%s ORDER BY sequenceLength DESC",
+                    (assembly_id,),
                 )
             else:
                 cursor.execute(
@@ -1045,11 +1163,17 @@ def fetchAssemblySequenceHeaders(search="", assembly_id=-1, number=-1, offset=0)
         sequenceHeaders = [dict(zip(row_headers, x)) for x in sequenceHeaders]
 
         if search:
-            sequenceHeaders = [x for x in sequenceHeaders if search == str(x).lower() or search in str(x).lower()]
+            sequenceHeaders = [
+                x
+                for x in sequenceHeaders
+                if search == str(x).lower() or search in str(x).lower()
+            ]
 
         # if not len(sequenceHeaders):
         #     return [], createNotification("Info", "No sequence headers found!", "info")
 
         return sequenceHeaders, []
     except Exception as err:
-        return [], createNotification(message=f"FetchAssemblySequenceHeadersError: {str(err)}")
+        return [], createNotification(
+            message=f"FetchAssemblySequenceHeadersError: {str(err)}"
+        )

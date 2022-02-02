@@ -8,7 +8,10 @@ def fetchTaskStatus(task_id):
     """
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT runningTasks.* FROM runningTasks WHERE runningTasks.id=%s", (task_id,))
+        cursor.execute(
+            "SELECT runningTasks.* FROM runningTasks WHERE runningTasks.id=%s",
+            (task_id,),
+        )
         row_headers = [x[0] for x in cursor.description]
         task = cursor.fetchone()
         task = dict(zip(row_headers, task))
@@ -20,24 +23,38 @@ def fetchTaskStatus(task_id):
     if task and "id" in task:
         if "status" in task:
             if task["status"] == "done":
-                cursor.execute("DELETE FROM runningTasks WHERE runningTasks.id=%s", (task_id,))
+                cursor.execute(
+                    "DELETE FROM runningTasks WHERE runningTasks.id=%s", (task_id,)
+                )
                 connection.commit()
-                notification = createNotification("Success", f"Task finished!", "success")
+                notification = createNotification(
+                    "Success", f"Task finished!", "success"
+                )
 
             elif task["status"] == "running":
                 if "progress" in task:
                     if task["progress"]:
                         progress = task["progress"]
-                        notification = createNotification("Info", f"Task is still running! ({progress}% done)", "info")
+                        notification = createNotification(
+                            "Info", f"Task is still running! ({progress}% done)", "info"
+                        )
                     else:
-                        notification = createNotification("Info", "Task is still running!", "info")
+                        notification = createNotification(
+                            "Info", "Task is still running!", "info"
+                        )
                 else:
-                    notification = createNotification("Info", "Task is still running!", "info")
+                    notification = createNotification(
+                        "Info", "Task is still running!", "info"
+                    )
 
             elif task["status"] == "aborted":
-                cursor.execute("DELETE FROM runningTasks WHERE runningTasks.id=%s", (task_id,))
+                cursor.execute(
+                    "DELETE FROM runningTasks WHERE runningTasks.id=%s", (task_id,)
+                )
                 connection.commit()
-                notification = createNotification(message="Task aborted due to an error!")
+                notification = createNotification(
+                    message="Task aborted due to an error!"
+                )
 
         return task, notification
 
@@ -54,7 +71,10 @@ def addTask(task_id, targetTaxon=0):
         connection, cursor, error = connect()
 
         if not targetTaxon:
-            cursor.execute("INSERT INTO runningTasks (id, status, startTime) VALUES (%s, 'running', NOW())", (task_id,))
+            cursor.execute(
+                "INSERT INTO runningTasks (id, status, startTime) VALUES (%s, 'running', NOW())",
+                (task_id,),
+            )
         else:
             cursor.execute(
                 "INSERT INTO runningTasks (id, status, startTime, targetTaxon) VALUES (%s, 'running', NOW(), %s)",
@@ -75,7 +95,9 @@ def updateTask(task_id, status, progress=0):
     """
     try:
         if not task_id or not status:
-            return 0, createNotification(message="Cannot update task: Missing task parameters!")
+            return 0, createNotification(
+                message="Cannot update task: Missing task parameters!"
+            )
 
         connection, cursor, error = connect()
         if status == "done":
@@ -104,7 +126,9 @@ def isTaxonCurrentlyEdited(taxonID):
 
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT targetTaxon from runningTasks WHERE targetTaxon=%s", (taxonID,))
+        cursor.execute(
+            "SELECT targetTaxon from runningTasks WHERE targetTaxon=%s", (taxonID,)
+        )
         target = cursor.fetchone()
 
         if target:

@@ -8,7 +8,11 @@ from sys import argv
 from datetime import datetime
 
 from modules.environment import BASE_PATH_TO_IMPORT
-from modules.assemblies import deleteAssemblyByAssemblyID, import_assembly, FASTA_FILE_PATTERN
+from modules.assemblies import (
+    deleteAssemblyByAssemblyID,
+    import_assembly,
+    FASTA_FILE_PATTERN,
+)
 from modules.annotations import ANNOTATION_FILE_PATTERN, import_annotation
 from modules.mappings import import_mapping
 from modules.notifications import createNotification
@@ -90,7 +94,9 @@ def fetchImportDirectory(path=BASE_PATH_TO_IMPORT):
         if isdir(path):
             for t in FILE_PATTERN_DICT:
                 if FILE_PATTERN_DICT[t]["default_parent_dir"]:
-                    if FILE_PATTERN_DICT[t]["default_parent_dir"].match(path_info["name"]):
+                    if FILE_PATTERN_DICT[t]["default_parent_dir"].match(
+                        path_info["name"]
+                    ):
                         path_info.update({"dirType": t})
                         break
 
@@ -137,7 +143,9 @@ def __getSupportedFiles(file_info, type):
     if "children" in file_info:
         child_main_files, child_additional_files = [], []
         for x in file_info["children"]:
-            new_child_main_files, new_child_additional_files = __getSupportedFiles(x, type)
+            new_child_main_files, new_child_additional_files = __getSupportedFiles(
+                x, type
+            )
             child_main_files += new_child_main_files
             child_additional_files += new_child_additional_files
         return child_main_files, child_additional_files
@@ -162,11 +170,14 @@ def validateFileInfo(file_info, forceType=""):
                         paths.update({dir: 1})
                     else:
                         paths[dir] += 1
-                    subsets.append({"main_file": file, "additional_files": additional_files})
+                    subsets.append(
+                        {"main_file": file, "additional_files": additional_files}
+                    )
                 datasets[type] = [
                     x
                     for x in subsets
-                    if paths[dirname(x["main_file"]["path"])] < MAXIMUM_VALIDATION_NUMBER_PER_TYPE_PER_REQUEST
+                    if paths[dirname(x["main_file"]["path"])]
+                    < MAXIMUM_VALIDATION_NUMBER_PER_TYPE_PER_REQUEST
                 ]
 
     else:
@@ -180,17 +191,22 @@ def validateFileInfo(file_info, forceType=""):
                     paths.update({dir: 1})
                 else:
                     paths[dir] += 1
-                subsets.append({"main_file": file, "additional_files": additional_files})
+                subsets.append(
+                    {"main_file": file, "additional_files": additional_files}
+                )
             datasets[forceType] = [
                 x
                 for x in subsets
-                if paths[dirname(x["main_file"]["path"])] < MAXIMUM_VALIDATION_NUMBER_PER_TYPE_PER_REQUEST
+                if paths[dirname(x["main_file"]["path"])]
+                < MAXIMUM_VALIDATION_NUMBER_PER_TYPE_PER_REQUEST
             ].sort(key=lambda d: d["name"])
 
     if len(datasets) <= 0:
         return {}, createNotification("Info", "No valid dataset detetcted!", "info")
 
-    return datasets, createNotification("Success", "At least one valid dataset detetcted!", "success")
+    return datasets, createNotification(
+        "Success", "At least one valid dataset detetcted!", "success"
+    )
 
 
 def import_dataset_with_queue(
@@ -210,7 +226,11 @@ def import_dataset_with_queue(
 
         currently_edited = isTaxonCurrentlyEdited(taxon["id"])
         if currently_edited:
-            return {"id": taskID, "status": "aborted", "startTime": datetime.now()}, createNotification(
+            return {
+                "id": taskID,
+                "status": "aborted",
+                "startTime": datetime.now(),
+            }, createNotification(
                 "Error", "Import not started. Taxon is currently edited!", "error"
             )
 
@@ -234,14 +254,22 @@ def import_dataset_with_queue(
             taskID,
         )
 
-        return {"id": taskID, "status": "running", "startTime": datetime.now()}, createNotification(
-            "Success", "Import started. You will be notified when it finished!", "success"
+        return {
+            "id": taskID,
+            "status": "running",
+            "startTime": datetime.now(),
+        }, createNotification(
+            "Success",
+            "Import started. You will be notified when it finished!",
+            "success",
         )
 
     except Exception as err:
-        return {"id": "", "status": "aborted", "startTime": datetime.now()}, createNotification(
-            message=f"StartImportError: {str(err)}"
-        )
+        return {
+            "id": "",
+            "status": "aborted",
+            "startTime": datetime.now(),
+        }, createNotification(message=f"StartImportError: {str(err)}")
 
 
 # import for all possible data
@@ -286,7 +314,9 @@ def importDataset(
         assembly_id = None
         try:
             if len(assembly) != 1:
-                return summary, createNotification(message="Exact one assembly needs to be supplied!")
+                return summary, createNotification(
+                    message="Exact one assembly needs to be supplied!"
+                )
 
             assembly = assembly[0]
 
@@ -297,7 +327,9 @@ def importDataset(
         except Exception as err:
             if assembly_id:
                 deleteAssemblyByAssemblyID(assembly_id)
-            return summary, createNotification(message=f"CombinedImportError1: {str(err)}!")
+            return summary, createNotification(
+                message=f"CombinedImportError1: {str(err)}!"
+            )
     else:
         assembly_id = append_assembly_id
 
@@ -310,7 +342,9 @@ def importDataset(
 
     try:
         for idx, annotation in enumerate(annotations):
-            annotation_id, notification = import_annotation(taxon, assembly_id, annotation, userID)
+            annotation_id, notification = import_annotation(
+                taxon, assembly_id, annotation, userID
+            )
             if annotation_id:
                 summary["annotationIDs"] += [annotation_id]
             else:
@@ -331,7 +365,9 @@ def importDataset(
             pass
 
         for mapping in mappings:
-            mapping_id, notification = import_mapping(taxon, assembly_id, mapping, userID)
+            mapping_id, notification = import_mapping(
+                taxon, assembly_id, mapping, userID
+            )
             if mapping_id:
                 summary["mappingIDs"] += [mapping_id]
             else:
@@ -352,7 +388,9 @@ def importDataset(
             pass
 
         for busco in buscos:
-            busco_id, notification = import_analyses(taxon, assembly_id, busco, "busco", userID)
+            busco_id, notification = import_analyses(
+                taxon, assembly_id, busco, "busco", userID
+            )
             if busco_id:
                 summary["buscoIDs"] += [busco_id]
             else:
@@ -373,7 +411,9 @@ def importDataset(
             pass
 
         for fcat in fcats:
-            fcat_id, notification = import_analyses(taxon, assembly_id, fcat, "fcat", userID)
+            fcat_id, notification = import_analyses(
+                taxon, assembly_id, fcat, "fcat", userID
+            )
             if fcat_id:
                 summary["fcatIDs"] += [fcat_id]
             else:
@@ -394,7 +434,9 @@ def importDataset(
             pass
 
         for milt in milts:
-            milt_id, notification = import_analyses(taxon, assembly_id, milt, "milts", userID)
+            milt_id, notification = import_analyses(
+                taxon, assembly_id, milt, "milts", userID
+            )
             if milt_id:
                 summary["miltsIDs"] += [milt_id]
             else:
@@ -415,7 +457,9 @@ def importDataset(
             pass
 
         for repeatmasker in repeatmaskers:
-            repeatmasker_id, notification = import_analyses(taxon, assembly_id, repeatmasker, "repeatmasker", userID)
+            repeatmasker_id, notification = import_analyses(
+                taxon, assembly_id, repeatmasker, "repeatmasker", userID
+            )
             if repeatmasker_id:
                 summary["repeatmaskerIDs"] += [repeatmasker_id]
             else:
@@ -436,7 +480,9 @@ def importDataset(
             pass
 
         if len(notifications) == 0:
-            notifications += createNotification("Success", "All files successfully imported!", "success")
+            notifications += createNotification(
+                "Success", "All files successfully imported!", "success"
+            )
 
         return summary, notifications
     except Exception as err:
@@ -472,7 +518,17 @@ def readArgs():
         repeatmaskers = loads(args[7])
         assembly_id = int(args[8])
 
-        return taxon, assembly, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
+        return (
+            taxon,
+            assembly,
+            annotations,
+            mappings,
+            buscos,
+            fcats,
+            milts,
+            repeatmaskers,
+            assembly_id,
+        )
 
     except Exception as err:
         print(err)
@@ -485,7 +541,17 @@ if __name__ == "__main__":
         exit(0)
 
     try:
-        taxon, assembly, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id = args
+        (
+            taxon,
+            assembly,
+            annotations,
+            mappings,
+            buscos,
+            fcats,
+            milts,
+            repeatmaskers,
+            assembly_id,
+        ) = args
 
         if "taxonID" in taxon:
             taxon, notifcation = fetchTaxonByTaxonID(taxon["taxonID"])
@@ -495,14 +561,25 @@ if __name__ == "__main__":
             if len(taxon) == 1:
                 taxon = taxon[0]
             else:
-                gnom_tax_ids_string = "\n".join([x["id"] + ": " + taxon["scientificName"] for x in taxon])
+                gnom_tax_ids_string = "\n".join(
+                    [x["id"] + ": " + taxon["scientificName"] for x in taxon]
+                )
                 print(
                     f"Multiple taxon IDs for NCBI taxon id {ncbiID} found:\n{gnom_tax_ids_string}\nPlease specify parameter taxonID for this dataset with one of the above taxonIDs!"
                 )
                 exit(0)
 
         import_summary, notifcations = importDataset(
-            taxon, assembly, 1, annotations, mappings, buscos, fcats, milts, repeatmaskers, assembly_id
+            taxon,
+            assembly,
+            1,
+            annotations,
+            mappings,
+            buscos,
+            fcats,
+            milts,
+            repeatmaskers,
+            assembly_id,
         )
 
         for n in notifcations:

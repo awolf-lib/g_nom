@@ -23,7 +23,9 @@ analyses_bp = Blueprint("analyses", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(message="Wrong request method. Please contact support!"),
+    "notification": createNotification(
+        message="Wrong request method. Please contact support!"
+    ),
 }
 
 
@@ -49,9 +51,13 @@ def analyses_bp_import_analyses():
         analyses_type = req.get("analysesType", None)
 
         if taxon and dataset and userID and assemblyID and analyses_type:
-            data, notification = import_analyses(taxon, assemblyID, dataset, analyses_type, userID)
+            data, notification = import_analyses(
+                taxon, assemblyID, dataset, analyses_type, userID
+            )
         else:
-            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            data, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -79,7 +85,9 @@ def analyses_bp_deleteAnalysesByAnalysesID():
         if analysisID:
             data, notification = deleteAnalysesByAnalysesID(analysisID)
         else:
-            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            data, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -112,7 +120,9 @@ def analyses_bp_updateAnalysisLabel():
             else:
                 status, notification = updateAnalysisLabel(analysis_id, None)
         else:
-            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
+            status, notification = 0, createNotification(
+                message="RequestError: Invalid parameters!"
+            )
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -265,7 +275,12 @@ def analyses_bp_fetchFileByPath():
 
         if not path or not exists(path):
             response = jsonify(
-                {"payload": 0, "notification": createNotification(message="File path does not exist anymore!")}
+                {
+                    "payload": 0,
+                    "notification": createNotification(
+                        message="File path does not exist anymore!"
+                    ),
+                }
             )
             response.headers.add("Access-Control-Allow-Origin", "*")
             return response

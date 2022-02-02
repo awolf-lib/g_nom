@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { Search } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
@@ -243,6 +244,11 @@ const AssembliesFilterForm = ({
     setMinFcatSimilar(0);
   };
 
+  const optionClass = (target: any[], value: any) =>
+    classNames("px-2 py-1 border-b text-xs font-semibold truncate text-center", {
+      "bg-blue-600 text-white": target.includes(value),
+    });
+
   return (
     <div>
       <div className="w-full flex justify-around items-center">
@@ -253,13 +259,13 @@ const AssembliesFilterForm = ({
             onChange={(e) => setViewType(e.target.value as "list" | "grid" | "tree")}
             value={viewType}
           >
-            <option className="text-sm py-1" value="list">
+            <option className="text-sm" value="list">
               List
             </option>
-            <option className="text-sm py-1" value="grid">
+            <option className="text-sm" value="grid">
               Grid
             </option>
-            <option className="text-sm py-1" value="tree">
+            <option className="text-sm" value="tree">
               Tree
             </option>
           </select>
@@ -291,12 +297,9 @@ const AssembliesFilterForm = ({
           />
         </div>
         <div className="flex justify-center items-center">
-          <Button
-            label="Reset filter"
-            color="secondary"
-            size="sm"
-            onClick={() => handleResetFilter()}
-          />
+          <Button color="secondary" size="sm" onClick={() => handleResetFilter()}>
+            {"Reset filters (" + Object.keys(filter).length + ")"}
+          </Button>
         </div>
       </div>
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
@@ -319,7 +322,7 @@ const AssembliesFilterForm = ({
                 className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
                 onChange={(e) => handleSelectTaxa(e.target.options)}
               >
-                <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
+                <option value={-1} className={optionClass(filter.taxonIDs || [], -1)}>
                   All
                 </option>
                 {filteredTaxa &&
@@ -328,7 +331,7 @@ const AssembliesFilterForm = ({
                     <option
                       key={taxon.id}
                       value={taxon.id}
-                      className="px-4 py-1 border-b text-sm font-semibold truncate"
+                      className={optionClass(filter.taxonIDs || [], taxon.id)}
                     >
                       {taxon.scientificName}
                     </option>
@@ -353,7 +356,7 @@ const AssembliesFilterForm = ({
               className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
               onChange={(e) => handleSelectUsers(e.target.options)}
             >
-              <option value={-1} className="px-4 py-1 border-b text-sm font-semibold">
+              <option value={-1} className={optionClass(filter.userIDs || [], -1)}>
                 All
               </option>
               {filteredUsers &&
@@ -362,7 +365,7 @@ const AssembliesFilterForm = ({
                   <option
                     key={user.id}
                     value={user.id}
-                    className="px-4 py-1 border-b text-sm font-semibold truncate"
+                    className={optionClass(filter.userIDs || [], user.id)}
                   >
                     {user.username}
                   </option>

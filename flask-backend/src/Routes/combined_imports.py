@@ -3,7 +3,11 @@ from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.notifications import createNotification
-from modules.combined_imports import fetchImportDirectory, import_dataset_with_queue, validateFileInfo
+from modules.combined_imports import (
+    fetchImportDirectory,
+    import_dataset_with_queue,
+    validateFileInfo,
+)
 from modules.users import validateActiveToken
 
 # setup blueprint name
@@ -12,7 +16,9 @@ imports_bp = Blueprint("imports", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(message="Wrong request method. Please contact support!"),
+    "notification": createNotification(
+        message="Wrong request method. Please contact support!"
+    ),
 }
 
 
@@ -66,7 +72,16 @@ def imports_bp_import_dataset():
         repeatmaskers = req.get("repeatmaskers", [])
 
         data, notification = import_dataset_with_queue(
-            taxon, assembly, userID, annotations, mappings, buscos, fcats, milts, repeatmaskers, assemblyID
+            taxon,
+            assembly,
+            userID,
+            annotations,
+            mappings,
+            buscos,
+            fcats,
+            milts,
+            repeatmaskers,
+            assemblyID,
         )
 
         response = jsonify({"payload": data, "notification": notification})
