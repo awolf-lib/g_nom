@@ -11,6 +11,7 @@ import {
 } from "../../../../../../api";
 import Button from "../../../../../../components/Button";
 import Input from "../../../../../../components/Input";
+import LoadingSpinner from "../../../../../../components/LoadingSpinner";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import Slider from "../../../../../../components/Slider";
 
@@ -22,6 +23,8 @@ const AssembliesFilterForm = ({
   filter,
   setFilter,
   isFilterOpen,
+  title,
+  loading,
 }: {
   viewType: "grid" | "list" | "tree";
   setViewType: Dispatch<SetStateAction<"grid" | "list" | "tree">>;
@@ -30,6 +33,8 @@ const AssembliesFilterForm = ({
   setFilter: Dispatch<SetStateAction<Filter>>;
   filter: Filter;
   isFilterOpen?: Dispatch<SetStateAction<boolean>>;
+  title?: string;
+  loading?: boolean;
 }) => {
   const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(false);
 
@@ -252,8 +257,14 @@ const AssembliesFilterForm = ({
   return (
     <div>
       <div className="w-full flex justify-around items-center">
+        <div>{title}</div>
+        {loading && (
+          <div className="flex h-full px-4">
+            <LoadingSpinner label="Loading..." />
+          </div>
+        )}
         <label className="flex items-center w-56">
-          <span className="text-sm px-2">View type:</span>
+          <div className="text-sm px-2">View type:</div>
           <select
             className="w-32 text-gray-700 text-center rounded-lg shadow border border-gray-300 text-sm"
             onChange={(e) => setViewType(e.target.value as "list" | "grid" | "tree")}
