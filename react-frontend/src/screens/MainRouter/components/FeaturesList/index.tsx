@@ -18,7 +18,7 @@ import FeaturesListElement from "./components/FeaturesListElement";
 import { useSearchParams } from "react-router-dom";
 
 const FeaturesList = ({
-  title = "Genommic features",
+  title = "Genomic features",
   assemblyID,
 }: {
   title?: string;

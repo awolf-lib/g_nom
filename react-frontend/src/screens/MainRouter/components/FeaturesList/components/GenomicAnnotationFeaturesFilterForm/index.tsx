@@ -486,7 +486,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
       {toggleFilterSelection && <hr className="shadow my-6 border-gray-300 animate-grow-y" />}
       {toggleFilterSelection && (
         <div>
-          <div className="px-4 animate-grow-y pb-4 flex justify-between items-start">
+          <div className="px-4 animate-grow-y pb-4 flex justify-around items-start">
             {!assemblyID && (
               <div className="mr-4 animate-fade-in">
                 Taxon
@@ -701,9 +701,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                 <CircleInformation className="stroke-current" color="blank" />
               </div>
               <div className="ml-2">
-                <div className="font-semibold">
-                  Be aware: Only features with no parent attribute are listed!
-                </div>
+                <div className="font-semibold">Be aware: Only parent features are listed!</div>
                 <div className="font-thin">Subfeatures can be found in the genome viewer.</div>
               </div>
             </div>

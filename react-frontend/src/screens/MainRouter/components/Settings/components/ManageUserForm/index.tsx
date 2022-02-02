@@ -95,17 +95,17 @@ const ManageUserForm = () => {
   );
 
   return (
-    <div className="rounded-lg overflow-hidden max-h-50 shadow-lg">
+    <div className="rounded-lg overflow-y-auto overflow-x-hidden max-h-75 shadow-lg">
       <table className="w-full text-center table-auto text-xs md:text-base">
         <thead>
-          <tr className="bg-indigo-200">
+          <tr className="bg-gray-300">
             <th className={"hidden md:table-cell w-16 " + elementClass}>ID</th>
             <th className={"pl-4 md:pl-0 " + elementClass}>User</th>
             <th className={elementClass}>
               <div className="flex justify-center items-center">
                 <div
                   onClick={() => setToggleSelectRole(!toggleSelectRole)}
-                  className="p-1 bg-indigo-100 border border-gray-700 border-dashed text-gray-700 flex items-center rounded-lg hover:bg-gray-600 hover:text-white cursor-pointer mr-4 transition duration-300"
+                  className="p-1 bg-white border border-gray-700 border-dashed text-gray-700 flex items-center rounded-lg hover:bg-gray-600 hover:text-white cursor-pointer mr-4 transition duration-300"
                 >
                   <Edit size="small" color="blank" className="stroke-current" />
                 </div>
