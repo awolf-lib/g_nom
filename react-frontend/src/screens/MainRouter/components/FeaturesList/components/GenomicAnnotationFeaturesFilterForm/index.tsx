@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Search, StatusGood } from "grommet-icons";
+import { CircleInformation, Search, StatusGood } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   fetchFeatureAttributeKeys,
@@ -35,7 +35,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
   loading: boolean;
   title: string;
 }) => {
-  const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(false);
+  const [toggleFilterSelection, setToggleFilterSelection] = useState<boolean>(true);
 
   const [taxa, setTaxa] = useState<INcbiTaxon[]>([]);
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
@@ -218,6 +218,9 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
     if (values.length) {
       setFilterForm((prevState) => {
+        delete prevState.featureSeqIDs;
+        delete prevState.featureTypes;
+        delete prevState.featureAttributes;
         return { ...prevState, taxonIDs: values };
       });
     } else {
@@ -245,6 +248,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
     if (values.length) {
       setFilterForm((prevState) => {
+        delete prevState.featureTypes;
+        delete prevState.featureAttributes;
         return { ...prevState, featureSeqIDs: values };
       });
     } else {
@@ -272,6 +277,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
     if (values.length) {
       setFilterForm((prevState) => {
+        delete prevState.featureAttributes;
         return { ...prevState, featureTypes: values };
       });
     } else {
@@ -438,7 +444,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
 
   return (
     <div>
-      <div className="w-full h-10 flex justify-around items-center">
+      <div className="w-full h-10 flex justify-between items-center">
         <div>{title}</div>
         {loading && (
           <div className="flex h-full px-4">
@@ -519,7 +525,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
             {((filterForm && filterForm.taxonIDs && filterForm.taxonIDs.length === 1) ||
               assemblyID) && (
               <div className="mx-4 animate-fade-in">
-                Feature seq IDs
+                Scaffolds/Contigs
                 <hr className="shadow border-gray-300 -mx-2" />
                 <div className="mt-2 w-40">
                   <Input
@@ -689,7 +695,18 @@ const GenomicAnnotationFeaturesFilterForm = ({
             </div>
           </div>
           <hr />
-          <div className="w-full mt-6 flex justify-center w-96">
+          <div className="w-full mt-6 flex justify-around w-96">
+            <div className="flex items-center text-sm text-white px-2">
+              <div>
+                <CircleInformation className="stroke-current" color="blank" />
+              </div>
+              <div className="ml-2">
+                <div className="font-semibold">
+                  Be aware: Only features with no parent attribute are listed!
+                </div>
+                <div className="font-thin">Subfeatures can be found in the genome viewer.</div>
+              </div>
+            </div>
             <div className="w-96">
               <Button
                 label="Get data..."
@@ -702,6 +719,8 @@ const GenomicAnnotationFeaturesFilterForm = ({
                       message: "Select at least one filter...",
                       type: "info",
                     });
+                  } else {
+                    setToggleFilterSelection(false);
                   }
                 }}
                 size="sm"

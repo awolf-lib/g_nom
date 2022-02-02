@@ -4,7 +4,7 @@ import "../../../../../../App.css";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 import { fetchTaxonTree } from "../../../../../../api";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
-import { Expand, Vulnerability } from "grommet-icons";
+import { Contract, Expand, Search, Sort, Vulnerability } from "grommet-icons";
 
 import Tree from "react-d3-tree";
 import LoadingSpinner from "../../../../../../components/LoadingSpinner";
@@ -19,6 +19,7 @@ const AssembliesTreeViewer = ({ filter, setFilter, assemblies, loading }) => {
   const [expandTree, setExpandTree] = useState(false);
   const [loadingTree, setLoadingTree] = useState(false);
   const [currentNode, setCurrentNode] = useState("root");
+  const [contractTarget, setContractTarget] = useState(-1);
   const ref = useRef(null);
   const cardsRef = useRef(null);
 
@@ -112,16 +113,29 @@ const AssembliesTreeViewer = ({ filter, setFilter, assemblies, loading }) => {
     return taxIds;
   };
 
+  const handleToggleBranch = (node) => {
+    if (node && node.data && node.data.__rd3t) {
+      node.data.__rd3t.collapsed = !node.data.__rd3t.collapsed;
+    }
+
+    if (node && node.data && node.data.children) {
+      node.data.children.forEach((childNode) => {
+        handleToggleBranch(childNode);
+      });
+    }
+  };
+
   const nodeClass = (nodeDatum) => {
     return classNames(
-      "text-xs text-white text-center font-bold w-8 border-2 border-black border-inset rounded-lg border py-4",
+      "flex items-center text-xs text-white text-center font-bold max-w-min p-2 border-2 border-black border-inset rounded-lg border",
       {
         "bg-green-800 hover:bg-green-500": nodeDatum.name !== currentNode,
         "bg-green-500 hover:bg-green-300": nodeDatum.name === currentNode,
       }
     );
   };
-  const renderForeignObjectNode = ({ nodeDatum, toggleNode, foreignObjectProps }) => {
+  const renderForeignObjectNode = (node) => {
+    const { nodeDatum, toggleNode, foreignObjectProps, hierarchyPointNode } = node;
     return (
       <foreignObject
         {...foreignObjectProps}
@@ -132,10 +146,7 @@ const AssembliesTreeViewer = ({ filter, setFilter, assemblies, loading }) => {
           <div
             className="w-24"
             onClick={() => {
-              loadTaxa(nodeDatum);
-              executeScroll();
-              setCurrentNode(nodeDatum.name);
-              // toggleNode();
+              handleToggleBranch(hierarchyPointNode);
             }}
           >
             {nodeDatum.imagePath || !nodeDatum.children ? (
@@ -148,12 +159,34 @@ const AssembliesTreeViewer = ({ filter, setFilter, assemblies, loading }) => {
               </div>
             ) : (
               <div>
-                <div className={nodeClass(nodeDatum)} />
+                <div
+                  className={nodeClass(nodeDatum)}
+                  onMouseEnter={() => setContractTarget(nodeDatum.id)}
+                  onMouseLeave={() => setContractTarget(-1)}
+                >
+                  {nodeDatum.id == contractTarget ? (
+                    <div className="w-6 h-6">
+                      <Contract className="stroke-current animate-fade-in-fast" color="blank" />
+                    </div>
+                  ) : (
+                    <div className="w-6 h-6" />
+                  )}
+                </div>
               </div>
             )}
           </div>
-          <div>
-            <div className="mt-2">
+          <div className="flex items-center mt-2">
+            <div
+              onClick={() => {
+                loadTaxa(nodeDatum);
+                executeScroll();
+                setCurrentNode(nodeDatum.name);
+              }}
+              className="bg-gray-600 text-white p-2 rounded-lg flex items-center cursor-pointer hover:bg-gray-500 shadow"
+            >
+              <Sort size="small" className="stroke-current" color="blank" />
+            </div>
+            <div className="ml-2">
               <div className="text-xs font-bold">{nodeDatum.name}</div>
               {nodeDatum.rank && <div className="text-xs">{nodeDatum.rank}</div>}
             </div>

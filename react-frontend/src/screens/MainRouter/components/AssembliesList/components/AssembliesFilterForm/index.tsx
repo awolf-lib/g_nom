@@ -256,7 +256,7 @@ const AssembliesFilterForm = ({
 
   return (
     <div>
-      <div className="w-full flex justify-around items-center">
+      <div className="w-full flex justify-between items-center">
         <div>{title}</div>
         {loading && (
           <div className="flex h-full px-4">
