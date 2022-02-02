@@ -18,7 +18,7 @@ import FeaturesListElement from "./components/FeaturesListElement";
 import { useSearchParams } from "react-router-dom";
 
 const FeaturesList = ({
-  title = "Top level features",
+  title = "Genommic features",
   assemblyID,
 }: {
   title?: string;
@@ -126,15 +126,15 @@ const FeaturesList = ({
     if (featureTimeout) {
       clearTimeout(featureTimeout);
     }
-    setFeatureTimeoutWaiting(true);
-    setFeatureTimeout(
-      setTimeout(() => {
-        if (Object.keys(filter).length || search || assemblyID) {
+    if (Object.keys(filter).length || search || assemblyID) {
+      setFeatureTimeoutWaiting(true);
+      setFeatureTimeout(
+        setTimeout(() => {
           loadFeatures();
-        }
-        setFeatureTimeoutWaiting(false);
-      }, 1000)
-    );
+          setFeatureTimeoutWaiting(false);
+        }, 1000)
+      );
+    }
   }, [sortBy, range, offset, filter, search]);
 
   const loadFeatures = async () => {
@@ -288,7 +288,7 @@ const FeaturesList = ({
               )}
             </div>
           )}
-          SeqID
+          Scaffold/Contig
         </div>
         <div
           className="w-2/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg"

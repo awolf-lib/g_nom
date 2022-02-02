@@ -139,15 +139,6 @@ const AssembliesList = ({
     <div className="mb-16 animate-grow-y">
       <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-indigo-200" />
       <div className={headerClass}>
-        <div className="w-80 flex items-center">
-          <div>{title}</div>
-          {loadingAssemblies ||
-            (onLoadingAssembliesTimeout && (
-              <div className="flex h-full px-4">
-                <LoadingSpinner label="Loading..." />
-              </div>
-            ))}
-        </div>
         <div className="w-full text-base decoration-default">
           <AssembliesFilterForm
             viewType={view}
@@ -157,6 +148,8 @@ const AssembliesList = ({
             filter={filter}
             setFilter={setFilter}
             isFilterOpen={setIsFilterOpen}
+            title={title}
+            loading={loadingAssemblies || onLoadingAssembliesTimeout}
           />
         </div>
       </div>
