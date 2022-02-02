@@ -123,7 +123,9 @@ const FeaturesList = ({
   };
 
   useEffect(() => {
-    clearTimeout(featureTimeout);
+    if (featureTimeout) {
+      clearTimeout(featureTimeout);
+    }
     setFeatureTimeoutWaiting(true);
     setFeatureTimeout(
       setTimeout(() => {
@@ -131,7 +133,7 @@ const FeaturesList = ({
           loadFeatures();
         }
         setFeatureTimeoutWaiting(false);
-      }, 2000)
+      }, 1000)
     );
   }, [sortBy, range, offset, filter, search]);
 
