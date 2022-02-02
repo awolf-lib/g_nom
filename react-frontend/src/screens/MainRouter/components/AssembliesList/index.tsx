@@ -329,7 +329,7 @@ const AssembliesList = ({
                     type="number"
                     size="sm"
                     onChange={(e) => handlePageChange(e.target.value)}
-                    value={pagination.offset + 1}
+                    value={offset + 1}
                   />
                 </div>
                 <span className="mx-2 text-sm">of</span>
