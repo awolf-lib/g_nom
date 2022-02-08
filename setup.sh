@@ -30,6 +30,10 @@ while [ "`docker inspect -f {{.State.Health.Status}} ${MYSQL_CONTAINER_NAME}`" !
 done
 echo ""
 
+mkdir -p ${DATA_DIR}
+mkdir -p ${IMPORT_DIR}
+chmod 777 ${IMPORT_DIR}
+
 # users
 echo "Adding users to database..."
 docker exec $MYSQL_CONTAINER_NAME bash -c "mysql -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} -e \"CREATE USER 'root'@'%' IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}';\"; exit;"
@@ -48,12 +52,11 @@ docker run --name ${RABBIT_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --re
 
 ## Nextcloud server
 echo "Build nextcloud docker container..."
-mkdir -p ${DATA_DIR}
 # start
 echo "Start ${FILE_SERVER_CONTAINER_NAME} container..."
 cd ./fileserver
 docker build --no-cache -t gnom/nextcloud .
-docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -e NEXTCLOUD_TRUSTED_DOMAINS="${SERVER_ADRESS}" -d -p 8080:80 gnom/nextcloud
+docker run --name ${FILE_SERVER_CONTAINER_NAME} --network ${DOCKER_NETWORK_NAME} -v ${DATA_DIR}:/var/www/data/ -v ${IMPORT_DIR}:/var/www/import/ --restart on-failure:10 -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=root -e MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e NEXTCLOUD_ADMIN_USER=${INITIAL_USER_USERNAME} -e NEXTCLOUD_ADMIN_PASSWORD=${INITIAL_USER_PASSWORD} -e NEXTCLOUD_DATA_DIR=/var/www/html/data -e NEXTCLOUD_TRUSTED_DOMAINS="${SERVER_ADRESS}" -d -p 8080:80 gnom/nextcloud
 cd ..
 
 echo "Waiting for nextcloud installation..."
@@ -63,9 +66,11 @@ until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${SERVER_
 done;
 echo ""
 
+docker exec $FILE_SERVER_CONTAINER_NAME bash -c "chown www-data /var/www/import"
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:enable files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/data "GnomData" 'local' null::null
+docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/import "GnomImport" 'local' null::null
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable password_policy
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable photos
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install announcementcenter
@@ -91,7 +96,6 @@ echo "REACT_APP_FILE_SERVER_ADRESS=http://${SERVER_ADRESS}:${FILE_SERVER_PORT}" 
 echo "REACT_APP_JBROWSE_ADRESS=http://${SERVER_ADRESS}:${JBROWSE_PORT}" >> ./react-frontend/.env
 
 # build
-mkdir -p ${IMPORT_DIR}
 cd ./react-frontend
 docker build --no-cache -t gnom/reactapp .
 # start

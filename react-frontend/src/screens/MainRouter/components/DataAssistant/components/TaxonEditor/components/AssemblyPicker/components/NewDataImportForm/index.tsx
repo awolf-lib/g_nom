@@ -118,16 +118,25 @@ const NewDataImportForm = ({
                       !alreadyMarkedForImport(x["main_file"], newAssembly) && setNewAssembly([x]);
                     });
                   } else {
-                    setNewAssembly([
-                      response.payload.sequence!.reduce(function (prev, current) {
-                        return prev.main_file.size! > current.main_file.size! ? prev : current;
-                      }, response.payload.sequence![0]),
-                    ]);
-                    handleNewNotification({
-                      label: "Warning",
-                      message: "Directory contains multiple sequence files! Largest file selected!",
-                      type: "warning",
-                    });
+                    if (!newAssembly || !newAssembly.length) {
+                      setNewAssembly([
+                        response.payload.sequence!.reduce(function (prev, current) {
+                          return prev.main_file.size! > current.main_file.size! ? prev : current;
+                        }, response.payload.sequence![0]),
+                      ]);
+                      handleNewNotification({
+                        label: "Warning",
+                        message:
+                          "Directory contains multiple sequence files! Largest file selected!",
+                        type: "warning",
+                      });
+                    } else {
+                      handleNewNotification({
+                        label: "Warning",
+                        message: "Additional fasta-file(s) detetected!",
+                        type: "warning",
+                      });
+                    }
                   }
                 }
                 break;

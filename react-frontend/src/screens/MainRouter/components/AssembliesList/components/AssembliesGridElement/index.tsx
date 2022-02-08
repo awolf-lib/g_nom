@@ -96,7 +96,11 @@ const AssembliesGridElement = ({
           <div className="h-48 border border-gray-300 w-full animate-fade-in transition duration-500 ease-in-out bg-gradient-to-tr from-gray-800 via-gray-700 to-gray-500 transform hover:-translate-y-1 hover:scale-105 flex">
             {taxonID && (
               <div className="p-1 h-full" style={{ aspectRatio: "1 / 1" }}>
-                <SpeciesProfilePictureViewer taxonID={taxonID} imagePath={imagePath} />
+                <SpeciesProfilePictureViewer
+                  taxonID={taxonID}
+                  imagePath={imagePath}
+                  useTimestamp={false}
+                />
               </div>
             )}
             <div className="w-full text-white px-4 py-2">

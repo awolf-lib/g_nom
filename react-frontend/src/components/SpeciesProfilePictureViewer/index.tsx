@@ -35,7 +35,7 @@ const SpeciesProfilePictureViewer = ({
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
-    if (taxonID && userID && token) {
+    if (taxonID && userID && token && imagePath) {
       const response = await fetchTaxonImageByTaxonID(taxonID, userID, token);
 
       if (response && response.notification) {

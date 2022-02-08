@@ -241,56 +241,6 @@ def __store_analyses(
             )
         # add remove?
 
-        if analyses_type == "milts":
-            try:
-                with open(new_file_path_main_file, "r") as plotFile:
-                    plot_data = "".join(plotFile.readlines()).replace("\n", "")
-                    plot_data = plot_data.replace(
-                        '"title":"taxonomic assignment"', f'"title":"{analyses_name}"'
-                    )
-                    plotFile.close()
-
-                with open(
-                    "/flask-backend/src/modules/templates/milts_head_template.html", "r"
-                ) as milts_template_file:
-                    milts_template = milts_template_file.readlines()
-                    milts_template_file.close()
-
-                body_regex = compile(r"<body>.*</body>")
-                body_match = body_regex.findall(plot_data)
-                if len(body_match) != 1:
-                    return (
-                        "",
-                        "",
-                        createNotification(
-                            message="Error inserting scripts into old milts version!"
-                        ),
-                    )
-
-                for i in range(len(milts_template) - 1, len(milts_template) - 5, -1):
-                    if "<body>REPLACE_BODY</body>" in milts_template[i]:
-                        milts_template[i] = milts_template[i].replace(
-                            "<body>REPLACE_BODY</body>", body_match[0]
-                        )
-                    elif "<title>REPLACE_TITLE</title>" in milts_template[i]:
-                        milts_template[i] = milts_template[i].replace(
-                            "REPLACE_TITLE", analyses_name
-                        )
-                        break
-
-                with open(new_file_path_main_file, "w") as plotFile:
-                    plotFile.writelines(milts_template)
-                    plotFile.close()
-            except Exception as err:
-                print(err, flush=True)
-                return (
-                    "",
-                    "",
-                    createNotification(
-                        message=f"MiltsHeaderInsertionError: {str(err)}"
-                    ),
-                )
-
         # handle additional files
         if "additional_files" in dataset:
             for additional_file in dataset["additional_files"]:

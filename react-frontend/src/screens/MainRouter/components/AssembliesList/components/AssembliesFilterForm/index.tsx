@@ -392,7 +392,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasAnnotation", e.target.checked)}
-                checked={filter.hasAnnotation}
+                checked={filter.hasAnnotation ? true : false}
               />
               <span className="px-4">has Annotation</span>
             </label>
@@ -401,7 +401,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasMapping", e.target.checked)}
-                checked={filter.hasMapping}
+                checked={filter.hasMapping ? true : false}
               />
               <span className="px-4">has Mapping</span>
             </label>
@@ -416,7 +416,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasBusco", e.target.checked)}
-                  checked={filter.hasBusco}
+                  checked={filter.hasBusco ? true : false}
                 />
                 <span className="px-4">has Busco</span>
               </label>
@@ -425,7 +425,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasFcat", e.target.checked)}
-                  checked={filter.hasFcat}
+                  checked={filter.hasFcat ? true : false}
                 />
                 <span className="px-4">has fCat</span>
               </label>
@@ -434,7 +434,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
-                  checked={filter.hasMilts}
+                  checked={filter.hasMilts ? true : false}
                 />
                 <span className="px-4">has Milts</span>
               </label>
@@ -443,7 +443,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasRepeatmasker", e.target.checked)}
-                  checked={filter.hasRepeatmasker}
+                  checked={filter.hasRepeatmasker ? true : false}
                 />
                 <span className="px-4">has Repeatmasker</span>
               </label>

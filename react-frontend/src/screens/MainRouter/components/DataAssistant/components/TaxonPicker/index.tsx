@@ -19,7 +19,7 @@ const TaxonPicker = ({
   parentTaxon: INcbiTaxon | undefined;
 }) => {
   const [requestTimeoutTaxonID, setRequestTimeoutTaxonID] = useState<any>();
-  const [taxa, setTaxa] = useState<any>([]);
+  const [taxa, setTaxa] = useState<INcbiTaxon[]>([]);
   const [taxon, setTaxon] = useState<INcbiTaxon | undefined>();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -146,7 +146,7 @@ const TaxonPicker = ({
                 if (response && response.payload) {
                   setTaxa(response.payload);
 
-                  if (response.payload.length === 1) {
+                  if (response.payload.length >= 1) {
                     setTaxon(response.payload[0]);
                     getTaxon(response.payload[0]);
                   }
@@ -183,29 +183,23 @@ const TaxonPicker = ({
 
   return (
     <div className="text-gray-700">
-      <div className="xl:flex justify-center animate-grow-y">
+      <div className="flex justify-around animate-grow-y">
         {taxon && taxon.id && (
-          <div className="flex justify-around items-center w-full border p-2 xl:rounded-xl shadow bg-gray-100">
-            <div>
-              <div className="rounded-lg overflow-hidden border-2 border-dotted border-white">
-                <SpeciesProfilePictureViewer taxonID={taxon.id} imagePath={taxon.imagePath} />
-              </div>
+          <div className="flex justify-around items-center w-2/5 border px-2 py-4 rounded-xl shadow bg-gray-100 mx-2">
+            <div className="rounded-lg overflow-hidden border-2 border-dotted border-white w-48">
+              <SpeciesProfilePictureViewer taxonID={taxon.id} imagePath={taxon.imagePath} />
             </div>
             <div className="w-full flex">
               <div className="w-full">
                 <div className="flex items-center py-1 mx-4 animate-fade-in">
-                  <div className="text-xs w-32 font-semibold hidden xl:block mx-2">
-                    Scientific name:
-                  </div>
+                  <div className="text-xs w-32 font-semibold block mx-2">Scientific name:</div>
                   <div className="w-full">
                     <div className="truncate font-semibold">{taxon.scientificName}</div>
                   </div>
                 </div>
                 {taxon.commonName && (
                   <div className="flex items-center py-1 mx-4 animate-fade-in">
-                    <div className="text-xs w-32 font-semibold hidden xl:block mx-2">
-                      Common name:
-                    </div>
+                    <div className="text-xs w-32 font-semibold block mx-2">Common name:</div>
                     <div className="w-full">
                       <div className="truncate">{taxon.commonName}</div>
                     </div>
@@ -213,7 +207,7 @@ const TaxonPicker = ({
                 )}
                 {taxon.taxonRank && (
                   <div className="flex items-center py-1 mx-4 animate-fade-in">
-                    <div className="text-xs w-32 font-semibold hidden xl:block mx-2">Rank:</div>
+                    <div className="text-xs w-32 font-semibold block mx-2">Rank:</div>
                     <div className="w-full">
                       <div className="truncate">{taxon.taxonRank}</div>
                     </div>
@@ -228,7 +222,7 @@ const TaxonPicker = ({
           <div className="w-px bg-gray-200 animate-fade-in mx-4 hidden xl:block" />
         )}
 
-        <div className="bg-gray-200 flex justify-around w-full my-2 text-sm xl:my-0 items-center border py-6 xl:rounded-lg shadow">
+        <div className="flex justify-around items-center w-2/5 border px-2 py-4 rounded-xl shadow bg-gray-100 mx-2">
           <div className="flex">
             <label className="w-2/5 px-4">
               <div className="w-full flex justify-between items-center">
@@ -264,17 +258,17 @@ const TaxonPicker = ({
         )}
 
         {taxa && taxa.length > 1 && (
-          <div className="bg-gray-200 flex justify-around w-full xl:w-1/2 my-2 text-sm xl:my-0 items-center border py-6 xl:rounded-lg shadow">
+          <div className="flex justify-around items-center w-1/5 border px-2 py-4 rounded-xl shadow bg-gray-100 mx-2">
             <label className="w-full px-4 animate-fade-in">
               <div className="text-center font-semibold truncate">Multiple entries detected:</div>
               <hr className="shadow my-2" />
               <div className="w-full px-4">
                 <select
-                  className="text-sm text-center mt-1 shadow h-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 ring-offset-1 transition duration-300"
+                  className="text-sm truncate text-center mt-1 shadow h-10 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 ring-offset-1 transition duration-300"
                   onChange={(e) => handleChangeTaxon(parseInt(e.target.value))}
                 >
                   {taxa.map((tx: INcbiTaxon) => (
-                    <option value={tx.id} key={tx.id}>
+                    <option className="truncate" value={tx.id} key={tx.id}>
                       {tx.scientificName} {tx.commonName && " (" + tx.commonName + ")"}
                     </option>
                   ))}

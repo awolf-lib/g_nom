@@ -460,6 +460,7 @@ def parseFasta(path, taskID=""):
                 sequence_length = sequence_length + len(lines[idx])
 
                 for char in lines[idx]:
+                    char = char.upper()
                     if char in cumulative_char_counts:
                         cumulative_char_counts[char] = cumulative_char_counts[char] + 1
                     else:
