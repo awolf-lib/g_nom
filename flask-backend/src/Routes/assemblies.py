@@ -8,7 +8,6 @@ from modules.assemblies import (
     deleteAssemblyByAssemblyID,
     deleteAssemblyGeneralInformationByID,
     fetchAssembliesByTaxonID,
-    fetchAssembliesByTaxonIDs,
     fetchAssemblyByAssemblyID,
     fetchAssemblyGeneralInformationByAssemblyID,
     fetchAssemblySequenceHeaders,
@@ -186,31 +185,6 @@ def assemblies_bp_fetchAssembliesByTaxonID():
 
         taxonID = request.args.get("taxonID")
         data, notification = fetchAssembliesByTaxonID(taxonID)
-
-        response = jsonify({"payload": data, "notification": notification})
-        response.headers.add("Access-Control-Allow-Origin", "*")
-
-        return response
-    else:
-        return REQUESTMETHODERROR
-
-
-# FETCH MULTIPLE ASSEMBLIES BY MULTIPLE TAXON IDS
-@assemblies_bp.route("/fetchAssembliesByTaxonIDs", methods=["GET"])
-def assemblies_bp_fetchAssembliesByTaxonIDs():
-    if request.method == "GET":
-        userID = request.args.get("userID", None)
-        token = request.args.get("token", None)
-
-        # token still active
-        valid_token, error = validateActiveToken(userID, token)
-        if not valid_token:
-            response = jsonify({"payload": {}, "notification": error})
-            response.headers.add("Access-Control-Allow-Origin", "*")
-            return response
-
-        taxonIDs = request.args.get("taxonIDs")
-        data, notification = fetchAssembliesByTaxonIDs(taxonIDs)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

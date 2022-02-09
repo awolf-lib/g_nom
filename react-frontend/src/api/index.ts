@@ -456,28 +456,6 @@ export async function fetchAssembliesByTaxonID(
     });
 }
 
-// ===== FETCH MULTIPLE ASSEMBLIES BY TAXON ID ===== //
-export async function fetchAssembliesByTaxonIDs(
-  taxonIDs: number[],
-  userID: number,
-  token: string
-): Promise<IResponse<AssemblyInterface>> {
-  return fetch(
-    process.env.REACT_APP_API_ADRESS +
-      "/fetchAssembliesByTaxonIDs?taxonIDs=" +
-      taxonIDs +
-      "&userID=" +
-      userID +
-      "&token=" +
-      token
-  )
-    .then((request) => request.json())
-    .then((data) => data)
-    .catch((error) => {
-      console.error(error);
-    });
-}
-
 // ===== FETCH ONE ASSEMBLY BY ASSEMBLY ID ===== //
 export async function fetchAssemblyByAssemblyID(
   assemblyID: number,
