@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { Search } from "grommet-icons";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
+  fetchAssemblyTags,
   fetchTaxaWithAssemblies,
   fetchUsers,
   Filter,
@@ -42,11 +43,14 @@ const AssembliesFilterForm = ({
   const [filteredTaxa, setFilteredTaxa] = useState<INcbiTaxon[]>([]);
   const [users, setUsers] = useState<IUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [filteredTags, setFilteredTags] = useState<string[]>([]);
   const [minBuscoComplete, setMinBuscoComplete] = useState<number>(0);
   const [minFcatSimilar, setMinFcatSimilar] = useState<number>(0);
   const [fcatMode, setFcatMode] = useState<1 | 2 | 3 | 4>(1);
 
   const [taxonFilterSearch, setTaxonFilterSearch] = useState<string>("");
+  const [tagFilterSearch, setTagFilterSearch] = useState<string>("");
   const [userFilterSearch, setUserFilterSearch] = useState<string>("");
 
   useEffect(() => {
@@ -58,6 +62,11 @@ const AssembliesFilterForm = ({
 
   useEffect(() => {
     loadTaxa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toggleFilterSelection]);
+
+  useEffect(() => {
+    loadTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toggleFilterSelection]);
 
@@ -104,6 +113,23 @@ const AssembliesFilterForm = ({
       });
   };
 
+  const loadTags = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    if (userID && token)
+      await fetchAssemblyTags(userID, token).then((response) => {
+        if (response?.payload) {
+          setTags(response.payload);
+          setFilteredTags(response.payload);
+        }
+
+        if (response?.notification) {
+          response.notification.forEach((n) => handleNewNotification(n));
+        }
+      });
+  };
+
   const loadUsers = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
@@ -140,6 +166,30 @@ const AssembliesFilterForm = ({
     } else {
       setFilter((prevState) => {
         delete prevState.taxonIDs;
+        return { ...prevState };
+      });
+    }
+  };
+
+  const handleSelectTag = (selectedTags: any) => {
+    let values: string[] = [];
+    for (let i = 0, l = selectedTags.length; i < l; i++) {
+      if (selectedTags[i].value === "-1" && selectedTags[i].selected) {
+        values = [];
+        break;
+      }
+      if (selectedTags[i].selected) {
+        values.push(selectedTags[i].value);
+      }
+    }
+
+    if (values.length) {
+      setFilter((prevState) => {
+        return { ...prevState, tags: values };
+      });
+    } else {
+      setFilter((prevState) => {
+        delete prevState.tags;
         return { ...prevState };
       });
     }
@@ -221,6 +271,17 @@ const AssembliesFilterForm = ({
     }
   };
 
+  const handleChangeTagSearch = (search: string) => {
+    setTagFilterSearch(search);
+    if (search) {
+      setFilteredTags((prevState) =>
+        prevState.filter((tag) => tag.toLowerCase().includes(search) || filter.tags?.includes(tag))
+      );
+    } else {
+      setFilteredTags(tags);
+    }
+  };
+
   const handleChangeUserSearch = (search: string) => {
     setUserFilterSearch(search);
     if (search) {
@@ -253,6 +314,8 @@ const AssembliesFilterForm = ({
     classNames("px-2 py-1 border-b text-xs font-semibold truncate text-center", {
       "bg-blue-600 text-white": target.includes(value),
     });
+
+  console.log(filter);
 
   return (
     <div>
@@ -352,6 +415,35 @@ const AssembliesFilterForm = ({
           )}
 
           <div>
+            Tags
+            <hr className="shadow border-gray-300 -mx-2" />
+            <div className="mt-2 w-48">
+              <Input
+                size="sm"
+                placeholder="Search..."
+                onChange={(e) => handleChangeTagSearch(e.target.value)}
+                value={tagFilterSearch}
+              />
+            </div>
+            <select
+              multiple
+              className="mt-2 text-gray-700 text-sm min-h-1/4 max-h-50 w-48 border-2 border-gray-300 px-1 rounded-lg"
+              onChange={(e) => handleSelectTag(e.target.options)}
+            >
+              <option value={-1} className={optionClass(filter.userIDs || [], -1)}>
+                All
+              </option>
+              {filteredTags &&
+                filteredTags.length > 0 &&
+                filteredTags.map((tag) => (
+                  <option key={tag} value={tag} className={optionClass(filter.userIDs || [], tag)}>
+                    {tag}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div>
             Users
             <hr className="shadow border-gray-300 -mx-2" />
             <div className="mt-2 w-48">
@@ -392,7 +484,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasAnnotation", e.target.checked)}
-                checked={filter.hasAnnotation}
+                checked={filter.hasAnnotation ? true : false}
               />
               <span className="px-4">has Annotation</span>
             </label>
@@ -401,7 +493,7 @@ const AssembliesFilterForm = ({
                 className="ring-1 ring-white"
                 type="checkbox"
                 onChange={(e) => handleChangeCheckbox("hasMapping", e.target.checked)}
-                checked={filter.hasMapping}
+                checked={filter.hasMapping ? true : false}
               />
               <span className="px-4">has Mapping</span>
             </label>
@@ -416,7 +508,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasBusco", e.target.checked)}
-                  checked={filter.hasBusco}
+                  checked={filter.hasBusco ? true : false}
                 />
                 <span className="px-4">has Busco</span>
               </label>
@@ -425,7 +517,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasFcat", e.target.checked)}
-                  checked={filter.hasFcat}
+                  checked={filter.hasFcat ? true : false}
                 />
                 <span className="px-4">has fCat</span>
               </label>
@@ -434,7 +526,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
-                  checked={filter.hasMilts}
+                  checked={filter.hasMilts ? true : false}
                 />
                 <span className="px-4">has Milts</span>
               </label>
@@ -443,7 +535,7 @@ const AssembliesFilterForm = ({
                   className="ring-1 ring-white"
                   type="checkbox"
                   onChange={(e) => handleChangeCheckbox("hasRepeatmasker", e.target.checked)}
-                  checked={filter.hasRepeatmasker}
+                  checked={filter.hasRepeatmasker ? true : false}
                 />
                 <span className="px-4">has Repeatmasker</span>
               </label>

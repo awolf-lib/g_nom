@@ -2,6 +2,7 @@ import { Checkmark, Close, Trash } from "grommet-icons";
 import { useEffect, useState } from "react";
 import {
   addAssemblyTag,
+  fetchAssemblyTags,
   fetchAssemblyTagsByAssemblyID,
   INcbiTaxon,
   NotificationObject,
@@ -22,10 +23,14 @@ const AddAssemblyTagForm = ({
   taxon: INcbiTaxon;
   assembly: AssemblyInterface;
 }) => {
-  const [tags, setTags] = useState<AssemblyTagInterface[]>();
+  const [tags, setTags] = useState<AssemblyTagInterface[]>([]);
   const [newAssemblyTag, setNewAssemblyTag] = useState<string>("");
   const [hoverTag, setHoverTag] = useState<number>(-1);
   const [removeTagConfirmation, setRemoveTagConfirmation] = useState<number>(-1);
+
+  const [uniqueTags, setUniqueTags] = useState<string[]>([]);
+  const [filteredTags, setFilteredTags] = useState<string[]>([]);
+  const [tagFilterSearch, setTagFilterSearch] = useState<string>("");
 
   // notifications
   const dispatch = useNotification();
@@ -42,6 +47,11 @@ const AddAssemblyTagForm = ({
     loadTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    loadUniqueTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tags]);
 
   const loadTags = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
@@ -90,6 +100,7 @@ const AddAssemblyTagForm = ({
 
         setNewAssemblyTag("");
         loadTags();
+        loadUniqueTags();
       } else {
         handleNewNotification({ label: "Info", message: "Tag already exists!", type: "info" });
       }
@@ -112,6 +123,7 @@ const AddAssemblyTagForm = ({
       setRemoveTagConfirmation(-1);
       setHoverTag(-1);
       loadTags();
+      loadUniqueTags();
     }
   };
 
@@ -136,6 +148,43 @@ const AddAssemblyTagForm = ({
     }
 
     return { backgroundColor: backgroundColor, color: color };
+  };
+
+  const loadUniqueTags = async () => {
+    const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+    const token = JSON.parse(sessionStorage.getItem("token") || "");
+
+    if (userID && token)
+      await fetchAssemblyTags(userID, token).then((response) => {
+        if (response?.payload) {
+          setUniqueTags(response.payload);
+          setFilteredTags(
+            response.payload.filter(
+              (uniqueTag) =>
+                uniqueTag.toLowerCase().includes(tagFilterSearch) &&
+                !tags.some((tag) => tag.tag === uniqueTag)
+            )
+          );
+        }
+
+        if (response?.notification) {
+          response.notification.forEach((n) => handleNewNotification(n));
+        }
+      });
+  };
+
+  const handleTagFilterSearch = (search: string) => {
+    setTagFilterSearch(search);
+    if (search) {
+      setFilteredTags((prevState) =>
+        prevState.filter(
+          (uniqueTag) =>
+            uniqueTag.toLowerCase().includes(search) && !tags.some((tag) => tag.tag === uniqueTag)
+        )
+      );
+    } else {
+      setFilteredTags(uniqueTags.filter((uniqueTag) => !tags.some((tag) => tag.tag === uniqueTag)));
+    }
   };
 
   return (
@@ -197,22 +246,65 @@ const AddAssemblyTagForm = ({
         </div>
       </div>
       <hr className="shadow my-4" />
-      <div className="flex">
-        <label className="mx-4 flex items-center w-full">
-          <span className="w-32 font-semibold flex justify-center items-center">New tag...</span>
-          <div className="relative w-full mx-4">
-            <Input
-              placeholder="Max. 45 characters..."
-              value={newAssemblyTag}
-              onChange={(e) => handleChangeNewAssemblyTag(e.target.value)}
-            />
-            <div className="absolute bottom-0 right-0 m-2 text-xs">
-              {newAssemblyTag && newAssemblyTag.length + "/45"}
+      <div className="flex w-full">
+        <div className="w-2/3 mx-4 h-full">
+          <div className="w-full">
+            <div className="mb-4 font-bold">Create new tag!</div>
+            <hr className="shadow border-gray-300 -mx-2" />
+            <label className="mx-4 flex items-center justify-between w-full">
+              <div className="w-40 font-semibold flex justify-center items-center">
+                Enter new tag...
+              </div>
+              <div className="relative w-full mx-4 mt-2">
+                <Input
+                  placeholder="Max. 45 characters..."
+                  value={newAssemblyTag}
+                  onChange={(e) => handleChangeNewAssemblyTag(e.target.value)}
+                />
+                <div className="absolute bottom-0 right-0 m-2 text-xs">
+                  {newAssemblyTag && newAssemblyTag.length + "/45"}
+                </div>
+              </div>
+            </label>
+          </div>
+          <div className="w-full flex justify-end mx-4 mt-2">
+            <div className="w-48 mx-4">
+              <Button label="Add" color="confirm" onClick={() => handleAddNewAssemblyTag()} />
             </div>
           </div>
-        </label>
-        <div className="mx-4 w-20">
-          <Button label="Add" color="confirm" onClick={() => handleAddNewAssemblyTag()} />
+        </div>
+        <div className="w-1/3 mx-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-semibold">Existing tags</div>
+            <div className="mt-2 w-2/3 flex">
+              <Input
+                size="sm"
+                placeholder="Search..."
+                onChange={(e) => handleTagFilterSearch(e.target.value)}
+                value={tagFilterSearch}
+              />
+            </div>
+          </div>
+          <hr className="shadow border-gray-300 -mx-2" />
+          <div className="mt-2 max-h-25 overflow-auto">
+            {filteredTags && filteredTags.length > 0 ? (
+              filteredTags.map((tag) => (
+                <div
+                  className="hover:text-blue-800 cursor-pointer border-t border-b even:bg-gray-100 py-2 px-4 transition duration-300"
+                  onClick={() => setNewAssemblyTag(tag)}
+                >
+                  {tag}
+                </div>
+              ))
+            ) : (
+              <div className="w-full text-center py-4">
+                No unselected tags found in other assemblies!
+              </div>
+            )}
+            {filteredTags && filteredTags.length > 30 && (
+              <div className="px-4 py-2 font-semibold">Search for more...</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

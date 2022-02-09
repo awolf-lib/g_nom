@@ -460,6 +460,7 @@ def parseFasta(path, taskID=""):
                 sequence_length = sequence_length + len(lines[idx])
 
                 for char in lines[idx]:
+                    char = char.upper()
                     if char in cumulative_char_counts:
                         cumulative_char_counts[char] = cumulative_char_counts[char] + 1
                     else:
@@ -792,6 +793,15 @@ def fetchAssemblies(
                 assemblies = [
                     x for x in assemblies if x["taxonID"] in filter["taxonIDs"]
                 ]
+            if "tags" in filter:
+                filtered_assemblies=[]
+                for x in assemblies:
+                    print(x)
+                    for tag in filter["tags"]:
+                        if "tags" in x:
+                            if tag in x["tags"]:
+                                filtered_assemblies.append(x)
+                assemblies = filtered_assemblies
             if "userIDs" in filter:
                 assemblies = [x for x in assemblies if x["userID"] in filter["userIDs"]]
             if "hasAnnotation" in filter:
@@ -917,28 +927,6 @@ def fetchAssembliesByTaxonID(taxonID):
         )
 
 
-# FETCHES MULTIPLE ASSEMBLIES BY NCBI TAXON IDS
-def fetchAssembliesByTaxonIDs(taxonIDs):
-    """
-    Fetches all assemblies for multiple (internal) taxon IDs.
-    """
-    try:
-        connection, cursor, error = connect()
-        cursor.execute(
-            f"SELECT taxa.*, assemblies.*, users.username FROM assemblies, taxa, users WHERE assemblies.taxonID = taxa.id AND assemblies.addedBy=users.id AND taxa.id IN ({taxonIDs})",
-        )
-        row_headers = [x[0] for x in cursor.description]
-        assemblies = cursor.fetchall()
-
-    except Exception as err:
-        return [], createNotification(message=f"AssembliesFetchingError: {str(err)}")
-
-    if len(assemblies):
-        return [dict(zip(row_headers, x)) for x in assemblies], []
-    else:
-        return [], createNotification("Info", "No assemblies found!", "info")
-
-
 # FETCHES ONE ASSEMBLY BY ITS ID
 def fetchAssemblyByAssemblyID(id, userID):
     """
@@ -977,7 +965,7 @@ def fetchAssemblyByAssemblyID(id, userID):
 # ADDS A NEW ASSEMBLY TAG
 def addAssemblyTag(assemblyID, tag):
     """
-    Adds a new assembly tag.
+    Adds a new assembly tag to specific assembly ID.
     """
 
     try:
@@ -1017,9 +1005,35 @@ def removeAssemblyTagbyTagID(tagID):
 
 
 # FETCHES ALL ASSEMBLY TAGS BY ID
+def fetchAssemblyTags():
+    """
+    Fetches all unique assembly tags.
+    """
+
+    try:
+        connection, cursor, error = connect()
+
+        cursor.execute("SELECT DISTINCT(tag) FROM tags")
+
+        row_headers = [x[0] for x in cursor.description]
+        tags = cursor.fetchall()
+
+        if tags:
+            tags = [x[0] for x in tags]
+
+        # if not len(tags):
+        #     return [], createNotification("Info", "No tags found!", "info")
+
+        return tags, []
+
+    except Exception as err:
+        return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
+
+
+# FETCHES ALL ASSEMBLY TAGS BY ID
 def fetchAssemblyTagsByAssemblyID(assemblyID):
     """
-    Fetches all assembly tags for an assembly.
+    Fetches all assembly tags by specific assembly ID.
     """
 
     try:
@@ -1067,7 +1081,7 @@ def fetchAssemblyGeneralInformationByAssemblyID(assemblyID):
 # ADD GENERAL INFO
 def addAssemblyGeneralInformation(assemblyID, key, value):
     """
-    Add general info by level and id
+    Adds a general information to specific assembly ID.
     """
 
     try:
@@ -1091,7 +1105,7 @@ def addAssemblyGeneralInformation(assemblyID, key, value):
 # UPDATE GENERAL INFO
 def updateAssemblyGeneralInformationByID(id, key, value):
     """
-    update general info by level and id
+    Updates a general information by specific assembly ID.
     """
 
     try:

@@ -1,5 +1,6 @@
 # general imports
-from flask import Blueprint, jsonify, request
+from genericpath import exists
+from flask import Blueprint, jsonify, request, send_file
 
 # local imports
 from modules.users import validateActiveToken
@@ -38,5 +39,37 @@ def files_bp_deleteAnalysesByAnalysesID():
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH FILES BY PATH (example: Milts plot)
+@files_bp.route("/fetchFileByPath", methods=["GET"])
+def files_bp_fetchFileByPath():
+    if request.method == "GET":
+        userID = request.args.get("userID")
+        token = request.args.get("token")
+
+        # token still active?
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": 0, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        path = request.args.get("path")
+
+        if not path or not exists(path):
+            response = jsonify(
+                {
+                    "payload": 0,
+                    "notification": createNotification(
+                        message="File path does not exist anymore!"
+                    ),
+                }
+            )
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+        return send_file(path)
     else:
         return REQUESTMETHODERROR

@@ -370,7 +370,6 @@ def taxa_bp_deleteTaxonGeneralInformationByID():
 @taxa_bp.route("/updateTaxonTree", methods=["GET"])
 def taxa_bp_updateTaxonTree():
     if request.method == "GET":
-        id = request.args.get("id")
         data, notification = updateTaxonTree()
 
         response = jsonify({"payload": data, "notification": notification})

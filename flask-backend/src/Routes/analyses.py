@@ -1,6 +1,5 @@
 # general imports
-from flask import Blueprint, jsonify, request, send_file
-from os.path import exists
+from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.notifications import createNotification
@@ -15,7 +14,6 @@ from modules.analyses import (
     import_analyses,
     updateAnalysisLabel,
 )
-from modules.environment import BASE_PATH_TO_STORAGE
 
 # setup blueprint name
 analyses_bp = Blueprint("analyses", __name__)
@@ -256,34 +254,3 @@ def analyses_bp_fetchRepeatmaskerAnalysesByAssemblyID():
     else:
         return REQUESTMETHODERROR
 
-
-# FETCH FILES BY PATH (example: Milts plot)
-@analyses_bp.route("/fetchFileByPath", methods=["GET"])
-def analyses_bp_fetchFileByPath():
-    if request.method == "GET":
-        userID = request.args.get("userID")
-        token = request.args.get("token")
-
-        # token still active?
-        valid_token, error = validateActiveToken(userID, token)
-        if not valid_token:
-            response = jsonify({"payload": 0, "notification": error})
-            response.headers.add("Access-Control-Allow-Origin", "*")
-            return response
-
-        path = request.args.get("path")
-
-        if not path or not exists(path):
-            response = jsonify(
-                {
-                    "payload": 0,
-                    "notification": createNotification(
-                        message="File path does not exist anymore!"
-                    ),
-                }
-            )
-            response.headers.add("Access-Control-Allow-Origin", "*")
-            return response
-        return send_file(path)
-    else:
-        return REQUESTMETHODERROR

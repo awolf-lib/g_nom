@@ -241,56 +241,6 @@ def __store_analyses(
             )
         # add remove?
 
-        if analyses_type == "milts":
-            try:
-                with open(new_file_path_main_file, "r") as plotFile:
-                    plot_data = "".join(plotFile.readlines()).replace("\n", "")
-                    plot_data = plot_data.replace(
-                        '"title":"taxonomic assignment"', f'"title":"{analyses_name}"'
-                    )
-                    plotFile.close()
-
-                with open(
-                    "/flask-backend/src/modules/templates/milts_head_template.html", "r"
-                ) as milts_template_file:
-                    milts_template = milts_template_file.readlines()
-                    milts_template_file.close()
-
-                body_regex = compile(r"<body>.*</body>")
-                body_match = body_regex.findall(plot_data)
-                if len(body_match) != 1:
-                    return (
-                        "",
-                        "",
-                        createNotification(
-                            message="Error inserting scripts into old milts version!"
-                        ),
-                    )
-
-                for i in range(len(milts_template) - 1, len(milts_template) - 5, -1):
-                    if "<body>REPLACE_BODY</body>" in milts_template[i]:
-                        milts_template[i] = milts_template[i].replace(
-                            "<body>REPLACE_BODY</body>", body_match[0]
-                        )
-                    elif "<title>REPLACE_TITLE</title>" in milts_template[i]:
-                        milts_template[i] = milts_template[i].replace(
-                            "REPLACE_TITLE", analyses_name
-                        )
-                        break
-
-                with open(new_file_path_main_file, "w") as plotFile:
-                    plotFile.writelines(milts_template)
-                    plotFile.close()
-            except Exception as err:
-                print(err, flush=True)
-                return (
-                    "",
-                    "",
-                    createNotification(
-                        message=f"MiltsHeaderInsertionError: {str(err)}"
-                    ),
-                )
-
         # handle additional files
         if "additional_files" in dataset:
             for additional_file in dataset["additional_files"]:
@@ -387,9 +337,19 @@ def __importBusco(assemblyID, analysisID, buscoData):
                 message="Busco total number does not match sum of all categories!"
             )
 
-        tagAddedStatus, notification = addAssemblyTag(
-            assemblyID, f"BUSCO_COMPLETE_{floor(completeSinglePercent)}"
-        )
+        if (completeSinglePercent >= 50):
+            tagAddedStatus, notification = addAssemblyTag(
+                assemblyID, f"BUSCO_COMPLETE_50"
+            )
+        if (completeSinglePercent >= 75):
+            tagAddedStatus, notification = addAssemblyTag(
+                assemblyID, f"BUSCO_COMPLETE_75"
+            )
+        if (completeSinglePercent >= 90):
+            tagAddedStatus, notification = addAssemblyTag(
+                assemblyID, f"BUSCO_COMPLETE_90"
+            )
+
         if not tagAddedStatus:
             notifications += notification
 
@@ -440,9 +400,20 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m1_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m1_total = fcatData[mode]["total"]
                 m1_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(
-                    assemblyID, f"FCAT_M1_SIMILAR_{floor(m1_similarPercent)}"
-                )
+
+                if (m1_similarPercent >= 50):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M1_SIMILAR_50"
+                    )
+                if (m1_similarPercent >= 75):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M1_SIMILAR_75"
+                    )
+                if (m1_similarPercent >= 90):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M1_SIMILAR_90"
+                    )
+
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_2":
@@ -458,9 +429,20 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m2_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m2_total = fcatData[mode]["total"]
                 m2_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(
-                    assemblyID, f"FCAT_M2_SIMILAR_{floor(m2_similarPercent)}"
-                )
+
+                if (m2_similarPercent >= 50):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M2_SIMILAR_50"
+                    )
+                if (m2_similarPercent >= 75):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M2_SIMILAR_75"
+                    )
+                if (m2_similarPercent >= 90):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M2_SIMILAR_90"
+                    )
+
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_3":
@@ -476,9 +458,20 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m3_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m3_total = fcatData[mode]["total"]
                 m3_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(
-                    assemblyID, f"FCAT_M3_SIMILAR_{floor(m3_similarPercent)}"
-                )
+
+                if (m3_similarPercent >= 50):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M3_SIMILAR_50"
+                    )
+                if (m3_similarPercent >= 75):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M3_SIMILAR_75"
+                    )
+                if (m3_similarPercent >= 90):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M3_SIMILAR_90"
+                    )
+
                 if not tagAddedStatus:
                     notifications += notification
             elif mode == "mode_4":
@@ -494,9 +487,20 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m4_ignoredPercent = fcatData[mode]["ignoredPercent"]
                 m4_total = fcatData[mode]["total"]
                 m4_genomeID = fcatData[mode]["genomeID"]
-                tagAddedStatus, notification = addAssemblyTag(
-                    assemblyID, f"FCAT_M4_SIMILAR_{floor(m4_similarPercent)}"
-                )
+
+                if (m4_similarPercent >= 50):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M4_SIMILAR_50"
+                    )
+                if (m4_similarPercent >= 75):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M4_SIMILAR_75"
+                    )
+                if (m4_similarPercent >= 90):
+                    tagAddedStatus, notification = addAssemblyTag(
+                        assemblyID, f"FCAT_M4_SIMILAR_90"
+                    )
+
                 if not tagAddedStatus:
                     notifications += notification
 
@@ -631,9 +635,16 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
             * 100
             / (total_non_repetitive_length + total_repetitive_length)
         )
-        tagAddedStatus, notification = addAssemblyTag(
-            assemblyID, f"REPETITIVENESS_{floor(repetitiveness)}"
-        )
+
+        if (repetitiveness >= 50):
+            tagAddedStatus, notification = addAssemblyTag(
+                assemblyID, f"REPETITIVENESS_50"
+            )
+        if (repetitiveness >= 75):
+            tagAddedStatus, notification = addAssemblyTag(
+                assemblyID, f"REPETITIVENESS_75"
+            )
+
         if not tagAddedStatus:
             notifications += notification
 
