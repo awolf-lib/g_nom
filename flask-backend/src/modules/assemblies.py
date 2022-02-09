@@ -793,6 +793,15 @@ def fetchAssemblies(
                 assemblies = [
                     x for x in assemblies if x["taxonID"] in filter["taxonIDs"]
                 ]
+            if "tags" in filter:
+                filtered_assemblies=[]
+                for x in assemblies:
+                    print(x)
+                    for tag in filter["tags"]:
+                        if "tags" in x:
+                            if tag in x["tags"]:
+                                filtered_assemblies.append(x)
+                assemblies = filtered_assemblies
             if "userIDs" in filter:
                 assemblies = [x for x in assemblies if x["userID"] in filter["userIDs"]]
             if "hasAnnotation" in filter:
@@ -1015,6 +1024,32 @@ def removeAssemblyTagbyTagID(tagID):
 
     except Exception as err:
         return {}, createNotification(message=f"AssemblyTagDelitionError: {str(err)}")
+
+
+# FETCHES ALL ASSEMBLY TAGS BY ID
+def fetchAssemblyTags():
+    """
+    Fetches all assembly tags.
+    """
+
+    try:
+        connection, cursor, error = connect()
+
+        cursor.execute("SELECT DISTINCT(tag) FROM tags")
+
+        row_headers = [x[0] for x in cursor.description]
+        tags = cursor.fetchall()
+
+        if tags:
+            tags = [x[0] for x in tags]
+
+        # if not len(tags):
+        #     return [], createNotification("Info", "No tags found!", "info")
+
+        return tags, []
+
+    except Exception as err:
+        return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
 
 
 # FETCHES ALL ASSEMBLY TAGS BY ID

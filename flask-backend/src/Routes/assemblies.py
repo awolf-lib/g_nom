@@ -12,6 +12,7 @@ from modules.assemblies import (
     fetchAssemblyByAssemblyID,
     fetchAssemblyGeneralInformationByAssemblyID,
     fetchAssemblySequenceHeaders,
+    fetchAssemblyTags,
     fetchAssemblyTagsByAssemblyID,
     import_assembly,
     fetchAssemblies,
@@ -294,8 +295,32 @@ def assemblies_bp_removeAssemblyTag():
     else:
         return REQUESTMETHODERROR
 
-
+    
 # FETCH ALL ASSEMBLY TAGS
+@assemblies_bp.route("/fetchAssemblyTags", methods=["GET"])
+def assemblies_bp_fetchAssemblyTags():
+    if request.method == "GET":
+        userID = request.args.get("userID", None)
+        token = request.args.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+
+        data, notification = fetchAssemblyTags()
+
+        response = jsonify({"payload": data, "notification": notification})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+
+        return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL ASSEMBLY TAGS BY ASSEMBLY ID
 @assemblies_bp.route("/fetchAssemblyTagsByAssemblyID", methods=["GET"])
 def assemblies_bp_fetchAssemblyTagsByAssemblyID():
     if request.method == "GET":

@@ -415,6 +415,7 @@ export async function fetchAssemblies(
 
 export interface Filter {
   userIDs?: number[];
+  tags?: string[];
   taxonIDs?: number[];
   hasAnnotation?: boolean;
   hasMapping?: boolean;
@@ -538,6 +539,21 @@ export async function removeAssemblyTagbyTagID(
       userID +
       "&token=" +
       token
+  )
+    .then((request) => request.json())
+    .then((data) => data)
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+// ===== FETCH ALL ASSEMBLY TAGS ===== //
+export async function fetchAssemblyTags(
+  userID: number,
+  token: string
+): Promise<IResponse<string[]>> {
+  return fetch(
+    process.env.REACT_APP_API_ADRESS + "/fetchAssemblyTags?userID=" + userID + "&token=" + token
   )
     .then((request) => request.json())
     .then((data) => data)
