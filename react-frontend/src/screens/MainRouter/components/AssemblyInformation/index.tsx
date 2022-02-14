@@ -132,8 +132,6 @@ const AssemblyInformation = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id]);
 
-  console.log(buscoAnalyses);
-
   useEffect(() => {
     loadAssemblySequenceHeaders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
