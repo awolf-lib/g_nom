@@ -38,13 +38,19 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
     let missing_absolute = [];
     let names = [];
     busco.length > 0 &&
-      busco.forEach((analysis) => {
+      busco.forEach((analysis, index) => {
         let total =
           analysis.completeSingle +
           analysis.completeDuplicated +
           analysis.fragmented +
           analysis.missing;
-        names.push(analysis.dataset || analysis.label || analysis.name);
+        if (analysis.label) {
+          names.push(analysis.label + " - id: " + analysis.id);
+        } else if (analysis.dataset) {
+          names.push(analysis.dataset + " - id: " + analysis.id);
+        } else {
+          names.push(analysis.name + " - id: " + analysis.id);
+        }
         complete.push((analysis.completeSingle * 100) / total);
         complete_absolute.push(analysis.completeSingle + "/" + total);
         duplicated.push((analysis.completeDuplicated * 100) / total);
