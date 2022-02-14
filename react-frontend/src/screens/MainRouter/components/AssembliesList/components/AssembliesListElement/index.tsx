@@ -73,7 +73,7 @@ const AssembliesListElement = ({
     >
       <div className="flex items-center text-center w-full">
         <div className="flex items-center mr-4">
-          <div className="w-16 h-16 object-contain rounded-lg overflow-hidden shadow border ring-1 ring-gray-300 ring-offset-1">
+          <div className="w-16 h-16 rounded-lg overflow-hidden shadow border ring-1 ring-gray-300 ring-offset-1">
             <SpeciesProfilePictureViewer
               taxonID={taxonID}
               imagePath={imagePath}

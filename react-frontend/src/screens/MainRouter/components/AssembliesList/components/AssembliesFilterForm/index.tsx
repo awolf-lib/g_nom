@@ -315,8 +315,6 @@ const AssembliesFilterForm = ({
       "bg-blue-600 text-white": target.includes(value),
     });
 
-  console.log(filter);
-
   return (
     <div>
       <div className="w-full flex justify-between items-center">

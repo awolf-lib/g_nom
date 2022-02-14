@@ -113,97 +113,41 @@ const AssemblyInformation = () => {
   };
 
   useEffect(() => {
-    if (toggleAssembly || !assembly?.id) {
-      loadAssembly();
-    }
+    loadAssembly();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assemblyID, toggleAssembly]);
+  }, [searchParams]);
 
   useEffect(() => {
-    if (toggleAssembly) {
-      loadAssemblySequenceHeaders();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleAssembly, assemblyHeadersOffset, sequenceHeaderSearch]);
-
-  useEffect(() => {
-    if (toggleAssembly) {
-      loadAssemblyGeneralInformation();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleAssembly]);
-
-  useEffect(() => {
-    if (toggleTaxon) {
-      loadTaxon();
-      window.scrollTo(0, 0);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.taxonID, toggleTaxon]);
-
-  useEffect(() => {
-    if (toggleTaxon) {
-      loadTaxonGeneralInformation();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.taxonID, toggleTaxon]);
-
-  useEffect(() => {
-    if (toggleTaxon) {
-      loadAssemblyTags();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.taxonID, toggleTaxon]);
-
-  useEffect(() => {
-    if (toggleAnnotations) {
-      loadAnnotations();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleAnnotations]);
-
-  useEffect(() => {
-    if (toggleGenomeViewer) {
-      if (!assembly?.id) {
-        loadAssembly();
-      }
-      if (!annotations.length) {
-        loadAnnotations();
-      }
-      if (!mappings.length) {
-        loadMappings();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleGenomeViewer]);
-
-  useEffect(() => {
-    if (toggleBuscoAnalyses) {
+    loadAssemblyTags();
+    loadAnnotations();
+    loadMappings();
+    const timeout1 = setTimeout(() => {
       loadBuscoAnalyses();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleBuscoAnalyses]);
-
-  useEffect(() => {
-    if (toggleFcatAnalyses) {
       loadFcatAnalysees();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleFcatAnalyses]);
-
-  useEffect(() => {
-    if (toggleMiltsAnalyses) {
       loadMiltsAnalyses();
-    }
+      loadRepeatmaskerAnalyses();
+    }, 2000);
+
+    return () => clearTimeout(timeout1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleMiltsAnalyses]);
+  }, [assembly?.id]);
 
   useEffect(() => {
-    if (toggleRepeatmaskerAnalyses) {
-      loadRepeatmaskerAnalyses();
-    }
+    loadAssemblySequenceHeaders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assembly?.id, toggleRepeatmaskerAnalyses]);
+  }, [assembly?.id, assemblyHeadersOffset, sequenceHeaderSearch]);
+
+  useEffect(() => {
+    loadAssemblyGeneralInformation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assembly?.id]);
+
+  useEffect(() => {
+    loadTaxon();
+    loadTaxonGeneralInformation();
+    window.scrollTo(0, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assembly?.taxonID]);
 
   useEffect(() => {
     if (location) {
@@ -567,7 +511,7 @@ const AssemblyInformation = () => {
         {/* TAXON IMAGE*/}
         <div className="flex justify-center items-center">
           {toggleTaxon && (
-            <div className="w-full shadow animate-fade-in bg-gray-500 overflow-hidden bg-white border-4 border-double border-gray-300">
+            <div className="w-full h-full shadow animate-fade-in bg-gray-500 overflow-hidden bg-white border-4 border-double border-gray-300">
               {taxon?.id && (
                 <SpeciesProfilePictureViewer
                   taxonID={taxon.id}
@@ -671,176 +615,163 @@ const AssemblyInformation = () => {
           )}
         </div>
 
-        <div
-          onClick={() => setToggleMiltsAnalyses((prevState) => !prevState)}
-          className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Taxonomic assignment</div>
-          <div className="text-sm">
-            {(fetchingMiltsAnalyses || taxonomicAssignmentLoading) && (
-              <LoadingSpinner label="Loading milts data..." />
-            )}
+        {/* MILTS - Taxonomic assignment */}
+        {miltsAnalyses && miltsAnalyses.length > 0 && (
+          <div
+            onClick={() => setToggleMiltsAnalyses((prevState) => !prevState)}
+            className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Taxonomic assignment</div>
+            <div className="text-sm">
+              {(fetchingMiltsAnalyses || (taxonomicAssignmentLoading && toggleMiltsAnalyses)) && (
+                <LoadingSpinner label="Loading Milts data..." />
+              )}
+            </div>
+            <div className="flex items-center w-96 justify-end">
+              {toggleMiltsAnalyses ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
           </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleMiltsAnalyses ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
-
-        {/* MILTS */}
-        <div className="flex justify-center col-span-5">
-          {toggleMiltsAnalyses && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {miltsAnalyses && miltsAnalyses.length > 0 ? (
+        )}
+        {miltsAnalyses && miltsAnalyses.length > 0 && (
+          <div className="flex justify-center col-span-5">
+            {toggleMiltsAnalyses && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <TaxonomicAssignmentViewer
                   milts={miltsAnalyses}
                   setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
                 />
-              ) : (
-                <div className="text-center py-4 font-semibold">No taxonomic assignemnt!</div>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ANNOTATION */}
-        <div
-          onClick={() => setToggleAnnotations((prevState) => !prevState)}
-          className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Annotation information</div>
-          <div className="text-sm">
-            {fetchingAnnotations && <LoadingSpinner label="Loading annotation data..." />}
+        {assembly?.id && annotations && annotations.length > 0 && (
+          <div
+            onClick={() => setToggleAnnotations((prevState) => !prevState)}
+            className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Annotation information</div>
+            <div className="text-sm">
+              {fetchingAnnotations && <LoadingSpinner label="Loading annotation data..." />}
+            </div>
+            <div className="flex items-center w-96 justify-end">
+              {toggleAnnotations ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
           </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleAnnotations ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-center col-span-5">
-          {toggleAnnotations && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && annotations && annotations.length > 0 ? (
+        )}
+        {assembly?.id && annotations && annotations.length > 0 && (
+          <div className="flex justify-center col-span-5">
+            {toggleAnnotations && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <FeaturesList title="Features by assembly" assemblyID={assembly.id} />
-              ) : (
-                <div className="text-center py-4 font-semibold">No features for this assembly!</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="col-span-1" />
-
-        <div className="flex justify-center col-span-3">
-          {toggleAnnotations && (
-            <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {annotations && annotations.length > 0 ? (
+              </div>
+            )}
+          </div>
+        )}
+        {assembly?.id && annotations && annotations.length > 0 && (
+          <div className="flex justify-center col-span-5">
+            {toggleAnnotations && (
+              <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <AnnotationStatisticsPlotViewer annotations={annotations} />
-              ) : (
-                <div className="text-center py-4 font-semibold">No annotation!</div>
-              )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* BUSCO & FCAT */}
+        {(buscoAnalyses && buscoAnalyses.length > 0) ||
+          (fcatAnalyses && fcatAnalyses.length > 0 && (
+            <div
+              onClick={() => {
+                setToggleBuscoAnalyses((prevState) => !prevState);
+                setToggleFcatAnalyses((prevState) => !prevState);
+              }}
+              className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+            >
+              <div className="w-96">Annotation completeness</div>
+              <div className="text-sm">
+                {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
+                  <LoadingSpinner label="Loading busco/fcat data..." />
+                )}
+              </div>
+              <div className="flex items-center w-96 justify-end">
+                {toggleBuscoAnalyses ? (
+                  <Down className="stroke-current animate-grow-y" color="blank" />
+                ) : (
+                  <Up className="stroke-current animate-grow-y" color="blank" />
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          ))}
 
-        <div className="col-span-1" />
-
-        <div
-          onClick={() => {
-            setToggleBuscoAnalyses((prevState) => !prevState);
-            setToggleFcatAnalyses((prevState) => !prevState);
-          }}
-          className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Annotation completeness</div>
-          <div className="text-sm">
-            {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
-              <LoadingSpinner label="Loading busco/fcat data..." />
-            )}
-          </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleBuscoAnalyses ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
-
-        <div className="col-span-1" />
-
-        <div className="flex justify-center col-span-3">
-          {toggleBuscoAnalyses && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {buscoAnalyses && buscoAnalyses.length > 0 ? (
+        {/* BUSCO */}
+        {buscoAnalyses && buscoAnalyses.length > 0 && (
+          <div className="flex justify-center col-span-5">
+            {toggleBuscoAnalyses && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <BuscoViewer taxon={taxon} assembly={assembly} busco={buscoAnalyses} />
-              ) : (
-                <div className="text-center py-4 font-semibold">No busco analyses!</div>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
 
-        <div className="col-span-1" />
-
-        <div className="col-span-1" />
-
-        <div className="flex justify-center col-span-3">
-          {toggleFcatAnalyses && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {fcatAnalyses && fcatAnalyses.length > 0 ? (
+        {/* FCAT */}
+        {fcatAnalyses && fcatAnalyses.length > 0 && (
+          <div className="flex justify-center col-span-3">
+            {toggleFcatAnalyses && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <FcatViewer taxon={taxon} assembly={assembly} fcat={fcatAnalyses} />
-              ) : (
-                <div className="text-center py-4 font-semibold">No fCat analyses!</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* REPEATMASKER */}
+        {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
+          <div
+            onClick={() => setToggleRepeatmaskerAnalyses((prevState) => !prevState)}
+            className="mt-12 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Repeatmasking</div>
+            <div className="text-sm">
+              {fetchingRepeatmaskerAnalyses && (
+                <LoadingSpinner label="Loading repeatmasker data..." />
               )}
             </div>
-          )}
-        </div>
-
-        <div className="col-span-1" />
-
-        <div
-          onClick={() => setToggleRepeatmaskerAnalyses((prevState) => !prevState)}
-          className="mt-12 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Repeatmasking</div>
-          <div className="text-sm">
-            {fetchingRepeatmaskerAnalyses && (
-              <LoadingSpinner label="Loading repeatmasker data..." />
-            )}
+            <div className="flex items-center w-96 justify-end">
+              {toggleRepeatmaskerAnalyses ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
           </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleRepeatmaskerAnalyses ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
+        )}
 
-        <div className="flex justify-center col-span-5">
-          {toggleRepeatmaskerAnalyses && (
-            <div className="w-full h-full overflow-hidden">
-              {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 ? (
+        {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
+          <div className="flex justify-center col-span-5">
+            {toggleRepeatmaskerAnalyses && (
+              <div className="w-full h-full overflow-hidden">
                 <MaskingsViewer
                   assembly={assembly}
                   taxon={taxon}
                   repeatmasker={repeatmaskerAnalyses}
                 />
-              ) : (
-                <div className="text-center py-4 font-semibold">No repeatmasker analyses!</div>
-              )}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        )}
 
+        {/* GENOME VIEWER */}
         <div
           onClick={() => setToggleGenomeViewer((prevState) => !prevState)}
           className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
@@ -860,7 +791,6 @@ const AssemblyInformation = () => {
           </div>
         </div>
 
-        {/* GENOME VIEWER */}
         <div className="flex justify-center col-span-5">
           {toggleGenomeViewer && !fetchingAssembly && !fetchingAnnotations && !fetchingMappings ? (
             <div className="w-full h-full animate-fade-in overflow-hidden">
