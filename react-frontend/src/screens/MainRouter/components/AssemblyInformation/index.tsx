@@ -728,7 +728,7 @@ const AssemblyInformation = () => {
 
         {/* FCAT */}
         {fcatAnalyses && fcatAnalyses.length > 0 && (
-          <div className="flex justify-center col-span-3">
+          <div className="flex justify-center col-span-5">
             {toggleFcatAnalyses && (
               <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                 <FcatViewer taxon={taxon} assembly={assembly} fcat={fcatAnalyses} />
