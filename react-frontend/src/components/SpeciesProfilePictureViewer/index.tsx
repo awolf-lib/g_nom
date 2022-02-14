@@ -57,9 +57,9 @@ const SpeciesProfilePictureViewer = ({
   };
 
   return (
-    <div className="bg-gray-700" style={{ aspectRatio: "1 / 1" }}>
+    <div className="bg-gray-700 h-full w-full" style={{ aspectRatio: "1 / 1" }}>
       <img
-        className="h-full object-contain bg-black"
+        className="h-full w-full object-fit bg-white"
         alt="Species profile"
         src={imagePath && image ? getImageURL() : picPlacerholder}
       />

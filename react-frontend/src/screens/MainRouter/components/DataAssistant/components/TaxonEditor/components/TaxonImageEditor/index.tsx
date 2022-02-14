@@ -106,7 +106,7 @@ const TaxonImageEditor = ({
         {taxon && taxon.imagePath && (
           <div className="w-64 mx-4">
             <div className="text-center py-2 font-semibold">Current taxon image:</div>
-            <div className="w-64 animate-fade-in rounded-lg overflow-hidden shadow">
+            <div className="w-64 h-64 animate-fade-in rounded-lg overflow-hidden shadow">
               <SpeciesProfilePictureViewer taxonID={taxon.id} imagePath={taxon.imagePath} />
             </div>
             <div className="mt-4 flex justify-center">
@@ -121,8 +121,15 @@ const TaxonImageEditor = ({
         )}
         <div className="w-64 mx-4">
           <div className="text-center py-2 font-semibold">Preview:</div>
-          <div className="w-64 animate-fade-in rounded-lg overflow-hidden shadow">
-            <img src={preview || picPlacerholder} alt="PrewiewImage" />
+          <div
+            className="bg-gray-700 h-64 w-64 animate-fade-in rounded-lg overflow-hidden shadow"
+            style={{ aspectRatio: "1 / 1" }}
+          >
+            <img
+              className="h-full w-full object-fit bg-black"
+              src={preview || picPlacerholder}
+              alt="PrewiewImage"
+            />
           </div>
           {inputRef && (
             <div className="flex justify-between mt-4">
