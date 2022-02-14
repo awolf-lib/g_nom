@@ -6,7 +6,7 @@ from math import floor
 from .notifications import createNotification
 from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
-from .assemblies import addAssemblyTag
+from .assemblies import addAssemblyTag, fetchAssemblyTagsByAssemblyID
 from .files import scanFiles
 
 ## ============================ IMPORT AND DELETE ============================ ##
@@ -313,16 +313,19 @@ def __importBusco(assemblyID, analysisID, buscoData):
         if total != completeSingle + completeDuplicated + fragmented + missing:
             return 0, createNotification(message="Busco total number does not match sum of all categories!")
 
-        if completeSinglePercent >= 50:
-            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_50")
+        tags, fetchTagsNotifications = fetchAssemblyTagsByAssemblyID(assemblyID)
+        tags = [x["tag"] for x in tags]
+
+        if completeSinglePercent >= 50 and "BUSCO_COMPLETE_50" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "BUSCO_COMPLETE_50")
             if not tagAddedStatus:
                 notifications += notification
-        if completeSinglePercent >= 75:
-            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_75")
+        if completeSinglePercent >= 75 and "BUSCO_COMPLETE_75" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "BUSCO_COMPLETE_75")
             if not tagAddedStatus:
                 notifications += notification
-        if completeSinglePercent >= 90:
-            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_90")
+        if completeSinglePercent >= 90 and "BUSCO_COMPLETE_90" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "BUSCO_COMPLETE_90")
             if not tagAddedStatus:
                 notifications += notification
 
@@ -359,6 +362,10 @@ def __importFcat(assemblyID, analysisID, fcatData):
     """
     try:
         notifications = []
+
+        tags, fetchTagsNotifications = fetchAssemblyTagsByAssemblyID(assemblyID)
+        tags = [x["tag"] for x in tags]
+
         for mode in fcatData:
             if mode == "mode_1":
                 m1_similar = fcatData[mode]["similar"]
@@ -374,16 +381,16 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m1_total = fcatData[mode]["total"]
                 m1_genomeID = fcatData[mode]["genomeID"]
 
-                if m1_similarPercent >= 50:
-                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_50")
+                if m1_similarPercent >= 50 and "FCAT_M1_SIMILAR_50" not in tags:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, "FCAT_M1_SIMILAR_50")
                     if not tagAddedStatus:
                         notifications += notification
-                if m1_similarPercent >= 75:
-                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_75")
+                if m1_similarPercent >= 75 and "FCAT_M1_SIMILAR_75" not in tags:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, "FCAT_M1_SIMILAR_75")
                     if not tagAddedStatus:
                         notifications += notification
-                if m1_similarPercent >= 90:
-                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_90")
+                if m1_similarPercent >= 90 and "FCAT_M1_SIMILAR_90" not in tags:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, "FCAT_M1_SIMILAR_90")
                     if not tagAddedStatus:
                         notifications += notification
             elif mode == "mode_2":
@@ -400,15 +407,15 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m2_total = fcatData[mode]["total"]
                 m2_genomeID = fcatData[mode]["genomeID"]
 
-                if m2_similarPercent >= 50:
+                if m2_similarPercent >= 50 and "FCAT_M2_SIMILAR_50" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_50")
                     if not tagAddedStatus:
                         notifications += notification
-                if m2_similarPercent >= 75:
+                if m2_similarPercent >= 75 and "FCAT_M2_SIMILAR_75" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_75")
                     if not tagAddedStatus:
                         notifications += notification
-                if m2_similarPercent >= 90:
+                if m2_similarPercent >= 90 and "FCAT_M2_SIMILAR_90" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_90")
                     if not tagAddedStatus:
                         notifications += notification
@@ -426,15 +433,15 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m3_total = fcatData[mode]["total"]
                 m3_genomeID = fcatData[mode]["genomeID"]
 
-                if m3_similarPercent >= 50:
+                if m3_similarPercent >= 50 and "FCAT_M3_SIMILAR_50" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_50")
                     if not tagAddedStatus:
                         notifications += notification
-                if m3_similarPercent >= 75:
+                if m3_similarPercent >= 75 and "FCAT_M3_SIMILAR_75" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_75")
                     if not tagAddedStatus:
                         notifications += notification
-                if m3_similarPercent >= 90:
+                if m3_similarPercent >= 90 and "FCAT_M3_SIMILAR_90" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_90")
                     if not tagAddedStatus:
                         notifications += notification
@@ -452,15 +459,15 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m4_total = fcatData[mode]["total"]
                 m4_genomeID = fcatData[mode]["genomeID"]
 
-                if m4_similarPercent >= 50:
+                if m4_similarPercent >= 50 and "FCAT_M4_SIMILAR_50" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_50")
                     if not tagAddedStatus:
                         notifications += notification
-                if m4_similarPercent >= 75:
+                if m4_similarPercent >= 75 and "FCAT_M4_SIMILAR_75" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_75")
                     if not tagAddedStatus:
                         notifications += notification
-                if m4_similarPercent >= 90:
+                if m4_similarPercent >= 90 and "FCAT_M4_SIMILAR_90" not in tags:
                     tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_90")
                     if not tagAddedStatus:
                         notifications += notification
@@ -591,12 +598,19 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
     try:
         repetitiveness = total_repetitive_length * 100 / (total_non_repetitive_length + total_repetitive_length)
 
-        if repetitiveness >= 50:
-            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"REPETITIVENESS_50")
+        tags, fetchTagsNotifications = fetchAssemblyTagsByAssemblyID(assemblyID)
+        tags = [x["tag"] for x in tags]
+
+        if repetitiveness >= 50 and "REPETITIVENESS_50" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "REPETITIVENESS_50")
             if not tagAddedStatus:
                 notifications += notification
-        if repetitiveness >= 75:
-            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"REPETITIVENESS_75")
+        if repetitiveness >= 75 and "REPETITIVENESS_75" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "REPETITIVENESS_75")
+            if not tagAddedStatus:
+                notifications += notification
+        if repetitiveness >= 90 and "REPETITIVENESS_90" not in tags:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, "REPETITIVENESS_90")
             if not tagAddedStatus:
                 notifications += notification
 

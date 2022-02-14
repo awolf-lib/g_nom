@@ -50,7 +50,11 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
           analysis["m" + activeMode + "_dissimilar"] +
           analysis["m" + activeMode + "_missing"] +
           analysis["m" + activeMode + "_ignored"];
-        names.push(analysis.name);
+        if (analysis.label) {
+          names.push(analysis.label + " - id: " + analysis.id);
+        } else {
+          names.push(analysis.name + " - id: " + analysis.id);
+        }
         similar.push((analysis["m" + activeMode + "_similar"] * 100) / total);
         similar_absolute.push(analysis["m" + activeMode + "_similar"] + "/" + total);
         duplicated.push((analysis["m" + activeMode + "_duplicated"] * 100) / total);

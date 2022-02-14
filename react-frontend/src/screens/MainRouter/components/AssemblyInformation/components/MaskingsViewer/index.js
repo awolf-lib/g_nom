@@ -326,7 +326,11 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
     repeatmasker.length > 0 &&
       repeatmasker.forEach((analysis) => {
         let total = analysis.total_repetitive_length + analysis.total_non_repetitive_length;
-        names.push(analysis.name);
+        if (analysis.label) {
+          names.push(analysis.label + " - id: " + analysis.id);
+        } else {
+          names.push(analysis.name + " - id: " + analysis.id);
+        }
         total_repetitive_length.push((analysis["total_repetitive_length"] * 100) / total);
         total_repetitive_length_absolute.push(
           analysis["total_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")

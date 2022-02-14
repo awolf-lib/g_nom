@@ -994,7 +994,7 @@ def fetchAssemblyTagsByAssemblyID(assemblyID):
         return tags, []
 
     except Exception as err:
-        return {}, createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
+        return [], createNotification(message=f"AssemblyTagFetchingError: {str(err)}")
 
 
 # FETCH ALL GENERAL INFOS OF SPECIFIC LEVEL
