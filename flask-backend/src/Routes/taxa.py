@@ -84,9 +84,7 @@ def taxa_bp_import_image():
             response = jsonify(
                 {
                     "payload": {},
-                    "notification": createNotification(
-                        message="Invalid form parameters!"
-                    ),
+                    "notification": createNotification(message="Invalid form parameters!"),
                 }
             )
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -100,13 +98,9 @@ def taxa_bp_import_image():
             return response
 
         if taxonID and taxonScientificName and image and userID:
-            data, notification = import_image(
-                taxonID, taxonScientificName, image, userID
-            )
+            data, notification = import_image(taxonID, taxonScientificName, image, userID)
         else:
-            data, notification = 0, createNotification(
-                message="RequestError: Invalid parameters!"
-            )
+            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -136,9 +130,7 @@ def taxa_bp_fetchTaxonImageByTaxonID():
             response = jsonify(
                 {
                     "payload": 0,
-                    "notification": createNotification(
-                        message="Image path does not exist anymore!"
-                    ),
+                    "notification": createNotification(message="Image path does not exist anymore!"),
                 }
             )
             response.headers.add("Access-Control-Allow-Origin", "*")

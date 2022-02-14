@@ -66,7 +66,6 @@ until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${SERVER_
 done;
 echo ""
 
-docker exec $FILE_SERVER_CONTAINER_NAME bash -c "chown www-data /var/www/import"
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:enable files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/data "GnomData" 'local' null::null

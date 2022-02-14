@@ -39,17 +39,13 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         )
         assembly_name = cursor.fetchone()[0]
 
-        analyses_name, analyses_id, error = __generate_analyses_name(
-            assembly_name, analyses_type
-        )
+        analyses_name, analyses_id, error = __generate_analyses_name(assembly_name, analyses_type)
         if not analyses_id:
             print(error)
             return 0, error
     except Exception as err:
         print(f"An unknown error occured: {str(err)}")
-        return 0, createNotification(
-            message=f"AnalysesImportError{analyses_type}1: {str(err)}"
-        )
+        return 0, createNotification(message=f"AnalysesImportError{analyses_type}1: {str(err)}")
 
     try:
         if not analyses_name:
@@ -86,9 +82,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
                 print(error)
                 return 0, error
         else:
-            return 0, createNotification(
-                message=f"Invalid analyses type {analyses_type}"
-            )
+            return 0, createNotification(message=f"Invalid analyses type {analyses_type}")
 
         # zip
         if analyses_type != "milts":
@@ -115,17 +109,13 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             return 0, error
 
         if analyses_type == "busco":
-            import_status, error = __importBusco(
-                assembly_id, analyses_id, busco_content
-            )
+            import_status, error = __importBusco(assembly_id, analyses_id, busco_content)
         elif analyses_type == "fcat":
             import_status, error = __importFcat(assembly_id, analyses_id, fcat_content)
         elif analyses_type == "milts":
             import_status, error = __importMilts(assembly_id, analyses_id)
         elif analyses_type == "repeatmasker":
-            import_status, error = __importRepeatmasker(
-                assembly_id, analyses_id, repeatmasker_content
-            )
+            import_status, error = __importRepeatmasker(assembly_id, analyses_id, repeatmasker_content)
 
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
@@ -142,15 +132,11 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             pass
 
         print(f"New analyses {analyses_name} ({analyses_type}) added!\n")
-        return analyses_id, createNotification(
-            "Success", f"New annotation {analyses_name} added!", "success"
-        )
+        return analyses_id, createNotification("Success", f"New annotation {analyses_name} added!", "success")
     except Exception as err:
         deleteAnalysesByAnalysesID(analyses_id)
         print(f"An unknown error occured: {str(err)}")
-        return 0, createNotification(
-            message=f"AnalysesImportError{analyses_type}2: {str(err)}"
-        )
+        return 0, createNotification(message=f"AnalysesImportError{analyses_type}2: {str(err)}")
 
 
 # generate analyses name
@@ -181,9 +167,7 @@ def __generate_analyses_name(assembly_name, analyses_type):
 
 
 # moves .gff3 into storage
-def __store_analyses(
-    dataset, taxon, assembly_name, analyses_name, analyses_type, forceIdentical=False
-):
+def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type, forceIdentical=False):
     """
     Moves analyses data to storage directory.
     """
@@ -216,7 +200,9 @@ def __store_analyses(
 
         # move to storage
         scientificName = sub("[^a-zA-Z0-9_]", "_", taxon["scientificName"])
-        new_file_path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/analyses/{analyses_type}/{analyses_name}/"
+        new_file_path = (
+            f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}/{assembly_name}/analyses/{analyses_type}/{analyses_name}/"
+        )
         run(["mkdir", "-p", new_file_path])
         if not isdir(new_file_path):
             return (
@@ -248,9 +234,7 @@ def __store_analyses(
                 if exists(old_additional_file_path):
                     run(["cp", "-r", old_additional_file_path, new_file_path])
 
-        print(
-            f"Analyses ({analyses_type}; {basename(new_file_path_main_file)}) moved to storage!"
-        )
+        print(f"Analyses ({analyses_type}; {basename(new_file_path_main_file)}) moved to storage!")
         return new_file_path_main_file, new_file_path, []
 
     except Exception as err:
@@ -258,9 +242,7 @@ def __store_analyses(
 
 
 # import Analyses
-def __importAnalyses(
-    analyses_id, assembly_id, analyses_name, analyses_path, analyses_type, userID
-):
+def __importAnalyses(analyses_id, assembly_id, analyses_name, analyses_path, analyses_type, userID):
     try:
         connection, cursor, error = connect()
         cursor.execute(
@@ -291,9 +273,7 @@ def updateAnalysisLabel(analysis_id: int, label: str):
         LABEL_PATTERN = compile(r"^\w+$")
 
         if label and not LABEL_PATTERN.match(label):
-            return 0, createNotification(
-                message="Invalid label. Use only [a-zA-Z0-9_]!"
-            )
+            return 0, createNotification(message="Invalid label. Use only [a-zA-Z0-9_]!")
         elif not label:
             label = None
 
@@ -303,9 +283,7 @@ def updateAnalysisLabel(analysis_id: int, label: str):
         )
         connection.commit()
         if label:
-            return 1, createNotification(
-                "Success", f"Successfully added label: {label}", "success"
-            )
+            return 1, createNotification("Success", f"Successfully added label: {label}", "success")
         else:
             return 1, createNotification("Info", f"Default name restored", "info")
     except Exception as err:
@@ -333,25 +311,20 @@ def __importBusco(assemblyID, analysisID, buscoData):
         targetFile = buscoData["targetFile"]
 
         if total != completeSingle + completeDuplicated + fragmented + missing:
-            return 0, createNotification(
-                message="Busco total number does not match sum of all categories!"
-            )
+            return 0, createNotification(message="Busco total number does not match sum of all categories!")
 
-        if (completeSinglePercent >= 50):
-            tagAddedStatus, notification = addAssemblyTag(
-                assemblyID, f"BUSCO_COMPLETE_50"
-            )
-        if (completeSinglePercent >= 75):
-            tagAddedStatus, notification = addAssemblyTag(
-                assemblyID, f"BUSCO_COMPLETE_75"
-            )
-        if (completeSinglePercent >= 90):
-            tagAddedStatus, notification = addAssemblyTag(
-                assemblyID, f"BUSCO_COMPLETE_90"
-            )
-
-        if not tagAddedStatus:
-            notifications += notification
+        if completeSinglePercent >= 50:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_50")
+            if not tagAddedStatus:
+                notifications += notification
+        if completeSinglePercent >= 75:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_75")
+            if not tagAddedStatus:
+                notifications += notification
+        if completeSinglePercent >= 90:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"BUSCO_COMPLETE_90")
+            if not tagAddedStatus:
+                notifications += notification
 
         connection, cursor, error = connect()
         cursor.execute(
@@ -401,21 +374,18 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m1_total = fcatData[mode]["total"]
                 m1_genomeID = fcatData[mode]["genomeID"]
 
-                if (m1_similarPercent >= 50):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M1_SIMILAR_50"
-                    )
-                if (m1_similarPercent >= 75):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M1_SIMILAR_75"
-                    )
-                if (m1_similarPercent >= 90):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M1_SIMILAR_90"
-                    )
-
-                if not tagAddedStatus:
-                    notifications += notification
+                if m1_similarPercent >= 50:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_50")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m1_similarPercent >= 75:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_75")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m1_similarPercent >= 90:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M1_SIMILAR_90")
+                    if not tagAddedStatus:
+                        notifications += notification
             elif mode == "mode_2":
                 m2_similar = fcatData[mode]["similar"]
                 m2_similarPercent = fcatData[mode]["similarPercent"]
@@ -430,21 +400,18 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m2_total = fcatData[mode]["total"]
                 m2_genomeID = fcatData[mode]["genomeID"]
 
-                if (m2_similarPercent >= 50):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M2_SIMILAR_50"
-                    )
-                if (m2_similarPercent >= 75):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M2_SIMILAR_75"
-                    )
-                if (m2_similarPercent >= 90):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M2_SIMILAR_90"
-                    )
-
-                if not tagAddedStatus:
-                    notifications += notification
+                if m2_similarPercent >= 50:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_50")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m2_similarPercent >= 75:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_75")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m2_similarPercent >= 90:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M2_SIMILAR_90")
+                    if not tagAddedStatus:
+                        notifications += notification
             elif mode == "mode_3":
                 m3_similar = fcatData[mode]["similar"]
                 m3_similarPercent = fcatData[mode]["similarPercent"]
@@ -459,21 +426,18 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m3_total = fcatData[mode]["total"]
                 m3_genomeID = fcatData[mode]["genomeID"]
 
-                if (m3_similarPercent >= 50):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M3_SIMILAR_50"
-                    )
-                if (m3_similarPercent >= 75):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M3_SIMILAR_75"
-                    )
-                if (m3_similarPercent >= 90):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M3_SIMILAR_90"
-                    )
-
-                if not tagAddedStatus:
-                    notifications += notification
+                if m3_similarPercent >= 50:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_50")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m3_similarPercent >= 75:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_75")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m3_similarPercent >= 90:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M3_SIMILAR_90")
+                    if not tagAddedStatus:
+                        notifications += notification
             elif mode == "mode_4":
                 m4_similar = fcatData[mode]["similar"]
                 m4_similarPercent = fcatData[mode]["similarPercent"]
@@ -488,21 +452,18 @@ def __importFcat(assemblyID, analysisID, fcatData):
                 m4_total = fcatData[mode]["total"]
                 m4_genomeID = fcatData[mode]["genomeID"]
 
-                if (m4_similarPercent >= 50):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M4_SIMILAR_50"
-                    )
-                if (m4_similarPercent >= 75):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M4_SIMILAR_75"
-                    )
-                if (m4_similarPercent >= 90):
-                    tagAddedStatus, notification = addAssemblyTag(
-                        assemblyID, f"FCAT_M4_SIMILAR_90"
-                    )
-
-                if not tagAddedStatus:
-                    notifications += notification
+                if m4_similarPercent >= 50:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_50")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m4_similarPercent >= 75:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_75")
+                    if not tagAddedStatus:
+                        notifications += notification
+                if m4_similarPercent >= 90:
+                    tagAddedStatus, notification = addAssemblyTag(assemblyID, f"FCAT_M4_SIMILAR_90")
+                    if not tagAddedStatus:
+                        notifications += notification
 
         connection, cursor, error = connect()
         cursor.execute(
@@ -564,9 +525,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
 def __importMilts(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute(
-            "INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID,)
-        )
+        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -630,23 +589,16 @@ def __importRepeatmasker(assemblyID, analysisID, repeatmaskerData):
         percentN = repeatmaskerData["percentN"]
 
     try:
-        repetitiveness = (
-            total_repetitive_length
-            * 100
-            / (total_non_repetitive_length + total_repetitive_length)
-        )
+        repetitiveness = total_repetitive_length * 100 / (total_non_repetitive_length + total_repetitive_length)
 
-        if (repetitiveness >= 50):
-            tagAddedStatus, notification = addAssemblyTag(
-                assemblyID, f"REPETITIVENESS_50"
-            )
-        if (repetitiveness >= 75):
-            tagAddedStatus, notification = addAssemblyTag(
-                assemblyID, f"REPETITIVENESS_75"
-            )
-
-        if not tagAddedStatus:
-            notifications += notification
+        if repetitiveness >= 50:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"REPETITIVENESS_50")
+            if not tagAddedStatus:
+                notifications += notification
+        if repetitiveness >= 75:
+            tagAddedStatus, notification = addAssemblyTag(assemblyID, f"REPETITIVENESS_75")
+            if not tagAddedStatus:
+                notifications += notification
 
         connection, cursor, error = connect()
         cursor.execute(
@@ -722,9 +674,7 @@ def deleteAnalysesByAnalysesID(analyses_id):
 
         scanFiles()
 
-        return 1, createNotification(
-            "Success", f"Successfully deleted anaylsis", "success"
-        )
+        return 1, createNotification("Success", f"Successfully deleted anaylsis", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnalysesDeletionError1: {str(err)}")
 
@@ -740,9 +690,7 @@ def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
 
         run(args=["rm", "-r", analyses_path])
 
-        return 1, createNotification(
-            "Success", "Successfully deleted analyses", "success"
-        )
+        return 1, createNotification("Success", "Successfully deleted analyses", "success")
     except Exception as err:
         return 0, createNotification(message=f"AnalysesDeletionError2: {str(err)}")
 
@@ -814,18 +762,14 @@ def parseBusco(pathToBusco):
                     data["buscoMode"] = "transcriptome"
 
         data["completeSinglePercent"] = (data["completeSingle"] * 100) / data["total"]
-        data["completeDuplicatedPercent"] = (data["completeDuplicated"] * 100) / data[
-            "total"
-        ]
+        data["completeDuplicatedPercent"] = (data["completeDuplicated"] * 100) / data["total"]
         data["fragmentedPercent"] = (data["fragmented"] * 100) / data["total"]
         data["missingPercent"] = (data["missing"] * 100) / data["total"]
 
         if len(data.keys()):
             return data, []
         else:
-            return 0, createNotification(
-                message=f"{basename(pathToBusco)}: No data found!"
-            )
+            return 0, createNotification(message=f"{basename(pathToBusco)}: No data found!")
 
     except Exception as err:
         return 0, createNotification(message=f"BuscoParsingError: {str(err)}")
@@ -851,18 +795,14 @@ def parseFcat(pathToFcat):
             for index, value in enumerate(values[1:]):
                 try:
                     data[values[0]][columns[index + 1]] = int(value)
-                    data[values[0]][columns[index + 1] + "Percent"] = (
-                        int(value) * 100
-                    ) / int(values[-1])
+                    data[values[0]][columns[index + 1] + "Percent"] = (int(value) * 100) / int(values[-1])
                 except:
                     data[values[0]][columns[index + 1]] = str(value)
 
         if len(data.keys()):
             return data, []
         else:
-            return 0, createNotification(
-                message=f"{basename(pathToFcat)}: No data found!"
-            )
+            return 0, createNotification(message=f"{basename(pathToFcat)}: No data found!")
     except Exception as err:
         return 0, createNotification(message=f"FcatParsingError: {str(err)}")
 
@@ -1006,9 +946,7 @@ def parseRepeatmasker(pathToRepeatmasker):
         if len(data.keys()):
             return data, []
         else:
-            return 0, createNotification(
-                message=f"{basename(pathToRepeatmasker)}: No data found!"
-            )
+            return 0, createNotification(message=f"{basename(pathToRepeatmasker)}: No data found!")
     except Exception as err:
         return 0, createNotification(message=f"RepeatmaskerParsingError: {str(err)}")
 
@@ -1056,9 +994,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
-        analyses["repeatmasker"] = [
-            dict(zip(row_headers, x)) for x in cursor.fetchall()
-        ]
+        analyses["repeatmasker"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
         return analyses, []
     except Exception as err:
@@ -1178,6 +1114,4 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
             [],
         )
     except Exception as err:
-        return [], createNotification(
-            message=f"FetchRepeatmaskerAnalysesError: {str(err)}"
-        )
+        return [], createNotification(message=f"FetchRepeatmaskerAnalysesError: {str(err)}")

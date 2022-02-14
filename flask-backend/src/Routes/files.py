@@ -13,9 +13,7 @@ files_bp = Blueprint("files", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(
-        message="Wrong request method. Please contact support!"
-    ),
+    "notification": createNotification(message="Wrong request method. Please contact support!"),
 }
 
 
@@ -63,9 +61,7 @@ def files_bp_fetchFileByPath():
             response = jsonify(
                 {
                     "payload": 0,
-                    "notification": createNotification(
-                        message="File path does not exist anymore!"
-                    ),
+                    "notification": createNotification(message="File path does not exist anymore!"),
                 }
             )
             response.headers.add("Access-Control-Allow-Origin", "*")
