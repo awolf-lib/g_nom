@@ -132,6 +132,8 @@ const AssemblyInformation = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly?.id]);
 
+  console.log(buscoAnalyses);
+
   useEffect(() => {
     loadAssemblySequenceHeaders();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -688,30 +690,30 @@ const AssemblyInformation = () => {
         )}
 
         {/* BUSCO & FCAT */}
-        {(buscoAnalyses && buscoAnalyses.length > 0) ||
-          (fcatAnalyses && fcatAnalyses.length > 0 && (
-            <div
-              onClick={() => {
-                setToggleBuscoAnalyses((prevState) => !prevState);
-                setToggleFcatAnalyses((prevState) => !prevState);
-              }}
-              className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-            >
-              <div className="w-96">Annotation completeness</div>
-              <div className="text-sm">
-                {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
-                  <LoadingSpinner label="Loading busco/fcat data..." />
-                )}
-              </div>
-              <div className="flex items-center w-96 justify-end">
-                {toggleBuscoAnalyses ? (
-                  <Down className="stroke-current animate-grow-y" color="blank" />
-                ) : (
-                  <Up className="stroke-current animate-grow-y" color="blank" />
-                )}
-              </div>
+        {((buscoAnalyses && buscoAnalyses.length > 0) ||
+          (fcatAnalyses && fcatAnalyses.length > 0)) && (
+          <div
+            onClick={() => {
+              setToggleBuscoAnalyses((prevState) => !prevState);
+              setToggleFcatAnalyses((prevState) => !prevState);
+            }}
+            className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Annotation completeness</div>
+            <div className="text-sm">
+              {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
+                <LoadingSpinner label="Loading busco/fcat data..." />
+              )}
             </div>
-          ))}
+            <div className="flex items-center w-96 justify-end">
+              {toggleBuscoAnalyses ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
+          </div>
+        )}
 
         {/* BUSCO */}
         {buscoAnalyses && buscoAnalyses.length > 0 && (
