@@ -28,9 +28,7 @@ assemblies_bp = Blueprint("assemblies", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(
-        message="Wrong request method. Please contact support!"
-    ),
+    "notification": createNotification(message="Wrong request method. Please contact support!"),
 }
 
 # IMPORT NEW ASSEMBLY
@@ -55,9 +53,7 @@ def assemblies_bp_import_assembly():
         if taxon and dataset and userID:
             data, notification = import_assembly(taxon, dataset, userID)
         else:
-            data, notification = 0, createNotification(
-                message="RequestError: Invalid parameters!"
-            )
+            data, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -116,9 +112,7 @@ def assemblies_bp_updateAssemblyLabel():
             else:
                 status, notification = updateAssemblyLabel(assemblyID, None, userID)
         else:
-            status, notification = 0, createNotification(
-                message="RequestError: Invalid parameters!"
-            )
+            status, notification = 0, createNotification(message="RequestError: Invalid parameters!")
 
         response = jsonify({"payload": status, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
@@ -151,17 +145,11 @@ def assemblies_bp_fetchAssemblies():
         onlyBookmarked = req.get("onlyBookmarked", None)
 
         if int(onlyBookmarked):
-            data, pagination, notification = fetchAssemblies(
-                search, filter, sortBy, offset, range, userID
-            )
+            data, pagination, notification = fetchAssemblies(search, filter, sortBy, offset, range, userID)
         else:
-            data, pagination, notification = fetchAssemblies(
-                search, filter, sortBy, offset, range
-            )
+            data, pagination, notification = fetchAssemblies(search, filter, sortBy, offset, range)
 
-        response = jsonify(
-            {"payload": data, "pagination": pagination, "notification": notification}
-        )
+        response = jsonify({"payload": data, "pagination": pagination, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
@@ -269,7 +257,7 @@ def assemblies_bp_removeAssemblyTag():
     else:
         return REQUESTMETHODERROR
 
-    
+
 # FETCH ALL ASSEMBLY TAGS
 @assemblies_bp.route("/fetchAssemblyTags", methods=["GET"])
 def assemblies_bp_fetchAssemblyTags():
@@ -441,9 +429,7 @@ def assemblies_bp_fetchAssemblySequenceHeaders():
         number = request.args.get("number")
         offset = request.args.get("offset")
         search = request.args.get("search")
-        data, notification = fetchAssemblySequenceHeaders(
-            search, assemblyID, number, offset
-        )
+        data, notification = fetchAssemblySequenceHeaders(search, assemblyID, number, offset)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

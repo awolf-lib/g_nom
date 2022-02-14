@@ -12,9 +12,7 @@ tasks_bp = Blueprint("tasks", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(
-        message="Wrong request method. Please contact support!"
-    ),
+    "notification": createNotification(message="Wrong request method. Please contact support!"),
 }
 
 # DELETE ASSEMBLY BY ASSEMBLY ID

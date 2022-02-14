@@ -16,9 +16,7 @@ imports_bp = Blueprint("imports", __name__)
 # CONST
 REQUESTMETHODERROR = {
     "payload": 0,
-    "notification": createNotification(
-        message="Wrong request method. Please contact support!"
-    ),
+    "notification": createNotification(message="Wrong request method. Please contact support!"),
 }
 
 

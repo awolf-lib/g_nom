@@ -49,9 +49,7 @@ def login(username, password):
                     if not token_stored or not token:
                         return 0, error
                 else:
-                    notifcations += createNotification(
-                        "Info", "You are still logged in!", "info"
-                    )
+                    notifcations += createNotification("Info", "You are still logged in!", "info")
                     token = user["activeToken"]
             else:
                 token = token_hex(16)
@@ -60,9 +58,7 @@ def login(username, password):
                 if not token_stored or not token:
                     return 0, error
 
-            notifcations += createNotification(
-                f"Welcome {username}!", "You successfully logged in!", "success"
-            )
+            notifcations += createNotification(f"Welcome {username}!", "You successfully logged in!", "success")
 
             return {
                 "userID": user["id"],
@@ -126,9 +122,7 @@ def __updateToken(userID, token):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return token, createNotification(
-        "Success", f"Token stored for user ID {userID}!", "success"
-    )
+    return token, createNotification("Success", f"Token stored for user ID {userID}!", "success")
 
 
 def validateActiveToken(userID, token):
@@ -154,9 +148,7 @@ def validateActiveToken(userID, token):
             connection.commit()
             return 0, createNotification(message="Session expired. Please relog first!")
 
-        cursor.execute(
-            "UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID,)
-        )
+        cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID,))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=f"TokenValidationError: {str(err)}")
@@ -236,9 +228,7 @@ def deleteUserByUserID(userID):
         if user:
             notify_fileserver_user(user[0], "", "User", "Delete")
 
-        return userID, createNotification(
-            "Success", f"Successfully deleted user with ID {userID}!", "success"
-        )
+        return userID, createNotification("Success", f"Successfully deleted user with ID {userID}!", "success")
     except Exception as err:
         return 0, createNotification(message=str(err))
 
@@ -255,9 +245,7 @@ def updateUserRoleByUserID(userID, role):
 
         if role == "admin" or role == "user":
             connection, cursor, error = connect()
-            cursor.execute(
-                "UPDATE users SET users.userRole=%s WHERE users.id=%s", (role, userID)
-            )
+            cursor.execute("UPDATE users SET users.userRole=%s WHERE users.id=%s", (role, userID))
             connection.commit()
         else:
             return 0, createNotification(message=f"Unknown user role '{role}'!")
@@ -287,9 +275,7 @@ def addBookmark(userID, assemblyID):
     except Exception as err:
         return 0, createNotification(message=str(err))
 
-    return 1, createNotification(
-        "Success", f"Successfully bookmarked assembly{assemblyID}!", "success"
-    )
+    return 1, createNotification("Success", f"Successfully bookmarked assembly{assemblyID}!", "success")
 
 
 # REMOVE BOOKMARK

@@ -83,9 +83,7 @@ def callback(cnx, ch, method, properties, body, threads):
 
         if task_type in handle_selector:
             handler = handle_selector[task_type]
-            thread = Thread(
-                target=handler, args=(cnx, ch, method.delivery_tag, message)
-            )
+            thread = Thread(target=handler, args=(cnx, ch, method.delivery_tag, message))
             thread.start()
             threads.append(thread)
     except Exception as err:
@@ -103,9 +101,7 @@ def main():
     queue = "worker"
 
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=environ.get("RABBIT_CONTAINER_NAME"), heartbeat=5
-        )
+        pika.ConnectionParameters(host=environ.get("RABBIT_CONTAINER_NAME"), heartbeat=5)
     )
     channel = connection.channel()
 
