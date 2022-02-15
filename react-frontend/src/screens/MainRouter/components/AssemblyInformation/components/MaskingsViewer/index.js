@@ -63,8 +63,12 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
     let low_complexity_numbers = [];
     let names = [];
     repeatmasker.length > 0 &&
-      repeatmasker.forEach((analysis) => {
-        names.push(analysis.name);
+      repeatmasker.forEach((analysis, index) => {
+        if (analysis.label) {
+          names.push(index + 1 + ". " + analysis.label);
+        } else {
+          names.push(index + 1 + ". " + analysis.name);
+        }
         sines_lengths.push(analysis["sines_length"]);
         sines_numbers.push(analysis["sines"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
         lines_lengths.push(analysis["lines_length"]);
@@ -102,6 +106,28 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
           analysis["low_complexity"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
+
+    sines_lengths.reverse();
+    sines_numbers.reverse();
+    lines_lengths.reverse();
+    lines_numbers.reverse();
+    ltr_elements_lengths.reverse();
+    ltr_elements_numbers.reverse();
+    dna_elements_lengths.reverse();
+    dna_elements_numbers.reverse();
+    rolling_circles_lengths.reverse();
+    rolling_circles_numbers.reverse();
+    unclassified_lengths.reverse();
+    unclassified_numbers.reverse();
+    small_rna_lengths.reverse();
+    small_rna_numbers.reverse();
+    satellites_lengths.reverse();
+    satellites_numbers.reverse();
+    simple_repeats_lengths.reverse();
+    simple_repeats_numbers.reverse();
+    low_complexity_lengths.reverse();
+    low_complexity_numbers.reverse();
+    names.reverse();
 
     tracks.push({
       x: sines_lengths,
@@ -283,26 +309,24 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       margin: { pad: 6 },
       separator: true,
       yaxis: {
-        tickangle: 45,
+        tickangle: 25,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
       },
       xaxis: {
         automargin: true,
         title: { text: "Bases masked", standoff: 10 },
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
       },
       legend: {
         orientation: "h",
@@ -324,12 +348,12 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
     let total_non_repetitive_length_absolute = [];
     let names = [];
     repeatmasker.length > 0 &&
-      repeatmasker.forEach((analysis) => {
+      repeatmasker.forEach((analysis, index) => {
         let total = analysis.total_repetitive_length + analysis.total_non_repetitive_length;
         if (analysis.label) {
-          names.push(analysis.label + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.label);
         } else {
-          names.push(analysis.name + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.name);
         }
         total_repetitive_length.push((analysis["total_repetitive_length"] * 100) / total);
         total_repetitive_length_absolute.push(
@@ -340,6 +364,12 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
           analysis["total_non_repetitive_length"].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
         );
       });
+
+    total_repetitive_length.reverse();
+    total_repetitive_length_absolute.reverse();
+    total_non_repetitive_length.reverse();
+    total_non_repetitive_length_absolute.reverse();
+    names.reverse();
 
     tracks.push({
       x: total_repetitive_length,
@@ -388,16 +418,15 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
       margin: { pad: 6 },
       separator: true,
       yaxis: {
-        tickangle: 45,
+        tickangle: 25,
         automargin: true,
         title: { text: "Masking", standoff: 10 },
         type: "category",
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -406,7 +435,7 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
         tick0: 0,
         dtick: 10,
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
@@ -423,12 +452,12 @@ const MaskingsViewer = ({ taxon, assembly, repeatmasker }) => {
 
   return (
     <div className="animate-grow-y relative">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border-4 border-double border-gray-300 shadow animate-fade-in">
-          <div id="plotlyRepeatElements" className="w-full h-full" />
+      <div className="">
+        <div className="mb-4 border-4 border-double border-gray-300 shadow animate-fade-in">
+          <div id="plotlyRepetitiveness" className="w-full h-full" />
         </div>
         <div className="border-4 border-double border-gray-300 shadow animate-fade-in">
-          <div id="plotlyRepetitiveness" className="w-full h-full" />
+          <div id="plotlyRepeatElements" className="w-full h-full" />
         </div>
       </div>
       <div className="absolute bottom-0 right-0 z-10 opacity-50 flex items-center mx-4 my-1">
