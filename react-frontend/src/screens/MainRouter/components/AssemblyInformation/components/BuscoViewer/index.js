@@ -45,11 +45,11 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
           analysis.fragmented +
           analysis.missing;
         if (analysis.label) {
-          names.push(analysis.label + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.label);
         } else if (analysis.dataset) {
-          names.push(analysis.dataset + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.dataset);
         } else {
-          names.push(analysis.name + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.name);
         }
         complete.push((analysis.completeSingle * 100) / total);
         complete_absolute.push(analysis.completeSingle + "/" + total);
@@ -60,6 +60,16 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         missing.push((analysis.missing * 100) / total);
         missing_absolute.push(analysis.missing + "/" + total);
       });
+
+    names.reverse();
+    complete.reverse();
+    complete_absolute.reverse();
+    duplicated.reverse();
+    duplicated_absolute.reverse();
+    fragmented.reverse();
+    fragmented_absolute.reverse();
+    missing.reverse();
+    missing_absolute.reverse();
 
     tracks.push({
       x: complete,
@@ -139,16 +149,15 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       barmode: "stack",
       margin: { pad: 6 },
       yaxis: {
-        tickangle: 45,
+        tickangle: 25,
         automargin: true,
         type: "category",
         title: { text: "Analysis", standoff: 10 },
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -157,7 +166,7 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
         tick0: 0,
         dtick: 10,
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },

@@ -43,7 +43,7 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
     let ignored_absolute = [];
     let names = [];
     fcat.length > 0 &&
-      fcat.forEach((analysis) => {
+      fcat.forEach((analysis, index) => {
         let total =
           analysis["m" + activeMode + "_similar"] +
           analysis["m" + activeMode + "_duplicated"] +
@@ -51,9 +51,9 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
           analysis["m" + activeMode + "_missing"] +
           analysis["m" + activeMode + "_ignored"];
         if (analysis.label) {
-          names.push(analysis.label + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.label);
         } else {
-          names.push(analysis.name + " - id: " + analysis.id);
+          names.push(index + 1 + ". " + analysis.name);
         }
         similar.push((analysis["m" + activeMode + "_similar"] * 100) / total);
         similar_absolute.push(analysis["m" + activeMode + "_similar"] + "/" + total);
@@ -66,6 +66,19 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
         ignored.push((analysis["m" + activeMode + "_ignored"] * 100) / total);
         ignored_absolute.push(analysis["m" + activeMode + "_ignored"] + "/" + total);
       });
+
+    names.reverse();
+    similar.reverse();
+    similar_absolute.reverse();
+    duplicated.reverse();
+    duplicated_absolute.reverse();
+    dissimilar.reverse();
+    dissimilar_absolute.reverse();
+    missing.reverse();
+    missing_absolute.reverse();
+    ignored.reverse();
+    ignored_absolute.reverse();
+
     tracks.push({
       x: similar,
       y: names,
@@ -164,15 +177,14 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
       dragmode: false,
       separator: true,
       yaxis: {
-        tickangle: 45,
+        tickangle: 25,
         automargin: true,
         title: { text: "Analysis", standoff: 10 },
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
       },
       xaxis: {
         automargin: true,
@@ -181,7 +193,7 @@ const FcatViewer = ({ taxon, assembly, fcat }) => {
         tick0: 0,
         dtick: 10,
         tickfont: {
-          family: "Old Standard TT, serif",
+          family: "Courier New, Courier, monospace",
           size: 14,
           color: "black",
         },
