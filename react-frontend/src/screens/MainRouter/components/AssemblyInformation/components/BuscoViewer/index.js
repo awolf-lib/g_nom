@@ -102,7 +102,7 @@ const BuscoViewer = ({ assembly, taxon, busco }) => {
       text: fragmented.map((val) => {
         return "F: " + Number(val).toFixed(2);
       }),
-      customdata: fragmented,
+      customdata: fragmented_absolute,
       hovertemplate: "%{label}: <br> %{customdata} </br> %{text}",
       orientation: "h",
       type: "bar",
