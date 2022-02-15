@@ -488,326 +488,333 @@ const AssemblyInformation = () => {
       </div>
 
       {/* Main information grid */}
-      <div className="grid grid-cols-5 gap-4 px-2 py-2">
-        <div
-          onClick={() => setToggleTaxon((prevState) => !prevState)}
-          className="col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Taxon information</div>
-          <div className="text-sm">
-            {(fetchingTaxon || fetchingTaxonGeneralInformation) && (
-              <LoadingSpinner label="Loading assembly data..." />
-            )}
-          </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleTaxon ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
-
-        {/* TAXON IMAGE*/}
-        <div className="flex justify-center items-center">
-          {toggleTaxon && (
-            <div className="w-full h-full shadow animate-fade-in bg-gray-500 overflow-hidden bg-white border-4 border-double border-gray-300">
-              {taxon?.id && (
-                <SpeciesProfilePictureViewer
-                  taxonID={taxon.id}
-                  imagePath={taxon?.imagePath}
-                  useTimestamp={false}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* TAXON GENERAL INFORMATION*/}
-        <div className="flex justify-center col-span-4">
-          {toggleTaxon && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {taxon?.id && <GeneralInformationViewer generalInfos={taxonGeneralInformation} />}
-            </div>
-          )}
-        </div>
-
-        <div
-          onClick={() => setToggleAssembly((prevState) => !prevState)}
-          className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Assembly information</div>
-          <div className="text-sm">
-            {(fetchingAssemblyGeneralInformation ||
-              fetchingAssembly ||
-              fetchingAssemblyHeaders ||
-              fetchingAssemblyTags) && <LoadingSpinner label="Loading assembly data..." />}
-          </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleAssembly ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
-
-        {/* ASSEMBLY STATISTICS PLOT */}
-        <div className="flex justify-center col-span-3">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly && assembly.id && <AssemblyStatisticsPlotViewer assembly={assembly} />}
-            </div>
-          )}
-        </div>
-
-        {/* ASSEMBLY STATISTICS TABLE */}
-        <div className="flex justify-center col-span-2">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly && assembly.id && <AssemblyStatisticsTable assembly={assembly} />}
-            </div>
-          )}
-        </div>
-
-        {/* ASSEMBLY ALPHABET PLOT */}
-        <div className="flex justify-center col-span-2">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && <AssemblyAlphabetPlotViewer assembly={assembly} />}
-            </div>
-          )}
-        </div>
-
-        {/* ASSEMBLY SEQUENCE HEADERS (LARGEST 10) */}
-        <div className="flex justify-center col-span-3">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && (
-                <AssemblySequenceHeaderTable
-                  sequenceHeaders={assemblyHeaders}
-                  setSequenceHeaderSearch={setSequenceHeaderSearch}
-                  setLocation={setLocation}
-                  setOffset={setAssemblyHeaderOffset}
-                />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ASSEMBLY GENERAL INFORMATION*/}
-        <div className="flex justify-center col-span-3">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && (
-                <GeneralInformationViewer generalInfos={assemblyGeneralInformation} />
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ASSEMBLY TAGS*/}
-        <div className="flex justify-center col-span-2">
-          {toggleAssembly && (
-            <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-              {assembly?.id && <AssemblyTagList tags={tags} />}
-            </div>
-          )}
-        </div>
-
-        {/* MILTS - Taxonomic assignment */}
-        {miltsAnalyses && miltsAnalyses.length > 0 && (
+      {assembly && assembly.id ? (
+        <div className="grid grid-cols-5 gap-4 px-2 py-2 animate-fade-in">
           <div
-            onClick={() => setToggleMiltsAnalyses((prevState) => !prevState)}
+            onClick={() => setToggleTaxon((prevState) => !prevState)}
+            className="col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Taxon information</div>
+            <div className="text-sm">
+              {(fetchingTaxon || fetchingTaxonGeneralInformation) && (
+                <LoadingSpinner label="Loading assembly data..." />
+              )}
+            </div>
+            <div className="flex items-center w-96 justify-end">
+              {toggleTaxon ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
+          </div>
+
+          {/* TAXON IMAGE*/}
+          <div className="flex justify-center items-center">
+            {toggleTaxon && (
+              <div className="w-full h-full shadow animate-fade-in bg-gray-500 overflow-hidden bg-white border-4 border-double border-gray-300">
+                {taxon?.id && (
+                  <SpeciesProfilePictureViewer
+                    taxonID={taxon.id}
+                    imagePath={taxon?.imagePath}
+                    useTimestamp={false}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* TAXON GENERAL INFORMATION*/}
+          <div className="flex justify-center col-span-4">
+            {toggleTaxon && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                {taxon?.id && <GeneralInformationViewer generalInfos={taxonGeneralInformation} />}
+              </div>
+            )}
+          </div>
+
+          <div
+            onClick={() => setToggleAssembly((prevState) => !prevState)}
             className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
           >
-            <div className="w-96">Taxonomic assignment</div>
+            <div className="w-96">Assembly information</div>
             <div className="text-sm">
-              {(fetchingMiltsAnalyses || (taxonomicAssignmentLoading && toggleMiltsAnalyses)) && (
-                <LoadingSpinner label="Loading Milts data..." />
-              )}
+              {(fetchingAssemblyGeneralInformation ||
+                fetchingAssembly ||
+                fetchingAssemblyHeaders ||
+                fetchingAssemblyTags) && <LoadingSpinner label="Loading assembly data..." />}
             </div>
             <div className="flex items-center w-96 justify-end">
-              {toggleMiltsAnalyses ? (
+              {toggleAssembly ? (
                 <Down className="stroke-current animate-grow-y" color="blank" />
               ) : (
                 <Up className="stroke-current animate-grow-y" color="blank" />
               )}
             </div>
           </div>
-        )}
-        {miltsAnalyses && miltsAnalyses.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleMiltsAnalyses && (
+
+          {/* ASSEMBLY STATISTICS PLOT */}
+          <div className="flex justify-center col-span-3">
+            {toggleAssembly && (
               <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-                <TaxonomicAssignmentViewer
-                  milts={miltsAnalyses}
-                  setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
-                />
+                {assembly && assembly.id && <AssemblyStatisticsPlotViewer assembly={assembly} />}
               </div>
             )}
           </div>
-        )}
 
-        {/* ANNOTATION */}
-        {assembly?.id && annotations && annotations.length > 0 && (
-          <div
-            onClick={() => setToggleAnnotations((prevState) => !prevState)}
-            className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-          >
-            <div className="w-96">Annotation information</div>
-            <div className="text-sm">
-              {fetchingAnnotations && <LoadingSpinner label="Loading annotation data..." />}
-            </div>
-            <div className="flex items-center w-96 justify-end">
-              {toggleAnnotations ? (
-                <Down className="stroke-current animate-grow-y" color="blank" />
-              ) : (
-                <Up className="stroke-current animate-grow-y" color="blank" />
-              )}
-            </div>
-          </div>
-        )}
-        {assembly?.id && annotations && annotations.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleAnnotations && (
+          {/* ASSEMBLY STATISTICS TABLE */}
+          <div className="flex justify-center col-span-2">
+            {toggleAssembly && (
               <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-                <FeaturesList title="Features by assembly" assemblyID={assembly.id} />
+                {assembly && assembly.id && <AssemblyStatisticsTable assembly={assembly} />}
               </div>
             )}
           </div>
-        )}
-        {assembly?.id && annotations && annotations.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleAnnotations && (
-              <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-                <AnnotationStatisticsPlotViewer annotations={annotations} />
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* BUSCO & FCAT */}
-        {((buscoAnalyses && buscoAnalyses.length > 0) ||
-          (fcatAnalyses && fcatAnalyses.length > 0)) && (
-          <div
-            onClick={() => {
-              setToggleBuscoAnalyses((prevState) => !prevState);
-              setToggleFcatAnalyses((prevState) => !prevState);
-            }}
-            className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-          >
-            <div className="w-96">Annotation completeness</div>
-            <div className="text-sm">
-              {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
-                <LoadingSpinner label="Loading busco/fcat data..." />
-              )}
-            </div>
-            <div className="flex items-center w-96 justify-end">
-              {toggleBuscoAnalyses ? (
-                <Down className="stroke-current animate-grow-y" color="blank" />
-              ) : (
-                <Up className="stroke-current animate-grow-y" color="blank" />
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* BUSCO */}
-        {buscoAnalyses && buscoAnalyses.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleBuscoAnalyses && (
+          {/* ASSEMBLY ALPHABET PLOT */}
+          <div className="flex justify-center col-span-2">
+            {toggleAssembly && (
               <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-                <BuscoViewer taxon={taxon} assembly={assembly} busco={buscoAnalyses} />
+                {assembly?.id && <AssemblyAlphabetPlotViewer assembly={assembly} />}
               </div>
             )}
           </div>
-        )}
 
-        {/* FCAT */}
-        {fcatAnalyses && fcatAnalyses.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleFcatAnalyses && (
+          {/* ASSEMBLY SEQUENCE HEADERS (LARGEST 10) */}
+          <div className="flex justify-center col-span-3">
+            {toggleAssembly && (
               <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
-                <FcatViewer taxon={taxon} assembly={assembly} fcat={fcatAnalyses} />
+                {assembly?.id && (
+                  <AssemblySequenceHeaderTable
+                    sequenceHeaders={assemblyHeaders}
+                    setSequenceHeaderSearch={setSequenceHeaderSearch}
+                    setLocation={setLocation}
+                    setOffset={setAssemblyHeaderOffset}
+                  />
+                )}
               </div>
             )}
           </div>
-        )}
 
-        {/* REPEATMASKER */}
-        {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
-          <div
-            onClick={() => setToggleRepeatmaskerAnalyses((prevState) => !prevState)}
-            className="mt-12 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-          >
-            <div className="w-96">Repeatmasking</div>
-            <div className="text-sm">
-              {fetchingRepeatmaskerAnalyses && (
-                <LoadingSpinner label="Loading repeatmasker data..." />
-              )}
-            </div>
-            <div className="flex items-center w-96 justify-end">
-              {toggleRepeatmaskerAnalyses ? (
-                <Down className="stroke-current animate-grow-y" color="blank" />
-              ) : (
-                <Up className="stroke-current animate-grow-y" color="blank" />
-              )}
-            </div>
-          </div>
-        )}
-
-        {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
-          <div className="flex justify-center col-span-5">
-            {toggleRepeatmaskerAnalyses && (
-              <div className="w-full h-full overflow-hidden">
-                <MaskingsViewer
-                  assembly={assembly}
-                  taxon={taxon}
-                  repeatmasker={repeatmaskerAnalyses}
-                />
+          {/* ASSEMBLY GENERAL INFORMATION*/}
+          <div className="flex justify-center col-span-3">
+            {toggleAssembly && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                {assembly?.id && (
+                  <GeneralInformationViewer generalInfos={assemblyGeneralInformation} />
+                )}
               </div>
             )}
           </div>
-        )}
 
-        {/* GENOME VIEWER */}
-        <div
-          onClick={() => setToggleGenomeViewer((prevState) => !prevState)}
-          className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
-        >
-          <div className="w-96">Genome viewer</div>
-          <div className="text-sm">
-            {(fetchingAnnotations || fetchingMappings || fetchingAssembly) && (
-              <LoadingSpinner label="Loading viewer data..." />
+          {/* ASSEMBLY TAGS*/}
+          <div className="flex justify-center col-span-2">
+            {toggleAssembly && (
+              <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                {assembly?.id && <AssemblyTagList tags={tags} />}
+              </div>
             )}
           </div>
-          <div className="flex items-center w-96 justify-end">
-            {toggleGenomeViewer ? (
-              <Down className="stroke-current animate-grow-y" color="blank" />
-            ) : (
-              <Up className="stroke-current animate-grow-y" color="blank" />
-            )}
-          </div>
-        </div>
 
-        <div className="flex justify-center col-span-5">
-          {toggleGenomeViewer && !fetchingAssembly && !fetchingAnnotations && !fetchingMappings ? (
-            <div className="w-full h-full animate-fade-in overflow-hidden">
-              {assembly && assembly.id && (
-                <GenomeViewer
-                  assemblyDetails={assembly}
-                  annotations={annotations}
-                  mappings={mappings}
-                  location={location}
-                />
-              )}
+          {/* MILTS - Taxonomic assignment */}
+          {miltsAnalyses && miltsAnalyses.length > 0 && (
+            <div
+              onClick={() => setToggleMiltsAnalyses((prevState) => !prevState)}
+              className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+            >
+              <div className="w-96">Taxonomic assignment</div>
+              <div className="text-sm">
+                {(fetchingMiltsAnalyses || (taxonomicAssignmentLoading && toggleMiltsAnalyses)) && (
+                  <LoadingSpinner label="Loading Milts data..." />
+                )}
+              </div>
+              <div className="flex items-center w-96 justify-end">
+                {toggleMiltsAnalyses ? (
+                  <Down className="stroke-current animate-grow-y" color="blank" />
+                ) : (
+                  <Up className="stroke-current animate-grow-y" color="blank" />
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="w-full flex justify-center items center h-32" />
           )}
+          {miltsAnalyses && miltsAnalyses.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleMiltsAnalyses && (
+                <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                  <TaxonomicAssignmentViewer
+                    milts={miltsAnalyses}
+                    setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ANNOTATION */}
+          {assembly?.id && annotations && annotations.length > 0 && (
+            <div
+              onClick={() => setToggleAnnotations((prevState) => !prevState)}
+              className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+            >
+              <div className="w-96">Annotation information</div>
+              <div className="text-sm">
+                {fetchingAnnotations && <LoadingSpinner label="Loading annotation data..." />}
+              </div>
+              <div className="flex items-center w-96 justify-end">
+                {toggleAnnotations ? (
+                  <Down className="stroke-current animate-grow-y" color="blank" />
+                ) : (
+                  <Up className="stroke-current animate-grow-y" color="blank" />
+                )}
+              </div>
+            </div>
+          )}
+          {assembly?.id && annotations && annotations.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleAnnotations && (
+                <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                  <FeaturesList title="Features by assembly" assemblyID={assembly.id} />
+                </div>
+              )}
+            </div>
+          )}
+          {assembly?.id && annotations && annotations.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleAnnotations && (
+                <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                  <AnnotationStatisticsPlotViewer annotations={annotations} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* BUSCO & FCAT */}
+          {((buscoAnalyses && buscoAnalyses.length > 0) ||
+            (fcatAnalyses && fcatAnalyses.length > 0)) && (
+            <div
+              onClick={() => {
+                setToggleBuscoAnalyses((prevState) => !prevState);
+                setToggleFcatAnalyses((prevState) => !prevState);
+              }}
+              className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+            >
+              <div className="w-96">Annotation completeness</div>
+              <div className="text-sm">
+                {(fetchingBuscoAnalyses || fetchingFcatAnalyses) && (
+                  <LoadingSpinner label="Loading busco/fcat data..." />
+                )}
+              </div>
+              <div className="flex items-center w-96 justify-end">
+                {toggleBuscoAnalyses ? (
+                  <Down className="stroke-current animate-grow-y" color="blank" />
+                ) : (
+                  <Up className="stroke-current animate-grow-y" color="blank" />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* BUSCO */}
+          {buscoAnalyses && buscoAnalyses.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleBuscoAnalyses && (
+                <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                  <BuscoViewer taxon={taxon} assembly={assembly} busco={buscoAnalyses} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* FCAT */}
+          {fcatAnalyses && fcatAnalyses.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleFcatAnalyses && (
+                <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                  <FcatViewer taxon={taxon} assembly={assembly} fcat={fcatAnalyses} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* REPEATMASKER */}
+          {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
+            <div
+              onClick={() => setToggleRepeatmaskerAnalyses((prevState) => !prevState)}
+              className="mt-12 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+            >
+              <div className="w-96">Repeatmasking</div>
+              <div className="text-sm">
+                {fetchingRepeatmaskerAnalyses && (
+                  <LoadingSpinner label="Loading repeatmasker data..." />
+                )}
+              </div>
+              <div className="flex items-center w-96 justify-end">
+                {toggleRepeatmaskerAnalyses ? (
+                  <Down className="stroke-current animate-grow-y" color="blank" />
+                ) : (
+                  <Up className="stroke-current animate-grow-y" color="blank" />
+                )}
+              </div>
+            </div>
+          )}
+
+          {repeatmaskerAnalyses && repeatmaskerAnalyses.length > 0 && (
+            <div className="flex justify-center col-span-5">
+              {toggleRepeatmaskerAnalyses && (
+                <div className="w-full h-full overflow-hidden">
+                  <MaskingsViewer
+                    assembly={assembly}
+                    taxon={taxon}
+                    repeatmasker={repeatmaskerAnalyses}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* GENOME VIEWER */}
+          <div
+            onClick={() => setToggleGenomeViewer((prevState) => !prevState)}
+            className="mt-16 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
+          >
+            <div className="w-96">Genome viewer</div>
+            <div className="text-sm">
+              {(fetchingAnnotations || fetchingMappings || fetchingAssembly) && (
+                <LoadingSpinner label="Loading viewer data..." />
+              )}
+            </div>
+            <div className="flex items-center w-96 justify-end">
+              {toggleGenomeViewer ? (
+                <Down className="stroke-current animate-grow-y" color="blank" />
+              ) : (
+                <Up className="stroke-current animate-grow-y" color="blank" />
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-center col-span-5">
+            {toggleGenomeViewer &&
+            !fetchingAssembly &&
+            !fetchingAnnotations &&
+            !fetchingMappings ? (
+              <div className="w-full h-full animate-fade-in overflow-hidden">
+                {assembly && assembly.id && (
+                  <GenomeViewer
+                    assemblyDetails={assembly}
+                    annotations={annotations}
+                    mappings={mappings}
+                    location={location}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="w-full flex justify-center items center h-32" />
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="h-75"></div>
+      )}
     </div>
   );
 };
