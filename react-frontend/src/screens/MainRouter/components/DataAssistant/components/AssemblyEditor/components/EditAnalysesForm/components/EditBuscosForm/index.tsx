@@ -87,7 +87,7 @@ const EditBuscosForm = ({
         <div className="w-2/5">Name/Alias</div>
         <div className="w-1/5">Added by</div>
         <div className="w-2/5">Added on</div>
-        <div className="w-96" />
+        <div className="w-48" />
       </div>
       <div className="min-h-1/4 max-h-1/2">
         {buscos && buscos.length > 0 ? (

@@ -227,7 +227,7 @@ const GenomeViewer = ({
         />
       )}
       <a
-        className="absolute bottom-0 right-0 mx-4 my-3 opacity-25 hover:opacity-100 text-gray-600"
+        className="absolute bottom-0 right-0 mx-6 my-4 opacity-25 hover:opacity-100 text-gray-600 cursor-pointer z-50"
         target="_blank"
         rel="noopener noreferrer"
         href={`${process.env.REACT_APP_JBROWSE_ADRESS}/index.html?config=assemblies%2F${assemblyDetails.name}%2Fconfig.json&session=session=local-WYqeaO9Fn`}
