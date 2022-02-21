@@ -37,7 +37,7 @@ const AssemblyPicker = ({
     const interval = setInterval(() => loadAssemblies(), 30000);
     return clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [taxon]);
 
   // notifications
   const dispatch = useNotification();

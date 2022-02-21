@@ -64,7 +64,7 @@ const AddAssemblyTagForm = ({
         setTags(
           response.payload.map((tag) => ({
             ...tag,
-            ...createColorCombination(),
+            // ...createColorCombination(),
           }))
         );
       }
@@ -76,7 +76,7 @@ const AddAssemblyTagForm = ({
   };
 
   const handleChangeNewAssemblyTag = (tag: string) => {
-    if (tag.length <= 45) {
+    if (tag.length <= 25) {
       setNewAssemblyTag(tag);
     }
   };
@@ -127,28 +127,28 @@ const AddAssemblyTagForm = ({
     }
   };
 
-  const createColorCombination = () => {
-    // Generate random RGB values
-    const r = Math.floor(Math.random() * 15 - 1);
-    const g = Math.floor(Math.random() * 175 - 1);
-    const b = Math.floor(Math.random() * 150 - 1);
-    // Calculate brightness of randomized colour
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    // Calculate brightness of white and black text
-    const lightText = (255 * 299 + 255 * 587 + 255 * 114) / 1000;
-    const darkText = (0 * 299 + 0 * 587 + 0 * 114) / 1000;
+  // const createColorCombination = () => {
+  //   // Generate random RGB values
+  //   const r = Math.floor(Math.random() * 15 - 1);
+  //   const g = Math.floor(Math.random() * 175 - 1);
+  //   const b = Math.floor(Math.random() * 150 - 1);
+  //   // Calculate brightness of randomized colour
+  //   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  //   // Calculate brightness of white and black text
+  //   const lightText = (255 * 299 + 255 * 587 + 255 * 114) / 1000;
+  //   const darkText = (0 * 299 + 0 * 587 + 0 * 114) / 1000;
 
-    const backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
+  //   const backgroundColor = "rgb(" + r + "," + g + "," + b + ")";
 
-    let color;
-    if (Math.abs(brightness - lightText) > Math.abs(brightness - darkText)) {
-      color = "rgb(255, 255, 255)";
-    } else {
-      color = "rgb(0, 0, 0)";
-    }
+  //   let color;
+  //   if (Math.abs(brightness - lightText) > Math.abs(brightness - darkText)) {
+  //     color = "rgb(255, 255, 255)";
+  //   } else {
+  //     color = "rgb(0, 0, 0)";
+  //   }
 
-    return { backgroundColor: backgroundColor, color: color };
-  };
+  //   return { backgroundColor: backgroundColor, color: color };
+  // };
 
   const loadUniqueTags = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
@@ -193,13 +193,13 @@ const AddAssemblyTagForm = ({
         Edit assembly tags...
       </div>
       <div>
-        <div className="relative flex flex-wrap justify-around items-center py-2 border rounded mt-2">
+        <div className="relative flex flex-wrap justify-between items-center py-2 border rounded mt-2">
           {tags && tags.length > 0 ? (
             tags.map((tag, index) => (
               <div
                 key={tag.id}
-                style={{ backgroundColor: tag.backgroundColor, color: tag.color }}
-                className="mb-4 mx-4 max-w-max cursor-pointer text-sm font-bold flex justify-between items-center py-1 px-2 rounded-lg uppercase ring-1 ring-gray-400 shadow-lg"
+                // style={{ backgroundColor: tag.backgroundColor, color: tag.color }}
+                className="mb-4 mx-4 w-64 bg-gray-500 hover:bg-gray-600 text-white cursor-pointer text-sm font-bold flex justify-between items-center py-1 px-2 rounded-lg uppercase ring-1 ring-gray-400 shadow-lg"
                 onMouseEnter={() => setHoverTag(index)}
                 onMouseLeave={() => {
                   setRemoveTagConfirmation(-1);
@@ -207,37 +207,39 @@ const AddAssemblyTagForm = ({
                 }}
                 onClick={() => setRemoveTagConfirmation(index)}
               >
-                <span className="text-center px-2 py-1">
+                <span className="text-center px-2 py-1 w-56 truncate">
                   {removeTagConfirmation !== index ? tag.tag : "DELETE?"}
                 </span>
-                {hoverTag === index && removeTagConfirmation !== index && (
-                  <div className="flex items-center">
-                    <Trash className="stroke-current" color="blank" size="small" />
-                  </div>
-                )}
-                {hoverTag === index && removeTagConfirmation === index && (
-                  <div className="flex items-center animate-grow-y">
-                    <div className="bg-green-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-green-400">
-                      <Checkmark
-                        className="stroke-current"
-                        color="blank"
-                        size="small"
-                        onClick={() => handleRemoveAssemblyTag(tag)}
-                      />
+                <span>
+                  {hoverTag === index && removeTagConfirmation !== index && (
+                    <div className="flex items-center">
+                      <Trash className="stroke-current" color="blank" size="small" />
                     </div>
-                    <div className="bg-red-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-red-400 ml-2">
-                      <Close
-                        className="stroke-current"
-                        color="blank"
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setRemoveTagConfirmation(-1);
-                        }}
-                      />
+                  )}
+                  {hoverTag === index && removeTagConfirmation === index && (
+                    <div className="flex items-center animate-grow-y">
+                      <div className="bg-green-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-green-400">
+                        <Checkmark
+                          className="stroke-current"
+                          color="blank"
+                          size="small"
+                          onClick={() => handleRemoveAssemblyTag(tag)}
+                        />
+                      </div>
+                      <div className="bg-red-600 text-white p-1 rounded-full flex items-center cursor-pointer hover:bg-red-400 ml-2">
+                        <Close
+                          className="stroke-current"
+                          color="blank"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRemoveTagConfirmation(-1);
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </span>
               </div>
             ))
           ) : (
@@ -257,12 +259,12 @@ const AddAssemblyTagForm = ({
               </div>
               <div className="relative w-full mx-4 mt-2">
                 <Input
-                  placeholder="Max. 45 characters..."
+                  placeholder="Max. 25 characters..."
                   value={newAssemblyTag}
                   onChange={(e) => handleChangeNewAssemblyTag(e.target.value)}
                 />
                 <div className="absolute bottom-0 right-0 m-2 text-xs">
-                  {newAssemblyTag && newAssemblyTag.length + "/45"}
+                  {newAssemblyTag && newAssemblyTag.length + "/25"}
                 </div>
               </div>
             </label>

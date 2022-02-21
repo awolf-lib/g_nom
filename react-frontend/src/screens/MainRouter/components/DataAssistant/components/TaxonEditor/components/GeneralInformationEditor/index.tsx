@@ -53,7 +53,7 @@ const GeneralInformationEditor = ({
     loadGeneralInformation(target.id);
     topRef.current?.scrollIntoView();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [target]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
