@@ -27,7 +27,7 @@ const AssembliesList = ({
 
   const [search, setSearch] = useState<string>("");
   const [filter, setFilter] = useState<Filter>({});
-  const [sortBy, setSortBy] = useState<Sorting>({ column: "scientificName", order: true });
+  const [sortBy, setSortBy] = useState<Sorting>({ column: "scientificName", order: false });
   const [offset, setOffset] = useState<number>(0);
   const [range, setRange] = useState<number>(10);
   const [pagination, setPagination] = useState<Pagination>({

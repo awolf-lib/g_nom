@@ -1,14 +1,22 @@
 import { newPlot } from "plotly.js";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const AssemblyStatisticsPlotViewer = ({ assembly }) => {
   const plotlyDiv = document.getElementById("plotlyAssemblyStatistics");
+
+  const [data, setData] = useState();
+  const [layout, setLayout] = useState();
   useEffect(() => {
-    if (plotlyDiv) {
-      newPlot("plotlyAssemblyStatistics", getData(), getLayout(), { responsive: true });
+    if (plotlyDiv && data && layout) {
+      newPlot("plotlyAssemblyStatistics", data, layout, { responsive: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plotlyDiv]);
+  }, [plotlyDiv, data, layout]);
+
+  useEffect(() => {
+    getData();
+    getLayout();
+  }, [assembly]);
 
   const getData = () => {
     const length_distribution = JSON.parse(assembly.lengthDistributionString);
@@ -96,7 +104,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
       },
     ];
 
-    return data;
+    setData(data);
   };
 
   const getLayout = () => {
@@ -150,7 +158,7 @@ const AssemblyStatisticsPlotViewer = ({ assembly }) => {
         automargin: true,
       },
     };
-    return layout;
+    setLayout(layout);
   };
 
   return (
