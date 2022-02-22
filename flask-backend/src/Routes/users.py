@@ -3,6 +3,8 @@ from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.users import (
+    ACCESS_LVL_1,
+    ACCESS_LVL_3,
     addBookmark,
     addUser,
     deleteUserByUserID,
@@ -84,7 +86,7 @@ def users_bp_addUser():
         token = req.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_3)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -108,7 +110,7 @@ def users_bp_fetchAllUsers():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -132,7 +134,7 @@ def users_bp_deleteUserByUserID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_3)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -157,7 +159,7 @@ def users_bp_updateUserRoleByUserID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_3)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -183,7 +185,7 @@ def users_bp_addNewBookmark():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -208,7 +210,7 @@ def users_bp_removeBookmark():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")

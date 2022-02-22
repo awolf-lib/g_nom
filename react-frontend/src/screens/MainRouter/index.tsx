@@ -40,6 +40,10 @@ const MainRouter = () => {
           <Route path="/g-nom/features" element={<FeaturesList />} />
           <Route path="/g-nom/settings" element={<Settings />} />
           <Route path="/logout" element={<Logout setToken={setToken} />} />
+          <Route
+            path="*"
+            element={<div className="flex justify-center py-6 px-8 text-2xl">Page not found!</div>}
+          />
         </Routes>
         <Footer />
       </Router>

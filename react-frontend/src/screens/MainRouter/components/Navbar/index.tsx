@@ -61,18 +61,20 @@ const Navbar = () => {
                 <Link to="/g-nom/features">
                   <Button label="Features" color="nav" />
                 </Link>
-                {userRole === "admin" && (
+                {(userRole === "admin" || userRole === "user") && (
                   <Link to={"/g-nom/assemblies/data"}>
                     <Button label="Data" color="nav" />
                   </Link>
                 )}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={process.env.REACT_APP_FILE_SERVER_ADRESS}
-                >
-                  <Button label="Downloads" color="nav" />
-                </a>
+                {(userRole === "admin" || userRole === "user") && (
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={process.env.REACT_APP_FILE_SERVER_ADRESS}
+                  >
+                    <Button label="Downloads" color="nav" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -104,14 +106,16 @@ const Navbar = () => {
                       aria-orientation="vertical"
                       aria-labelledby="user-menu"
                     >
-                      <Link
-                        to="/g-nom/settings"
-                        className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                        role="menuitem"
-                        onClick={() => handleChangeProfileDropdownVisible()}
-                      >
-                        Settings
-                      </Link>
+                      {userRole === "admin" && (
+                        <Link
+                          to="/g-nom/settings"
+                          className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                          role="menuitem"
+                          onClick={() => handleChangeProfileDropdownVisible()}
+                        >
+                          Settings
+                        </Link>
+                      )}
                       <Link
                         to="/logout"
                         className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"

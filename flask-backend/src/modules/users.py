@@ -8,6 +8,10 @@ from modules.db_connection import connect
 from modules.notifications import createNotification
 from .producer import notify_fileserver_user
 
+ACCESS_LVL_1 = ["admin", "user", "viewer"]
+ACCESS_LVL_2 = ["admin", "user"]
+ACCESS_LVL_3 = ["admin"]
+
 # ====== FETCH FROM USER ====== #
 # fetch token if username/password is correct
 def login(username, password):
@@ -125,7 +129,7 @@ def __updateToken(userID, token):
     return token, createNotification("Success", f"Token stored for user ID {userID}!", "success")
 
 
-def validateActiveToken(userID, token):
+def validateActiveToken(userID, token, access=[]):
     """
     Validates token for specific user.
     """
@@ -135,10 +139,10 @@ def validateActiveToken(userID, token):
 
         connection, cursor, error = connect()
         cursor.execute(
-            "SELECT activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
+            "SELECT userRole, activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
             (userID, token),
         )
-        valid_token = cursor.fetchone()
+        role, valid_token = cursor.fetchone()
 
         if not valid_token:
             cursor.execute(
@@ -147,6 +151,10 @@ def validateActiveToken(userID, token):
             )
             connection.commit()
             return 0, createNotification(message="Session expired. Please relog first!")
+
+        if len(access):
+            if role not in access:
+                return 0, createNotification(message="Access denied!")
 
         cursor.execute("UPDATE users SET tokenCreationTime=NOW() WHERE id=%s", (userID,))
         connection.commit()
@@ -161,6 +169,9 @@ def addUser(username, password, role):
     """
     Add a user to db.
     """
+    if (role not in ACCESS_LVL_1):
+        return {}, createNotification(message=f"User role '{role}' does not exist!") 
+
     try:
         connection, cursor, error = connect()
         cursor.execute("SELECT * FROM users where username=%s", (username,))
@@ -171,8 +182,10 @@ def addUser(username, password, role):
         return {}, createNotification(message=str(err))
 
     try:
+        if role in ACCESS_LVL_2:
+            notify_fileserver_user(username, password, "User", "Create")
+
         connection, cursor, error = connect()
-        notify_fileserver_user(username, password, "User", "Create")
         password = sha512(f"{password}$g#n#o#m$".encode("utf-8")).hexdigest()
         cursor.execute(
             "INSERT INTO users (username, password, userRole) VALUES (%s, %s, %s)",

@@ -4,7 +4,7 @@ import AddUserForm from "./components/AddUserForm";
 import ManageUserForm from "./components/ManageUserForm";
 
 const Settings = () => {
-  const [toggleSection, setToggleSection] = useState(0);
+  const [toggleSection, setToggleSection] = useState(1);
 
   const userRole = JSON.parse(sessionStorage.getItem("userRole") || "");
 

@@ -19,7 +19,7 @@ from modules.assemblies import (
     updateAssemblyGeneralInformationByID,
     updateAssemblyLabel,
 )
-from modules.users import validateActiveToken
+from modules.users import ACCESS_LVL_1, ACCESS_LVL_2, validateActiveToken
 from modules.notifications import createNotification
 
 # setup blueprint name
@@ -41,7 +41,7 @@ def assemblies_bp_import_assembly():
         token = req.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -71,7 +71,7 @@ def assemblies_bp_deleteAssemblyByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -97,7 +97,7 @@ def assemblies_bp_updateAssemblyLabel():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -131,7 +131,7 @@ def assemblies_bp_fetchAssemblies():
         token = req.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -165,7 +165,7 @@ def assemblies_bp_fetchAssembliesByTaxonID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -190,7 +190,7 @@ def assemblies_bp_fetchAssemblyByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -215,7 +215,7 @@ def assemblies_bp_addAssemblyTag():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -241,7 +241,7 @@ def assemblies_bp_removeAssemblyTag():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -266,7 +266,7 @@ def assemblies_bp_fetchAssemblyTags():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -290,7 +290,7 @@ def assemblies_bp_fetchAssemblyTagsByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -315,7 +315,7 @@ def assemblies_bp_fetchTaxonGeneralInformationByTaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -340,7 +340,7 @@ def assemblies_bp_addTaxonGeneralInformation():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -367,7 +367,7 @@ def assemblies_bp_updateTaxonGeneralInformationByID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -394,7 +394,7 @@ def assemblies_bp_deleteAssemblyGeneralInformationByID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -419,7 +419,7 @@ def assemblies_bp_fetchAssemblySequenceHeaders():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")

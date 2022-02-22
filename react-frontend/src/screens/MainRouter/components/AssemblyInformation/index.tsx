@@ -445,7 +445,7 @@ const AssemblyInformation = () => {
           </div>
         )}
         <div className="flex items-center">
-          {taxon?.id && assembly?.id && userRole === "admin" && (
+          {taxon?.id && assembly?.id && (userRole === "admin" || userRole === "user") && (
             <Link
               to={"/g-nom/assemblies/data?taxID=" + taxon.id + "&assemblyID=" + assembly.id}
               className="mr-4 animate-fade-in"

@@ -5,11 +5,13 @@ import Button from "../../../../../../components/Button";
 import { addUser, NotificationObject } from "../../../../../../api";
 import { useNotification } from "../../../../../../components/NotificationProvider";
 
+type userRoleType = "admin" | "viewer" | "user" | "";
+
 const AddUserForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState<userRoleType>("");
   const [submitted, setSubmitted] = useState(false);
 
   const dispatch = useNotification();
@@ -29,7 +31,7 @@ const AddUserForm = () => {
       password &&
       confirmPassword &&
       password === confirmPassword &&
-      (role === "admin" || role === "user")
+      (role === "admin" || role === "user" || role === "viewer")
     ) {
       const userID = JSON.parse(sessionStorage.getItem("userID") || "");
       const token = JSON.parse(sessionStorage.getItem("token") || "");
@@ -112,13 +114,14 @@ const AddUserForm = () => {
             id="role"
             onChange={(e) => {
               setSubmitted(false);
-              setRole(e.target.value);
+              setRole(e.target.value as userRoleType);
             }}
             className={inputClass(submitted, role === "")}
           >
             <option value="">None</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
+            <option value="viewer">Viewer</option>
           </select>
         </div>
         <div className={fieldClass}>
