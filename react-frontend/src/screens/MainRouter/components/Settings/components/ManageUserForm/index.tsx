@@ -15,9 +15,9 @@ const ManageUserForm = () => {
   const loggedInUserID = parseInt(sessionStorage.getItem("userID") || "");
 
   const [users, setUsers] = useState<IUser[]>();
-  const [toggleSelectRole, setToggleSelectRole] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<"admin" | "user">();
+  const [userRole, setUserRole] = useState<"admin" | "user" | "viewer" | "">("");
   const [toggleDeleteUserConfirmation, setToggleDeleteUserConfirmation] = useState<number>(-1);
+  const [toggleUpdateUserConfirmation, setToggleUpdateUserConfirmation] = useState<number>(-1);
   const [deleteUserConfirmation, setDeleteUserConfirmation] = useState<string>("");
   const [fetching, setFetching] = useState<boolean>(false);
 
@@ -56,6 +56,7 @@ const ManageUserForm = () => {
 
         setToggleDeleteUserConfirmation(-1);
         loadData();
+        setDeleteUserConfirmation("");
       }
     }
   };
@@ -91,28 +92,22 @@ const ManageUserForm = () => {
   const elementClass = classNames("h-20 truncate");
 
   const inputClass = classNames(
-    "min-w-min border rounded-lg ml-4 px-4 py-1 shadow focus:outline-none text-center text-xs hover:ring-2 focus:ring-2 transition duration-500"
+    "border rounded-lg ml-4 px-4 py-1 shadow focus:outline-none text-center text-xs hover:ring-2 focus:ring-2 transition duration-500"
   );
 
   return (
     <div className="rounded-lg overflow-y-auto overflow-x-hidden max-h-75 shadow-lg">
-      <table className="w-full text-center table-auto text-xs md:text-base">
+      <table className="w-full text-center table-fixed text-xs">
         <thead>
           <tr className="bg-gray-300">
-            <th className={"hidden md:table-cell w-16 " + elementClass}>ID</th>
-            <th className={"pl-4 md:pl-0 " + elementClass}>User</th>
-            <th className={elementClass}>
+            <th className="px-8 py-4">ID</th>
+            <th className="w-full">User</th>
+            <th className="w-64">
               <div className="flex justify-center items-center">
-                <div
-                  onClick={() => setToggleSelectRole(!toggleSelectRole)}
-                  className="p-1 bg-white border border-gray-700 border-dashed text-gray-700 flex items-center rounded-lg hover:bg-gray-600 hover:text-white cursor-pointer mr-4 transition duration-300"
-                >
-                  <Edit size="small" color="blank" className="stroke-current" />
-                </div>
                 <div>Role</div>
               </div>
             </th>
-            <th className={elementClass}>Delete</th>
+            <th className="w-96">Options</th>
           </tr>
         </thead>
         <tbody>
@@ -120,79 +115,118 @@ const ManageUserForm = () => {
             users.map((user) => {
               return (
                 <tr key={user.id} className={rowClass}>
-                  <td className={"hidden md:table-cell w-16 " + elementClass}>{user.id}</td>
-                  <td className={"pl-4 md:pl-0 " + elementClass}>{user.username}</td>
-                  <td className={elementClass}>
-                    {toggleSelectRole ? (
-                      <div className="flex justify-center items-center">
-                        <select
-                          onChange={(e) => setUserRole(e.target.value as "admin" | "user")}
-                          value={userRole || user.userRole}
-                          className={inputClass}
-                        >
-                          <option value="admin">Admin</option>
-                          <option value="user">User</option>
-                        </select>
-                        <div
-                          onClick={() => {
-                            if (user.id !== loggedInUserID) {
-                              handleSaveNewUserRole(user.id);
-                            } else {
-                              handleNewNotification({
-                                label: "Error",
-                                message: "You cannot update the role of the current user!",
-                                type: "error",
-                              });
-                            }
-                          }}
-                          className="flex bg-green-100 hover:bg-green-600 p-2 rounded-full justify-center items-center text-green-600 hover:text-green-200 cursor-pointer ml-4 transition duration-500"
-                        >
-                          <Save size="small" color="blank" className="stroke-current" />
-                        </div>
-                      </div>
-                    ) : (
-                      <div>{user.userRole}</div>
-                    )}
+                  <td>
+                    <div className="px-8 py-4 animate-fade-in">{user.id}</div>
                   </td>
-                  <td className={elementClass}>
-                    {toggleDeleteUserConfirmation !== user.id ? (
-                      <div className="flex justify-center">
-                        <div className="">
+                  <td>
+                    <div className="w-full animate-fade-in">{user.username}</div>
+                  </td>
+                  <td>
+                    <div className="w-64 animate-fade-in">
+                      {toggleUpdateUserConfirmation === user.id ? (
+                        <div className="flex justify-center items-center">
+                          <select
+                            onChange={(e) =>
+                              setUserRole(e.target.value as "admin" | "user" | "viewer")
+                            }
+                            value={userRole || user.userRole}
+                            className={inputClass}
+                          >
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                            <option value="viewer">Viewer</option>
+                          </select>
                           <div
                             onClick={() => {
                               if (user.id !== loggedInUserID) {
-                                setToggleDeleteUserConfirmation(user.id);
+                                handleSaveNewUserRole(user.id);
                               } else {
                                 handleNewNotification({
                                   label: "Error",
-                                  message: "You cannot delete the current user!",
+                                  message: "You cannot update the role of the current user!",
                                   type: "error",
                                 });
                               }
                             }}
-                            className="p-2 bg-red-100 text-red-600 flex items-center rounded-full hover:bg-red-600 hover:text-white cursor-pointer transition duration-500"
+                            className="flex bg-green-100 hover:bg-green-600 p-2 rounded-full justify-center items-center text-green-600 hover:text-green-200 cursor-pointer ml-4 transition duration-500"
                           >
-                            <Trash size="small" color="blank" className="stroke-current" />
+                            <Save size="small" color="blank" className="stroke-current" />
                           </div>
                         </div>
+                      ) : (
+                        <div className="animte-fade-in">{user.userRole}</div>
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    {loggedInUserID !== user.id && user.id !== 1 && user.id !== 2 ? (
+                      <div className="w-96 animate-fade-in">
+                        {toggleDeleteUserConfirmation !== user.id &&
+                          toggleUpdateUserConfirmation !== user.id && (
+                            <div className="flex justify-center">
+                              <div
+                                onClick={() => {
+                                  setToggleUpdateUserConfirmation(user.id);
+                                  setToggleDeleteUserConfirmation(-1);
+                                }}
+                                className="mx-2 p-2 bg-blue-100 text-blue-600 flex items-center rounded-full hover:bg-blue-600 hover:text-white cursor-pointer transition duration-500"
+                              >
+                                <Edit size="small" color="blank" className="stroke-current" />
+                              </div>
+                              <div
+                                onClick={() => {
+                                  setToggleDeleteUserConfirmation(user.id);
+                                  setToggleUpdateUserConfirmation(-1);
+                                }}
+                                className="mx-2 p-2 bg-red-100 text-red-600 flex items-center rounded-full hover:bg-red-600 hover:text-white cursor-pointer transition duration-500"
+                              >
+                                <Trash size="small" color="blank" className="stroke-current" />
+                              </div>
+                            </div>
+                          )}
+                        {toggleDeleteUserConfirmation === user.id && (
+                          <div className="flex justify-center items-center animate-fade-in">
+                            <input
+                              value={deleteUserConfirmation}
+                              placeholder="Type REMOVE..."
+                              className={inputClass}
+                              onChange={(e) => {
+                                setDeleteUserConfirmation(e.target.value);
+                                handleDeleteUser(user.id, e.target.value);
+                              }}
+                            />
+                            <div className="ml-2 flex justify-center items-center animate-fade-in">
+                              <div
+                                className="bg-red-100 text-red-600 flex items-center rounded-full hover:bg-red-600 hover:text-white cursor-pointer transition duration-500"
+                                onClick={() => {
+                                  setToggleDeleteUserConfirmation(-1);
+                                  setDeleteUserConfirmation("");
+                                }}
+                              >
+                                <FormClose
+                                  color="blank"
+                                  className="stroke-current cursor-pointer"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        {toggleUpdateUserConfirmation === user.id && (
+                          <div className="flex justify-center items-center animate-fade-in">
+                            <div
+                              className="bg-red-100 text-red-600 flex items-center rounded-full hover:bg-red-600 hover:text-white cursor-pointer transition duration-500"
+                              onClick={() => {
+                                setToggleUpdateUserConfirmation(-1);
+                                setUserRole("");
+                              }}
+                            >
+                              <FormClose color="blank" className="stroke-current cursor-pointer" />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
-                      <div className="flex justify-center items-center">
-                        <input
-                          value={deleteUserConfirmation}
-                          placeholder="Type REMOVE..."
-                          className={inputClass}
-                          onChange={(e) => {
-                            setDeleteUserConfirmation(e.target.value);
-                            handleDeleteUser(user.id, e.target.value);
-                          }}
-                        />
-                        <FormClose
-                          color="blank"
-                          className="ml-1 md:ml-4 stroke-current cursor-pointer text-gray-700 hover:text-red-600"
-                          onClick={() => setToggleDeleteUserConfirmation(0)}
-                        />
-                      </div>
+                      <div className="animate-fade-in">Cannot be modified!</div>
                     )}
                   </td>
                 </tr>
