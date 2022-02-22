@@ -255,8 +255,10 @@ def updateUserRoleByUserID(userID, role):
         userID = int(userID)
         if userID == 1:
             return 0, createNotification(message="Cannot change cli_importer!")
+        if userID == 2:
+            return 0, createNotification(message="Cannot change initial user!")
 
-        if role == "admin" or role == "user":
+        if role in ACCESS_LVL_1:
             connection, cursor, error = connect()
             cursor.execute("UPDATE users SET users.userRole=%s WHERE users.id=%s", (role, userID))
             connection.commit()
