@@ -2,7 +2,7 @@
 from flask import Blueprint, jsonify, request
 
 # local imports
-from modules.users import validateActiveToken
+from modules.users import ACCESS_LVL_1, ACCESS_LVL_2, validateActiveToken
 from modules.notifications import createNotification
 from modules.mappings import (
     deleteMappingByMappingID,
@@ -30,7 +30,7 @@ def mappings_bp_import_mapping():
         token = req.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -61,7 +61,7 @@ def mappings_bp_deleteMappingByMappingID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -87,7 +87,7 @@ def mappings_bp_updateMappingLabel():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -120,7 +120,7 @@ def mappings_bp_fetchMappingsByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")

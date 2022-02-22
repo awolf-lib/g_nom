@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 
 # local imports
 from modules.notifications import createNotification
-from modules.users import validateActiveToken
+from modules.users import ACCESS_LVL_1, ACCESS_LVL_2, validateActiveToken
 from modules.analyses import (
     deleteAnalysesByAnalysesID,
     fetchAnalysesByAssemblyID,
@@ -35,7 +35,7 @@ def analyses_bp_import_analyses():
         token = req.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -67,7 +67,7 @@ def analyses_bp_deleteAnalysesByAnalysesID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -95,7 +95,7 @@ def analyses_bp_updateAnalysisLabel():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -128,7 +128,7 @@ def analyses_bp_fetchAnalysesByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -153,7 +153,7 @@ def analyses_bp_fetchBuscoAnalysesByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -178,7 +178,7 @@ def analyses_bp_fetchFcatAnalysesByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -203,7 +203,7 @@ def analyses_bp_fetchMiltsAnalysesByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -228,7 +228,7 @@ def analyses_bp_fetchRepeatmaskerAnalysesByAssemblyID():
         token = request.args.get("token", None)
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")

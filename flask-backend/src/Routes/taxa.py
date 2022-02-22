@@ -2,7 +2,7 @@
 from genericpath import exists
 from flask import Blueprint, jsonify, request
 from flask.helpers import send_file
-from modules.users import validateActiveToken
+from modules.users import ACCESS_LVL_1, ACCESS_LVL_2, validateActiveToken
 
 # local imports
 from modules.taxa import (
@@ -44,7 +44,7 @@ def taxa_bp_fetchTaxonTree():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -91,7 +91,7 @@ def taxa_bp_import_image():
             return response
 
         # token still active
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -117,7 +117,7 @@ def taxa_bp_fetchTaxonImageByTaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": 0, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -148,7 +148,7 @@ def taxa_bp_removeImageByTaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": {}, "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -173,7 +173,7 @@ def taxa_bp_fetchTaxonByTaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -198,7 +198,7 @@ def taxa_bp_fetchTaxonBySearch():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -223,7 +223,7 @@ def taxa_bp_fetchTaxonByNCBITaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -248,7 +248,7 @@ def taxa_bp_fetchTaxaWithAssemblies():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -272,7 +272,7 @@ def taxa_bp_fetchTaxonGeneralInformationByTaxonID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -297,7 +297,7 @@ def taxa_bp_addTaxonGeneralInformation():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
@@ -324,7 +324,7 @@ def taxa_bp_updateTaxonGeneralInformationByID():
         token = request.args.get("token")
 
         # token still active?
-        valid_token, error = validateActiveToken(userID, token)
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_2)
         if not valid_token:
             response = jsonify({"payload": [], "notification": error})
             response.headers.add("Access-Control-Allow-Origin", "*")
