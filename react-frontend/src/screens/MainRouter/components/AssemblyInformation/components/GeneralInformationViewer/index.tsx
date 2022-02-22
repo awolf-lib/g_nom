@@ -17,6 +17,9 @@ const GeneralInformationViewer = ({ generalInfos }: { generalInfos: IGeneralInfo
   const [taxonGeneralInfoInterval, setTaxonGeneralInfoInterval] = useState<any>(undefined);
 
   useEffect(() => {
+    if (taxonGeneralInfoInterval) {
+      clearInterval(taxonGeneralInfoInterval);
+    }
     setTaxonGeneralInfoInterval(
       setInterval(() => {
         setTaxonGeneralInfoCarouselIndex((prevState) =>
