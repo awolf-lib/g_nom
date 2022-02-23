@@ -1,5 +1,5 @@
 FROM httpd:2.4
-FROM nextcloud:23.0.0-apache
+FROM nextcloud:23.0.2-apache
 
 RUN apt update
 ARG DEBIAN_FRONTEND=noninteractive

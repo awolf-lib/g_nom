@@ -66,16 +66,14 @@ until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${SERVER_
 done;
 echo ""
 
+# setup nextcloud defaults
+echo "Remove default nextcloud files/apps and set up external storage..."
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:enable files_external
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/data "GnomData" 'local' null::null
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files_external:create -c datadir=/var/www/import "GnomImport" 'local' null::null
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable password_policy
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:disable photos
-docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ app:install announcementcenter
-
-# setup nextcloud defaults
-echo "Remove default nextcloud files and setup group folders..."
 docker exec $FILE_SERVER_CONTAINER_NAME bash -c "rm -r /var/www/html/core/skeleton/*"
 docker exec $FILE_SERVER_CONTAINER_NAME bash -c "rm -r /var/www/html/data/$INITIAL_USER_USERNAME/files/*"
 
@@ -83,12 +81,10 @@ docker exec $FILE_SERVER_CONTAINER_NAME bash -c "rm -r /var/www/html/data/$INITI
 echo "Reindex nextcloud directories..."
 docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files:scan --all
 
-docker exec -it $FILE_SERVER_CONTAINER_NAME python3 /usr/local/j_listener/main.py &
-
 # ============================================ #
 
 ## Reactapp
-echo "Build reactapp docker container and install dependencies..."
+echo "Build react docker container and install dependencies..."
 # envs
 echo "REACT_APP_API_ADRESS=http://${SERVER_ADRESS}:${API_PORT}" > ./react-frontend/.env
 echo "REACT_APP_FILE_SERVER_ADRESS=http://${SERVER_ADRESS}:${FILE_SERVER_PORT}" >> ./react-frontend/.env
@@ -127,16 +123,8 @@ cd ./jbrowse
 docker build -t gnom/jbrowse .
 echo "RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME}" > .env
 docker run --name $JBROWSE_CONTAINER_NAME --network $DOCKER_NETWORK_NAME --restart on-failure:10 -d -p 8082:80 -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa --env-file .env gnom/jbrowse
-docker exec $JBROWSE_CONTAINER_NAME bash -c "npm i -g @jbrowse/cli@1.5.3"
 docker exec $JBROWSE_CONTAINER_NAME bash -c "jbrowse create -f /usr/local/apache2/htdocs"
 cd ..
-
-# setup missing directories
-docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/assemblies"
-docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/storage/taxa/taxdmp"
-docker exec $API_CONTAINER_NAME bash -c "mkdir -p /flask-backend/data/import"
-docker exec $API_CONTAINER_NAME bash -c "touch /flask-backend/data/storage/taxa/tree.json"
-docker exec $API_CONTAINER_NAME bash -c "echo '{}' > /flask-backend/data/storage/taxa/tree.json"
 
 # download taxa information from NCBI
 echo "Download taxa from NCBI..."
