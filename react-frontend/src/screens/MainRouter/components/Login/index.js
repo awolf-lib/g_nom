@@ -50,15 +50,15 @@ const Login = ({ setToken, setUserID, setUserRole, setUserName }) => {
 
   return (
     <div className="flex justify-center w-full items-center bg-gradient-to-tr from-gray-900 via-gray-500 to-gray-700 h-screen">
-      <div
+      {/* <div
         style={{ maxWidth: "90vh" }}
         className="bg-transparent rounded-full transform rotate-90 overflow-hidden object-contain border-4 border-double border-gray-300"
       >
         <img alt="Login DNA GIF" src={DNA} />
-      </div>
+      </div> */}
       <form
         onSubmit={(e) => handleSubmit(e)}
-        className="bg-gradient-to-tr -ml-52 z-20 w-1/2 from-gray-300 via-gray-100 to-gray-200 px-16 py-8 rounded-lg shadow border-4 border-gray-300 border-double"
+        className="bg-gradient-to-tr z-20 w-1/2 from-gray-300 via-gray-100 to-gray-200 px-16 py-8 rounded-lg shadow border-4 border-gray-300 border-double"
       >
         <h1 className="font-bold">Login to G-nom ...</h1>
         <hr className="my-4 shadow" />

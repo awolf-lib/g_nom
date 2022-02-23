@@ -10,90 +10,90 @@ const AssemblyStatisticsTable = ({ assembly }: { assembly: AssemblyInterface }) 
       <table className="w-full bg-white table-fixed">
         <tbody>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               DB name
             </td>
-            <td className="px-4">{assembly.name}</td>
+            <td className="px-4 truncate">{assembly.name}</td>
           </tr>
           {assembly.label && (
             <tr className="border border-gray-400">
-              <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+              <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
                 Label
               </td>
-              <td className="px-4">{assembly.label}</td>
+              <td className="px-4 truncate">{assembly.label}</td>
             </tr>
           )}
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               # of sequences
             </td>
-            <td className="px-4">{formatNumbers(assembly.numberOfSequences)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.numberOfSequences)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Cumulative sequence length (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.cumulativeSequenceLength)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.cumulativeSequenceLength)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Largest sequence (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.largestSequence)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.largestSequence)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Shortest sequence (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.shortestSequence)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.shortestSequence)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Mean sequenve length (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.meanSequence)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.meanSequence)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Median sequence length (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.medianSequence)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.medianSequence)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               N50 (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.n50)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.n50)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               N90 (bp)
             </td>
-            <td className="px-4">{formatNumbers(assembly.n90)}</td>
+            <td className="px-4 truncate">{formatNumbers(assembly.n90)}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Type
             </td>
-            <td className="px-4">{assembly.sequenceType.toUpperCase()}</td>
+            <td className="px-4 truncate">{assembly.sequenceType.toUpperCase()}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               GC (%)
             </td>
-            <td className="px-4">{assembly.gcPercent}</td>
+            <td className="px-4 truncate">{assembly.gcPercent}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Added by
             </td>
-            <td className="px-4">{assembly.username}</td>
+            <td className="px-4 truncate">{assembly.username}</td>
           </tr>
           <tr className="border border-gray-400">
-            <td className="px-4 py-3 text-base font-semibold text-right border-r border-gray-400">
+            <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
               Added on
             </td>
-            <td className="px-4">{assembly.addedOn}</td>
+            <td className="px-4 truncate">{assembly.addedOn}</td>
           </tr>
         </tbody>
       </table>

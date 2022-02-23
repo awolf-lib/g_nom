@@ -4,6 +4,7 @@ import classNames from "classnames";
 import SpeciesProfilePictureViewer from "../../../../../../components/SpeciesProfilePictureViewer";
 import { AssemblyInterface } from "../../../../../../tsInterfaces/tsInterfaces";
 import { Checkmark, Close } from "grommet-icons";
+import { useRef } from "react";
 
 const AssembliesListElement = ({
   assembly,
@@ -66,6 +67,11 @@ const AssembliesListElement = ({
     return date.toLocaleDateString();
   };
 
+  const ref1 = useRef<HTMLDivElement>(null);
+  const ref2 = useRef<HTMLDivElement>(null);
+  const ref3 = useRef<HTMLDivElement>(null);
+  const ref4 = useRef<HTMLDivElement>(null);
+
   return (
     <Link
       to={"/g-nom/assemblies/assembly?assemblyID=" + id}
@@ -81,8 +87,20 @@ const AssembliesListElement = ({
             />
           </div>
         </div>
-        <div className="w-2/12 truncate">{scientificName}</div>
-        <div className="w-3/12 truncate">{label || name}</div>
+        <div
+          ref={ref1}
+          className="px-2 py-2 w-2/12 truncate hover:whitespace-normal hover:text-clip hover:overflow-auto"
+          onMouseLeave={() => ref1.current?.scrollTo(0, 0)}
+        >
+          {scientificName}
+        </div>
+        <div
+          ref={ref2}
+          className="px-2 py-2 w-3/12 truncate hover:whitespace-normal hover:text-clip hover:overflow-auto"
+          onMouseLeave={() => ref2.current?.scrollTo(0, 0)}
+        >
+          {label || name}
+        </div>
         {annotations && annotations > 0 ? (
           <div className="w-1/12 text-green-600">
             <Checkmark className="stroke-current" color="blank" />
@@ -128,8 +146,20 @@ const AssembliesListElement = ({
             <Close className="stroke-current" color="blank" />
           </div>
         )}
-        <div className="w-1/12 truncate">{username}</div>
-        <div className="w-1/12 truncate">{formatDate(addedOn)}</div>
+        <div
+          ref={ref3}
+          className="px-2 py-2 w-1/12 truncate hover:whitespace-normal hover:text-clip hover:overflow-auto"
+          onMouseLeave={() => ref3.current?.scrollTo(0, 0)}
+        >
+          {username || "deleted"}
+        </div>
+        <div
+          ref={ref4}
+          className="px-2 py-2 w-1/12 truncate hover:whitespace-normal hover:text-clip hover:overflow-auto"
+          onMouseLeave={() => ref4.current?.scrollTo(0, 0)}
+        >
+          {formatDate(addedOn)}
+        </div>
       </div>
     </Link>
   );

@@ -103,7 +103,7 @@ const AssembliesGridElement = ({
                 />
               </div>
             )}
-            <div className="w-full text-white px-4 py-2">
+            <div className="w-full text-white px-4 py-2 truncate">
               <div className="text-xl font-semibold h-8 truncate">{label || name}</div>
               <div className="text-sm h-6 truncate">{scientificName}</div>
               <div className="h-16 w-full flex items-center"></div>
