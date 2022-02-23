@@ -1,5 +1,5 @@
 import { Book, Bookmark, Close, Configure, Contract, Down, LinkTop, Up } from "grommet-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import {
@@ -413,24 +413,26 @@ const AssemblyInformation = () => {
 
   const userRole = JSON.parse(sessionStorage.getItem("userRole") || "");
 
+  const ref1 = useRef<HTMLDivElement>(null);
+
   return (
     <div className="pb-32 bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-gray-800 animate-fade-in">
       {/* Header */}
       <div className="h-1 bg-gradient-to-t from-gray-900 via-gray-500 to-gray-200" />
-      <div className="z-20 flex justify-between items-center bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-white sticky top-16 h-16 px-4 text-xl font-bold shadow-lg border-b border-gray-500">
-        {taxon?.scientificName ? (
-          <div className="flex justify-between items-center">
-            <div className="px-2 animate-fade-in">{taxon.scientificName}</div>
-            {assembly?.label && assembly?.name && (
-              <div className="flex items-center animate-fade-in">
-                <div className="px-2">{">"}</div>
-                <div className="px-2">{assembly.label}</div>
-                <div className="px-2 font-normal">{"(" + assembly.name + ")"}</div>
-              </div>
-            )}
-            {!assembly?.label && assembly?.name && (
-              <div className="px-2 animate-fade-in">{"> " + assembly.name}</div>
-            )}
+      <div className="z-20 flex justify-between items-center bg-gradient-to-tr from-gray-900 via-gray-800 to-gray-600 text-white sticky top-16 py-2 px-4 text-xl font-bold shadow-lg border-b border-gray-500">
+        {taxon && assembly ? (
+          <div className="flex justify-start items-center w-3/4">
+            <div className="px-2 whitespace-nowrap animate-fade-in">{taxon.scientificName}</div>
+            <div className="px-2 animate-fade-in">{">"}</div>
+            <div
+              ref={ref1}
+              onMouseLeave={() => {
+                ref1.current?.scrollTo(0, 0);
+              }}
+              className="px-2 animate-fade-in truncate hover:whitespace-normal hover:text-clip hover:overflow-auto"
+            >
+              {assembly?.label ? assembly.label : assembly.name}
+            </div>
           </div>
         ) : (
           <div>

@@ -127,7 +127,7 @@ const AssembliesList = ({
   };
 
   const viewTypeClass = classNames("animate-grow-y", {
-    "grid grid-cols-2 2xl:grid-cols-3 p-8 gap-8": view === "grid",
+    "grid grid-cols-2 3xl:grid-cols-3 p-8 gap-8": view === "grid",
   });
 
   const headerClass = classNames(
@@ -287,7 +287,7 @@ const AssembliesList = ({
               return <div />;
             })
           ) : (
-            <div className="w-full flex justify-center items-center border py-8 shadow col-span-2">
+            <div className="w-full flex justify-center items-center border py-8 shadow col-span-2 3xl:col-span-3">
               {loadingAssemblies || onLoadingAssembliesTimeout ? (
                 <LoadingSpinner label="Loading..." />
               ) : (

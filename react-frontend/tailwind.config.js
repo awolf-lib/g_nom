@@ -2,8 +2,10 @@ module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   purge: false,
   theme: {
-    screens: {},
     extend: {
+      screens: {
+        "3xl": "1920px",
+      },
       inset: { 16: "4rem" },
       transitionPropery: { width: "width", height: "height" },
       transitionDuration: {
@@ -97,6 +99,7 @@ module.exports = {
       ringWidth: ["responsive", "hover", "focus"],
       animation: ["responsive", "hover", "focus"],
       maxHeight: ["responsive", "hover"],
+      textOverflow: ["responsive", "hover", "focus"],
     },
   },
   plugins: [],
