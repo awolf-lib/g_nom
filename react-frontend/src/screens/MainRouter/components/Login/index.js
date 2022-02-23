@@ -6,7 +6,7 @@ import Button from "../../../../components/Button";
 
 import { login } from "../../../../api";
 
-import DNA from "../../../../images/DNA.gif";
+// import DNA from "../../../../images/DNA.gif";
 import { useNotification } from "../../../../components/NotificationProvider";
 import Input from "../../../../components/Input";
 
