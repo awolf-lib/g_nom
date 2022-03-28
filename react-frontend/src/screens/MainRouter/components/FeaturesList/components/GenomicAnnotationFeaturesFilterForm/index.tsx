@@ -695,7 +695,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
             </div>
           </div>
           <hr />
-          <div className="w-full mt-6 flex justify-around w-96">
+          <div className="w-full mt-6 flex justify-around">
             <div className="flex items-center text-sm text-white px-2">
               <div>
                 <CircleInformation className="stroke-current" color="blank" />
@@ -705,7 +705,7 @@ const GenomicAnnotationFeaturesFilterForm = ({
                 <div className="font-thin">Subfeatures can be found in the genome viewer.</div>
               </div>
             </div>
-            <div className="w-96">
+            <div className="w-48">
               <Button
                 label="Get data..."
                 onClick={() => {
