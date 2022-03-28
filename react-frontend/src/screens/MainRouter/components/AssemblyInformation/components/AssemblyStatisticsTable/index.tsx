@@ -49,7 +49,7 @@ const AssemblyStatisticsTable = ({ assembly }: { assembly: AssemblyInterface }) 
           </tr>
           <tr className="border border-gray-400">
             <td className="px-4 py-3 font-semibold text-right border-r border-gray-400 truncate hover:whitespace-normal hover:text-ellipsis hover:overflow-visible">
-              Mean sequenve length (bp)
+              Mean sequence length (bp)
             </td>
             <td className="px-4 truncate">{formatNumbers(assembly.meanSequence)}</td>
           </tr>

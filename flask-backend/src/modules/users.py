@@ -137,13 +137,21 @@ def validateActiveToken(userID, token, access=[]):
         if not userID or not token:
             return 0, createNotification(message="Did not receive UserID or token!")
 
+        print(userID, token)
+
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT userRole, activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",
             (userID, token),
         )
-        role, valid_token = cursor.fetchone()
+        
+        user = cursor.fetchone()
 
+        if not user:
+            return 0, createNotification(message="Session expired. Please relog first!")
+
+        role, valid_token = user
+    
         if not valid_token:
             cursor.execute(
                 "UPDATE users SET activeToken=NULL, tokenCreationTime=NULL WHERE id=%s",
@@ -152,7 +160,7 @@ def validateActiveToken(userID, token, access=[]):
             connection.commit()
             return 0, createNotification(message="Session expired. Please relog first!")
 
-        if len(access):
+        if access and len(access):
             if role not in access:
                 return 0, createNotification(message="Access denied!")
 
