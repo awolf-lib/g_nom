@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   const [data, setData] = useState({});
   const [layout, setLayout] = useState({});
+  const [bars, setBars] = useState(0);
 
   const plotlyDiv = document.getElementById("plotlyAnnotationFeatureTypes");
   useEffect(() => {
@@ -32,16 +33,20 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
         let features = JSON.parse(annotation.featureCount);
 
         types.push("TOTAL");
-        y.push(annotation.label || "id: " + annotation.id + " - ");
+        y.push("");
         x.push(features.total);
 
+        let bars = 0;
         Object.keys(features).forEach((type) => {
-          if (type !== "total") {
+          if (type !== "total" && features[type]) {
             types.push(type.toUpperCase());
-            y.push(annotation.label || "id: " + annotation.id + " - ");
+            y.push("");
             x.push(features[type]);
+            bars += 1;
           }
         });
+
+        setBars(bars);
 
         traces.push({
           name: annotation.label || annotation.name,
@@ -87,14 +92,13 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
         },
         showgrid: true,
         side: "left",
-        overlaying: "y",
         color: "grey",
         tickfont: {
           family: "Old Standard TT, serif",
           size: 14,
           color: "black",
         },
-        ticklen: 12,
+        autotick: true,
         automargin: true,
       },
     };
@@ -102,7 +106,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
   };
 
   return (
-    <div className="animate-grow-y w-full h-full">
+    <div className="animate-grow-y w-full" style={{ height: bars * 150 + "px" }}>
       <div id="plotlyAnnotationFeatureTypes" className="w-full h-full" />
     </div>
   );

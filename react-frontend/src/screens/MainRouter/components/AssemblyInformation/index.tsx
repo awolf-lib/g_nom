@@ -683,7 +683,7 @@ const AssemblyInformation = () => {
           {assembly?.id && annotations && annotations.length > 0 && (
             <div className="flex justify-center col-span-5">
               {toggleAnnotations && (
-                <div className="w-full h-75 border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
+                <div className="w-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                   <AnnotationStatisticsPlotViewer annotations={annotations} />
                 </div>
               )}
