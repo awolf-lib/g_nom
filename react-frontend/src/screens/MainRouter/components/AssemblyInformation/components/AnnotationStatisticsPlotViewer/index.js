@@ -69,8 +69,9 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
       title: "Feature types",
       showlegend: true,
       legend: {
-        x: -0.37,
-        y: -0.25,
+        x: 0,
+        y: -0.1,
+        orientation: "h",
       },
       barmode: "bar",
       xaxis: {
