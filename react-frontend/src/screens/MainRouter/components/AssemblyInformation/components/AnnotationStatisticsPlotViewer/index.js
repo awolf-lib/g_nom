@@ -57,6 +57,7 @@ const AnnotationStatisticsPlotViewer = ({ annotations }) => {
           marker: {
             color: colors[index],
           },
+          text: annotation.label || annotation.name,
         });
       });
     }
