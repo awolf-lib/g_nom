@@ -24,7 +24,7 @@ const AssembliesGridElement = ({
     annotations,
     buscos,
     fcats,
-    milts,
+    taxaminers,
     repeatmaskers,
     maxBuscoScore,
     maxFcatScoreM1,
@@ -51,7 +51,7 @@ const AssembliesGridElement = ({
     }
   }, [renderActivation]);
 
-  const analysesClass = (type: "A" | "B" | "F" | "M" | "R") => {
+  const analysesClass = (type: "A" | "B" | "F" | "T" | "R") => {
     const fcatModes: number[] = [
       maxFcatScoreM1 || 0,
       maxFcatScoreM2 || 0,
@@ -68,13 +68,13 @@ const AssembliesGridElement = ({
           (type === "A" && annotations && annotations > 0) ||
           (type === "B" && buscos && buscos > 0 && maxBuscoScore && maxBuscoScore >= 75) ||
           (type === "F" && fcats && fcats > 0 && fcatModes[fcatMode] >= 75) ||
-          (type === "M" && milts && milts > 0) ||
+          (type === "T" && taxaminers && taxaminers > 0) ||
           (type === "R" && repeatmaskers && repeatmaskers > 0),
         "bg-gradient-to-t from-red-900 via-red-700 to-red-700 border-red-500":
           (type === "A" && !annotations) ||
           (type === "B" && !buscos) ||
           (type === "F" && !fcats) ||
-          (type === "M" && !milts) ||
+          (type === "T" && !taxaminers) ||
           (type === "R" && !repeatmaskers),
       }
     );
@@ -126,7 +126,7 @@ const AssembliesGridElement = ({
                   F<span className="text-xs">{fcatMode + 1}</span>
                 </div>
               </div>
-              <div className={analysesClass("M")}>
+              <div className={analysesClass("T")}>
                 <div className="text-center w-full">M</div>
               </div>
               <div className={analysesClass("R")}>

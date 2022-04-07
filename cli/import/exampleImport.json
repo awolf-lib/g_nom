@@ -48,7 +48,7 @@
         "label": "fCat label"
       }
     ],
-    "milts": [
+    "taxaminer": [
       {
         "mainFile": "PATH/TO/*3D_plot*.html",
         "additionalFiles": [
@@ -56,7 +56,7 @@
           "PATH/TO/*PCA_LOADINGS*.csv",
           "PATH/TO/*PCA_SUMMARY*.csv"
         ],
-        "label": "Milts label"
+        "label": "taXaminer label"
       }
     ],
     "repeatmaskers": [

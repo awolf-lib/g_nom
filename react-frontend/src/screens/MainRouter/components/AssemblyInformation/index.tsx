@@ -12,7 +12,7 @@ import {
   fetchBuscoAnalysesByAssemblyID,
   fetchFcatAnalysesByAssemblyID,
   fetchMappingsByAssemblyID,
-  fetchMiltsAnalysesByAssemblyID,
+  fetchTaXaminerAnalysesByAssemblyID,
   fetchRepeatmaskerAnalysesByAssemblyID,
   fetchTaxonByTaxonID,
   fetchTaxonGeneralInformationByTaxonID,
@@ -22,7 +22,7 @@ import {
   IFcatAnalysis,
   IGeneralInformation,
   IMapping,
-  IMiltsAnalysis,
+  ITaxaminerAnalysis,
   INcbiTaxon,
   IRepeatmaskerAnalysis,
   NotificationObject,
@@ -62,7 +62,7 @@ const AssemblyInformation = () => {
   const [mappings, setMappings] = useState<IMapping[]>([]);
   const [buscoAnalyses, setBuscoAnalyses] = useState<IBuscoAnalysis[]>([]);
   const [fcatAnalyses, setFcatAnalyses] = useState<IFcatAnalysis[]>([]);
-  const [miltsAnalyses, setMiltsAnalyses] = useState<IMiltsAnalysis[]>([]);
+  const [taxaminerAnalyses, setTaxaminerAnalyses] = useState<ITaxaminerAnalysis[]>([]);
   const [repeatmaskerAnalyses, setRepeatmaskerAnalyses] = useState<IRepeatmaskerAnalysis[]>([]);
 
   const [fetchingTaxon, setFetchingTaxon] = useState<boolean>(false);
@@ -77,7 +77,7 @@ const AssemblyInformation = () => {
   const [fetchingMappings, setFetchingMappings] = useState<boolean>(false);
   const [fetchingBuscoAnalyses, setFetchingBuscoAnalyses] = useState<boolean>(false);
   const [fetchingFcatAnalyses, setFetchingFcatAnalyses] = useState<boolean>(false);
-  const [fetchingMiltsAnalyses, setFetchingMiltsAnalyses] = useState<boolean>(false);
+  const [fetchingTaxaminerAnalyses, setFetchingTaxaminerAnalyses] = useState<boolean>(false);
   const [fetchingRepeatmaskerAnalyses, setFetchingRepeatmaskerAnalyses] = useState<boolean>(false);
 
   const [hoverBookmark, setHoverBookmark] = useState<boolean>(false);
@@ -87,7 +87,7 @@ const AssemblyInformation = () => {
   const [toggleAnnotations, setToggleAnnotations] = useState<boolean>(false);
   const [toggleBuscoAnalyses, setToggleBuscoAnalyses] = useState<boolean>(false);
   const [toggleFcatAnalyses, setToggleFcatAnalyses] = useState<boolean>(false);
-  const [toggleMiltsAnalyses, setToggleMiltsAnalyses] = useState<boolean>(false);
+  const [toggleTaxaminerAnalyses, setToggleTaxaminerAnalyses] = useState<boolean>(false);
   const [toggleRepeatmaskerAnalyses, setToggleRepeatmaskerAnalyses] = useState<boolean>(false);
   const [toggleGenomeViewer, setToggleGenomeViewer] = useState<boolean>(false);
 
@@ -124,7 +124,7 @@ const AssemblyInformation = () => {
     const timeout1 = setTimeout(() => {
       loadBuscoAnalyses();
       loadFcatAnalysees();
-      loadMiltsAnalyses();
+      loadTaxaminerAnalyses();
       loadRepeatmaskerAnalyses();
     }, 2000);
 
@@ -345,21 +345,21 @@ const AssemblyInformation = () => {
     setFetchingFcatAnalyses(false);
   };
 
-  const loadMiltsAnalyses = async () => {
-    setFetchingMiltsAnalyses(true);
+  const loadTaxaminerAnalyses = async () => {
+    setFetchingTaxaminerAnalyses(true);
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
     if (assembly && assembly.id && userID && token) {
-      await fetchMiltsAnalysesByAssemblyID(assembly.id, userID, token).then((response) => {
+      await fetchTaXaminerAnalysesByAssemblyID(assembly.id, userID, token).then((response) => {
         if (response && response.payload) {
-          setMiltsAnalyses(response.payload);
+          setTaxaminerAnalyses(response.payload);
         }
         if (response?.notification) {
           response.notification.forEach((not) => handleNewNotification(not));
         }
       });
     }
-    setFetchingMiltsAnalyses(false);
+    setFetchingTaxaminerAnalyses(false);
   };
 
   const loadRepeatmaskerAnalyses = async () => {
@@ -405,7 +405,7 @@ const AssemblyInformation = () => {
     setToggleAnnotations(false);
     setToggleBuscoAnalyses(false);
     setToggleFcatAnalyses(false);
-    setToggleMiltsAnalyses(false);
+    setToggleTaxaminerAnalyses(false);
     setToggleRepeatmaskerAnalyses(false);
     setToggleGenomeViewer(false);
     window.scrollTo(0, 0);
@@ -618,20 +618,21 @@ const AssemblyInformation = () => {
             )}
           </div>
 
-          {/* MILTS - Taxonomic assignment */}
-          {miltsAnalyses && miltsAnalyses.length > 0 && (
+          {/* TAXAMINER - Taxonomic assignment */}
+          {taxaminerAnalyses && taxaminerAnalyses.length > 0 && (
             <div
-              onClick={() => setToggleMiltsAnalyses((prevState) => !prevState)}
+              onClick={() => setToggleTaxaminerAnalyses((prevState) => !prevState)}
               className="mt-8 col-span-5 text-white border-b w-full px-4 py-1 font-semibold text-xl flex justify-between items-center cursor-pointer hover:bg-gray-700 rounded-t-lg hover:text-gray-200"
             >
               <div className="w-96">Taxonomic assignment</div>
               <div className="text-sm">
-                {(fetchingMiltsAnalyses || (taxonomicAssignmentLoading && toggleMiltsAnalyses)) && (
-                  <LoadingSpinner label="Loading Milts data..." />
+                {(fetchingTaxaminerAnalyses ||
+                  (taxonomicAssignmentLoading && toggleTaxaminerAnalyses)) && (
+                  <LoadingSpinner label="Loading taXaminer data..." />
                 )}
               </div>
               <div className="flex items-center w-96 justify-end">
-                {toggleMiltsAnalyses ? (
+                {toggleTaxaminerAnalyses ? (
                   <Down className="stroke-current animate-grow-y" color="blank" />
                 ) : (
                   <Up className="stroke-current animate-grow-y" color="blank" />
@@ -639,12 +640,12 @@ const AssemblyInformation = () => {
               </div>
             </div>
           )}
-          {miltsAnalyses && miltsAnalyses.length > 0 && (
+          {taxaminerAnalyses && taxaminerAnalyses.length > 0 && (
             <div className="flex justify-center col-span-5">
-              {toggleMiltsAnalyses && (
+              {toggleTaxaminerAnalyses && (
                 <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                   <TaxonomicAssignmentViewer
-                    milts={miltsAnalyses}
+                    taxaminers={taxaminerAnalyses}
                     setTaxonomicAssignmentLoading={setTaxonomicAssignmentLoading}
                   />
                 </div>

@@ -40,7 +40,7 @@ def handle_import_dataset(connection, channel, delivery_tag, message):
         mappings = message["data"]["mappings"]
         buscos = message["data"]["buscos"]
         fcats = message["data"]["fcats"]
-        milts = message["data"]["milts"]
+        taxaminers = message["data"]["taxaminers"]
         repeatmaskers = message["data"]["repeatmaskers"]
         append_assembly_id = message["data"]["append_assembly_id"]
         importDataset(
@@ -51,7 +51,7 @@ def handle_import_dataset(connection, channel, delivery_tag, message):
             mappings,
             buscos,
             fcats,
-            milts,
+            taxaminers,
             repeatmaskers,
             append_assembly_id,
             taskID,

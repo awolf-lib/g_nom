@@ -209,7 +209,7 @@ export interface IImportValidation {
   mapping?: Dataset[];
   busco?: Dataset[];
   fcat?: Dataset[];
-  milts: Dataset[];
+  taxaminer: Dataset[];
   repeatmasker?: Dataset[];
 }
 
@@ -219,7 +219,7 @@ export type DatasetTypes =
   | "mapping"
   | "busco"
   | "fcat"
-  | "milts"
+  | "taxaminer"
   | "repeatmasker";
 
 export interface Dataset {
@@ -421,7 +421,7 @@ export interface Filter {
   hasMapping?: boolean;
   hasBusco?: boolean;
   hasFcat?: boolean;
-  hasMilts?: boolean;
+  hasTaxaminer?: boolean;
   hasRepeatmasker?: boolean;
   minBuscoComplete?: number;
   minFcatSimilar?: { mode: number; value: number };
@@ -1422,7 +1422,7 @@ export interface IFcatAnalysis {
   username: string;
 }
 
-export interface IMiltsAnalysis {
+export interface ITaxaminerAnalysis {
   addedBy: number;
   addedOn: Date;
   analysisID: number;
@@ -1430,7 +1430,7 @@ export interface IMiltsAnalysis {
   id: number;
   name: string;
   path: string;
-  type: "milts";
+  type: "taxaminer";
   label?: string;
   username: string;
 }
@@ -1472,7 +1472,7 @@ export interface IRepeatmaskerAnalysis {
   username: string;
 }
 
-export type IAnalyses = IBuscoAnalysis | IFcatAnalysis | IMiltsAnalysis | IRepeatmaskerAnalysis;
+export type IAnalyses = IBuscoAnalysis | IFcatAnalysis | ITaxaminerAnalysis | IRepeatmaskerAnalysis;
 
 // ===== FETCH ALL ANALYSES BY ASSEMBLY ID ===== //
 export async function fetchAnalysesByAssemblyID(
@@ -1540,15 +1540,15 @@ export async function fetchFcatAnalysesByAssemblyID(
     });
 }
 
-// ===== FETCH MILTS ANALYSES BY ASSEMBLY ID ===== //
-export async function fetchMiltsAnalysesByAssemblyID(
+// ===== FETCH TAXAMINER ANALYSES BY ASSEMBLY ID ===== //
+export async function fetchTaXaminerAnalysesByAssemblyID(
   assemblyID: number,
   userID: number,
   token: string
-): Promise<IResponse<IMiltsAnalysis[]>> {
+): Promise<IResponse<ITaxaminerAnalysis[]>> {
   return fetch(
     process.env.REACT_APP_API_ADRESS +
-      "/fetchMiltsAnalysesByAssemblyID?assemblyID=" +
+      "/fetchTaXaminerAnalysesByAssemblyID?assemblyID=" +
       assemblyID +
       "&userID=" +
       userID +
@@ -1646,7 +1646,7 @@ export function importDataset(
   mappings: Dataset[],
   buscos: Dataset[],
   fcats: Dataset[],
-  milts: Dataset[],
+  taxaminers: Dataset[],
   repeatmaskers: Dataset[],
   userID: number,
   token: string,
@@ -1664,7 +1664,7 @@ export function importDataset(
       mappings: mappings,
       buscos: buscos,
       fcats: fcats,
-      milts: milts,
+      taxaminers: taxaminers,
       repeatmaskers: repeatmaskers,
       userID: userID,
       token: token,

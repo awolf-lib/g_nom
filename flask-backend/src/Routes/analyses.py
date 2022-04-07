@@ -9,7 +9,7 @@ from modules.analyses import (
     fetchAnalysesByAssemblyID,
     fetchBuscoAnalysesByAssemblyID,
     fetchFcatAnalysesByAssemblyID,
-    fetchMiltsAnalysesByAssemblyID,
+    fetchTaXaminerAnalysesByAssemblyID,
     fetchRepeatmaskerAnalysesByAssemblyID,
     import_analyses,
     updateAnalysisLabel,
@@ -195,9 +195,9 @@ def analyses_bp_fetchFcatAnalysesByAssemblyID():
         return REQUESTMETHODERROR
 
 
-# FETCH MILTS ANALYSES BY ASSEMBLY ID
-@analyses_bp.route("/fetchMiltsAnalysesByAssemblyID", methods=["GET"])
-def analyses_bp_fetchMiltsAnalysesByAssemblyID():
+# FETCH TAXAMINER ANALYSES BY ASSEMBLY ID
+@analyses_bp.route("/fetchTaXaminerAnalysesByAssemblyID", methods=["GET"])
+def analyses_bp_fetchTaXaminerAnalysesByAssemblyID():
     if request.method == "GET":
         userID = request.args.get("userID", None)
         token = request.args.get("token", None)
@@ -210,7 +210,7 @@ def analyses_bp_fetchMiltsAnalysesByAssemblyID():
             return response
 
         assemblyID = request.args.get("assemblyID")
-        data, notification = fetchMiltsAnalysesByAssemblyID(assemblyID)
+        data, notification = fetchTaXaminerAnalysesByAssemblyID(assemblyID)
 
         response = jsonify({"payload": data, "notification": notification})
         response.headers.add("Access-Control-Allow-Origin", "*")

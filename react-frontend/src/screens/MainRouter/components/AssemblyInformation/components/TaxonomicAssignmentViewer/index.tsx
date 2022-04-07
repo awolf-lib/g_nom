@@ -1,13 +1,13 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Button from "../../../../../../components/Button";
 import { Download, Next, Previous } from "grommet-icons";
-import { fetchFileByPath, IMiltsAnalysis } from "../../../../../../api";
+import { fetchFileByPath, ITaxaminerAnalysis } from "../../../../../../api";
 
 const TaxonomicAssignmentViewer = ({
-  milts,
+  taxaminers,
   setTaxonomicAssignmentLoading,
 }: {
-  milts: IMiltsAnalysis[];
+  taxaminers: ITaxaminerAnalysis[];
   setTaxonomicAssignmentLoading: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [index, setIndex] = useState<number>(0);
@@ -22,7 +22,7 @@ const TaxonomicAssignmentViewer = ({
   const getPlot = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
-    await fetchFileByPath(milts[index].path, userID, token).then((response) => {
+    await fetchFileByPath(taxaminers[index].path, userID, token).then((response) => {
       if (response && response.url) {
         setPlot(response.url);
       }
@@ -32,10 +32,10 @@ const TaxonomicAssignmentViewer = ({
   return (
     <div className="animate-grow-y overflow-hidden relative">
       <div className="animate-fade-in">
-        {milts && milts[index] && (
+        {taxaminers && taxaminers[index] && (
           <iframe
             onLoad={() => setTaxonomicAssignmentLoading(false)}
-            title="MiltsPlot"
+            title="taXaminerPlot"
             className="w-full h-75"
             src={plot}
           />
@@ -53,7 +53,7 @@ const TaxonomicAssignmentViewer = ({
           </Button>
         </a>
       </div>
-      {milts.length > 1 && (
+      {taxaminers.length > 1 && (
         <div className="absolute bottom-0 left-0 opacity-50 flex items-center mx-4 my-1 z-10">
           <Button
             color="link"
@@ -73,8 +73,8 @@ const TaxonomicAssignmentViewer = ({
             color="link"
             onClick={() =>
               setIndex((prevState) => {
-                if (prevState + 1 > milts.length - 1) {
-                  return milts.length - 1;
+                if (prevState + 1 > taxaminers.length - 1) {
+                  return taxaminers.length - 1;
                 } else {
                   return prevState + 1;
                 }

@@ -34,9 +34,9 @@ FILE_PATTERN_DICT = {
         "default_parent_dir": None,
         "additional_files": [],
     },
-    "milts": {
+    "taxaminer": {
         "main_file": compile(r"^.*3D_plot.*\.html$"),
-        "default_parent_dir": compile(r"^.*MILTS_report_.*$"),
+        "default_parent_dir": None,
         "additional_files": [
             compile(r"^.*gene_table_taxon_assignment.*\.csv$"),
             compile(r"^.*pca_summary.*\.csv$"),
@@ -205,7 +205,7 @@ def import_dataset_with_queue(
     mappings=[],
     buscos=[],
     fcats=[],
-    milts=[],
+    taxaminers=[],
     repeatmaskers=[],
     append_assembly_id=0,
 ):
@@ -233,7 +233,7 @@ def import_dataset_with_queue(
                 "mappings": mappings,
                 "buscos": buscos,
                 "fcats": fcats,
-                "milts": milts,
+                "taxaminers": taxaminers,
                 "repeatmaskers": repeatmaskers,
                 "append_assembly_id": append_assembly_id,
             },
@@ -263,13 +263,13 @@ def importDataset(
     mappings=[],
     buscos=[],
     fcats=[],
-    milts=[],
+    taxaminers=[],
     repeatmaskers=[],
     append_assembly_id=0,
     taskID="",
 ):
     """
-    Imports assembly with all supported datasets (annotations, mappings, Busco, fCat, Milts, Repeatmasker)
+    Imports assembly with all supported datasets (annotations, mappings, Busco, fCat, taXaminer, Repeatmasker)
     """
     summary = {
         "assemblyID": None,
@@ -277,7 +277,7 @@ def importDataset(
         "mappingIDs": [],
         "buscoIDs": [],
         "fcatIDs": [],
-        "miltsIDs": [],
+        "taxaminerIDs": [],
         "repeatmaskerIDs": [],
     }
     notifications = []
@@ -403,16 +403,16 @@ def importDataset(
         except:
             pass
 
-        for milt in milts:
-            milt_id, notification = import_analyses(taxon, assembly_id, milt, "milts", userID)
-            if milt_id:
-                summary["miltsIDs"] += [milt_id]
+        for taxaminer in taxaminers:
+            taxaminer_id, notification = import_analyses(taxon, assembly_id, taxaminer, "taxaminer", userID)
+            if taxaminer_id:
+                summary["taxaminerIDs"] += [taxaminer_id]
             else:
                 notifications += notification
 
             try:
                 if taskID:
-                    progress += 10 // len(milts)
+                    progress += 10 // len(taxaminers)
                     updateTask(taskID, "running", round(progress))
             except:
                 pass
@@ -478,7 +478,7 @@ def readArgs():
         mappings = loads(args[3])
         buscos = loads(args[4])
         fcats = loads(args[5])
-        milts = loads(args[6])
+        taxaminers = loads(args[6])
         repeatmaskers = loads(args[7])
         assembly_id = int(args[8])
 
@@ -489,7 +489,7 @@ def readArgs():
             mappings,
             buscos,
             fcats,
-            milts,
+            taxaminers,
             repeatmaskers,
             assembly_id,
         )
@@ -512,7 +512,7 @@ if __name__ == "__main__":
             mappings,
             buscos,
             fcats,
-            milts,
+            taxaminers,
             repeatmaskers,
             assembly_id,
         ) = args
@@ -539,7 +539,7 @@ if __name__ == "__main__":
             mappings,
             buscos,
             fcats,
-            milts,
+            taxaminers,
             repeatmaskers,
             assembly_id,
         )

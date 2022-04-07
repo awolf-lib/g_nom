@@ -2,8 +2,8 @@ import { Close, Tag, Trash } from "grommet-icons";
 import { useEffect, useState } from "react";
 import {
   deleteAnalysesByAnalysesID,
-  fetchMiltsAnalysesByAssemblyID,
-  IMiltsAnalysis,
+  fetchTaXaminerAnalysesByAssemblyID,
+  ITaxaminerAnalysis,
   INcbiTaxon,
   NotificationObject,
   updateAnalysisLabel,
@@ -14,8 +14,14 @@ import { useNotification } from "../../../../../../../../../../components/Notifi
 import { AssemblyInterface } from "../../../../../../../../../../tsInterfaces/tsInterfaces";
 import EditLabelForm from "../../../EditAssemblyLabelForm/components/EditLabelForm";
 
-const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: AssemblyInterface }) => {
-  const [miltsAnalyses, setMiltsAnalyses] = useState<IMiltsAnalysis[]>([]);
+const EditTaxaminersForm = ({
+  taxon,
+  assembly,
+}: {
+  taxon: INcbiTaxon;
+  assembly: AssemblyInterface;
+}) => {
+  const [taxaminerAnalyses, setTaxaminerAnalyses] = useState<ITaxaminerAnalysis[]>([]);
   const [toggleConfirmDeletion, setToggleConfirmDeletion] = useState<number>(-1);
   const [confirmDeletion, setConfirmDeletion] = useState<string>("");
   const [toggleEditLabel, setToggleEditLabel] = useState<number>(-1);
@@ -33,20 +39,20 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
   };
 
   useEffect(() => {
-    loadMiltsAnalyses();
+    loadTaxaminerAnalyses();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assembly.id]);
 
-  const loadMiltsAnalyses = async () => {
+  const loadTaxaminerAnalyses = async () => {
     const userID = JSON.parse(sessionStorage.getItem("userID") || "");
     const token = JSON.parse(sessionStorage.getItem("token") || "");
 
     if (assembly && assembly.id && userID && token) {
-      const response = await fetchMiltsAnalysesByAssemblyID(assembly.id, userID, token);
+      const response = await fetchTaXaminerAnalysesByAssemblyID(assembly.id, userID, token);
 
       if (response) {
         if (response.payload) {
-          setMiltsAnalyses(response.payload);
+          setTaxaminerAnalyses(response.payload);
         }
       }
     }
@@ -64,7 +70,7 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
         const response = await deleteAnalysesByAnalysesID(analysesID, userID, token);
         setToggleConfirmDeletion(-1);
         setConfirmDeletion("");
-        loadMiltsAnalyses();
+        loadTaxaminerAnalyses();
 
         if (response.notification && response.notification.length > 0) {
           response.notification.map((n: any) => handleNewNotification(n));
@@ -84,28 +90,28 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
         <div className="w-48" />
       </div>
       <div className="min-h-1/4 max-h-1/2">
-        {miltsAnalyses && miltsAnalyses.length > 0 ? (
-          miltsAnalyses.map((milts) => (
-            <div key={milts.analysisID} className="border-t border-b odd:bg-indigo-50 shadow">
+        {taxaminerAnalyses && taxaminerAnalyses.length > 0 ? (
+          taxaminerAnalyses.map((taxaminer) => (
+            <div key={taxaminer.analysisID} className="border-t border-b odd:bg-indigo-50 shadow">
               <div className="flex py-4 text-center items-center">
-                <div className="w-16">{milts.analysisID}</div>
+                <div className="w-16">{taxaminer.analysisID}</div>
                 <div className="w-2/5 flex justify-center items-center">
-                  {milts.label || milts.name}
+                  {taxaminer.label || taxaminer.name}
                 </div>
-                <div className="w-1/5">{milts.username}</div>
-                <div className="w-2/5">{milts.addedOn}</div>
+                <div className="w-1/5">{taxaminer.username}</div>
+                <div className="w-2/5">{taxaminer.addedOn}</div>
                 <div className="flex justify-around items-center w-48">
                   <div
                     onClick={() => {
                       setToggleConfirmDeletion(-1);
                       setConfirmDeletion("");
                       setToggleEditLabel((prevState) =>
-                        prevState !== milts.analysisID ? milts.analysisID : -1
+                        prevState !== taxaminer.analysisID ? taxaminer.analysisID : -1
                       );
                     }}
                     className="p-1 hover:bg-gray-600 hover:text-white cursor-pointer transition duration-300 flex rounded-lg transform scale-125"
                   >
-                    {toggleEditLabel !== milts.analysisID ? (
+                    {toggleEditLabel !== taxaminer.analysisID ? (
                       <Tag className="stroke-current" color="blank" size="small" />
                     ) : (
                       <Close className="stroke-current" color="blank" size="small" />
@@ -117,12 +123,12 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
                         setToggleEditLabel(-1);
                         setConfirmDeletion("");
                         setToggleConfirmDeletion((prevState) =>
-                          prevState !== milts.analysisID ? milts.analysisID : -1
+                          prevState !== taxaminer.analysisID ? taxaminer.analysisID : -1
                         );
                       }}
                       className="p-1 hover:bg-red-600 hover:text-white cursor-pointer transition duration-300 flex rounded-lg transform scale-125"
                     >
-                      {toggleConfirmDeletion !== milts.analysisID ? (
+                      {toggleConfirmDeletion !== taxaminer.analysisID ? (
                         <Trash className="stroke-current" color="blank" size="small" />
                       ) : (
                         <Close className="stroke-current" color="blank" size="small" />
@@ -132,7 +138,7 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
                 </div>
               </div>
               {(toggleConfirmDeletion || toggleEditLabel) && <hr className="shadow" />}
-              {toggleConfirmDeletion === milts.analysisID && (
+              {toggleConfirmDeletion === taxaminer.analysisID && (
                 <div className="flex justify-center animate-grow-y">
                   <div className="mx-4 my-8">
                     <div className="flex justify-between items-center">
@@ -145,7 +151,7 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
                             <Input
                               placeholder="Type REMOVE..."
                               onChange={(e) =>
-                                handleDeleteAnalyses(milts.analysisID, e.target.value)
+                                handleDeleteAnalyses(taxaminer.analysisID, e.target.value)
                               }
                               value={confirmDeletion}
                             />
@@ -160,11 +166,11 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
                   </div>
                 </div>
               )}
-              {toggleEditLabel === milts.analysisID && (
+              {toggleEditLabel === taxaminer.analysisID && (
                 <EditLabelForm
-                  target={milts}
+                  target={taxaminer}
                   updateLabel={updateAnalysisLabel}
-                  reloadTarget={loadMiltsAnalyses}
+                  reloadTarget={loadTaxaminerAnalyses}
                 />
               )}
             </div>
@@ -177,4 +183,4 @@ const EditMiltsForm = ({ taxon, assembly }: { taxon: INcbiTaxon; assembly: Assem
   );
 };
 
-export default EditMiltsForm;
+export default EditTaxaminersForm;
