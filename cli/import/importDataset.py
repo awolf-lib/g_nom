@@ -216,37 +216,37 @@ def importDatasets(datasets, config):
                         print(err, flush=True)
             fcats = dumps(fcat_datasets)
 
-            # format milts
-            milts_datasets = []
-            if "milts" in dataset:
-                for idx_milts, milt in enumerate(dataset["milts"]):
+            # format taxaminer
+            taxaminer_datasets = []
+            if "taxaminer" in dataset:
+                for idx_taxaminer, taxaminer in enumerate(dataset["taxaminer"]):
                     try:
-                        milts_dataset = {}
-                        if "mainFile" in milt:
-                            if exists(milt["mainFile"]):
-                                tmp_dir_milts = tmp_dir + f"milt{idx_milts+1}/"
-                                run(args=["mkdir", "-p", tmp_dir_milts])
-                                run(args=["cp", "-r", milt["mainFile"], tmp_dir_milts])
-                                milts_dataset = {"main_file": {"path": f"{uuid}/milt{idx_milts+1}/" + basename(milt["mainFile"])}}
+                        taxaminer_dataset = {}
+                        if "mainFile" in taxaminer:
+                            if exists(taxaminer["mainFile"]):
+                                tmp_dir_taxaminer = tmp_dir + f"taxaminer{idx_taxaminer+1}/"
+                                run(args=["mkdir", "-p", tmp_dir_taxaminer])
+                                run(args=["cp", "-r", taxaminer["mainFile"], tmp_dir_taxaminer])
+                                taxaminer_dataset = {"main_file": {"path": f"{uuid}/taxaminer{idx_taxaminer+1}/" + basename(taxaminer["mainFile"])}}
 
-                                if "additionalFiles" in milt:
-                                    milts_additional_files = []
-                                    for additional_file in milt["additionalFiles"]:
-                                        run(args=["cp", "-r", additional_file, tmp_dir_milts])
-                                        milts_additional_files.append(
-                                            {"path": f"{uuid}/milt{idx_milts+1}/" + basename(additional_file)}
+                                if "additionalFiles" in taxaminer:
+                                    taxaminer_additional_files = []
+                                    for additional_file in taxaminer["additionalFiles"]:
+                                        run(args=["cp", "-r", additional_file, tmp_dir_taxaminer])
+                                        taxaminer_additional_files.append(
+                                            {"path": f"{uuid}/taxaminer{idx_taxaminer+1}/" + basename(additional_file)}
                                         )
-                                    milts_dataset.update({"additional_files": milts_additional_files})
-                                    if "label" in milt:
-                                        milts_dataset.update({"label": milt["label"]})
-                                milts_datasets.append(milts_dataset)
+                                    taxaminer_dataset.update({"additional_files": taxaminer_additional_files})
+                                    if "label" in taxaminer:
+                                        taxaminer_dataset.update({"label": taxaminer["label"]})
+                                taxaminer_datasets.append(taxaminer_dataset)
                             else:
-                                print("Error: " + milt["mainFile"] + " does not exist!", flush=True)
+                                print("Error: " + taxaminer["mainFile"] + " does not exist!", flush=True)
                     except Exception as err:
-                        number_milts = len(dataset["milts"])
-                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_milts+1}/{len(number_milts)}", flush=True)
+                        number_taxaminer = len(dataset["taxaminer"])
+                        print(f"Assembly {idx+1}/{len(datasets)}: Failed importing busco {idx_taxaminer+1}/{len(number_taxaminer)}", flush=True)
                         print(err, flush=True)
-            milts = dumps(milts_datasets)
+            taxaminers = dumps(taxaminer_datasets)
 
             # format repeatmaskers
             repeatmasker_datasets = []
@@ -299,7 +299,7 @@ def importDatasets(datasets, config):
                     mappings,
                     buscos,
                     fcats,
-                    milts,
+                    taxaminers,
                     repeatmaskers,
                     assemblyID,
                 ]

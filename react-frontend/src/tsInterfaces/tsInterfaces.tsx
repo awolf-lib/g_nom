@@ -37,7 +37,7 @@ export interface AssemblyInterface {
   maxFcatScoreM2?: number;
   maxFcatScoreM3?: number;
   maxFcatScoreM4?: number;
-  milts?: number;
+  taxaminers?: number;
   repeatmaskers?: number;
   averageRepetitiveness?: number;
   bookmarked?: boolean;

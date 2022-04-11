@@ -73,7 +73,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
                 deleteAnalysesByAnalysesID(analyses_id)
                 print(error)
                 return 0, error
-        elif analyses_type == "milts":
+        elif analyses_type == "taxaminer":
             pass
         elif analyses_type == "repeatmasker":
             repeatmasker_content, error = parseRepeatmasker(new_file_path)
@@ -85,7 +85,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             return 0, createNotification(message=f"Invalid analyses type {analyses_type}")
 
         # zip
-        if analyses_type != "milts":
+        if analyses_type != "taxaminer":
             tar_dir = new_path_to_directory[:-1] + ".tar.gz"
             run(args=["tar", "-zcf", tar_dir, new_path_to_directory])
             if not exists(tar_dir):
@@ -112,10 +112,13 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
             import_status, error = __importBusco(assembly_id, analyses_id, busco_content)
         elif analyses_type == "fcat":
             import_status, error = __importFcat(assembly_id, analyses_id, fcat_content)
-        elif analyses_type == "milts":
-            import_status, error = __importMilts(assembly_id, analyses_id)
+        elif analyses_type == "taxaminer":
+            import_status, error = __importTaxaminer(assembly_id, analyses_id)
         elif analyses_type == "repeatmasker":
             import_status, error = __importRepeatmasker(assembly_id, analyses_id, repeatmasker_content)
+        else:
+            import_status = 0
+            error = createNotification(message="Unknown analyses type")
 
         if not import_status:
             deleteAnalysesByAnalysesID(analyses_id)
@@ -528,15 +531,15 @@ def __importFcat(assemblyID, analysisID, fcatData):
         return 0, createNotification(message=f"FcatImportDBError; {str(err)}")
 
 
-# import Milts
-def __importMilts(assemblyID, analysisID):
+# import taXaminer
+def __importTaxaminer(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID,))
+        cursor.execute("INSERT INTO analysesTaxaminer (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
         return 1, []
     except Exception as err:
-        return 0, createNotification(message=f"MiltsImportDBError: {str(err)}")
+        return 0, createNotification(message=f"taXaminerImportDBError: {str(err)}")
 
 
 # import Repeatmasker
@@ -994,13 +997,13 @@ def fetchAnalysesByAssemblyID(assemblyID):
         row_headers = [x[0] for x in cursor.description]
         analyses["fcat"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        # milts analyses
+        # taXaminer analyses
         cursor.execute(
-            "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
+            "SELECT analyses.*, analysesTaxaminer.* FROM analyses, analysesTaxaminer WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
-        analyses["milts"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
+        analyses["taxaminer"] = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
         # repeatmasker analyses
         cursor.execute(
@@ -1074,7 +1077,7 @@ def fetchFcatAnalysesByAssemblyID(assemblyID):
 
 
 # fetches all analyses for specific assembly
-def fetchMiltsAnalysesByAssemblyID(assemblyID):
+def fetchTaXaminerAnalysesByAssemblyID(assemblyID):
     """
     Fetches all analyses for specific assembly.
     """
@@ -1083,23 +1086,23 @@ def fetchMiltsAnalysesByAssemblyID(assemblyID):
         if error and error["message"]:
             return error
 
-        # milts analyses
+        # taxaminer analyses
         cursor.execute(
-            "SELECT analyses.*, analysesMilts.*, users.username FROM analyses, analysesMilts, users WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID AND analyses.addedBy=users.id",
+            "SELECT analyses.*, analysesTaxaminer.*, users.username FROM analyses, analysesTaxaminer, users WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
-        miltsList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
+        taxaminerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
 
-        # if not len(miltsList):
-        #     return [], createNotification("Info", "No Milts analyses for this assembly", "info")
+        # if not len(taxaminerList):
+        #     return [], createNotification("Info", "No taXaminer analyses for this assembly", "info")
 
         return (
-            miltsList,
+            taxaminerList,
             [],
         )
     except Exception as err:
-        return [], createNotification(message=f"FetchMiltsAnalysesError: {str(err)}")
+        return [], createNotification(message=f"FetchTaXaminerAnalysesError: {str(err)}")
 
 
 # fetches all analyses for specific assembly

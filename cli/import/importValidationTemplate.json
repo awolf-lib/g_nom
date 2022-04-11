@@ -125,9 +125,9 @@
         }
       },
 
-      "milts": {
+      "taxaminer": {
         "type": "array",
-        "description": "Optional: Add a list of Milts analyses to add.",
+        "description": "Optional: Add a list of taXaminer analyses to add.",
         "uniqueItems": true,
         "items": {
           "type": "object",

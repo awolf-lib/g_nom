@@ -216,7 +216,7 @@ const AssembliesList = ({
               <CaretNext className="stroke-current" color="blank" size="small" />
             </div>
           </div>
-          <div className="w-1/12 flex items-center justify-center">Milts</div>
+          <div className="w-1/12 flex items-center justify-center">taXaminer</div>
           <div className="w-1/12 flex items-center justify-center">Repeatmasker</div>
           <div
             className="w-1/12 flex items-center justify-center cursor-pointer hover:bg-gray-500 rounded-lg truncate"
@@ -374,7 +374,7 @@ const AssembliesList = ({
                   </div>
                   <div className="py-1 text-left px-2 flex">
                     <div className="w-6 text-center">M</div>
-                    {"- Milts"}
+                    {"- TaXaminer"}
                   </div>
                   <div className="py-1 text-left px-2 flex">
                     <div className="w-6 text-center">R</div>

@@ -41,7 +41,7 @@ def files_bp_deleteAnalysesByAnalysesID():
         return REQUESTMETHODERROR
 
 
-# FETCH FILES BY PATH (example: Milts plot)
+# FETCH FILES BY PATH (example: taXaminer plot)
 @files_bp.route("/fetchFileByPath", methods=["GET"])
 def files_bp_fetchFileByPath():
     if request.method == "GET":

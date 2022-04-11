@@ -137,8 +137,6 @@ def validateActiveToken(userID, token, access=[]):
         if not userID or not token:
             return 0, createNotification(message="Did not receive UserID or token!")
 
-        print(userID, token)
-
         connection, cursor, error = connect()
         cursor.execute(
             "SELECT userRole, activeToken from users WHERE id=%s AND activeToken=%s AND tokenCreationTime>=DATE_SUB(NOW(), INTERVAL 30 MINUTE)",

@@ -523,10 +523,10 @@ const AssembliesFilterForm = ({
                 <input
                   className="ring-1 ring-white"
                   type="checkbox"
-                  onChange={(e) => handleChangeCheckbox("hasMilts", e.target.checked)}
-                  checked={filter.hasMilts ? true : false}
+                  onChange={(e) => handleChangeCheckbox("hasTaxaminer", e.target.checked)}
+                  checked={filter.hasTaxaminer ? true : false}
                 />
-                <span className="px-4">has Milts</span>
+                <span className="px-4">has taXaminer</span>
               </label>
               <label className="flex items-center text-xs py-1 hover:text-gray-200 cursor-pointer">
                 <input

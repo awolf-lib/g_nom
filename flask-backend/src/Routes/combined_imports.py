@@ -66,7 +66,7 @@ def imports_bp_import_dataset():
         mappings = req.get("mappings", [])
         buscos = req.get("buscos", [])
         fcats = req.get("fcats", [])
-        milts = req.get("milts", [])
+        taxaminers = req.get("taxaminers", [])
         repeatmaskers = req.get("repeatmaskers", [])
 
         data, notification = import_dataset_with_queue(
@@ -77,7 +77,7 @@ def imports_bp_import_dataset():
             mappings,
             buscos,
             fcats,
-            milts,
+            taxaminers,
             repeatmaskers,
             assemblyID,
         )

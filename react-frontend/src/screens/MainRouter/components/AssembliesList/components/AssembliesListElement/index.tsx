@@ -28,7 +28,7 @@ const AssembliesListElement = ({
     maxFcatScoreM2,
     maxFcatScoreM3,
     maxFcatScoreM4,
-    milts,
+    taxaminers,
     repeatmaskers,
     username,
     addedOn,
@@ -128,7 +128,7 @@ const AssembliesListElement = ({
             <Close className="stroke-current" color="blank" />
           </div>
         )}
-        {milts && milts > 0 ? (
+        {taxaminers && taxaminers > 0 ? (
           <div className="w-1/12 text-green-600">
             <Checkmark className="stroke-current" color="blank" />
           </div>

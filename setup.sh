@@ -86,9 +86,9 @@ docker exec -u www-data $FILE_SERVER_CONTAINER_NAME php occ files:scan --all
 ## Reactapp
 echo "Build react docker container and install dependencies..."
 # envs
-echo "REACT_APP_API_ADRESS=http://${SERVER_ADRESS}:${API_PORT}" > ./react-frontend/.env
-echo "REACT_APP_FILE_SERVER_ADRESS=http://${SERVER_ADRESS}:${FILE_SERVER_PORT}" >> ./react-frontend/.env
-echo "REACT_APP_JBROWSE_ADRESS=http://${SERVER_ADRESS}:${JBROWSE_PORT}" >> ./react-frontend/.env
+echo "REACT_APP_API_ADRESS=${PROTOCOL}://${SERVER_ADRESS}:${API_PORT}" > ./react-frontend/.env
+echo "REACT_APP_FILE_SERVER_ADRESS=${PROTOCOL}://${SERVER_ADRESS}:${FILE_SERVER_PORT}" >> ./react-frontend/.env
+echo "REACT_APP_JBROWSE_ADRESS=${PROTOCOL}://${SERVER_ADRESS}:${JBROWSE_PORT}" >> ./react-frontend/.env
 
 # build
 cd ./react-frontend
@@ -107,11 +107,11 @@ cd ./flask-backend
 docker build -t gnom/flask .
 # start
 echo "Start ${API_CONTAINER_NAME} container..."
-docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e RABBIT_WORKER_COUNT=${RABBIT_WORKER_COUNT} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e INITIAL_USER_USERNAME=${INITIAL_USER_USERNAME} -e INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} -e MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e API_ADRESS=http://${API_ADRESS} -e API_PORT=${API_PORT} -e FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS} -e JBROWSE_ADRESS=${JBROWSE_ADRESS} -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} gnom/flask
+docker run --name $API_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p ${API_PORT}:${API_PORT} -v ${DATA_DIR}/taxa:/flask-backend/data/storage/taxa -v ${IMPORT_DIR}:/flask-backend/data/import -e RABBIT_WORKER_COUNT=${RABBIT_WORKER_COUNT} -e MYSQL_HOST=${MYSQL_CONTAINER_NAME} -e INITIAL_USER_USERNAME=${INITIAL_USER_USERNAME} -e INITIAL_USER_PASSWORD=${INITIAL_USER_PASSWORD} -e MYSQL_CONTAINER_NAME=${MYSQL_CONTAINER_NAME} -e MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} -e API_ADRESS=${PROTOCOL}://${API_ADRESS} -e API_PORT=${API_PORT} -e FILE_SERVER_ADRESS=${FILE_SERVER_ADRESS} -e JBROWSE_ADRESS=${JBROWSE_ADRESS} -e RABBIT_CONTAINER_NAME=${RABBIT_CONTAINER_NAME} gnom/flask
 cd ..
 
 echo "Waiting for flask server to start..."
-until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  http://${API_ADRESS}:${API_PORT}/connectionTest) -eq 200 ]; do
+until [ $(curl --write-out '%{http_code}' --silent --output /dev/null  ${PROTOCOL}://${API_ADRESS}:${API_PORT}/connectionTest) -eq 200 ]; do
   printf "."
   sleep 3;
 done;

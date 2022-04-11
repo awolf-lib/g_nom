@@ -35,7 +35,7 @@ class Data:
     mappings: list
     buscos: list
     fcats: list
-    milts: list
+    taxaminers: list
     repeatmaskers: list
     append_assembly_id: int
 

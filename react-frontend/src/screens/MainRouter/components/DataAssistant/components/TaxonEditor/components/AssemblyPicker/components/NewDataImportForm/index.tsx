@@ -33,7 +33,7 @@ const NewDataImportForm = ({
   const [newMappings, setNewMappings] = useState<Dataset[]>([]);
   const [newBuscos, setNewBuscos] = useState<Dataset[]>([]);
   const [newFcats, setNewFcats] = useState<Dataset[]>([]);
-  const [newMilts, setNewMilts] = useState<Dataset[]>([]);
+  const [newTaxaminer, setNewTaxaminer] = useState<Dataset[]>([]);
   const [newRepeatmaskers, setNewRepeatmaskers] = useState<Dataset[]>([]);
 
   const [importing, setImporting] = useState<boolean>(false);
@@ -168,11 +168,11 @@ const NewDataImportForm = ({
                       setNewFcats((prevState) => [...prevState, x]);
                   });
                 break;
-              case "milts":
-                response.payload.milts!.length > 0 &&
-                  response.payload.milts!.forEach((x) => {
-                    !alreadyMarkedForImport(x["main_file"], newMilts) &&
-                      setNewMilts((prevState) => [...prevState, x]);
+              case "taxaminer":
+                response.payload.taxaminer!.length > 0 &&
+                  response.payload.taxaminer!.forEach((x) => {
+                    !alreadyMarkedForImport(x["main_file"], newTaxaminer) &&
+                      setNewTaxaminer((prevState) => [...prevState, x]);
                   });
                 break;
               case "repeatmasker":
@@ -239,8 +239,10 @@ const NewDataImportForm = ({
       case "fcat":
         setNewFcats((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
         break;
-      case "milts":
-        setNewMilts((prevState) => removeFileFromState(prevState, mainFileID, additionalFileID));
+      case "taxaminer":
+        setNewTaxaminer((prevState) =>
+          removeFileFromState(prevState, mainFileID, additionalFileID)
+        );
         break;
       case "repeatmasker":
         setNewRepeatmaskers((prevState) =>
@@ -279,7 +281,7 @@ const NewDataImportForm = ({
         newMappings,
         newBuscos,
         newFcats,
-        newMilts,
+        newTaxaminer,
         newRepeatmaskers,
         userID,
         token,
@@ -343,7 +345,7 @@ const NewDataImportForm = ({
     setNewMappings([]);
     setNewBuscos([]);
     setNewFcats([]);
-    setNewMilts([]);
+    setNewTaxaminer([]);
     setNewRepeatmaskers([]);
   };
 
@@ -507,15 +509,15 @@ const NewDataImportForm = ({
               </div>
             </div>
             <hr className="shadow mt-1 mb-4" />
-            {/* Milts */}
+            {/* taXaminer */}
             <div className="text-sm">
-              <div className="font-semibold">Milts</div>
+              <div className="font-semibold">taXaminer</div>
               <div className="flex justify-between items-center">
                 <div className="w-full">
-                  {newMilts && newMilts.length > 0 ? (
-                    newMilts.map((file) => (
+                  {newTaxaminer && newTaxaminer.length > 0 ? (
+                    newTaxaminer.map((file) => (
                       <div key={file.main_file.id}>
-                        <MarkedFiles file={file} type="milts" />
+                        <MarkedFiles file={file} type="taxaminer" />
                       </div>
                     ))
                   ) : (

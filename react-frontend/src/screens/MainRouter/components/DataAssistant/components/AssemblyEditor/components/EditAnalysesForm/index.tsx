@@ -3,8 +3,8 @@ import TabWorkspace from "../../../../../../../../components/TabWorkspace";
 import { AssemblyInterface } from "../../../../../../../../tsInterfaces/tsInterfaces";
 import EditBuscosForm from "./components/EditBuscosForm";
 import EditFcatsForm from "./components/EditFcatsForm";
-import EditMiltsForm from "./components/EditMiltsForm";
 import EditRepeatmaskersForm from "./components/EditRepeatmaskersForm";
+import EditTaxaminersForm from "./components/EditTaxaminersForm";
 
 const EditAnalysesForm = ({
   taxon,
@@ -23,7 +23,10 @@ const EditAnalysesForm = ({
           tabs={[
             { label: "Busco", content: <EditBuscosForm taxon={taxon} assembly={assembly} /> },
             { label: "fCat", content: <EditFcatsForm taxon={taxon} assembly={assembly} /> },
-            { label: "Milts", content: <EditMiltsForm taxon={taxon} assembly={assembly} /> },
+            {
+              label: "taXaminer",
+              content: <EditTaxaminersForm taxon={taxon} assembly={assembly} />,
+            },
             {
               label: "Repeatmasker",
               content: <EditRepeatmaskersForm taxon={taxon} assembly={assembly} />,

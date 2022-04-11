@@ -719,10 +719,10 @@ def fetchAssemblies(
             ) = cursor.fetchone()
 
             cursor.execute(
-                "SELECT COUNT(*) FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analysesMilts.analysisID=analyses.id",
+                "SELECT COUNT(*) FROM analyses, analysesTaxaminer WHERE analyses.assemblyID=%s AND analysesTaxaminer.analysisID=analyses.id",
                 (assembly["id"],),
             )
-            milts = cursor.fetchone()[0]
+            taxaminers = cursor.fetchone()[0]
 
             cursor.execute(
                 "SELECT COUNT(*), AVG(analysesRepeatmasker.total_repetitive_length_percent) FROM analyses, analysesRepeatmasker WHERE analyses.assemblyID=%s AND analysesRepeatmasker.analysisID=analyses.id",
@@ -741,7 +741,7 @@ def fetchAssemblies(
                     "maxFcatScoreM2": maxFcatScoreM2,
                     "maxFcatScoreM3": maxFcatScoreM3,
                     "maxFcatScoreM4": maxFcatScoreM4,
-                    "milts": milts,
+                    "taxaminers": taxaminers,
                     "repeatmaskers": repeatmaskers,
                     "averageRepetitiveness": averageRepetitiveness,
                 }
@@ -771,8 +771,8 @@ def fetchAssemblies(
                 assemblies = [x for x in assemblies if x["buscos"]]
             if "hasFcat" in filter:
                 assemblies = [x for x in assemblies if x["fcats"]]
-            if "hasMilts" in filter:
-                assemblies = [x for x in assemblies if x["milts"]]
+            if "hasTaxaminer" in filter:
+                assemblies = [x for x in assemblies if x["taxaminer"]]
             if "hasRepeatmasker" in filter:
                 assemblies = [x for x in assemblies if x["repeatmaskers"]]
             if "minBuscoComplete" in filter:
