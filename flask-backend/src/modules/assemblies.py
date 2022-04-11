@@ -719,7 +719,7 @@ def fetchAssemblies(
             ) = cursor.fetchone()
 
             cursor.execute(
-                "SELECT COUNT(*) FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analysesMilts.analysisID=analyses.id",
+                "SELECT COUNT(*) FROM analyses, analysesTaxaminer WHERE analyses.assemblyID=%s AND analysesTaxaminer.analysisID=analyses.id",
                 (assembly["id"],),
             )
             taxaminers = cursor.fetchone()[0]

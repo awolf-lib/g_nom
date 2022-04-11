@@ -28,8 +28,6 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
 
         if not analyses_type:
             return 0, createNotification(message="Missing analyses type information!")
-        elif analyses_type == "milts":
-            analyses_type = "taxaminer"
 
         if not userID:
             return 0, createNotification(message="Missing user ID!")
@@ -537,7 +535,7 @@ def __importFcat(assemblyID, analysisID, fcatData):
 def __importTaxaminer(assemblyID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute("INSERT INTO analysesMilts (analysisID) VALUES (%s)", (analysisID,))
+        cursor.execute("INSERT INTO analysesTaxaminer (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -1001,7 +999,7 @@ def fetchAnalysesByAssemblyID(assemblyID):
 
         # taXaminer analyses
         cursor.execute(
-            "SELECT analyses.*, analysesMilts.* FROM analyses, analysesMilts WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID",
+            "SELECT analyses.*, analysesTaxaminer.* FROM analyses, analysesTaxaminer WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
@@ -1090,7 +1088,7 @@ def fetchTaXaminerAnalysesByAssemblyID(assemblyID):
 
         # taxaminer analyses
         cursor.execute(
-            "SELECT analyses.*, analysesMilts.*, users.username FROM analyses, analysesMilts, users WHERE analyses.assemblyID=%s AND analyses.id=analysesMilts.analysisID AND analyses.addedBy=users.id",
+            "SELECT analyses.*, analysesTaxaminer.*, users.username FROM analyses, analysesTaxaminer, users WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID AND analyses.addedBy=users.id",
             (assemblyID,),
         )
         row_headers = [x[0] for x in cursor.description]
