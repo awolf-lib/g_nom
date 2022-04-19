@@ -376,7 +376,7 @@ def parseGff(path):
     GFF3_FINGERPRINT_PATTERN = compile(r"##gff-version 3")
     GFF3_SEQUENCE_REGION_PATTERN = compile(r"^(##[-\w:;\.\s]+)[ \t]+(\w+)[ \t]+(\d+)[ \t]+(\d+)$")
     GFF3_FEATURE_PATTERN = compile(
-        r"^([%\w\.-]+)\s+([%\.\w-]+)\s+([%\.\w-]+)\s+(\d+)\s+(\d+)\s+([\.\de+-]+)\s+([\.+-])\s+([\.012])\s*(.*)$"
+        r"^([%\w\.-]+)\t+([ %\.\w-]+)\t+([%\.\w-]+)\t+(\d+)\t+(\d+)\t+([\.\de+-]+)\t+([\.+-])\t+([\.012])\t*(.*)$"
     )
     GFF3_KEY_VALUE_PATTERN = compile(r"^([%\w\.-]+)[:= ]+(.+)$")
 
