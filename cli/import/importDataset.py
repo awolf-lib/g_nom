@@ -4,14 +4,15 @@ from os.path import exists
 from uuid import uuid1
 from jsonschema import validate
 from json import dumps, load
-from os.path import basename, join, dirname, realpath
-from os import getcwd
+from os.path import basename, join, dirname, abspath
+from pathlib import Path
 
 DB_NAME = "gnom_db"
 HELP_STRING = "Example call: python3 importDataset.py PATH/TO/JSON"
 BASE_PATH_TO_IMPORT = "/flask-backend/data/import/"
 
-__location__ = realpath(join(getcwd(), dirname(__file__)))
+__location__ = Path(abspath(dirname(__file__)))
+__project_dir__ = __location__.parent.absolute().parent.absolute()
 
 
 def loadDataset(datasets_path):
@@ -44,7 +45,7 @@ def loadDataset(datasets_path):
     print("Valid inputs...", flush=True)
 
     try:
-        with open(join(__location__, "../../local.config")) as config_file:
+        with open(join(__project_dir__, "local.config")) as config_file:
             config_params = config_file.readlines()
             config_file.close()
 
