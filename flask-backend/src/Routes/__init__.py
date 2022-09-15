@@ -15,6 +15,7 @@ def create_app():
     from .combined_imports import imports_bp
     from .files import files_bp
     from .tasks import tasks_bp
+    from .taxaminer_data import taxaminer_bp
 
     app.register_blueprint(taxa_bp, url_prefix="/")
     app.register_blueprint(users_bp, url_prefix="/")
@@ -26,6 +27,7 @@ def create_app():
     app.register_blueprint(imports_bp, url_prefix="/")
     app.register_blueprint(files_bp, url_prefix="/")
     app.register_blueprint(tasks_bp, url_prefix="/")
+    app.register_blueprint(taxaminer_bp, url_prefix="/taxaminer/")
 
     CORS(app)
     return app

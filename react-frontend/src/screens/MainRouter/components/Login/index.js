@@ -75,7 +75,7 @@ const Login = ({ setToken, setUserID, setUserRole, setUserName }) => {
         className="bg-gradient-to-tr flex justify-center items-center from-gray-300 via-gray-100 to-gray-200 px-16 py-8 rounded-lg shadow border-4 border-gray-300 border-double"
       >
         <div className="w-full">
-          <h1 className="font-bold">Login</h1>
+          <h1 className="font-bold">Login into dev-version</h1>
           <hr className="my-4 shadow" />
           <div className="flex justify-between items-center">
             <div className="hidden xl:block mr-8 font-semiboldtext-left py-2 py-0 w-32">

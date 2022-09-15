@@ -1106,6 +1106,35 @@ def fetchTaXaminerAnalysesByAssemblyID(assemblyID):
 
 
 # fetches all analyses for specific assembly
+def fetchTaXaminerPathByAssemblyID_AnalysisID(assemblyID, taxaminerID):
+    """
+    Fetch the base path of a taxaminer analysis based on assembly and analysis ID
+    """
+    try:
+        connection, cursor, error = connect()
+        if error and error["message"]:
+            return error
+
+        # taxaminer analyses
+        cursor.execute(
+            "SELECT analyses.* FROM analyses WHERE analyses.assemblyID=%s AND analyses.id=%s",
+            (assemblyID, taxaminerID),
+        )
+        row_headers = [x[0] for x in cursor.description]
+        taxaminerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
+
+        # if not len(taxaminerList):
+        #     return [], createNotification("Info", "No taXaminer analyses for this assembly", "info")
+
+        return (
+            taxaminerList,
+            [],
+        )
+    except Exception as err:
+        return [], createNotification(message=f"FetchTaXaminerAnalysesError: {str(err)}")
+
+
+# fetches all analyses for specific assembly
 def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
     """
     Fetches Repeatmasker analyses for specific assembly.

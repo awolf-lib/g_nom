@@ -4,6 +4,7 @@ import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInter
 import { Observable, of } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { catchError, switchMap } from "rxjs/operators";
+import { request } from "http";
 
 // =============================== users =============================== //
 // USER AUTHENTIFCATION
@@ -1724,6 +1725,113 @@ export function fetchTaskStatus(
       console.error(error);
     });
 }
+
+// ==== Taxaminer Datasets ==== //
+export function fetchTaxaminerDatasets (
+  assembly_id: number, 
+  taxaminer_id: number
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/datasets?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer Main ==== //
+export function fetchTaxaminerMain (
+  assembly_id: number, 
+  taxaminer_id: number
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/main?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer Metadate ==== //
+export function fetchTaxaminerMetadata (
+  assembly_id: number, 
+  taxaminer_id: number
+) {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/summary?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+  )
+  .then(response => response.text())
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer Plot data ==== //
+export function fetchTaxaminerScatterplot (
+  assembly_id: number, 
+  taxaminer_id: number
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/scatterplot?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer PCA data ==== //
+export function fetchTaxaminerPCA (
+  assembly_id: number, 
+  taxaminer_id: number
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/pca_contribution?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer Diamond data ==== //
+export function fetchTaxaminerDiamond (
+  assembly_id: number, 
+  taxaminer_id: number,
+  fasta_id: number
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+// ==== Taxaminer Sequence data ==== //
+export function fetchTaxaminerSeq (
+  assembly_id: number, 
+  taxaminer_id: number,
+  fasta_id: string
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/seq?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
 
 export interface ITask {
   id: string;
