@@ -1729,10 +1729,12 @@ export function fetchTaskStatus(
 // ==== Taxaminer Datasets ==== //
 export function fetchTaxaminerDatasets (
   assembly_id: number, 
-  taxaminer_id: number
+  taxaminer_id: number,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/datasets?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/datasets?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
@@ -1744,10 +1746,12 @@ export function fetchTaxaminerDatasets (
 // ==== Taxaminer Main ==== //
 export function fetchTaxaminerMain (
   assembly_id: number, 
-  taxaminer_id: number
+  taxaminer_id: number,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/main?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/main?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
@@ -1759,10 +1763,12 @@ export function fetchTaxaminerMain (
 // ==== Taxaminer Metadate ==== //
 export function fetchTaxaminerMetadata (
   assembly_id: number, 
-  taxaminer_id: number
+  taxaminer_id: number,
+  userID: number,
+  token: string
 ) {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/summary?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/summary?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then(response => response.text())
   .catch((error) => {
@@ -1773,10 +1779,12 @@ export function fetchTaxaminerMetadata (
 // ==== Taxaminer Plot data ==== //
 export function fetchTaxaminerScatterplot (
   assembly_id: number, 
-  taxaminer_id: number
+  taxaminer_id: number,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/scatterplot?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/scatterplot?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
@@ -1788,10 +1796,12 @@ export function fetchTaxaminerScatterplot (
 // ==== Taxaminer PCA data ==== //
 export function fetchTaxaminerPCA (
   assembly_id: number, 
-  taxaminer_id: number
+  taxaminer_id: number,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/pca_contribution?assemblyID=${assembly_id}&analysisID=${taxaminer_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/pca_contribution?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
@@ -1804,10 +1814,12 @@ export function fetchTaxaminerPCA (
 export function fetchTaxaminerDiamond (
   assembly_id: number, 
   taxaminer_id: number,
-  fasta_id: number
+  fasta_id: number,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
@@ -1820,10 +1832,12 @@ export function fetchTaxaminerDiamond (
 export function fetchTaxaminerSeq (
   assembly_id: number, 
   taxaminer_id: number,
-  fasta_id: string
+  fasta_id: string,
+  userID: number,
+  token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/seq?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/seq?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)

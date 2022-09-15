@@ -8,6 +8,8 @@ interface Props {
 	e_value: number
 	show_unassigned: boolean
     scatter_data: any
+	userID: number
+	token: string
 }
 
 /**
@@ -35,7 +37,7 @@ class ScatterMatrix extends Component<Props, any> {
 	 * Call API on component mount to load plot data
 	 */
 	componentDidMount() {
-		fetchTaxaminerScatterplot(1, 1)
+		fetchTaxaminerScatterplot(1, 1, this.props.userID, this.props.token)
 		.then(data => {
 			console.log(data)
 			this.setState( {data: data} );

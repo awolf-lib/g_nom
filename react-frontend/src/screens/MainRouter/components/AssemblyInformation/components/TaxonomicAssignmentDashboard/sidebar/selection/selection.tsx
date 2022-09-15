@@ -62,9 +62,6 @@ class SelectionView extends React.Component<any, any> {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
       body: JSON.stringify({ custom_fields: this.state.custom_fields })
     };
-
-    fetch("http://127.0.0.1:5000/api/v1/data/userconfig", request)
-    .then(response => console.log(response))
   };
 
   /**

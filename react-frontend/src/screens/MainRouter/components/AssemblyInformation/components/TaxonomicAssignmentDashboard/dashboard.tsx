@@ -30,6 +30,8 @@ interface State {
     filters: any
     scatter_data: any
     legend_only: string[]
+    userID: number
+    token: string
 }
 
 interface Props {
@@ -40,6 +42,11 @@ class TaxaminerDashboard extends React.Component<Props, State> {
     // Set up states for loading data
 	constructor(props: any){
 		super(props);
+
+        //fetch session
+        const userID = JSON.parse(sessionStorage.getItem("userID") || "");
+        const token = JSON.parse(sessionStorage.getItem("token") || "");
+
 		this.state ={
             dataset_id: 1,
             selected_row: {g_name: "Pick a gene", taxonomic_assignment: "Pick a gene", plot_label: "Pick a gene", best_hit: "Pick a gene", c_name: "Pick a gene", bh_evalue: 0, best_hitID: "None"}, 
@@ -51,7 +58,9 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             scatter_data: { colors: "rainbow", legendonly: []},
             e_value: 1.0,
             filters: {e_value: 1.0, show_unassinged: true},
-            legend_only: []
+            legend_only: [],
+            userID: userID,
+            token: token
         }
 
         // Bind functions passing data from child objects to local context
@@ -65,7 +74,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
      */
     setDataset(id: number) {
         this.setState( {dataset_id: id} );
-        fetchTaxaminerMain(this.props.assembly_id, 0)
+        fetchTaxaminerMain(this.props.assembly_id, 0, this.state.userID, this.state.token)
         .then(data =>{
             this.setState( {data: data})
         })
@@ -75,7 +84,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
 	 * Call API on component mount to main table data
 	 */
 	componentDidMount() {
-		fetchTaxaminerMain(this.props.assembly_id, 1)
+		fetchTaxaminerMain(this.props.assembly_id, 1, this.state.userID, this.state.token)
         .then(data =>{
             this.setState( {data: data})
         })
@@ -97,7 +106,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             //this.state.selected_data.delete(key)
         }
 
-        fetchTaxaminerSeq(1, 1, keys[0])
+        fetchTaxaminerSeq(1, 1, keys[0], this.state.userID, this.state.token)
         .then((data) => {
             this.setState({aa_seq: data as unknown as string})
         })
@@ -147,7 +156,9 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                     sendCameraData={this.callbackFunction}
                     e_value={this.state.filters.e_value}
                     show_unassigned={this.state.filters.show_unassinged}
-                    passScatterData={this.shareScatterData}/>
+                    passScatterData={this.shareScatterData}
+                    userID={this.state.userID}
+                    token={this.state.token}/>
                 </Col>
                 <Col>
                      <Tabs>
@@ -161,12 +172,14 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                             <FilterUI
                             sendValuesUp={this.setFilters}/>
                         </Tab>
-                        <Tab eventKey="diamodn" title="Diamond Output">
+                        <Tab eventKey="diamond" title="Diamond Output">
                             <Row>
                                 <Col>
                                 <Table
                                 dataset_id={this.state.dataset_id}
                                 row={this.state.selected_row}
+                                userID={this.state.userID}
+                                token={this.state.token}
                                 />
                                 </Col>
                             </Row>
@@ -177,6 +190,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                                 e_value={this.state.filters.e_value}
                                 show_unassigned={this.state.filters.show_unassinged}
                                 scatter_data = {this.state.scatter_data}
+                                userID={this.state.userID}
+                                token={this.state.token}
                                 />
                         </Tab>
                         <Tab eventKey="PCA" title="PCA">
@@ -184,7 +199,9 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                                 <Col>
                                 <PCAPlot
                                     camera = {this.state.camera}
-                                    dataset_id = {this.state.dataset_id}/>
+                                    dataset_id = {this.state.dataset_id}
+                                    userID={this.state.userID}
+                                    token={this.state.token}/>
                                 </Col>
                             </Row>
                         </Tab>
@@ -197,6 +214,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 setSelectMode={this.setSelectMode}
                 passClick={this.handleDataClick}
                 dataset_id={this.state.dataset_id}
+                userID={this.state.userID}
+                token={this.state.token}
                 />
         </Container>
         );

@@ -18,6 +18,8 @@ interface Props {
     setSelectMode: any
     passClick: any
     dataset_id: number
+    userID: number
+    token: string
 }
   
 interface State {
@@ -49,7 +51,7 @@ class TableView extends React.Component<Props, State> {
 	 * Call API on component mount to load plot data
 	 */
 	componentDidMount() {
-		fetchTaxaminerMain(1, 1)
+		fetchTaxaminerMain(1, 1, this.props.userID, this.props.token)
         .then((data) => {
             this.setState( {data: data})
         })

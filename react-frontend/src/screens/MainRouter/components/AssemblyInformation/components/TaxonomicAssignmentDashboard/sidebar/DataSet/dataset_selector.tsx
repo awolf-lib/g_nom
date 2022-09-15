@@ -9,6 +9,8 @@ interface State {
 
 interface Props {
     dataset_changed: Function
+    userID: number
+    token: string
 }
 
 // Allows the user to select a dataset
@@ -25,7 +27,7 @@ class DataSetSelector extends React.Component<Props, State> {
      * Load Inital datasets
      */
     componentDidMount() {
-        fetchTaxaminerDatasets(0, 0)
+        fetchTaxaminerDatasets(0, 0, this.props.userID, this.props.token)
         .then(data => {
             this.setState( {datasets: data} );
         })

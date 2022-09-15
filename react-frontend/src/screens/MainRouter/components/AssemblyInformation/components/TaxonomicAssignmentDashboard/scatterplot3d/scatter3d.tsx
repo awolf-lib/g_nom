@@ -18,6 +18,8 @@ interface Props {
 	passScatterData: any
 	e_value: any
 	show_unassigned: boolean
+	userID: number
+	token: string
 }
 
 /**
@@ -49,7 +51,7 @@ class Scatter3D extends Component<Props, any> {
 	 * Call API on component mount to load plot data
 	 */
 	componentDidMount() {
-		fetchTaxaminerScatterplot(this.props.assembly_id, this.props.dataset_id)
+		fetchTaxaminerScatterplot(this.props.assembly_id, this.props.dataset_id, this.props.userID, this.props.token)
 		.then(data => {
 			this.setState( {data: data} );
 			this.set_auto_size(data);
@@ -63,7 +65,7 @@ class Scatter3D extends Component<Props, any> {
 	 */
 	componentDidUpdate(prev: any) {
 		if (prev.dataset_id != this.props.dataset_id) {
-			fetchTaxaminerScatterplot(this.props.assembly_id, this.props.dataset_id)
+			fetchTaxaminerScatterplot(this.props.assembly_id, this.props.dataset_id, this.props.userID, this.props.token)
 			.then(data => {
 			this.setState( {data: data} );
 			this.set_auto_size(data);

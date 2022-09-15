@@ -8,6 +8,8 @@ import { fetchTaxaminerPCA } from '../../../../../../../../api';
 interface Props {
 	dataset_id: number
 	camera: any
+	userID: number
+	token: string
 }
 
 /**
@@ -31,7 +33,7 @@ class PCAPlot extends Component<Props, any> {
 	 * Call API on component mount to load plot data
 	 */
 	componentDidMount() {
-		fetchTaxaminerPCA(1, 1)
+		fetchTaxaminerPCA(1, 1, this.props.userID, this.props.token)
 		.then(data => this.setState({ data: data}))
 	}
 

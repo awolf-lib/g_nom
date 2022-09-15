@@ -39,6 +39,15 @@ def basepath():
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     db_data = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
     if db_data:
@@ -67,6 +76,15 @@ def api_filter():
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
@@ -86,6 +104,15 @@ def main_data():
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
@@ -106,6 +133,15 @@ def diamond_data():
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
     fasta_id = query_parameters.get("fastaID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
@@ -123,11 +159,18 @@ def amino_acid_seq():
     :return:
     """
     query_parameters = request.args
-
-    query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
     fasta_id = query_parameters.get("fastaID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
     seq = file_io.fast_fasta_loader(f"{path}proteins.faa", fasta_id)
@@ -147,6 +190,15 @@ def summary():
     """
     query_parameters = request.args
     my_id = query_parameters.get("id")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     data = file_io.load_summary(dataset_id=my_id)
 
@@ -185,6 +237,15 @@ def pca_contributions():
     :return:
     """
     query_parameters = request.args
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     my_id = query_parameters.get("id")
 
@@ -204,6 +265,15 @@ def download_fasta():
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
     fasta_id = query_parameters.get("fasta_id")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
