@@ -15,6 +15,7 @@ import ScatterMatrix from './sidebar/ScatterMatrix/ScatterMatrix';
 
 // Stylesheet
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTaxaminerMain, fetchTaxaminerSeq } from '../../../../../../api';
 
   
@@ -216,6 +217,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 dataset_id={this.state.dataset_id}
                 userID={this.state.userID}
                 token={this.state.token}
+                assemblyID={this.props.assembly_id}
                 />
         </Container>
         );
