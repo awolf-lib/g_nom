@@ -2,7 +2,7 @@
 from email.mime import base
 import json
 from urllib import response
-from flask import Blueprint, jsonify, request, abort
+from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
 from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID
  
@@ -27,11 +27,6 @@ def get_basepath(assembly_id, analysis_id):
         return False
     else:
         return db_data[0][0]['path'].replace("3D_plot.html", "")
-
-@taxaminer_bp.route('/test', methods=['GET'])
-def home():
-    return '''<h1>taXaminer API</h1>
-<p>A prototype API for accessing taXaminer results</p>'''
 
 
 @taxaminer_bp.route('/basepath', methods=['GET'])
@@ -189,7 +184,8 @@ def summary():
     :return:
     """
     query_parameters = request.args
-    my_id = query_parameters.get("id")
+    assembly_id = query_parameters.get("assemblyID")
+    analysis_id = query_parameters.get("analysisID")
     userID = query_parameters.get("userID")
     token = query_parameters.get("token")
 
@@ -200,10 +196,15 @@ def summary():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    data = file_io.load_summary(dataset_id=my_id)
+    basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
+    if basepath:
+        with open(f"{basepath}summary.txt", "r") as summary:
+            lines = summary.readlines()
 
-    # return as json
-    return response(data, mimetype="text")
+        # return as json
+        return response("".join(lines), mimetype="text")
+    else:
+        return abort(404)
 
 
 @taxaminer_bp.route('/userconfig', methods=['GET', 'PUT'])
@@ -213,16 +214,21 @@ def get_config():
     :return:
     """
     query_parameters = request.args
+    assembly_id = query_parameters.get("assemblyID")
+    analysis_id = query_parameters.get("analysisID")
+    userID = query_parameters.get("userID")
+    token = query_parameters.get("token")
+    basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
     # get user settings
     if request.method == "GET":
-        data = file_io.load_user_config()
+        data = file_io.load_user_config(path=basepath)
         # return as json
         return data
     
     # set user settings
     elif request.method == "PUT":
-        settings = file_io.parse_user_config()
+        settings = file_io.parse_user_config(path=basepath)
         # apply changes
         for key in request.json.keys():
             settings[key] = request.json[key]
@@ -237,6 +243,8 @@ def pca_contributions():
     :return:
     """
     query_parameters = request.args
+    assembly_id = query_parameters.get("assemblyID")
+    analysis_id = query_parameters.get("analysisID")
     userID = query_parameters.get("userID")
     token = query_parameters.get("token")
 
@@ -247,12 +255,25 @@ def pca_contributions():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    my_id = query_parameters.get("id")
+    basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
-    data = file_io.load_pca_coords(my_id)
-
-    # return as json
-    return jsonify(data)
+    if basepath:
+        with open(f"{basepath}pca_loadings.csv", 'r') as file:
+            lines = file.readlines()
+    
+        final_lines = []
+        for line in lines[1:-1]:
+            fields = line.split(",")
+            new_dict = dict()
+            new_dict['label'] = fields[0]
+            new_dict['x'] = [fields[1]]
+            new_dict['y'] = [fields[2]]
+            new_dict['z'] = [fields[3]]
+            final_lines.append(new_dict)
+        # return as json
+        return jsonify(final_lines)
+    else:
+        return abort(404)
 
 @taxaminer_bp.route("/download/fasta", methods=['POST'])
 def download_fasta():
@@ -264,7 +285,6 @@ def download_fasta():
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
-    fasta_id = query_parameters.get("fasta_id")
     userID = query_parameters.get("userID")
     token = query_parameters.get("token")
 
@@ -276,13 +296,15 @@ def download_fasta():
         return response
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
+    if path:
+        # load requested sequences
+        for gene in genes:
+            sequences.append(">" + gene + '\n' + file_io.fast_fasta_loader(f"{path}proteins.faa", gene))
 
-    # load requested sequences
-    for gene in genes:
-        sequences.append(">" + gene + '\n' + file_io.fast_fasta_loader(f"{path}proteins.faa", gene))
+        response_text = "\n".join(sequences)
 
-    response_text = "\n".join(sequences)
-
-    # API answer
-    return Response(response_text, mimetype="text", headers={"Content-disposition": "attachment; filename=myplot.csv"})
+        # API answer
+        return Response(response_text, mimetype="text", headers={"Content-disposition": "attachment; filename=myplot.csv"})
+    else:
+        return abort(404)
 

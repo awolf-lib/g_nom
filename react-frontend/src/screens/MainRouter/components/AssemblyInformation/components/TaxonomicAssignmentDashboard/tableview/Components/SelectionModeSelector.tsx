@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import Card from 'react-bootstrap/Card';
 import { Row, Col } from 'react-bootstrap';
+import { fetchTaxaminerDownload } from '../../../../../../../../api';
 
 interface Props {
   passMode: Function
   selection: Set<string>
   dataset_id: number
+  assemblyID: number
+  userID: number
+  token:string
 }
 
 /**
@@ -27,27 +31,13 @@ function SelectionModeSelector(props: Props) {
    * @param type file format
    */
   function download_file(type: string) {
-    // pas the selection
-    const my_body = {
-      'genes': Array.from(props.selection)
-    }
-
-    // API call
-    fetch(`http://localhost:5000/download/${type}?id=${props.dataset_id}`, {
-      method: 'POST',
-      body: JSON.stringify(my_body),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-    .then((res) => { return res.blob(); })
-    // create a temporary link & click to download blob as file
-    .then((data) => {
-      var a = document.createElement("a");
-      a.href = window.URL.createObjectURL(data);
-      a.download = "selection." + type;
-      a.click();
-    }); 
+   fetchTaxaminerDownload(props.assemblyID, props.dataset_id, "fasta", props.selection, props.userID, props.token)
+   .then((data) => {
+    var a = document.createElement("a");
+    a.href = window.URL.createObjectURL(data as unknown as Blob);
+    a.download = "selection." + type;
+    a.click();
+  });
   }
 
   return (

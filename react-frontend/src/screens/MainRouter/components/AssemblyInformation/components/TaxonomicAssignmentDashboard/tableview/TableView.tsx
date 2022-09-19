@@ -20,6 +20,7 @@ interface Props {
     dataset_id: number
     userID: number
     token: string
+    assemblyID: number
 }
   
 interface State {
@@ -87,6 +88,9 @@ class TableView extends React.Component<Props, State> {
                             passMode = {this.props.setSelectMode}
                             selection = {this.props.keys}
                             dataset_id = {this.props.dataset_id}
+                            assemblyID = {this.props.assemblyID}
+                            userID = {this.props.userID}
+                            token = {this.props.token}
                             />
                         </Row>
                         <Row>

@@ -1847,6 +1847,37 @@ export function fetchTaxaminerSeq (
 }
 
 
+// ==== Taxaminer FASTA download ==== //
+export function fetchTaxaminerDownload (
+  assembly_id: number, 
+  taxaminer_id: number,
+  type: string,
+  genes: any,
+  userID: number,
+  token: string
+) {
+
+  // JSON body
+  const my_body = {
+    'genes': Array.from(genes)
+  }
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/download/fasta?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`,
+    {
+      method: 'POST',
+      body: JSON.stringify(my_body),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+  .then((res) => { return res.blob() })
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+
 export interface ITask {
   id: string;
   status: "running" | "done" | "aborted";

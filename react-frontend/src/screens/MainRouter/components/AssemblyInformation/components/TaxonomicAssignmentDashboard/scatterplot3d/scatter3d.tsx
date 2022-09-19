@@ -35,7 +35,8 @@ class Scatter3D extends Component<Props, any> {
 			aa_seq: "", // inherited
 			ui_revision: "true", // bound to plot to preserve camera position
 			auto_size: true, // automatically size dots in scatterplot
-			marker_size: 5, // actual dot size in the plot
+			auto_size_px: 5,
+			marker_size: 0, // actual dot size in the plot
 			manual_size: 5, // dot size selected by user
 			color_palette: "rainbow", // currently selected color palette
 			color_options: colors.options, // color palette options
@@ -55,7 +56,9 @@ class Scatter3D extends Component<Props, any> {
 		.then(data => {
 			this.setState( {data: data} );
 			this.set_auto_size(data);
-			this.build_plot();
+			this.setState( { marker_size: this.state.auto_size_px}, () => {
+				this.build_plot();
+			})
 		})
 	}
 
@@ -69,6 +72,9 @@ class Scatter3D extends Component<Props, any> {
 			.then(data => {
 			this.setState( {data: data} );
 			this.set_auto_size(data);
+			this.setState( { marker_size: this.state.auto_size_px}, () => {
+				this.build_plot()
+			})
 		})}
 		if (prev.dataset_id != this.props.dataset_id || prev.e_value != this.props.e_value || prev.show_unassigned != this.props.show_unassigned) {
 			this.build_plot();
@@ -124,10 +130,11 @@ class Scatter3D extends Component<Props, any> {
 	 */
 	set_manual_size(size: number) {
 		if (this.state.auto_size === false) {
-			this.setState( { marker_size: size, manual_size: size} )
-		} else {
-			this.setState( { manual_size: size} )
+			this.setState( { marker_size: size }, () => {
+				this.build_plot()
+			} )
 		}
+		this.setState( { manual_size: size} )
 	}
 
 	/**
@@ -148,20 +155,26 @@ class Scatter3D extends Component<Props, any> {
 		if (new_size < 3) {
 			new_size = 3
 		}
-		this.setState( { marker_size: new_size } )
+		this.setState( { auto_size_px: new_size } )
 	}
 
 	/**
 	 * Toggle automatic sizing of plot markers
 	 */
-	toggle_auto_size(){
+	toggle_auto_size(e: any){
 		// toggle
-		this.setState({ auto_size: !this.state.auto_size })
+		const now = e.nativeEvent.originalTarget.checked
 		// update markers if automatic sizing was enabled
-		if (this.state.auto_size == false) {
-			this.set_auto_size(undefined)
+		if (now === true) {
+			this.setState( { marker_size: this.state.auto_size_px, auto_size: now}, () => {
+				console.log(this.state.marker_size)
+				this.build_plot()
+			})
 		} else {
-			this.setState( { marker_size: this.state.manual_size} )
+			this.setState( { marker_size: this.state.manual_size, auto_size: now}, () => {
+				console.log(this.state.marker_size)
+				this.build_plot()
+			} )
 		}
 	}
 
@@ -291,8 +304,8 @@ class Scatter3D extends Component<Props, any> {
                                 type="switch"
                                 id="custom-switch"
                                 label="Auto-size"
-								checked={this.state.auto_size}
-								onChange={(e: any) => this.toggle_auto_size()}
+								defaultChecked={true}
+								onChange={(e: any) => this.toggle_auto_size(e)}
                             />
                         </Form>
                     </Col>

@@ -75,29 +75,22 @@ def taxonomic_hits_loader(fasta_id, path):
             row['ssciname'] = row['ssciname'][0:20] + "..."
     return match_rows
 
-def load_summary(dataset_id):
-    """Load a dataset summary"""
-    with open(f"/flask-backend/data/storage/taxa/Burkholderia_multivorans/Burkholderia_multivorans_id1/analyses/taxaminer/Burkholderia_multivorans_id1_taxaminer_id1/summary.txt", "r") as summary:
-        lines = summary.readlines()
-    
-    return "".join(lines)
-
-def load_user_config():
+def load_user_config(path):
     """Load a user config"""
-    with open("/flask-backend/data/storage/taxa/Burkholderia_multivorans/Burkholderia_multivorans_id1/analyses/taxaminer/Burkholderia_multivorans_id1_taxaminer_id1/sample_config.json", "r") as file:
+    with open(f"{path}user_config.json", "r") as file:
         lines = file.readlines()
     
     return "".join(lines)
 
-def parse_user_config():
+def parse_user_config(path):
     """Parse user config to JSON"""
-    with open('/flask-backend/data/storage/taxa/Burkholderia_multivorans/Burkholderia_multivorans_id1/analyses/taxaminer/Burkholderia_multivorans_id1_taxaminer_id1/sample_config.json', 'r') as f:
+    with open(f'{path}user_config.json', 'r') as f:
         data = json.load(f)
     return data
 
-def write_user_config(json_data):
+def write_user_config(json_data, path):
     """Write user config to disk"""
-    with open('./sample_data/sample_config.json', 'w') as json_file:
+    with open(f'{path}user_config.json', 'w') as json_file:
         json.dump(json_data, json_file)
 
 def load_pca_coords(dataset_id):
