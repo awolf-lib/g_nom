@@ -128,7 +128,7 @@ class ScatterMatrix extends Component<Props, any> {
             const z : string[] = [];
             let label = "";
 			let gene_name = "";
-            const gene_names : string[] = [];
+            const my_customdata : any = [];
             let chunk = each;
 
 			// push 3D coordinates in arrays accordingly
@@ -140,7 +140,7 @@ class ScatterMatrix extends Component<Props, any> {
 					z.push(each['Dim.3'])
 					label = each['plot_label']
 					gene_name = each['g_name']
-					gene_names.push(each['g_name'])
+					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
 				} 
 				// Include unassigned data points (which usually don't have a e-value)
 				else if(this.props.show_unassigned === true && each['plot_label'] === 'Unassigned') {
@@ -148,7 +148,7 @@ class ScatterMatrix extends Component<Props, any> {
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
 					label = each['plot_label']
-					gene_names.push(each['g_name'])
+					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
 				} else {
 					//console.log(each['g_name'])
 				}
@@ -175,7 +175,9 @@ class ScatterMatrix extends Component<Props, any> {
 				visible: visible,
 
 				// track the unique gene name
-				customdata: gene_names
+				customdata: my_customdata,
+				hovertemplate: "%{customdata[0]} <br>%{customdata[1]} <br><extra>Best hit: %{customdata[2]} <br>Best hit e-value: %{customdata[3]} <br> </extra>"
+
             }
             traces.push(trace)
         })
@@ -190,7 +192,7 @@ class ScatterMatrix extends Component<Props, any> {
 		let selected_ids: string[] = []
 
 		points.map((each: any) => {
-			selected_ids.push(each.customdata)
+			selected_ids.push(each.customdata[1])
 		})
 
 		// pass data up

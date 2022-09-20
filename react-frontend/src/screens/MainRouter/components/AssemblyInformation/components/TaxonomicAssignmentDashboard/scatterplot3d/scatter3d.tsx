@@ -213,7 +213,7 @@ class Scatter3D extends Component<Props, any> {
 		    const y : string[] = [];
             const z : string[] = [];
             let label = "";
-            const gene_names : string[] = [];
+            const my_customdata : any = [];
             let chunk = each;
 
 			// push 3D coordinates in arrays accordingly
@@ -225,20 +225,19 @@ class Scatter3D extends Component<Props, any> {
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
 					label = each['plot_label']
-					gene_names.push(each['g_name'])
+					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
 				} 
-				// Include unassigned data points (which usually don't have a e-value)
+				// Include unassigned data points (which usually don't have an e-value)
 				else if(this.props.show_unassigned === true && each['plot_label'] === 'Unassigned') {
 					x.push(each['Dim.1'])
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
 					label = each['plot_label']
-					gene_names.push(each['g_name'])
+					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
 				} else {
 					//console.log(each['g_name'])
 				}
 		    })
-
 			// Setup the plot trace
             const trace = {
                 type: 'scatter3d',
@@ -251,7 +250,9 @@ class Scatter3D extends Component<Props, any> {
 				marker: {
 					size: this.state.marker_size
 				},
-				visible: true
+				visible: true,
+				customdata: my_customdata,
+				hovertemplate: "%{customdata[0]} <br>%{customdata[1]} <br><extra>Best hit: %{customdata[2]} <br>Best hit e-value: %{customdata[3]} <br>Taxonomic assignment: %{customdata[4]} <br>Contig name: %{customdata[5]} <br> </extra>"
             }
             traces.push(trace)
         })
@@ -263,8 +264,6 @@ class Scatter3D extends Component<Props, any> {
 	 * @returns Plotly Plot as React component
 	 */
 	build_plot() {
-		console.log("Rebuilding Scatterplot")
-
 		// store figure components
 		this.state.figure.data = this.transformData(this.state.data)
 		this.state.figure.layout = {autosize: true, showlegend: true, uirevision: 1,
@@ -275,7 +274,6 @@ class Scatter3D extends Component<Props, any> {
 			}
 		this.state.figure.config = {scrollZoom: true}
 		this.state.figure.revision = this.state.figure.revision + 1
-		console.log("finished")
 	}
 
 	/**
