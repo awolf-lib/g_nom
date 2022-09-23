@@ -94,6 +94,9 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
 
             run(args=["rm", "-r", new_path_to_directory])
             new_file_path = tar_dir
+        else:
+            # unzip taxaminer data in directory
+            run(["unzip", new_file_path, "-d", new_path_to_directory])
 
         import_status, error = __importAnalyses(
             analyses_id,
@@ -229,7 +232,6 @@ def __store_analyses(dataset, taxon, assembly_name, analyses_name, analyses_type
                 createNotification(message="Moving analyses to storage failed!"),
             )
         # add remove?
-
         # handle additional files
         if "additional_files" in dataset:
             for additional_file in dataset["additional_files"]:
