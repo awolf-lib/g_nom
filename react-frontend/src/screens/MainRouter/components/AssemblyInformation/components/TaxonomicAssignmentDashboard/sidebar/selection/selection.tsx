@@ -42,17 +42,45 @@ class SelectionView extends React.Component<Props, any> {
 			})
     this.convertFieldsOptions()
 	}
+
+  /**
+   * Decide Update behaviour. We mainly use this to prevent infinte loops in convertFieldsOptions()
+   * @param nextProps next Props
+   * @param nextState next State
+   * @param nextContext next Context
+   * @returns Boolean
+   */
+  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<any>, nextContext: any): boolean {
+    if (nextProps.row != this.props.row) {
+      return true
+    } else if (nextState.options != this.state.options || nextState.show_field_modal != this.state.show_field_modal || nextState.custom_fields != this.state.custom_fields) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  /**
+   * 
+   * @param prevProps previous Props
+   * @param prevState previous State
+   * @param snapshot Snapshot
+   */
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
+    if (prevProps.row != this.props.row) {
+      this.convertFieldsOptions()
+    }
+  }
   
+
   /*
    * Update possible field options dynamically 
    */
   convertFieldsOptions() {
-    console.log(this.props.row)
     let options: { label: string; value: string; }[] = []
     Object.keys(this.props.row).map((item: string) => (
       options.push( { "label": item, "value": item } )
     ))
-    console.log(options)
     this.setState({ options: options})
   }
 

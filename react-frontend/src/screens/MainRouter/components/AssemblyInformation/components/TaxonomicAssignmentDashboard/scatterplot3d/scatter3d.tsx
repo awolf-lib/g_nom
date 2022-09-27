@@ -6,7 +6,6 @@ import Form from 'react-bootstrap/Form';
 import { InputGroup } from 'react-bootstrap';
 import Select from 'react-select';
 import { fetchTaxaminerScatterplot } from '../../../../../../../api';
-import { trace } from 'console';
 
 const colors = require("./colors.json")
 
@@ -113,7 +112,6 @@ class Scatter3D extends Component<Props, any> {
 	 */
     sendClick(e: any){
 		if (e.g_name != this.state.last_click) {
-			console.log("Selection fired from scatterplot")
 			this.setState({last_click: e.g_name})
 			this.props.sendClick([e.g_name]);
 		}
@@ -167,12 +165,10 @@ class Scatter3D extends Component<Props, any> {
 		// update markers if automatic sizing was enabled
 		if (now === true) {
 			this.setState( { marker_size: this.state.auto_size_px, auto_size: now}, () => {
-				console.log(this.state.marker_size)
 				this.build_plot()
 			})
 		} else {
 			this.setState( { marker_size: this.state.manual_size, auto_size: now}, () => {
-				console.log(this.state.marker_size)
 				this.build_plot()
 			} )
 		}

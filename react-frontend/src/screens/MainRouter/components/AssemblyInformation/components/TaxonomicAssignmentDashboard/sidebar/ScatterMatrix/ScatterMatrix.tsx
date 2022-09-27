@@ -39,7 +39,6 @@ class ScatterMatrix extends Component<Props, any> {
 	componentDidMount() {
 		fetchTaxaminerScatterplot(1, 1, this.props.userID, this.props.token)
 		.then(data => {
-			console.log(data)
 			this.setState( {data: data} );
 			this.set_auto_size(data);
 			this.build_plot();

@@ -93,7 +93,6 @@ class TaxaminerDashboard extends React.Component<Props, State> {
         .then((data: any) =>{
             this.setState( {data: data})
             const proto_row = data[Object.keys(data)[0]]
-            console.log(proto_row)
             this.setState( { fields: Object.keys(proto_row) })
         })
 	}
@@ -104,20 +103,22 @@ class TaxaminerDashboard extends React.Component<Props, State> {
      * @param new_seq 
      */
     handleDataClick(keys: string[]) {
-        this.setState({selected_row: this.state.data[keys[0]]});
+        // Only update if a new selection occured
+        if (keys.length != 0) {
+            this.setState({selected_row: this.state.data[keys[0]]});
+            
+            // manage selection
+            if(this.state.select_mode === 'add') {
+                keys.forEach(key => this.state.selected_data.add(key))
+            } else if(this.state.select_mode === 'remove') {
+                keys.forEach(key => this.state.selected_data.delete(key))
+            }
 
-        if(this.state.select_mode === 'add') {
-            keys.forEach(key => this.state.selected_data.add(key))
-            // this.state.selected_data.concat(key)
-        } else if(this.state.select_mode === 'remove') {
-            keys.forEach(key => this.state.selected_data.delete(key))
-            //this.state.selected_data.delete(key)
+            fetchTaxaminerSeq(1, 1, keys[0], this.state.userID, this.state.token)
+            .then((data) => {
+                this.setState({aa_seq: data as unknown as string})
+            })
         }
-
-        fetchTaxaminerSeq(1, 1, keys[0], this.state.userID, this.state.token)
-        .then((data) => {
-            this.setState({aa_seq: data as unknown as string})
-        })
     }  
 
     /**
