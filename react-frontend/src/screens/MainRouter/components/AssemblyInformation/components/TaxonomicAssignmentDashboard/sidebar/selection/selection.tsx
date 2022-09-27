@@ -10,16 +10,16 @@ import CustomOutput from './custom_output';
 import { Modal } from 'react-bootstrap';
 import MultiSelectFields from './MultiSelectFields'
 
-interface SelectionData {
-    row: {g_name: "Pick a gene", taxon_assignment: "Pick a gene", plot_label: "Pick a gene", best_hit: "Pick a gene", c_name: "Pick a gene", bh_evalue: 0, best_hitID: "?"};
-    aa_seq: string;
+interface Props {
+  row: any
+  aa_seq: string
+  fields: string[]
 }
-
 
 /**
  * Customizable representation of table rows for a selected dot
  */
-class SelectionView extends React.Component<any, any> {
+class SelectionView extends React.Component<Props, any> {
   constructor(props: any){
 		super(props);
     const options = [{ value:'One', selected:true }, { value: 'Two' }, { value:'Three' }]
@@ -40,8 +40,22 @@ class SelectionView extends React.Component<any, any> {
         }
 				this.setState( {custom_fields: data.custom_fields} )
 			})
+    this.convertFieldsOptions()
 	}
   
+  /*
+   * Update possible field options dynamically 
+   */
+  convertFieldsOptions() {
+    console.log(this.props.row)
+    let options: { label: string; value: string; }[] = []
+    Object.keys(this.props.row).map((item: string) => (
+      options.push( { "label": item, "value": item } )
+    ))
+    console.log(options)
+    this.setState({ options: options})
+  }
+
   /**
    * Toogle modal open
    */
@@ -169,7 +183,8 @@ class SelectionView extends React.Component<any, any> {
               <Modal.Body>
                 <MultiSelectFields
                 onFieldsChange={this.handleFieldsChange}
-                default_fields={this.state.custom_fields}/>  
+                default_fields={this.state.custom_fields}
+                options={this.state.options}/>  
               </Modal.Body>
               <Modal.Footer>
                 <Button onClick={this.hideModal}>Close</Button>

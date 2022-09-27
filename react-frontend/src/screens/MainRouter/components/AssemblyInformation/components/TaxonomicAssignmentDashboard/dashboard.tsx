@@ -33,6 +33,7 @@ interface State {
     legend_only: string[]
     userID: number
     token: string
+    fields: string[]
 }
 
 interface Props {
@@ -61,7 +62,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             filters: {e_value: 1.0, show_unassinged: true},
             legend_only: [],
             userID: userID,
-            token: token
+            token: token,
+            fields: []
         }
 
         // Bind functions passing data from child objects to local context
@@ -76,8 +78,10 @@ class TaxaminerDashboard extends React.Component<Props, State> {
     setDataset(id: number) {
         this.setState( {dataset_id: id} );
         fetchTaxaminerMain(this.props.assembly_id, 0, this.state.userID, this.state.token)
-        .then(data =>{
+        .then((data: any) =>{
             this.setState( {data: data})
+            const proto_row = data[Object.keys(data)[0]]
+            this.setState( { fields: Object.keys(proto_row) }) 
         })
     }
 
@@ -86,8 +90,11 @@ class TaxaminerDashboard extends React.Component<Props, State> {
 	 */
 	componentDidMount() {
 		fetchTaxaminerMain(this.props.assembly_id, 1, this.state.userID, this.state.token)
-        .then(data =>{
+        .then((data: any) =>{
             this.setState( {data: data})
+            const proto_row = data[Object.keys(data)[0]]
+            console.log(proto_row)
+            this.setState( { fields: Object.keys(proto_row) })
         })
 	}
 
@@ -167,7 +174,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                             <DataSetMeta dataset_id={this.state.dataset_id}/>
                             <SelectionView 
                             row={this.state.selected_row}
-                            aa_seq={this.state.aa_seq}/>
+                            aa_seq={this.state.aa_seq}
+                            fields={this.state.fields}/>
                         </Tab>
                         <Tab eventKey="Filter" title="Filters">
                             <FilterUI
