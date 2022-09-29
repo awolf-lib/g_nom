@@ -9,17 +9,28 @@ import Button from 'react-bootstrap/Button';
 import CustomOutput from './custom_output';
 import { Modal } from 'react-bootstrap';
 import MultiSelectFields from './MultiSelectFields'
+import { fetchTaxaminerSettings, updateTaxaminerSettings } from '../../../../../../../../api';
 
 interface Props {
   row: any
   aa_seq: string
   fields: string[]
+  assemblyID: number
+  userID: number
+  analysisID: number
+  token: string
+}
+
+interface State {
+  custom_fields: any
+  show_field_modal: boolean
+  options: any
 }
 
 /**
  * Customizable representation of table rows for a selected dot
  */
-class SelectionView extends React.Component<Props, any> {
+class SelectionView extends React.Component<Props, State> {
   constructor(props: any){
 		super(props);
     const options = [{ value:'One', selected:true }, { value: 'Two' }, { value:'Three' }]
@@ -30,16 +41,10 @@ class SelectionView extends React.Component<Props, any> {
    * Fetch user configs on componenMount
    */
 	componentDidMount() {
-		const endpoint = process.env.REACT_APP_API_ADRESS + "/userconfig";
-		fetch(endpoint)
-			.then(response => response.json())
-			.then(data => {
-        // catch networking errors
-        if (data === undefined) {
-          data = []
-        }
-				this.setState( {custom_fields: data.custom_fields} )
-			})
+    fetchTaxaminerSettings(this.props.assemblyID, 1, this.props.userID, this.props.token)
+    .then((data: any) => {
+      this.setState({custom_fields: data})
+    })
     this.convertFieldsOptions()
 	}
 
@@ -71,7 +76,6 @@ class SelectionView extends React.Component<Props, any> {
       this.convertFieldsOptions()
     }
   }
-  
 
   /*
    * Update possible field options dynamically 
@@ -99,11 +103,7 @@ class SelectionView extends React.Component<Props, any> {
     this.setState({ show_field_modal: false });
 
     // Save user settings to API
-    const request = {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-      body: JSON.stringify({ custom_fields: this.state.custom_fields })
-    };
+    updateTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.state.custom_fields, this.props.userID, this.props.token)
   };
 
   /**

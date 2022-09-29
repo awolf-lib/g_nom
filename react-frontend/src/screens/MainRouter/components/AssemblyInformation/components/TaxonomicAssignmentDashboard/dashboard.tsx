@@ -173,10 +173,14 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                      <Tabs>
                         <Tab eventKey="Overview" title="Overview">
                             <DataSetMeta dataset_id={this.state.dataset_id}/>
-                            <SelectionView 
+                            <SelectionView
                             row={this.state.selected_row}
                             aa_seq={this.state.aa_seq}
-                            fields={this.state.fields}/>
+                            fields={this.state.fields}
+                            assemblyID={this.props.assembly_id}
+                            analysisID={1}
+                            userID={this.state.userID}
+                            token={this.state.token}/>
                         </Tab>
                         <Tab eventKey="Filter" title="Filters">
                             <FilterUI

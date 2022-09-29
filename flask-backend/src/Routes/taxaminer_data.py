@@ -5,6 +5,7 @@ from urllib import response
 from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
 from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID
+from modules.users import fetchTaxaminerSettings, setTaxaminerSettings
  
 # local imports
 from modules.notifications import createNotification
@@ -215,25 +216,28 @@ def get_config():
     """
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
-    analysis_id = query_parameters.get("analysisID")
+    analysisID = query_parameters.get("analysisID")
     userID = query_parameters.get("userID")
     token = query_parameters.get("token")
-    basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
-    # get user settings
+    # token still active?
+    valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+    if not valid_token:
+        response = jsonify({"payload": 0, "notification": error})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
+
+    # fetch settings
     if request.method == "GET":
-        data = file_io.load_user_config(path=basepath)
-        # return as json
-        return data
-    
-    # set user settings
+        fields = fetchTaxaminerSettings(userID, analysisID)
+        fields_json = json.loads(fields[0])
+        return jsonify(fields_json)
+    # store settings in database
     elif request.method == "PUT":
-        settings = file_io.parse_user_config(path=basepath)
-        # apply changes
-        for key in request.json.keys():
-            settings[key] = request.json[key]
-        file_io.write_user_config(settings)
-        return "OK"
+        # TODO: add support for additional settings
+        new_fields = request.json['fields']
+        setTaxaminerSettings(userID, analysisID, json.dumps(new_fields))
+        return jsonify(new_fields)
 
 
 @taxaminer_bp.route('/pca_contribution', methods=['GET'])

@@ -322,6 +322,32 @@ def removeBookmark(userID, assemblyID):
         return 0, createNotification(message=str(err))
 
 
+""" get taXaminer settings """
+def fetchTaxaminerSettings(userID, analysisID):
+    try:
+        connection, cursor, error = connect()
+        cursor.execute("SELECT fields FROM settingsTaxaminer WHERE analysisID=%s AND userID=%s",
+        (analysisID, userID)
+        )
+        settings = cursor.fetchone()
+        return settings
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
+
+""" set taXaminer settings"""
+def setTaxaminerSettings(userID, analysisID, json_string, setting="fields"):
+    try:
+        connection, cursor, error = connect()
+        cursor.execute("UPDATE settingsTaxaminer SET fields=%s WHERE analysisID=%s AND userID=%s;",
+        (json_string, analysisID, userID)
+        )
+        connection.commit()
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
+
+
 # Main
 if __name__ == "__main__":
     if len(argv[1:]) == 1:

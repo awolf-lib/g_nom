@@ -1847,6 +1847,54 @@ export function fetchTaxaminerSeq (
 }
 
 
+// ==== fetch taXaminer user settings ==== //
+export function fetchTaxaminerSettings (
+  assembly_id: number, 
+  analysisID: number,
+  userID: number,
+  token: string
+): Promise<IResponse<ITask>> {
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/userconfig?assemblyID=${assembly_id}&analysisID=${analysisID}&userID=${userID}&token=${token}`
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+
+// ==== Update taXaminer user settings ==== //
+export function updateTaxaminerSettings (
+  assembly_id: number, 
+  taxaminer_id: number,
+  fields: any,
+  userID: number,
+  token: string
+) {
+
+  // JSON body
+  const my_body = {
+    'fields': fields 
+  }
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/userconfig?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(my_body),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+  .then((res) => { console.log(res)})
+  .catch((error) => {
+    console.error(error);
+  })
+}
+
+
 // ==== Taxaminer FASTA download ==== //
 export function fetchTaxaminerDownload (
   assembly_id: number, 
