@@ -57,6 +57,22 @@ def fast_fasta_loader(path, fasta_id):
     return seq
 
 
+def diamond_to_json_str(path):
+    """Convert diamond table rows to JSON strings"""
+    rows = []
+    # format as defined here:
+    # https://github.com/fdarthen/taXaminer/blob/988f408afed4830e23a1b8b837b24bab3e8fc5b9/taxonomic_assignment.py#L718
+    fields = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send',
+              'evalue', 'bitscore', 'taxid', 'taxname']
+    with open(path, encoding='utf-8') as csvf:
+        # load csv file data using csv library's dictionary reader
+        csv_reader = csv.DictReader(csvf, delimiter='\t', fieldnames=fields)
+        for i, row in enumerate(csv_reader):
+            json_string = json.dumps(row)
+            rows.append(json_string)
+    
+    return rows
+
 def taxonomic_hits_loader(fasta_id, path):
     """Load all taxonomic hits"""
     fields = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send',

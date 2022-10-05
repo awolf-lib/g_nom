@@ -4,7 +4,7 @@ import json
 from urllib import response
 from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
-from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID
+from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID, fetchTaxaminerDiamond
 from modules.users import fetchTaxaminerSettings, setTaxaminerSettings
  
 # local imports
@@ -122,13 +122,13 @@ def main_data():
 @taxaminer_bp.route('/diamond', methods=['GET'])
 def diamond_data():
     """
-    Diamond date for a certain data point
+    Diamond data for a certain data point
     :return:
     """
     query_parameters = request.args
     assembly_id = query_parameters.get("assemblyID")
     analysis_id = query_parameters.get("analysisID")
-    fasta_id = query_parameters.get("fastaID")
+    qseq_id = query_parameters.get("qseqID")
     userID = query_parameters.get("userID")
     token = query_parameters.get("token")
 
@@ -139,12 +139,10 @@ def diamond_data():
         response.headers.add("Access-Control-Allow-Origin", "*")
         return response
 
-    path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
-
-    if path:
-        json_data = file_io.taxonomic_hits_loader(fasta_id, f"{path}taxonomic_hits.txt")
+    try: 
+        json_data = fetchTaxaminerDiamond(assembly_id, analysis_id, qseq_id)
         return jsonify(json_data)
-    else:
+    except Exception:
         return abort(404)
 
 

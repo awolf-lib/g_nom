@@ -79,7 +79,7 @@ class Table extends Component<Props, any> {
             filter: textFilter()
         },
         {
-            dataField: "ssciname",
+            dataField: "taxname",
             text: "scientific name",
             sort: true,
             filter: textFilter()

@@ -1819,7 +1819,7 @@ export function fetchTaxaminerDiamond (
   token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&fastaID=${fasta_id}&userID=${userID}&token=${token}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&qseqID=${fasta_id}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)

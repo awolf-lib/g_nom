@@ -34,7 +34,7 @@ class Scatter3D extends Component<Props, any> {
 			aa_seq: "", // inherited
 			ui_revision: "true", // bound to plot to preserve camera position
 			auto_size: true, // automatically size dots in scatterplot
-			auto_size_px: 5,
+			auto_size_px: 0,
 			marker_size: 0, // actual dot size in the plot
 			manual_size: 5, // dot size selected by user
 			color_palette: "rainbow", // currently selected color palette

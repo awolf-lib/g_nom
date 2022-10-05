@@ -1,3 +1,5 @@
+import csv
+import os
 from os.path import basename, exists, isdir, isfile
 from subprocess import run
 from re import sub, compile
@@ -8,6 +10,8 @@ from .db_connection import connect, DB_NAME
 from .environment import BASE_PATH_TO_IMPORT, BASE_PATH_TO_STORAGE
 from .assemblies import addAssemblyTag, fetchAssemblyTagsByAssemblyID
 from .files import scanFiles
+
+import json
 
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of analyses
@@ -116,7 +120,7 @@ def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
         elif analyses_type == "fcat":
             import_status, error = __importFcat(assembly_id, analyses_id, fcat_content)
         elif analyses_type == "taxaminer":
-            import_status, error = __importTaxaminer(assembly_id, analyses_id)
+            import_status, error = __importTaxaminer(assembly_id, analyses_id, new_path_to_directory)
         elif analyses_type == "repeatmasker":
             import_status, error = __importRepeatmasker(assembly_id, analyses_id, repeatmasker_content)
         else:
@@ -534,11 +538,43 @@ def __importFcat(assemblyID, analysisID, fcatData):
 
 
 # import taXaminer
-def __importTaxaminer(assemblyID, analysisID):
+def __importTaxaminer(assemblyID, analysisID, base_path):
     try:
         connection, cursor, error = connect()
         cursor.execute("INSERT INTO analysesTaxaminer (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
+
+        # parse diamond
+        diamond_path = base_path + "taxonomic_hits.txt"
+        if not os.path.isfile(diamond_path):
+            return 0, createNotification(message=f"taXaminerImportDBError: Diamond data is missing!")
+        
+        FIELDS = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname']
+        TYPES = {'qseqid': str, 'sseqid': str, 'pident': float, 'length': int, 'mismatch': int, 'gapopen': int, 'qstart': int,
+         'qend': int, 'sstart': int, 'send': int, 'evalue': float, 'bitscore': int, 'taxids': str, 'taxname': str}
+        rows = []
+        with open(diamond_path) as file:
+            my_reader = csv.DictReader(file, delimiter='\t', fieldnames=FIELDS)
+            for row in my_reader:
+                # manually set types
+                for field in FIELDS:
+                    if TYPES.get(field) != str:
+                        if TYPES.get(field) == int:
+                            row[field] = int(row[field])
+                        elif TYPES.get(field) == float:
+                            row[field] = float(row[field])
+                # cleared for db insert
+                rows.append((assemblyID, analysisID, row['qseqid'], json.dumps(row)))
+
+        print("Database Inserts look like this:" + str(rows[0]))
+
+        # .executemany() exceeds the 'max_allowed_packet'
+        # if you encounter this error use 'SET SESSION max_allowed_packet=500*1024*1024' or 'SET GLOBAL max_allowed_packet=500*1024*1024'
+        # TLDR: MOOOOOOOOOOREEEEEEE RAM
+        connection, cursor, error = connect()
+        cursor.executemany("INSERT INTO taxaminerDiamond (assemblyID, analysisID, qseqID, data) VALUES (%s, %s, %s, %s)", rows)
+        connection.commit()
+
         return 1, []
     except Exception as err:
         return 0, createNotification(message=f"taXaminerImportDBError: {str(err)}")
@@ -1163,3 +1199,20 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
         )
     except Exception as err:
         return [], createNotification(message=f"FetchRepeatmaskerAnalysesError: {str(err)}")
+
+
+## ======================== FETCH ANALYSIS SPECIFIC ========================= ##
+def fetchTaxaminerDiamond(assemblyID, analysisID, qseqid):
+    try:
+        connection, cursor, error = connect()
+        cursor.execute("SELECT data FROM taxaminerDiamond WHERE assemblyID=%s AND analysisID=%s AND qseqID=%s",
+        (assemblyID, analysisID, qseqid)
+        )
+        rows = cursor.fetchall()
+        final_rows = []
+        for row in rows:
+            final_rows.append(json.loads(row[0]))
+        return final_rows
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
