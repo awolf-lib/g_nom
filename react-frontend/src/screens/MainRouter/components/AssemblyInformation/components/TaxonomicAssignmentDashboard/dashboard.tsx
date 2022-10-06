@@ -34,6 +34,7 @@ interface State {
     userID: number
     token: string
     fields: string[]
+    g_options: { label: string; value: string; }[]
 }
 
 interface Props {
@@ -59,11 +60,12 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             data: undefined,
             scatter_data: { colors: "rainbow", legendonly: []},
             e_value: 1.0,
-            filters: {e_value: 1.0, show_unassinged: true},
+            filters: {e_value: 1.0, show_unassinged: true, g_searched: []},
             legend_only: [],
             userID: userID,
             token: token,
-            fields: []
+            fields: [],
+            g_options: []
         }
 
         // Bind functions passing data from child objects to local context
@@ -94,6 +96,13 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             this.setState( {data: data})
             const proto_row = data[Object.keys(data)[0]]
             this.setState( { fields: Object.keys(proto_row) })
+
+            const gene_options: { label: string; value: string; }[] = []
+            Object.keys(data).map((item: string) => (
+                gene_options.push( { "label": item, "value": item } )
+              ))
+            this.setState({g_options: gene_options})
+            console.log(Object.keys(data));
         })
 	}
 
@@ -167,7 +176,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                     show_unassigned={this.state.filters.show_unassinged}
                     passScatterData={this.shareScatterData}
                     userID={this.state.userID}
-                    token={this.state.token}/>
+                    token={this.state.token}
+                    g_searched={this.state.filters.g_searched}/>
                 </Col>
                 <Col>
                      <Tabs>
@@ -184,6 +194,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                         </Tab>
                         <Tab eventKey="Filter" title="Filters">
                             <FilterUI
+                            g_options={this.state.g_options}
                             sendValuesUp={this.setFilters}/>
                         </Tab>
                         <Tab eventKey="diamond" title="Diamond Output">
