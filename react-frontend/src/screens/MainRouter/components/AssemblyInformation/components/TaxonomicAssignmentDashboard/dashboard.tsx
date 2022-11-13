@@ -16,7 +16,7 @@ import ScatterMatrix from './sidebar/ScatterMatrix/ScatterMatrix';
 // Stylesheet
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { fetchTaxaminerMain, fetchTaxaminerSeq } from '../../../../../../api';
+import { fetchTaxaminerMain, fetchTaxaminerScatterplot, fetchTaxaminerSeq } from '../../../../../../api';
 
   
 interface State {
@@ -35,6 +35,8 @@ interface State {
     token: string
     fields: string[]
     g_options: { label: string; value: string; }[]
+    scatter_points: any
+    is_loading: boolean
 }
 
 interface Props {
@@ -57,7 +59,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             camera: null,
             select_mode: 'neutral',
             selected_data: new Set(),
-            data: undefined,
+            data: {},
             scatter_data: { colors: "rainbow", legendonly: []},
             e_value: 1.0,
             filters: {e_value: 1.0, show_unassinged: true, g_searched: []},
@@ -65,7 +67,9 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             userID: userID,
             token: token,
             fields: [],
-            g_options: []
+            g_options: [],
+            scatter_points: [],
+            is_loading: true
         }
 
         // Bind functions passing data from child objects to local context
@@ -79,11 +83,35 @@ class TaxaminerDashboard extends React.Component<Props, State> {
      */
     setDataset(id: number) {
         this.setState( {dataset_id: id} );
-        fetchTaxaminerMain(this.props.assembly_id, 0, this.state.userID, this.state.token)
-        .then((data: any) =>{
-            this.setState( {data: data})
-            const proto_row = data[Object.keys(data)[0]]
-            this.setState( { fields: Object.keys(proto_row) }) 
+        fetchTaxaminerScatterplot(this.props.assembly_id, this.state.dataset_id, this.state.userID, this.state.token)
+		.then(data => {
+            const main_data = {}
+			this.setState( {scatter_points: data}, () => {
+                for (const chunk of this.state.scatter_points) {
+                    for (const row of chunk) {
+                        const key = row.g_name as string
+                        // @ts-ignore
+                        main_data[key] = row
+                    }
+                }
+                this.setState({data: main_data})
+
+                // Infer fields from first row
+                if (main_data) {
+                    // @ts-ignore
+                    const proto_row = main_data[Object.keys(main_data)[0]]
+                    this.setState( { fields: Object.keys(proto_row) })
+                }
+                const gene_options: { label: string; value: string; }[] = []
+                Object.keys(data).map((item: string) => (
+                    gene_options.push( { "label": item, "value": item } )
+                ))
+                this.setState({g_options: gene_options})
+            });
+		})
+        .finally(() => {
+            console.log("Finished loading")
+            this.setState({is_loading: false})
         })
     }
 
@@ -91,18 +119,37 @@ class TaxaminerDashboard extends React.Component<Props, State> {
 	 * Call API on component mount to main table data
 	 */
 	componentDidMount() {
-		fetchTaxaminerMain(this.props.assembly_id, 1, this.state.userID, this.state.token)
-        .then((data: any) =>{
-            this.setState( {data: data})
-            const proto_row = data[Object.keys(data)[0]]
-            this.setState( { fields: Object.keys(proto_row) })
+    
+        fetchTaxaminerScatterplot(this.props.assembly_id, this.state.dataset_id, this.state.userID, this.state.token)
+		.then(data => {
+            const main_data = {}
+			this.setState( {scatter_points: data}, () => {
+                for (const chunk of this.state.scatter_points) {
+                    for (const row of chunk) {
+                        const key = row.g_name as string
+                        // @ts-ignore
+                        main_data[key] = row
+                    }
+                }
+                this.setState({data: main_data})
 
-            const gene_options: { label: string; value: string; }[] = []
-            Object.keys(data).map((item: string) => (
-                gene_options.push( { "label": item, "value": item } )
-              ))
-            this.setState({g_options: gene_options})
-            console.log(Object.keys(data));
+                // Infer fields from first row
+                if (main_data) {
+                    // @ts-ignore
+                    const proto_row = main_data[Object.keys(main_data)[0]]
+                    this.setState( { fields: Object.keys(proto_row) })
+                }
+
+                const gene_options: { label: string; value: string; }[] = []
+                Object.keys(main_data).map((item: string) => (
+                    gene_options.push( { "label": item, "value": item } )
+                ))
+                this.setState({g_options: gene_options})
+            });
+		})
+        .finally(() => {
+            console.log("Finished loading")
+            this.setState({is_loading: false})
         })
 	}
 
@@ -114,7 +161,12 @@ class TaxaminerDashboard extends React.Component<Props, State> {
     handleDataClick(keys: string[]) {
         // Only update if a new selection occured
         if (keys.length != 0) {
-            this.setState({selected_row: this.state.data[keys[0]]});
+            const next_row = this.state.data[keys[0]]
+            if (next_row != undefined) {
+                this.setState({selected_row: this.state.data[keys[0]]});
+            } else {
+                return
+            }
             
             // manage selection
             if(this.state.select_mode === 'add') {
@@ -123,7 +175,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 keys.forEach(key => this.state.selected_data.delete(key))
             }
 
-            fetchTaxaminerSeq(1, 1, keys[0], this.state.userID, this.state.token)
+            fetchTaxaminerSeq(this.props.assembly_id, this.state.dataset_id, keys[0], this.state.userID, this.state.token)
             .then((data) => {
                 this.setState({aa_seq: data as unknown as string})
             })
@@ -177,13 +229,19 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                     passScatterData={this.shareScatterData}
                     userID={this.state.userID}
                     token={this.state.token}
-                    g_searched={this.state.filters.g_searched}/>
+                    g_searched={this.state.filters.g_searched}
+                    scatter_data={this.state.scatter_points}/>
                 </Col>
                 <Col>
                      <Tabs>
                         <Tab eventKey="Overview" title="Overview">
-                            <DataSetMeta dataset_id={this.state.dataset_id}/>
+                            <DataSetMeta
+                            assemblyID={this.props.assembly_id}
+                            dataset_id={this.state.dataset_id}
+                            userID={this.state.userID}
+                            token={this.state.token}/>
                             <SelectionView
+                            is_loading={this.state.is_loading}
                             row={this.state.selected_row}
                             aa_seq={this.state.aa_seq}
                             fields={this.state.fields}
@@ -202,6 +260,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                                 <Col>
                                 <Table
                                 dataset_id={this.state.dataset_id}
+                                assembly_id={this.props.assembly_id}
                                 row={this.state.selected_row}
                                 userID={this.state.userID}
                                 token={this.state.token}
@@ -211,12 +270,15 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                         </Tab>
                         <Tab eventKey="scatter_matrix" title="Scatter Matrix">
                             <ScatterMatrix
+                                assemblyID={this.props.assembly_id}
+                                datasetID={this.state.dataset_id}
                                 sendClick={this.handleDataClick}
                                 e_value={this.state.filters.e_value}
                                 show_unassigned={this.state.filters.show_unassinged}
                                 scatter_data = {this.state.scatter_data}
                                 userID={this.state.userID}
                                 token={this.state.token}
+                                scatter_points={this.state.scatter_points}
                                 />
                         </Tab>
                         <Tab eventKey="PCA" title="PCA">
@@ -225,6 +287,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                                 <PCAPlot
                                     camera = {this.state.camera}
                                     dataset_id = {this.state.dataset_id}
+                                    assemblyID={this.props.assembly_id}
                                     userID={this.state.userID}
                                     token={this.state.token}/>
                                 </Col>
@@ -242,7 +305,10 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 userID={this.state.userID}
                 token={this.state.token}
                 assemblyID={this.props.assembly_id}
+                row={this.state.selected_row}
                 />
+        <br/>
+        <br/>
         </Container>
         );
     } 

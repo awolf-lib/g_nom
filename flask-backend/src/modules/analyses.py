@@ -13,6 +13,8 @@ from .files import scanFiles
 
 import json
 
+DIAMOND_FIELDS = fields = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname', 'assemblyID', 'analysisID']
+
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of analyses
 def import_analyses(taxon, assembly_id, dataset, analyses_type, userID):
@@ -544,14 +546,15 @@ def __importTaxaminer(assemblyID, analysisID, base_path):
         cursor.execute("INSERT INTO analysesTaxaminer (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
 
+        """
         # parse diamond
         diamond_path = base_path + "taxonomic_hits.txt"
         if not os.path.isfile(diamond_path):
             return 0, createNotification(message=f"taXaminerImportDBError: Diamond data is missing!")
         
         FIELDS = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname']
-        TYPES = {'qseqid': str, 'sseqid': str, 'pident': float, 'length': int, 'mismatch': int, 'gapopen': int, 'qstart': int,
-         'qend': int, 'sstart': int, 'send': int, 'evalue': float, 'bitscore': int, 'taxids': str, 'taxname': str}
+        TYPES = {'qseqid': str, 'sseqid': str, 'pident': float, 'length': float, 'mismatch': float, 'gapopen': float, 'qstart': float,
+         'qend': float, 'sstart': float, 'send': float, 'evalue': float, 'bitscore': float, 'taxids': str, 'taxname': str}
         rows = []
         with open(diamond_path) as file:
             my_reader = csv.DictReader(file, delimiter='\t', fieldnames=FIELDS)
@@ -574,6 +577,7 @@ def __importTaxaminer(assemblyID, analysisID, base_path):
         connection, cursor, error = connect()
         cursor.executemany("INSERT INTO taxaminerDiamond (assemblyID, analysisID, qseqID, data) VALUES (%s, %s, %s, %s)", rows)
         connection.commit()
+        """
 
         return 1, []
     except Exception as err:
@@ -1155,8 +1159,8 @@ def fetchTaXaminerPathByAssemblyID_AnalysisID(assemblyID, taxaminerID):
 
         # taxaminer analyses
         cursor.execute(
-            "SELECT analyses.* FROM analyses WHERE analyses.assemblyID=%s AND analyses.id=%s",
-            (assemblyID, taxaminerID),
+            "SELECT analyses.*, analysesTaxaminer.*, users.username FROM analyses, analysesTaxaminer, users WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID AND analyses.addedBy=users.id",
+            (assemblyID),
         )
         row_headers = [x[0] for x in cursor.description]
         taxaminerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]
@@ -1205,13 +1209,17 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
 def fetchTaxaminerDiamond(assemblyID, analysisID, qseqid):
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT data FROM taxaminerDiamond WHERE assemblyID=%s AND analysisID=%s AND qseqID=%s",
+        cursor.execute("SELECT * FROM taxaminerDiamond WHERE assemblyID=%s AND analysisID=%s AND qseqID=%s",
         (assemblyID, analysisID, qseqid)
         )
         rows = cursor.fetchall()
         final_rows = []
         for row in rows:
-            final_rows.append(json.loads(row[0]))
+            temp_dict = dict()
+            for i in range(len(row)):
+                temp_dict[DIAMOND_FIELDS[i]] = row[i]
+            final_rows.append(temp_dict)
+
         return final_rows
     except Exception as err:
         return 0, createNotification(message=str(err))

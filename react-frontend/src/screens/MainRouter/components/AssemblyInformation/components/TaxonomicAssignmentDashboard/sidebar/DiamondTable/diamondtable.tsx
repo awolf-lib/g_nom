@@ -20,6 +20,7 @@ import { fetchTaxaminerDiamond } from "../../../../../../../../api";
 
 interface Props {
     dataset_id: number
+    assembly_id: number
     row: any
     userID: number
     token: string
@@ -61,7 +62,7 @@ class Table extends Component<Props, any> {
             this.setState({loading: true})
             // fetch the table data
 		    
-            fetchTaxaminerDiamond(1, 1, this.props.row.g_name, this.props.userID, this.props.token)
+            fetchTaxaminerDiamond(this.props.assembly_id, this.props.dataset_id, this.props.row.g_name, this.props.userID, this.props.token)
             .then((data: any) => {
                 this.setState({table_data : data})
                 this.setState({loading: false})

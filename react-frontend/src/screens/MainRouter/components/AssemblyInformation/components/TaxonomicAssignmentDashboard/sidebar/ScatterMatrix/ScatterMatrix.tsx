@@ -4,12 +4,15 @@ import { fetchTaxaminerScatterplot } from '../../../../../../../../api';
 const colors = require("./colors.json");
 
 interface Props {
+	datasetID: number
+	assemblyID: number
 	sendClick: Function
 	e_value: number
 	show_unassigned: boolean
     scatter_data: any
 	userID: number
 	token: string
+	scatter_points: any
 }
 
 /**
@@ -37,12 +40,14 @@ class ScatterMatrix extends Component<Props, any> {
 	 * Call API on component mount to load plot data
 	 */
 	componentDidMount() {
-		fetchTaxaminerScatterplot(1, 1, this.props.userID, this.props.token)
-		.then(data => {
-			this.setState( {data: data} );
-			this.set_auto_size(data);
-			this.build_plot();
-		})
+		console.log(".")
+	}
+
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
+		if (prevProps.scatter_points != this.props.scatter_data) {
+			// this.set_auto_size(this.props.scatter_data)
+			this.build_plot()
+		}
 	}
 
 	/**
@@ -67,9 +72,6 @@ class ScatterMatrix extends Component<Props, any> {
 	 * Set automatic marker size
 	 */
 	set_auto_size(data: any){
-		if (data == undefined) {
-			data = this.state.data
-		}
 		let total_points = 0;
 		// overall size of all trace arrays
 		for (var trace of data) {
@@ -203,10 +205,11 @@ class ScatterMatrix extends Component<Props, any> {
 	 * @returns Plotly Plot as React component
 	 */
 	build_plot() {
+		console.log("Rebuilding Plot")
 		return (
 			<Plot
 				divId='scattermatrix'
-					data = {this.transformData(this.state.data, this.props.scatter_data.legendonly)}
+					data = {this.transformData(this.props.scatter_points, this.props.scatter_data.legendonly)}
 					layout = {{
 						autosize: true,
 						showlegend: true,

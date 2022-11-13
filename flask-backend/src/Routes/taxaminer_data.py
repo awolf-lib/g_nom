@@ -4,7 +4,7 @@ import json
 from urllib import response
 from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
-from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID, fetchTaxaminerDiamond
+from modules.analyses import fetchTaXaminerPathByAssemblyID_AnalysisID, fetchTaxaminerDiamond, fetchTaXaminerAnalysesByAssemblyID
 from modules.users import fetchTaxaminerSettings, setTaxaminerSettings
  
 # local imports
@@ -23,7 +23,7 @@ REQUESTMETHODERROR = {
 
 def get_basepath(assembly_id, analysis_id):
     """Fetch the basepath for a specific taXaminer analysis from the database"""
-    db_data = fetchTaXaminerPathByAssemblyID_AnalysisID(assembly_id, analysis_id)
+    db_data = fetchTaXaminerAnalysesByAssemblyID(assembly_id)
     if db_data[0] == []:
         return False
     else:
@@ -201,7 +201,9 @@ def summary():
             lines = summary.readlines()
 
         # return as json
-        return response("".join(lines), mimetype="text")
+        response = jsonify({"payload": "".join(lines), "mimetype": "text"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
     else:
         return abort(404)
 

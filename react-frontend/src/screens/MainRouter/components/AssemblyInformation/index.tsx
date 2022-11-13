@@ -172,6 +172,8 @@ const AssemblyInformation = () => {
       const id = parseInt(assemblyID.replace(":", ""));
       await fetchAssemblyByAssemblyID(id, userID, token).then((response) => {
         if (response && response.payload) {
+          // TODO remove this
+          console.log(response.payload);
           setAssembly(response.payload);
         }
         if (response?.notification) {

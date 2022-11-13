@@ -7,20 +7,26 @@ import { fetchTaxaminerMetadata } from "../../../../../../../../api";
 
 interface Props {
     dataset_id: number
+    userID: number
+    token: string
+    assemblyID: number
 }
 
 interface State {
-    metadata: string
+    metadata: any
 }
 
 /**
  * Properly format text from \n newlines
- * @param props Component props
+ * @param text Unformatted string
  * @returns list of <p></p> to insert into html
  */
-function NewlineText(props: any) {
-    const text = props.text;
-    return text.split('\n').map((str: any) => <p>{str}</p>);
+function NewlineText(text: string | void) {
+    if (text) {
+        return text.split('\n').map((str: any) => <p>{str}</p>);
+    } else {
+        return "No data"
+    }
 }
 
 class DataSetMeta extends React.Component<Props, State> {
@@ -52,13 +58,10 @@ class DataSetMeta extends React.Component<Props, State> {
      * Fetch meta data from API
      */
     fetchMetaData() {
-        /*
-        fetchTaxaminerMetadata(0, this.props.dataset_id)
+        fetchTaxaminerMetadata(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
         .then(data => {
-            this.setState( {metadata: data as unknown as string} )
+            this.setState( {metadata: NewlineText(data)} )
         })
-        */
-        this.setState( {metadata: "Joa"} )
     }
 
     render() {

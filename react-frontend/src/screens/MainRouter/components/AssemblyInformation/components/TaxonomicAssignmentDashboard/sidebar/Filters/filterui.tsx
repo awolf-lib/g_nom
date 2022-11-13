@@ -30,15 +30,6 @@ class FilterUI extends React.Component<Props, State> {
 	}  
 
     /**
-     * Update the stored filter information and send its values up
-     */
-    updateShowUnassigned(e: any) {
-        this.setState({show_unassigned: e})
-        const values = {'show_unassinged': e, 'e_value': this.state.e_value, 'g_searched': this.state.g_searched}
-        this.props.sendValuesUp(values)
-    }
-
-    /**
      * Calculate the e-value from slider input and send it's value up
      * @param slider_value Value of UI slider
      */
@@ -85,13 +76,6 @@ class FilterUI extends React.Component<Props, State> {
             <Card className="m-2">
                 <Card.Body>
                     <Card.Title>Filter</Card.Title>
-                    <Form.Check 
-                        type="switch"
-                        id="show_unassigned"
-                        label="Show unassinged"
-                        defaultChecked={true}
-                        onChange={(e) => this.updateShowUnassigned(e.target.checked)}
-                    />
                     <Form.Label>e-value {"<"} {this.state.e_value}</Form.Label>
                     <Form.Range 
                         min={0}

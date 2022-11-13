@@ -7,7 +7,7 @@ import Col from "react-bootstrap/esm/Col";
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import CustomOutput from './custom_output';
-import { Modal } from 'react-bootstrap';
+import { Modal, Placeholder } from 'react-bootstrap';
 import MultiSelectFields from './MultiSelectFields'
 import { fetchTaxaminerSettings, updateTaxaminerSettings } from '../../../../../../../../api';
 
@@ -19,6 +19,7 @@ interface Props {
   userID: number
   analysisID: number
   token: string
+  is_loading: boolean
 }
 
 interface State {
@@ -41,7 +42,7 @@ class SelectionView extends React.Component<Props, State> {
    * Fetch user configs on componenMount
    */
 	componentDidMount() {
-    fetchTaxaminerSettings(this.props.assemblyID, 1, this.props.userID, this.props.token)
+    fetchTaxaminerSettings(this.props.assemblyID, 2, this.props.userID, this.props.token)
     .then((data: any) => {
       this.setState({custom_fields: data})
     })
@@ -56,7 +57,7 @@ class SelectionView extends React.Component<Props, State> {
    * @returns Boolean
    */
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<any>, nextContext: any): boolean {
-    if (nextProps.row != this.props.row) {
+    if (nextProps.row != this.props.row || nextProps.is_loading != this.props.is_loading) {
       return true
     } else if (nextState.options != this.state.options || nextState.show_field_modal != this.state.show_field_modal || nextState.custom_fields != this.state.custom_fields) {
       return true
@@ -121,7 +122,17 @@ class SelectionView extends React.Component<Props, State> {
           <Card.Title>
               Selected Gene
           </Card.Title>
-          <Row>
+          { (this.props.is_loading) && (
+            <Placeholder as="p" animation="glow">
+              <Placeholder xs={8}/>
+              <Placeholder xs={6}/>
+              <Placeholder xs={12}/>
+            </Placeholder>
+          )}
+
+          { (this.props.is_loading === false) && (
+              <>
+                <Row>
             <Col className="md-2">
               <InputGroup className="m-2">
                 <InputGroup.Text id="gene-info-name">Gene Name</InputGroup.Text>
@@ -224,6 +235,10 @@ class SelectionView extends React.Component<Props, State> {
                 <CustomOutput col={item.value} row={this.props.row} name={item.label}/>
               ))}
             </Row>
+              </>
+            )
+          }
+          
             <Row>
               <Col className="m-2">
                 <Accordion>

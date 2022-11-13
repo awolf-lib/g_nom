@@ -1754,7 +1754,6 @@ export function fetchTaxaminerMain (
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/main?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
-  .then((data) => data)
   .catch((error) => {
     console.error(error);
   })
@@ -1771,6 +1770,7 @@ export function fetchTaxaminerMetadata (
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/summary?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
   .then(response => response.text())
+  .then((data: any) => data.payload)
   .catch((error) => {
     console.error(error);
   })
@@ -1819,7 +1819,7 @@ export function fetchTaxaminerDiamond (
   token: string
 ): Promise<IResponse<ITask>> {
   return fetch(
-    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&qseqID=${fasta_id}&token=${token}`
+    `${process.env.REACT_APP_API_ADRESS}/taxaminer/diamond?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&qseqID=${fasta_id}&userID=${userID}&token=${token}`
   )
   .then((request) => request.json())
   .then((data) => data)
