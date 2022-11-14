@@ -228,7 +228,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                             aa_seq={this.state.aa_seq}
                             fields={this.state.fields}
                             assemblyID={this.props.assembly_id}
-                            analysisID={1}
+                            analysisID={this.state.dataset_id}
                             userID={this.state.userID}
                             token={this.state.token}/>
                         </Tab>

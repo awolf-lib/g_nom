@@ -39,17 +39,6 @@ class SelectionView extends React.Component<Props, State> {
 	}
 
   /**
-   * Fetch user configs on componenMount
-   */
-	componentDidMount() {
-    fetchTaxaminerSettings(this.props.assemblyID, 2, this.props.userID, this.props.token)
-    .then((data: any) => {
-      this.setState({custom_fields: data})
-    })
-    this.convertFieldsOptions()
-	}
-
-  /**
    * Decide Update behaviour. We mainly use this to prevent infinte loops in convertFieldsOptions()
    * @param nextProps next Props
    * @param nextState next State
@@ -60,6 +49,8 @@ class SelectionView extends React.Component<Props, State> {
     if (nextProps.row != this.props.row || nextProps.is_loading != this.props.is_loading) {
       return true
     } else if (nextState.options != this.state.options || nextState.show_field_modal != this.state.show_field_modal || nextState.custom_fields != this.state.custom_fields) {
+      return true
+    } else if (nextProps.analysisID != this.props.analysisID) {
       return true
     } else {
       return false
@@ -75,6 +66,15 @@ class SelectionView extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
     if (prevProps.row != this.props.row) {
       this.convertFieldsOptions()
+    } else if(prevProps.analysisID != this.props.analysisID) {
+      fetchTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.props.userID, this.props.token)
+      .then((data: any) => {
+        if (data && data != "[]") {
+          this.setState({custom_fields: data})
+        } else {
+          this.setState({custom_fields: []})
+        }
+      })
     }
   }
 

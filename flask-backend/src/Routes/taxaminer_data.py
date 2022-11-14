@@ -1,6 +1,7 @@
 # general imports
 from email.mime import base
 import json
+from pathlib import Path
 from urllib import response
 from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
@@ -23,11 +24,15 @@ REQUESTMETHODERROR = {
 
 def get_basepath(assembly_id, analysis_id):
     """Fetch the basepath for a specific taXaminer analysis from the database"""
-    db_data = fetchTaXaminerAnalysesByAssemblyID(assembly_id)
+    db_data = fetchTaXaminerPathByAssemblyID_AnalysisID(assembly_id, analysis_id)
     if db_data[0] == []:
         return False
     else:
-        return db_data[0][0]['path'].replace("3D_plot.html", "")
+        path = Path(db_data[0][0]['path'])
+        if path.is_dir():
+            return str(path) + "/"
+        else:
+            return str(path.parent) + "/"
 
 
 @taxaminer_bp.route('/basepath', methods=['GET'])
@@ -230,8 +235,13 @@ def get_config():
     # fetch settings
     if request.method == "GET":
         fields = fetchTaxaminerSettings(userID, analysisID)
-        fields_json = json.loads(fields[0])
-        return jsonify(fields_json)
+        # no previous settings
+        if not fields:
+            setTaxaminerSettings(userID, analysisID, "[]")
+            return jsonify("[]")
+        else:
+            fields_json = json.loads(fields[0])
+            return jsonify(fields_json)
     # store settings in database
     elif request.method == "PUT":
         # TODO: add support for additional settings

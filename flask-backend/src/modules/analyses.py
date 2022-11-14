@@ -1159,8 +1159,8 @@ def fetchTaXaminerPathByAssemblyID_AnalysisID(assemblyID, taxaminerID):
 
         # taxaminer analyses
         cursor.execute(
-            "SELECT analyses.*, analysesTaxaminer.*, users.username FROM analyses, analysesTaxaminer, users WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID AND analyses.addedBy=users.id",
-            (assemblyID),
+            "SELECT analyses.*, analysesTaxaminer.* FROM analyses, analysesTaxaminer WHERE analyses.assemblyID=%s AND analyses.id=analysesTaxaminer.analysisID AND analysesTaxaminer.id=%s;",
+            (assemblyID, taxaminerID),
         )
         row_headers = [x[0] for x in cursor.description]
         taxaminerList = [dict(zip(row_headers, x)) for x in cursor.fetchall()]

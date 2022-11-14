@@ -16,14 +16,14 @@ interface Props {
     analyses: any[]
 }
 
-const default_analysis = [{id: -1, name: "Select a dataset to get started"}]
+const default_analysis = [{id: -1, name: "Select a dataset to get started", label: ""}]
 
 // Allows the user to select a dataset
 class DataSetSelector extends React.Component<Props, State> {
     constructor(props: any){
         super(props)
         this.state = {  
-            analyses: [{id: -1, name: "Select a dataset to get started"}],
+            analyses: default_analysis,
             new_id: -1,
             show_import_modal: false,
             show_remove: false
@@ -35,6 +35,11 @@ class DataSetSelector extends React.Component<Props, State> {
      */
     componentDidMount() {
         const extended = default_analysis.concat(this.props.analyses)
+        for (const analysis of extended) {
+            if (analysis.label && analysis.label != "") {
+                analysis.name = analysis.label
+            }
+        }
         this.setState({analyses: extended})
     }
 
