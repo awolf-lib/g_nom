@@ -31,11 +31,16 @@ class PCAPlot extends Component<Props, any> {
 	}
 
 	/**
-	 * Call API on component mount to load plot data
+	 * Reload plot if dataset changed
+	 * @param prevProps previous Props
+	 * @param prevState previous State
+	 * @param snapshot snapshot
 	 */
-	componentDidMount() {
-		fetchTaxaminerPCA(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
-		.then(data => this.setState({ data: data}))
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
+		if (prevProps.dataset_id != this.props.dataset_id) {
+			fetchTaxaminerPCA(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
+			.then(data => this.setState({ data: data}))
+		}
 	}
 
 	/**

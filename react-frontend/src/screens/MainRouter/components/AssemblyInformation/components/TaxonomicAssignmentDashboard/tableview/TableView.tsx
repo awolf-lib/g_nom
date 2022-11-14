@@ -134,9 +134,12 @@ class TableView extends React.Component<Props, State> {
                         </Row>
                         <Row>
                             <SelectionModeSelector
-                            passMode = {this.props.setSelectMode}
-                            selection = {this.props.keys}
-                            dataset_id = {this.props.dataset_id}
+                            passMode={this.props.setSelectMode}
+                            selection={this.props.keys}
+                            analysisID={this.props.dataset_id}
+                            assemblyID={this.props.assemblyID}
+                            userID={this.props.userID}
+                            token={this.props.token}
                             />
                         </Row>
                         <Row>

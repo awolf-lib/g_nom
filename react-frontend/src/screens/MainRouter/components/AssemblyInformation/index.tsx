@@ -172,8 +172,6 @@ const AssemblyInformation = () => {
       const id = parseInt(assemblyID.replace(":", ""));
       await fetchAssemblyByAssemblyID(id, userID, token).then((response) => {
         if (response && response.payload) {
-          // TODO remove this
-          console.log(response.payload);
           setAssembly(response.payload);
         }
         if (response?.notification) {
@@ -650,6 +648,7 @@ const AssemblyInformation = () => {
                 <div className="w-full h-full border-4 border-double border-gray-300 shadow animate-fade-in bg-white overflow-hidden">
                   <TaxaminerDashboard
                   assembly_id = {parseInt(assemblyID!.replace(":", ""))}
+                  analyses = {taxaminerAnalyses}
                   ></TaxaminerDashboard>
                 </div>
               )}

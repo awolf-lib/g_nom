@@ -10,6 +10,7 @@ interface Props {
     userID: number
     token: string
     assemblyID: number
+    metadata: any
 }
 
 interface State {
@@ -38,30 +39,27 @@ class DataSetMeta extends React.Component<Props, State> {
 	}
 
     /**
-     * Init
+     * Format the metadata
      */
-    componentDidMount() {
-        this.fetchMetaData()
+    convertMetadata() {
+        let data_string = ""
+        data_string += "Added: " + this.props.metadata.addedOn + "\n"
+        data_string += "ID: " + this.props.metadata.name + "\n"
+        data_string += "Added by: " + this.props.metadata.username + "\n"
+        this.setState({metadata: data_string})
     }
 
     /**
-     * Update data if dataset has changed
-     * @param prev previous state
+     * Init
      */
-    componentDidUpdate(prev: any) {
-		if (prev.dataset_id != this.props.dataset_id) {
-			this.fetchMetaData()
-		}
-	}
+    componentDidMount() {
+        this.convertMetadata()
+    }
 
-    /**
-     * Fetch meta data from API
-     */
-    fetchMetaData() {
-        fetchTaxaminerMetadata(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
-        .then(data => {
-            this.setState( {metadata: NewlineText(data)} )
-        })
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
+        if (prevProps.metadata != this.props.metadata) {
+            this.convertMetadata()
+        }
     }
 
     render() {
@@ -73,7 +71,7 @@ class DataSetMeta extends React.Component<Props, State> {
                         <Accordion.Item eventKey="0">
                             <Accordion.Header>Metadata</Accordion.Header>
                             <Accordion.Body>
-                                <div>{this.state.metadata}</div>
+                                <code>{this.state.metadata}</code>
                             </Accordion.Body>
                         </Accordion.Item> 
                     </Accordion>

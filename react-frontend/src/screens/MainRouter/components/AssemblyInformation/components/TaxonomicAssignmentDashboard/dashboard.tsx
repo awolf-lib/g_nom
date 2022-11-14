@@ -20,6 +20,7 @@ import { fetchTaxaminerMain, fetchTaxaminerScatterplot, fetchTaxaminerSeq } from
 
   
 interface State {
+    analysis: any
     dataset_id: number
     selected_row: any
     aa_seq: string
@@ -41,6 +42,7 @@ interface State {
 
 interface Props {
     assembly_id: number
+    analyses: any[]
 }
 
 class TaxaminerDashboard extends React.Component<Props, State> {
@@ -53,6 +55,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
         const token = JSON.parse(sessionStorage.getItem("token") || "");
 
 		this.state ={
+            analysis: {},
             dataset_id: 1,
             selected_row: {g_name: "Pick a gene", taxonomic_assignment: "Pick a gene", plot_label: "Pick a gene", best_hit: "Pick a gene", c_name: "Pick a gene", bh_evalue: 0, best_hitID: "None"}, 
             aa_seq: "Pick a gene",
@@ -69,7 +72,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             fields: [],
             g_options: [],
             scatter_points: [],
-            is_loading: true
+            is_loading: false
         }
 
         // Bind functions passing data from child objects to local context
@@ -82,36 +85,39 @@ class TaxaminerDashboard extends React.Component<Props, State> {
      * @param id dataset ID
      */
     setDataset(id: number) {
-        this.setState( {dataset_id: id} );
-        fetchTaxaminerScatterplot(this.props.assembly_id, this.state.dataset_id, this.state.userID, this.state.token)
-		.then(data => {
-            const main_data = {}
-			this.setState( {scatter_points: data}, () => {
-                for (const chunk of this.state.scatter_points) {
-                    for (const row of chunk) {
-                        const key = row.g_name as string
-                        // @ts-ignore
-                        main_data[key] = row
+        this.setState({is_loading: true})
+        this.setState({dataset_id: id}, () => {
+            fetchTaxaminerScatterplot(this.props.assembly_id, id, this.state.userID, this.state.token)
+		    .then(data => {
+                const main_data = {}
+			    this.setState( {scatter_points: data}, () => {
+                    for (const chunk of this.state.scatter_points) {
+                        for (const row of chunk) {
+                            const key = row.g_name as string
+                            // @ts-ignore
+                            main_data[key] = row
+                        }
                     }
-                }
-                this.setState({data: main_data})
+                    this.setState({data: main_data})
 
-                // Infer fields from first row
-                if (main_data) {
-                    // @ts-ignore
-                    const proto_row = main_data[Object.keys(main_data)[0]]
-                    this.setState( { fields: Object.keys(proto_row) })
-                }
-                const gene_options: { label: string; value: string; }[] = []
-                Object.keys(data).map((item: string) => (
-                    gene_options.push( { "label": item, "value": item } )
-                ))
-                this.setState({g_options: gene_options})
-            });
-		})
-        .finally(() => {
-            console.log("Finished loading")
-            this.setState({is_loading: false})
+                    // Infer fields from first row
+                    if (main_data) {
+                        // @ts-ignore
+                        const proto_row = main_data[Object.keys(main_data)[0]]
+                        this.setState( { fields: Object.keys(proto_row) })
+                    }
+
+                    const gene_options: { label: string; value: string; }[] = []
+                    Object.keys(main_data).map((item: string) => (
+                        gene_options.push( { "label": item, "value": item } )
+                    ))
+                    this.setState({g_options: gene_options})
+                });
+		    })
+            .finally(() => {
+                console.log("Finished loading")
+                this.setState({is_loading: false})
+            })
         })
     }
 
@@ -119,38 +125,9 @@ class TaxaminerDashboard extends React.Component<Props, State> {
 	 * Call API on component mount to main table data
 	 */
 	componentDidMount() {
-    
-        fetchTaxaminerScatterplot(this.props.assembly_id, this.state.dataset_id, this.state.userID, this.state.token)
-		.then(data => {
-            const main_data = {}
-			this.setState( {scatter_points: data}, () => {
-                for (const chunk of this.state.scatter_points) {
-                    for (const row of chunk) {
-                        const key = row.g_name as string
-                        // @ts-ignore
-                        main_data[key] = row
-                    }
-                }
-                this.setState({data: main_data})
-
-                // Infer fields from first row
-                if (main_data) {
-                    // @ts-ignore
-                    const proto_row = main_data[Object.keys(main_data)[0]]
-                    this.setState( { fields: Object.keys(proto_row) })
-                }
-
-                const gene_options: { label: string; value: string; }[] = []
-                Object.keys(main_data).map((item: string) => (
-                    gene_options.push( { "label": item, "value": item } )
-                ))
-                this.setState({g_options: gene_options})
-            });
-		})
-        .finally(() => {
-            console.log("Finished loading")
-            this.setState({is_loading: false})
-        })
+        // this.setState({analysis: this.props.analyses[0]})
+        // const my_id = this.props.analyses[0].analysisID
+        // this.setDataset(my_id)
 	}
 
     /**
@@ -235,11 +212,16 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 <Col>
                      <Tabs>
                         <Tab eventKey="Overview" title="Overview">
+                            <DataSetSelector
+                            dataset_changed={this.setDataset}
+                            analyses={this.props.analyses}
+                            />
                             <DataSetMeta
                             assemblyID={this.props.assembly_id}
                             dataset_id={this.state.dataset_id}
                             userID={this.state.userID}
-                            token={this.state.token}/>
+                            token={this.state.token}
+                            metadata={this.state.analysis}/>
                             <SelectionView
                             is_loading={this.state.is_loading}
                             row={this.state.selected_row}
