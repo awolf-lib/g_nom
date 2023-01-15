@@ -7,9 +7,11 @@ import Col from "react-bootstrap/esm/Col";
 import Accordion from 'react-bootstrap/Accordion';
 import Button from 'react-bootstrap/Button';
 import CustomOutput from './custom_output';
-import { Modal, Placeholder } from 'react-bootstrap';
+import { Badge, Modal, OverlayTrigger, Placeholder, Tab, Tabs, Tooltip } from 'react-bootstrap';
 import MultiSelectFields from './MultiSelectFields'
 import { fetchTaxaminerSettings, updateTaxaminerSettings } from '../../../../../../../../api';
+
+import fields_glossary from "./field_options.json"
 
 interface Props {
   row: any
@@ -20,12 +22,15 @@ interface Props {
   analysisID: number
   token: string
   is_loading: boolean
+  passCustomFields: any
 }
 
 interface State {
   custom_fields: any
   show_field_modal: boolean
   options: any
+  has_loaded: boolean
+  grouped_fields: any
 }
 
 /**
@@ -34,28 +39,9 @@ interface State {
 class SelectionView extends React.Component<Props, State> {
   constructor(props: any){
 		super(props);
-    const options = [{ value:'One', selected:true }, { value: 'Two' }, { value:'Three' }]
-    this.state = { custom_fields: [], show_field_modal: false, options: options}
+    const options = [{ value  :'One', selected:true }, { value: 'Two' }, { value:'Three' }]
+    this.state = { custom_fields: [], show_field_modal: false, options: options, grouped_fields: {}, has_loaded: false}
 	}
-
-  /**
-   * Decide Update behaviour. We mainly use this to prevent infinte loops in convertFieldsOptions()
-   * @param nextProps next Props
-   * @param nextState next State
-   * @param nextContext next Context
-   * @returns Boolean
-   */
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<any>, nextContext: any): boolean {
-    if (nextProps.row != this.props.row || nextProps.is_loading != this.props.is_loading) {
-      return true
-    } else if (nextState.options != this.state.options || nextState.show_field_modal != this.state.show_field_modal || nextState.custom_fields != this.state.custom_fields) {
-      return true
-    } else if (nextProps.analysisID != this.props.analysisID) {
-      return true
-    } else {
-      return false
-    }
-  }
 
   /**
    * 
@@ -69,11 +55,12 @@ class SelectionView extends React.Component<Props, State> {
     } else if(prevProps.analysisID != this.props.analysisID) {
       fetchTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.props.userID, this.props.token)
       .then((data: any) => {
-        if (data && data != "[]") {
-          this.setState({custom_fields: data})
-        } else {
-          this.setState({custom_fields: []})
+        if (data === undefined) {
+          data = []
         }
+        console.log(data)
+        this.setState( {custom_fields: data} )
+        this.props.passCustomFields(data)
       })
     }
   }
@@ -83,10 +70,45 @@ class SelectionView extends React.Component<Props, State> {
    */
   convertFieldsOptions() {
     let options: { label: string; value: string; }[] = []
-    Object.keys(this.props.row).map((item: string) => (
-      options.push( { "label": item, "value": item } )
-    ))
-    this.setState({ options: options})
+    const ids = new Set()
+    const grouped_fields: any = {}
+    // available row features
+    const row_keys = Object.keys(this.props.row)
+    options = row_keys.map((each: string) => {
+        // match against glossary
+        for (const field of fields_glossary) {
+            // exact match
+            if (each as string == field.value) {
+              return { label: (field.label), value: each, tooltip: field.tooltip }
+            } else {
+              // match with suffix (c_cov_...)
+              const re = new RegExp(field.value + ".*");
+              if (re.test(each)) {
+                  ids.add(each.charAt(each.length - 1))
+                  const new_id = each.charAt(each.length - 1)
+                  // eslint-disable-next-line no-prototype-builtins
+                  if (!grouped_fields.hasOwnProperty(new_id)) {
+                    const prev = grouped_fields
+                    prev[new_id] = [{ label: (field.label + " (" + each + ")"), value: each, tooltip: field.tooltip }]
+                    this.setState({ grouped_fields: prev})
+                  // or append
+                  } else {
+                    const prev = grouped_fields
+                    const prev_list = prev[new_id]
+                    prev_list.push({ label: (field.label + " (" + each + ")"), value: each, tooltip: field.tooltip })
+                  }
+                  return { label: (field.label + " (" + each + ")"), value: each, tooltip: field.tooltip }
+              }
+            }
+        }
+        return { label: each, value: each }
+    })
+
+    // shuffle categories
+    for (const my_id of Array.from(ids)) {
+      options.unshift({ label: "(Group) ⇒ " + my_id as string, value: my_id as string })
+    }
+    this.setState({options: options, grouped_fields: grouped_fields})
   }
 
   /**
@@ -112,28 +134,54 @@ class SelectionView extends React.Component<Props, State> {
    * @param fields JSON
    */
   handleFieldsChange = (fields: any) => {
-    this.setState({ custom_fields: fields})
+    const my_fields = new Set()
+    for (const field of fields) {
+      // filter groups
+      if ((field.label as string).startsWith("(Group)")){
+        for (const candidate_field of this.state.options) {
+          if ((candidate_field.value as string).endsWith(field.value) && !(candidate_field.label as string).startsWith("(Group)")) {
+            my_fields.add(candidate_field)
+          }
+        }
+      } else {
+        // append new field
+        my_fields.add(field)
+      }
+    }
+    this.setState({ custom_fields: Array.from(my_fields)})
+    this.props.passCustomFields(my_fields)
   }
 
   render() {
     return(
       <Card className="m-2">
         <Card.Body>
-          <Card.Title>
-              Selected Gene
+          <Card.Title className='d-flex justify-content-between align-items-center'>
+            Selected Gene { (this.props.row.plot_label === "Unassigned") && (<Badge bg="warning" className='me-auto sm'>Unassigned</Badge>)}
+            <OverlayTrigger
+              overlay={
+                <Tooltip id={'tooltip-custom-fields'}>
+                  Select additional columns generated by taXaminer to be displayed below
+                </Tooltip>
+              }>
+            <Button className='m-2 mr-auto sm' onClick={this.showModal} type="submit">
+              <span className='bi bi-list-ul m-2'/>Manage custom fields
+            </Button>
+            </OverlayTrigger>
           </Card.Title>
-          { (this.props.is_loading) && (
-            <Placeholder as="p" animation="glow">
+          <Tabs defaultActiveKey="fields-tab">
+            <Tab title="Fields" eventKey="fields-tab">
+              { (this.props.is_loading) && (
+              <Placeholder as="p" animation="glow">
               <Placeholder xs={8}/>
               <Placeholder xs={6}/>
               <Placeholder xs={12}/>
-            </Placeholder>
-          )}
-
-          { (this.props.is_loading === false) && (
+              </Placeholder>
+              )}
+              { (this.props.is_loading === false) && (
               <>
-                <Row>
-            <Col className="md-2">
+              <Row>
+              <Col md="auto">
               <InputGroup className="m-2">
                 <InputGroup.Text id="gene-info-name">Gene Name</InputGroup.Text>
                   <Form.Control
@@ -144,33 +192,54 @@ class SelectionView extends React.Component<Props, State> {
                   />
               </InputGroup>
             </Col>
-            <Col className="md-2">
-              <InputGroup className="m-2">
-                <InputGroup.Text id="gene-label">Label</InputGroup.Text>
+            <Col md="auto">
+                <InputGroup className="m-2">
+                  <InputGroup.Text id="contig">Contig</InputGroup.Text>
                   <Form.Control
                     placeholder="Selected a Gene to get started"
                     contentEditable={false}
-                    value={this.props.row.plot_label}
-                    onChange={() => false}
-                    />
-                </InputGroup>
-            </Col>
-          </Row>
-          <Row>
-            <Col className="md-2" xs={8}>
-              <InputGroup className="m-2">
-                <InputGroup.Text id="best-hit">Best hit</InputGroup.Text>
-                  <Form.Control
-                    placeholder="Selected a Gene to get started"
-                    contentEditable={false}
-                    value={this.props.row.best_hit}
+                    value={this.props.row.c_name}
                     onChange={() => false}
                   />
                 </InputGroup>
+              </Col>
+          </Row>
+          <Row>
+            <Col md="auto" xs={4}>
+                <InputGroup className="m-2">
+                  <InputGroup.Text id="gene-label">Label</InputGroup.Text>
+                    <Form.Control
+                      placeholder="Selected a Gene to get started"
+                      contentEditable={false}
+                      value={this.props.row.plot_label}
+                      onChange={() => false}
+                    />
+                  </InputGroup>
             </Col>
-            <Col className='md-2'>
+            <Col md="auto">
+                <InputGroup className="m-2">
+                  <InputGroup.Text id="assignment">Taxon assignment</InputGroup.Text>
+                    <Form.Control
+                      placeholder="Selected a Gene to get started"
+                      contentEditable={false}
+                      value={this.props.row.taxon_assignment}
+                      onChange={() => false}
+                    />
+                </InputGroup>
+              </Col>
+          </Row>
+          <Row>
+            <Col md="auto">
               <InputGroup className="m-2">
-                  <InputGroup.Text id="ncbi-id">ID</InputGroup.Text>
+                  <InputGroup.Text id="ncbi-id">Best hit</InputGroup.Text>
+                    <Form.Control
+                      placeholder="None"
+                      contentEditable={false}
+                      value={this.props.row.best_hit}
+                      onChange={() => false}
+                      className="w-25"
+                    />
+                    <InputGroup.Text id="ncbi-id">NCBI ID</InputGroup.Text>
                     <Form.Control
                     placeholder="None"
                     contentEditable={false}
@@ -184,35 +253,6 @@ class SelectionView extends React.Component<Props, State> {
                       <span className="bi bi-box-arrow-up-right"></span>
                     </Button>
                 </InputGroup>
-              </Col>
-            </Row>
-            <Row>
-              <Col className="md-2">
-                <InputGroup className="m-2">
-                  <InputGroup.Text id="contig">Contig</InputGroup.Text>
-                  <Form.Control
-                    placeholder="Selected a Gene to get started"
-                    contentEditable={false}
-                    value={this.props.row.c_name}
-                    onChange={() => false}
-                  />
-                </InputGroup>
-              </Col>
-              <Col className="md-2">
-                <InputGroup className="m-2">
-                  <InputGroup.Text id="e-value">e-value</InputGroup.Text>
-                    <Form.Control
-                      placeholder="Selected a Gene to get started"
-                      contentEditable={false}
-                      value={this.props.row.bh_evalue}
-                      onChange={() => false}
-                    />
-                </InputGroup>
-              </Col>
-              <Col className='md-2' xs={3}> 
-                <Button className='m-2' onClick={this.showModal}>
-                  <span className='bi bi-list-ul m-2'/>Fields
-                </Button>
               </Col>
             </Row>
             <Modal show={this.state.show_field_modal} handleClose={this.hideModal}>
@@ -230,51 +270,55 @@ class SelectionView extends React.Component<Props, State> {
               </Modal.Footer>
             </Modal>
             <Row>
-              { // Load custom fields from prop and render additional UI elements
+            { // Load custom fields from prop and render additional UI elements
               this.state.custom_fields.map((item: any) => (
-                <CustomOutput col={item.value} row={this.props.row} name={item.label}/>
+                <CustomOutput col={item.value} row={this.props.row} name={item.label} tooltip={item.tooltip}/>
               ))}
             </Row>
-              </>
-            )
-          }
-          
-            <Row>
-              <Col className="m-2">
-                <Accordion>
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>Raw JSON</Accordion.Header>
-                    <Accordion.Body>
-                      <pre className='pre-scrollable'>
+            </>
+            )}
+          </Tab>
+          <Tab title="Raw JSON" eventKey="json-tab">
+              <Row>
+                <Col className="m-2">
+                  <Accordion>
+                    <Accordion.Item eventKey="0">
+                      <Accordion.Header>Raw JSON</Accordion.Header>
+                      <Accordion.Body>
+                        <pre className='pre-scrollable'>
                         <code>
                           {JSON.stringify(this.props.row, null, 2)}
                         </code>
-                      </pre>
+                        </pre>
+                      </Accordion.Body>
+                    </Accordion.Item>   
+                  </Accordion>
+                </Col>
+              </Row>
+            </Tab>
+            <Tab title="Amino Acid Sequence" eventKey="as-tab">
+              <Row>
+                <Col className="m-2">
+                  <Accordion>
+                    <Accordion.Item eventKey="0">
+                      <Accordion.Header>Amino Acid Sequence</Accordion.Header>
+                        <Accordion.Body>
+                          <div className='md-2'>
+                          <pre className='pre-scrollable m-2'>
+                            <code>
+                            {this.props.aa_seq}
+                            </code>
+                          </pre>
+                        </div>
                     </Accordion.Body>
                   </Accordion.Item>   
                 </Accordion>
               </Col>
             </Row>
-            <Row>
-              <Col className="m-2">
-                <Accordion>
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>Amino Acid Sequence</Accordion.Header>
-                    <Accordion.Body>
-                      <div className='md-2'>
-                      <pre className='pre-scrollable m-2'>
-                        <code>
-                          {this.props.aa_seq}
-                        </code>
-                      </pre>
-                      </div>
-                    </Accordion.Body>
-                  </Accordion.Item>   
-                </Accordion>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
+            </Tab>
+          </Tabs>
+        </Card.Body>
+      </Card>
       )
   }
 }

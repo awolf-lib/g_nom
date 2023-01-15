@@ -3,11 +3,10 @@ import Plot from 'react-plotly.js';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
-import { Figure, InputGroup } from 'react-bootstrap';
+import { InputGroup } from 'react-bootstrap';
 import Select from 'react-select';
-import { fetchTaxaminerScatterplot } from '../../../../../../../api';
 
-const colors = require("./colors.json")
+import colors  from "./colors.json"
 
 interface Props {
 	assembly_id: number
@@ -15,7 +14,7 @@ interface Props {
 	sendClick: any
 	sendCameraData: any
 	passScatterData: any
-	e_value: any
+	e_value: number
 	show_unassigned: boolean
 	userID: number
 	token: string
@@ -45,7 +44,7 @@ interface State {
  * Main Scatterplot Component
  */
 class Scatter3D extends Component<Props, State> {
-	constructor(props: any){
+	constructor(props: Props){
 		super(props);
 		this.state ={ 
 			data: [] , // raw JSON data
@@ -68,18 +67,11 @@ class Scatter3D extends Component<Props, State> {
 	}
 
 	/**
-	 * Call API on component mount to load plot data
-	 */
-	componentDidMount() {
-		console.log(".")
-	}
-
-	/**
 	 * Reload plot if dataset has changed
 	 * @param prev previous state
 	 */
-	componentDidUpdate(prev: any) {
-		if (prev.scatter_data != this.props.scatter_data) {
+	componentDidUpdate(prev: Props): void {
+		if (prev.scatter_data !== this.props.scatter_data) {
 			console.log(".")
 			this.set_auto_size(this.props.scatter_data);
 			this.setState( { marker_size: this.state.auto_size_px})
@@ -99,7 +91,7 @@ class Scatter3D extends Component<Props, State> {
 	 * @param nextContext new context
 	 * @returns boolean
 	 */
-	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<any>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<any>): boolean {
 		// New dataset
 		if (nextProps.scatter_data !== this.props.scatter_data) {
 			return true
@@ -122,7 +114,7 @@ class Scatter3D extends Component<Props, State> {
 	 * Pass camera data to parent to update PCA Plot
 	 * @param e event data
 	 */
-	passCameraData(e: any) {
+	passCameraData(e: any): void {
 		if(e['scene.camera'] === undefined) {
 			return
 		}
@@ -148,8 +140,8 @@ class Scatter3D extends Component<Props, State> {
 	 * A dot in the plot was clicked => pass to parent
 	 * @param g_name gene name
 	 */
-    sendClick(g_name: string){
-		if (g_name != this.state.last_click) {
+    sendClick(g_name: string): void{
+		if (g_name !== this.state.last_click) {
 			this.setState({last_click: g_name})
 			this.props.sendClick([g_name]);
 		}
@@ -159,7 +151,7 @@ class Scatter3D extends Component<Props, State> {
 	 * Set colors
 	 * @param key pallete's name 
 	 */
-	set_color_palette(key: string){
+	set_color_palette(key: string): void{
 		this.setState({color_palette: key}, () => {
 			this.build_plot()
 		})
@@ -170,7 +162,7 @@ class Scatter3D extends Component<Props, State> {
 	 * Fire if the size slider was changed
 	 * @param size value of the slider
 	 */
-	set_manual_size(size: number) {
+	set_manual_size(size: number): void {
 		if (this.state.auto_size === false) {
 			this.setState( { marker_size: size }, () => {
 				this.build_plot()
@@ -182,13 +174,13 @@ class Scatter3D extends Component<Props, State> {
 	/**
 	 * Set automatic marker size
 	 */
-	 set_auto_size(data: any){
+	set_auto_size(data: any): void{
 		if (data === undefined) {
 			data = this.props.scatter_data
 		}
 		let total_points = 0;
 		// overall size of all trace arrays
-		for (var trace of data) {
+		for (const trace of data) {
 			total_points = total_points + trace.length
 		}
 		// this was chosen arbitrarily
@@ -229,10 +221,10 @@ class Scatter3D extends Component<Props, State> {
 	 * This is tied to onRestyle to avoid desync with onClick() events
 	 * @param e restyle event
 	 */
-	updateLegendSelection(e: any, ) {
-		let visible: string[] = []
+	updateLegendSelection(e: any): void {
+		const visible: string[] = []
 
-		var plot: any = document.getElementById('scatter3d')
+		const plot: any = document.getElementById('scatter3d')
 		const legendonly = plot.data.filter((trace: any) => trace.visible === "legendonly")
 		if (legendonly !== this.state.legendonly) {
 			this.setState({legendonly: legendonly})
@@ -245,8 +237,8 @@ class Scatter3D extends Component<Props, State> {
 	 * Save the plot before rendering component 
 	 * => impedes the plot from reseting on legend clicks
 	 */
-	legendClick(e: any) {
-		var plot: any = document.getElementById('scatter3d')
+	legendClick(e: any): boolean {
+		const plot: any = document.getElementById('scatter3d')
 		this.setState({figure: plot}, () => {
 			this.build_plot()
 		})
@@ -261,7 +253,7 @@ class Scatter3D extends Component<Props, State> {
 	 */
 	transformData (data: any[]) {
 		const searched = this.props.g_searched
-		const occurrences = {Unassigned: 0}
+		const occurrences: {[index: string]: number} = {Unassigned: 0}
 		// Avoid NoneType Exceptions
 		if (data == null) {
 			return []
@@ -269,15 +261,15 @@ class Scatter3D extends Component<Props, State> {
 
         const traces: any[] = []
         data.map(each => {
-		    const x : string[] = [];
-		    const y : string[] = [];
+			const x : string[] = [];
+			const y : string[] = [];
             const z : string[] = [];
             let label = "";
             const my_customdata : any = [];
-            let chunk = each;
+            const chunk = each;
 
 			// push 3D coordinates in arrays accordingly
-		    chunk.map((each: { [x: string]: string; }) => {
+			chunk.map((each: { [x: string]: string; }) => {
 
 				// filter by e-value
 				if(parseFloat(each['bh_evalue']) < this.props.e_value) {
@@ -288,7 +280,7 @@ class Scatter3D extends Component<Props, State> {
 					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
 				} 
 				// Include unassigned data points (which usually don't have an e-value)
-				else if(this.props.show_unassigned == true && each['plot_label'] === 'Unassigned') {
+				else if(this.props.show_unassigned === true && each['plot_label'] === 'Unassigned') {
 					x.push(each['Dim.1'])
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
@@ -297,15 +289,12 @@ class Scatter3D extends Component<Props, State> {
 				} else {
 					//console.log(each['g_name'])
 				}
-				// @ts-ignore
 				if (occurrences[each['plot_label']] !== undefined) {
-					// @ts-ignore
 					occurrences[each['plot_label']] = occurrences[each['plot_label']] + 1
 				} else {
-					// @ts-ignore
 					occurrences[each['plot_label']] = 1
 				}
-		    })
+			})
 			// Setup the plot trace
 			let marker = {}
 			if (searched.length > 0) {
@@ -326,7 +315,6 @@ class Scatter3D extends Component<Props, State> {
                 x: x,
                 y: y,
                 z: z,
-                // @ts-ignore
                 name: label + ` (${occurrences[label]})`,
                 text: label,
 				marker: marker,
@@ -338,7 +326,7 @@ class Scatter3D extends Component<Props, State> {
         })
 
 		// setup traces for selected / searched dots
-		let searched_rows: any[] = []
+		const searched_rows: any[] = []
 
 		data.map(each => {
 			const chunk = each
@@ -354,7 +342,7 @@ class Scatter3D extends Component<Props, State> {
         let label = "";
         const my_customdata : any = [];
 
-		searched_rows.map(each => {
+		searched_rows.map((each: any) => {
 
 			// push 3D coordinates in arrays accordingly
 			x.push(each['Dim.1'])
@@ -383,7 +371,6 @@ class Scatter3D extends Component<Props, State> {
 		}
 		traces.push(trace)
 
-		// @ts-ignore
 		// Custom sort function, sort by number of occurences, decreasing
 		traces.sort(function(a, b){return occurrences[b.text] - occurrences[a.text]})
 		return traces
@@ -393,15 +380,16 @@ class Scatter3D extends Component<Props, State> {
 	 * Build the 3D scatterplot
 	 * @returns Plotly Plot as React component
 	 */
-	build_plot() {
+	build_plot(): void {
 		// store figure components
 		console.log("Rebuilding plot")
+		const palettes: {[key: string]: any} = colors.palettes
 		const new_data = this.transformData(this.props.scatter_data)
 		const new_layout = {autosize: true, showlegend: true, uirevision: 1,
-			// @ts-ignore
+
 			// overrides are incomplete here, ignore for now
 			legend: {itemsizing: 'constant'},
-			colorway : colors.palettes[this.state.color_palette]
+			colorway : palettes[this.state.color_palette]
 		}
 		const new_config = {scrollZoom: true}
 		this.setState({figure: {data: new_data, layout: new_layout, config: new_config}})
@@ -424,7 +412,7 @@ class Scatter3D extends Component<Props, State> {
 				// onClick={(e: any) => console.log(e)}
 				onRelayout={(e: any) => this.passCameraData(e)}
 				useResizeHandler = {true}
-    			style = {{width: "100%", height: 800}}
+				style = {{width: "100%", height: 800}}
 				onRestyle={(e: any) => this.updateLegendSelection(e)}
 				revision={0}
 				onInitialized={(figure: any) => this.setState(figure)}

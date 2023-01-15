@@ -19,7 +19,7 @@ interface State {
 
 // Filter Tab
 class FilterUI extends React.Component<Props, State> {
-    constructor(props: any){
+    constructor(props: Props){
 		super(props);
 		this.state ={
             e_value: 1.0,
@@ -33,7 +33,7 @@ class FilterUI extends React.Component<Props, State> {
      * Calculate the e-value from slider input and send it's value up
      * @param slider_value Value of UI slider
      */
-    setEValue(slider_value: any) {
+    setEValue(slider_value: any): void {
         console.log(this.state)
         const new_value = Math.E ** (-slider_value)
         this.setState({e_value: new_value})
@@ -47,8 +47,8 @@ class FilterUI extends React.Component<Props, State> {
      * Pass searched IDs up
      * @param e Edit event of the dropdown selector
      */
-    passSearch(e: any) {
-        let new_keys: string[] = []
+    passSearch(e: any): void {
+        const new_keys: string[] = []
         // extract IDs
         e.forEach((element: any) => {
           new_keys.push(element.value)

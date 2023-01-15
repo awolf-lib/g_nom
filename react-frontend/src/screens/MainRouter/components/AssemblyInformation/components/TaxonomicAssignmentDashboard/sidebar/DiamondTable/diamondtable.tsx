@@ -1,10 +1,6 @@
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-// eslint-disable @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import BootstrapTable from "react-bootstrap-table-next";
-// @ts-ignore
 import paginationFactory from 'react-bootstrap-table2-paginator';
-// @ts-ignore
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 
 import { Modal } from 'react-bootstrap';
@@ -28,7 +24,7 @@ interface Props {
 
 
 class Table extends Component<Props, any> {
-    constructor(props: any){
+    constructor(props: Props){
 		super(props);
 		this.state ={ table_data: [], key: "", loading: false, custom_fields: [], show_field_modal: false}
 	}
@@ -36,14 +32,14 @@ class Table extends Component<Props, any> {
     /**
     * Toogle modal open
     */
-    showModal = () => {
+    showModal = (): void => {
         this.setState({ show_field_modal: true });
     };
 
     /**
     * Toggle modal closed
     */
-    hideModal = () => {
+    hideModal = (): void => {
         this.setState({ show_field_modal: false });
     };
 
@@ -51,17 +47,16 @@ class Table extends Component<Props, any> {
     * Selection passed upwards
     * @param fields JSON
     */
-    handleFieldsChange = (fields: any) => {
+    handleFieldsChange = (fields: any): void => {
         this.setState({ custom_fields: fields})
     }
 
 
     // Props of parent element changed (=> selected row)
-    componentDidUpdate(prev_props: any) {
+    componentDidUpdate(prev_props: any): void {
         if (prev_props.row !== this.props.row) {
             this.setState({loading: true})
-            // fetch the table data
-		    
+            // fetch the table data 
             fetchTaxaminerDiamond(this.props.assembly_id, this.props.dataset_id, this.props.row.g_name, this.props.userID, this.props.token)
             .then((data: any) => {
                 this.setState({table_data : data})
@@ -133,7 +128,7 @@ class Table extends Component<Props, any> {
                 keyField="id" 
                 data={this.state.table_data} 
                 columns={this.columns}
-                pagination={ paginationFactory() }
+                pagination={ paginationFactory({}) }
                 filter={ filterFactory() }
                 />
                 </div>
@@ -141,6 +136,6 @@ class Table extends Component<Props, any> {
         </>
       );
   }
-};
+}
 
 export default Table;

@@ -10,7 +10,7 @@ import SelectionTable from './Components/SelectionTable';
 import ColumnSelector from './Components/ColumnSelector'
 import { fetchTaxaminerMain } from '../../../../../../../api';
 
-const fields_glossary: any[] = require("./Components/field_options.json")
+import fields_glossary from "./Components/field_options.json"
 
 
 interface Props {
@@ -23,6 +23,7 @@ interface Props {
     token: string
     assemblyID: number
     row: any
+    customFields: any[]
 }
   
 interface State {
@@ -146,6 +147,7 @@ class TableView extends React.Component<Props, State> {
                             <ColumnSelector
                             passCols = {this.setTableCols}
                             options={this.state.options}
+                            customFields={this.props.customFields}
                             />
                         </Row>
                     </Col>

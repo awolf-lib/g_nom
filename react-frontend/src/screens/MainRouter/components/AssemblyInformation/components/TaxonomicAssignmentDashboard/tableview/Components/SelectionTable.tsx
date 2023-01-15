@@ -1,10 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 // eslint-disable @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import BootstrapTable from "react-bootstrap-table-next";
-// @ts-ignore
 import paginationFactory from 'react-bootstrap-table2-paginator';
-// @ts-ignore
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
 import React, { Component } from 'react';
 import { Row, Col } from 'react-bootstrap';
@@ -50,7 +48,7 @@ class SelectionTable extends Component<any, any> {
     * Selection passed upwards
     * @param fields JSON
     */
-    handleFieldsChange = (fields: any) => {
+    handleFieldsChange = (fields: any): any => {
         this.setState({ custom_fields: fields})
     }
 
@@ -59,7 +57,7 @@ class SelectionTable extends Component<any, any> {
      */
     componentDidMount() {
         // also update table cols
-        let new_cols: string[] = []
+        const new_cols: string[] = []
         this.props.col_keys.forEach((element: any) => {
             new_cols.push((rich_cols as any)[element['value']])
         });
@@ -70,19 +68,20 @@ class SelectionTable extends Component<any, any> {
      * Props of parent element changed (=> selected row)
      * @param prev_props previous selection
      */
-    componentDidUpdate(prev_props: any) {
+    componentDidUpdate(prev_props: any): void {
         const new_rows = []
         const text_cols = ["c_name", "fasta_header", "corrected_lca", "best_hit"]
 
         if (prev_props !== this.props) {
-            for (let key of this.props.keys) {
+            for (const key of this.props.keys) {
                 new_rows.push(this.props.master_data[key])
             }
             this.setState({table_data: new_rows})
 
             // also update table cols
-            let new_cols: any[] = []
+            const new_cols: any[] = []
             this.props.col_keys.forEach((element: any) => {
+                // eslint-disable-next-line no-prototype-builtins
                 if (rich_cols.hasOwnProperty(element['value'])) {
                     new_cols.push((rich_cols as any)[element['value']])
                 } else {
@@ -96,17 +95,16 @@ class SelectionTable extends Component<any, any> {
                     }
                     // either allow sorting by value or searching by string
                     if (text_cols.includes(element.value)) {
+                        //@ts-ignore
                        constructed_col.filter = textFilter()
                     } else {
-                        // @ts-ignore
+                        //@ts-ignore
                         constructed_col.sortFunc = numberSort
                     }
                     new_cols.push(constructed_col)
                 }
             });
-
             this.setState({cols: new_cols})
-            // console.log(this.state.cols)
         }
     }
 
@@ -130,12 +128,11 @@ class SelectionTable extends Component<any, any> {
             <Row className='mt-2'>
                 <div style={{ overflow: "auto" }}>
                 <BootstrapTable
-                className="md-2"
                 keyField="id" 
                 data={this.state.table_data} 
                 columns={this.state.cols}
                 rowEvents={this.rowEvents}
-                pagination={ paginationFactory() }
+                pagination={ paginationFactory({}) }
                 filter={ filterFactory() }
                 />
                 </div>
@@ -143,6 +140,6 @@ class SelectionTable extends Component<any, any> {
         </>
       );
   }
-};
+}
 
 export default SelectionTable;

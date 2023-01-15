@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import Plot from 'react-plotly.js';
-import { fetchTaxaminerScatterplot } from '../../../../../../../../api';
-const colors = require("./colors.json");
+import colors from "./colors.json";
 
 interface Props {
 	datasetID: number
@@ -36,12 +35,6 @@ class ScatterMatrix extends Component<Props, any> {
         this.sendClick = this.sendClick.bind(this);
 	}
 
-	/**
-	 * Call API on component mount to load plot data
-	 */
-	componentDidMount() {
-		console.log(".")
-	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
 		if (prevProps.scatter_points != this.props.scatter_data) {
@@ -54,7 +47,7 @@ class ScatterMatrix extends Component<Props, any> {
 	 * A dot in the plot was clicked => pass to parent
 	 * @param e Plot OnClick() event
 	 */
-    sendClick(e: any){
+    sendClick(e: any): void{
 		this.props.sendClick(e.g_name);
     }
 
@@ -63,7 +56,7 @@ class ScatterMatrix extends Component<Props, any> {
 	 * Manually updating the uirevision state blocks plot resets
 	 * @returns True (as required by OnLegendClick() => )
 	 */
-	lock_uirevision(){
+	lock_uirevision(): boolean{
 		this.setState({ ui_revision: "true" })
 		return(true)
 	}
@@ -71,10 +64,10 @@ class ScatterMatrix extends Component<Props, any> {
 	/**
 	 * Set automatic marker size
 	 */
-	set_auto_size(data: any){
+	set_auto_size(data: any): void{
 		let total_points = 0;
 		// overall size of all trace arrays
-		for (var trace of data) {
+		for (const trace of data) {
 			total_points = total_points + trace.length
 		}
 		// this was chosen arbitrarily
@@ -111,7 +104,7 @@ class ScatterMatrix extends Component<Props, any> {
 	 * @returns list of traces
 	 */
 	transformData (data: any[], legendonly: any[]) {
-		let legendonly_names: string[] = []
+		const legendonly_names: string[] = []
 
 		legendonly.forEach((dot: any) => {
 			legendonly_names.push(dot.name)
@@ -124,16 +117,16 @@ class ScatterMatrix extends Component<Props, any> {
 
         const traces: any[] = []
         data.map(each => {
-		    const x : string[] = [];
-		    const y : string[] = [];
+			const x : string[] = [];
+			const y : string[] = [];
             const z : string[] = [];
             let label = "";
 			let gene_name = "";
             const my_customdata : any = [];
-            let chunk = each;
+            const chunk = each;
 
 			// push 3D coordinates in arrays accordingly
-		    chunk.map((each: { [x: string]: string; }) => {
+			chunk.map((each: { [x: string]: string; }) => {
                 // filter by e-value
 				if(parseFloat(each['bh_evalue']) < this.props.e_value) {
 					x.push(each['Dim.1'])
@@ -153,7 +146,7 @@ class ScatterMatrix extends Component<Props, any> {
 				} else {
 					//console.log(each['g_name'])
 				}
-		    })
+			})
 
 			// Setup the plot trace
 			let visible = undefined
@@ -189,8 +182,8 @@ class ScatterMatrix extends Component<Props, any> {
 	 * Handle Selection events
 	 * @param points plotly points
 	 */
-	handleSelection(points: any) {
-		let selected_ids: string[] = []
+	handleSelection(points: any): void {
+		const selected_ids: string[] = []
 
 		points.map((each: any) => {
 			selected_ids.push(each.customdata[1])
@@ -214,6 +207,7 @@ class ScatterMatrix extends Component<Props, any> {
 						autosize: true,
 						showlegend: true,
 						uirevision: this.state.ui_revision,
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 						// @ts-ignore
 						// overrides are incomplete here, ignore for now
 						legend: {itemsizing: 'constant', orientation: "h", y: -0.25,
@@ -224,6 +218,8 @@ class ScatterMatrix extends Component<Props, any> {
                         yaxis2:this.set_axis(),
                         yaxis3:this.set_axis(),
                         yaxis4:this.set_axis()},
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						//@ts-ignore
 						colorway : colors.palettes[this.props.scatter_data.colors]
 						}}
                     style = {{width: "100%", height: 700}}

@@ -5,7 +5,7 @@ import { Container } from 'react-bootstrap';
 import Row from "react-bootstrap/esm/Row";
 
 // possible options
-const options = require("./diamond_cols.json")
+import options from "./diamond_cols.json"
 const animatedComponents = makeAnimated();
 
 /**

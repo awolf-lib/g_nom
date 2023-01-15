@@ -34,7 +34,7 @@ function SelectionModeSelector(props: Props) {
     // Create file blob
     fetchTaxaminerDownload(props.assemblyID, props.analysisID, "fasta", Array.from(props.selection), props.userID, props.token)
     .then((data: any) => {
-      var a = document.createElement("a");
+      const a = document.createElement("a");
       a.href = window.URL.createObjectURL(data);
       a.download = "selection." + type;
       a.click();
@@ -49,9 +49,9 @@ function SelectionModeSelector(props: Props) {
             <Card.Body>
               <Card.Title>Edit Mode</Card.Title>
               <ButtonGroup className='md-2' style={{width: "100%"}}>
-                <Button variant="success" onClick={() => SetMode('add')} disabled={mode == 'add'} className='btn-block'>+</Button>
-                <Button variant="secondary" onClick={() => SetMode('neutral')} disabled={mode == 'neutral' } className='btn-block'>o</Button>
-                <Button variant="danger" onClick={() => SetMode('remove')} disabled={mode == 'remove'} className='btn-block'>-</Button>
+                <Button variant="success" onClick={() => SetMode('add')} disabled={mode === 'add'} className='btn-block'>+</Button>
+                <Button variant="secondary" onClick={() => SetMode('neutral')} disabled={mode === 'neutral' } className='btn-block'>o</Button>
+                <Button variant="danger" onClick={() => SetMode('remove')} disabled={mode === 'remove'} className='btn-block'>-</Button>
               </ButtonGroup>
             </Card.Body>
           </Card>

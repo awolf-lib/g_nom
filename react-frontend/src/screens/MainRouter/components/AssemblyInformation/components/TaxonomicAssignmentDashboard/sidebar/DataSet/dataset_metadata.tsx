@@ -1,9 +1,8 @@
 import React from "react";
-import Card from 'react-bootstrap/Card';
 import { Accordion } from "react-bootstrap";
-
 import "./style.css";
 import { fetchTaxaminerMetadata } from "../../../../../../../../api";
+
 
 interface Props {
     dataset_id: number
@@ -14,24 +13,12 @@ interface Props {
 }
 
 interface State {
-    metadata: any
+    metadata: string
 }
 
-/**
- * Properly format text from \n newlines
- * @param text Unformatted string
- * @returns list of <p></p> to insert into html
- */
-function NewlineText(text: string | void) {
-    if (text) {
-        return text.split('\n').map((str: any) => <p>{str}</p>);
-    } else {
-        return "No data"
-    }
-}
 
 class DataSetMeta extends React.Component<Props, State> {
-    constructor(props: any){
+    constructor(props: Props){
 		super(props);
 		this.state ={
             metadata: "Loading..."
@@ -41,42 +28,36 @@ class DataSetMeta extends React.Component<Props, State> {
     /**
      * Format the metadata
      */
-    convertMetadata() {
-        let data_string = ""
-        data_string += "Added: " + this.props.metadata.addedOn + "\n"
-        data_string += "ID: " + this.props.metadata.name + "\n"
-        data_string += "Added by: " + this.props.metadata.username + "\n"
+    convertMetadata(my_data: string): void {
+        const data_string = my_data
         this.setState({metadata: data_string})
     }
 
     /**
-     * Init
+     * Dataset ID changed
+     * @param prevProps previous component props
+     * @param prevState previous component state
+     * @param snapshot previous snapshot
      */
-    componentDidMount() {
-        this.convertMetadata()
-    }
-
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
-        if (prevProps.metadata != this.props.metadata) {
-            this.convertMetadata()
+    componentDidUpdate(prevProps: Readonly<Props>): void {
+        if (prevProps.dataset_id !== this.props.dataset_id) {
+            fetchTaxaminerMetadata(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
+            .then(data => {
+                this.convertMetadata(data)
+            })
         }
     }
 
     render() {
         return (
-            <Card className="m-2">
-                <Card.Body>
-                    <Card.Title>Dataset Info</Card.Title>
-                    <Accordion>
-                        <Accordion.Item eventKey="0">
-                            <Accordion.Header>Metadata</Accordion.Header>
-                            <Accordion.Body>
-                                <code>{this.state.metadata}</code>
-                            </Accordion.Body>
-                        </Accordion.Item> 
-                    </Accordion>
-                </Card.Body>
-            </Card>
+            <Accordion className="m-2">
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>Metadata</Accordion.Header>
+                    <Accordion.Body>
+                    <span className="text-secondary" style={{whiteSpace: "pre-wrap"}}>{this.state.metadata}</span>
+                     </Accordion.Body>
+                 </Accordion.Item> 
+            </Accordion>
         );
     } 
 }

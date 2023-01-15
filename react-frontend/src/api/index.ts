@@ -4,7 +4,6 @@ import { AssemblyInterface, AssemblyTagInterface } from "../tsInterfaces/tsInter
 import { Observable, of } from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { catchError, switchMap } from "rxjs/operators";
-import { request } from "http";
 
 // =============================== users =============================== //
 // USER AUTHENTIFCATION
@@ -1759,7 +1758,7 @@ export function fetchTaxaminerMain (
   })
 }
 
-// ==== Taxaminer Metadate ==== //
+// ==== Taxaminer Metadata ==== //
 export function fetchTaxaminerMetadata (
   assembly_id: number, 
   taxaminer_id: number,
@@ -1769,7 +1768,7 @@ export function fetchTaxaminerMetadata (
   return fetch(
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/summary?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
-  .then(response => response.text())
+  .then(response => response.json())
   .then((data: any) => data.payload)
   .catch((error) => {
     console.error(error);

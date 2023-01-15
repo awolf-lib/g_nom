@@ -507,6 +507,48 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `gnom_db`.`taxaminerDiamond`
+-- -----------------------------------------------------
+CREATE TABLE `taxaminerDiamond` (
+	`qseqid` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`sseqid` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`pident` FLOAT NULL DEFAULT NULL,
+	`length` INT(10) NULL DEFAULT NULL,
+	`mismatch` INT(10) NULL DEFAULT NULL,
+	`gapopen` INT(10) NULL DEFAULT NULL,
+	`qstart` INT(10) NULL DEFAULT NULL,
+	`qend` INT(10) NULL DEFAULT NULL,
+	`sstart` INT(10) NULL DEFAULT NULL,
+	`send` INT(10) NULL DEFAULT NULL,
+	`evalue` FLOAT NULL DEFAULT NULL,
+	`bitscore` FLOAT NULL DEFAULT NULL,
+	`taxids` VARCHAR(1000) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`taxname` VARCHAR(200) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',
+	`analysisID` INT(10) NULL DEFAULT NULL,
+	`assemblyID` INT(10) NULL DEFAULT NULL,
+	INDEX `Index 1` (`qseqid`, `analysisID`, `assemblyID`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+;
+
+
+-- -----------------------------------------------------
+-- Table `gnom_db`.`taxaminerDiamond`
+-- -----------------------------------------------------
+CREATE TABLE `settingsTaxaminer` (
+	`analysisID` INT(10) NOT NULL DEFAULT '0',
+	`userID` INT(10) NOT NULL DEFAULT '0',
+	`custom_fields` JSON NULL DEFAULT NULL,
+	PRIMARY KEY (`analysisID`, `userID`) USING BTREE
+)
+COLLATE='utf8mb4_0900_ai_ci'
+ENGINE=InnoDB
+;
+
+
+
+-- -----------------------------------------------------
 -- Table `gnom_db`.`runningTasks`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `gnom_db`.`runningTasks` (

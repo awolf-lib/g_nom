@@ -19,4 +19,4 @@ docker build --no-cache -t gnom/reactapp .
 cd ..
 
 # restart container
-docker run --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p 5000:5000 gnom/reactapp
+docker run -e REACT_APP_API_ADRESS='http://${SERVER_ADRESS}:5001' -e REACT_APP_JBROWSE_ADRESS='http://${SERVER_ADRESS}:8082' --name $FRONTEND_CONTAINER_NAME --network ${DOCKER_NETWORK_NAME} --restart on-failure:10 -d -p 5000:5000 gnom/reactapp

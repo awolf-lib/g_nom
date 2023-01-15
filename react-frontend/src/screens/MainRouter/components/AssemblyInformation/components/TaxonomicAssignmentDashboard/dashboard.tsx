@@ -2,7 +2,7 @@ import React from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/esm/Container';
-import { Tabs, Tab } from "react-bootstrap";
+import { Tabs, Tab, Card } from "react-bootstrap";
 import { DataSetSelector } from './sidebar/DataSet/dataset_selector';
 import SelectionView from './sidebar/selection/selection';
 import { DataSetMeta } from './sidebar/DataSet/dataset_metadata';
@@ -10,13 +10,13 @@ import Scatter3D from './scatterplot3d/scatter3d';
 import PCAPlot from './sidebar/PCAPlot/PCAPlot';
 import { FilterUI } from './sidebar/Filters/filterui';
 import Table from './sidebar/DiamondTable/diamondtable';
-import { TableView } from './tableview/TableView';
 import ScatterMatrix from './sidebar/ScatterMatrix/ScatterMatrix';
 
 // Stylesheet
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { fetchTaxaminerMain, fetchTaxaminerScatterplot, fetchTaxaminerSeq } from '../../../../../../api';
+import { fetchTaxaminerScatterplot, fetchTaxaminerSeq } from '../../../../../../api';
+import { TableView } from './tableview';
 
   
 interface State {
@@ -36,6 +36,7 @@ interface State {
     token: string
     fields: string[]
     g_options: { label: string; value: string; }[]
+    customFields: any[]
     scatter_points: any
     is_loading: boolean
 }
@@ -71,6 +72,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
             token: token,
             fields: [],
             g_options: [],
+            customFields: [],
             scatter_points: [],
             is_loading: false
         }
@@ -88,22 +90,20 @@ class TaxaminerDashboard extends React.Component<Props, State> {
         this.setState({is_loading: true})
         this.setState({dataset_id: id}, () => {
             fetchTaxaminerScatterplot(this.props.assembly_id, id, this.state.userID, this.state.token)
-		    .then(data => {
+            .then(data => {
                 const main_data = {}
-			    this.setState( {scatter_points: data}, () => {
-                    for (const chunk of this.state.scatter_points) {
+                this.setState( {scatter_points: data}, () => {
+                    for (const chunk of data as unknown as any[]) {
                         for (const row of chunk) {
                             const key = row.g_name as string
-                            // @ts-ignore
-                            main_data[key] = row
+                            (main_data as any)[key] = row
                         }
                     }
                     this.setState({data: main_data})
 
                     // Infer fields from first row
                     if (main_data) {
-                        // @ts-ignore
-                        const proto_row = main_data[Object.keys(main_data)[0]]
+                        const proto_row = (main_data as any)[Object.keys(main_data)[0]]
                         this.setState( { fields: Object.keys(proto_row) })
                     }
 
@@ -113,7 +113,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                     ))
                     this.setState({g_options: gene_options})
                 });
-		    })
+            })
             .finally(() => {
                 console.log("Finished loading")
                 this.setState({is_loading: false})
@@ -183,6 +183,16 @@ class TaxaminerDashboard extends React.Component<Props, State> {
         this.setState({filters: values})
     }
 
+     /**
+     * Store custom fields of selection view globally
+     * @param values 
+     */
+     setCustomFields = (values: any) => {
+        console.log(values)
+        values = Array.from(values)
+        this.setState({customFields: values})
+    }
+
     /**
      * Uses the scatter data from the main plot to slave the scatter matrix
      * @param values 
@@ -212,16 +222,29 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 <Col>
                      <Tabs>
                         <Tab eventKey="Overview" title="Overview">
-                            <DataSetSelector
-                            dataset_changed={this.setDataset}
-                            analyses={this.props.analyses}
-                            />
-                            <DataSetMeta
-                            assemblyID={this.props.assembly_id}
-                            dataset_id={this.state.dataset_id}
-                            userID={this.state.userID}
-                            token={this.state.token}
-                            metadata={this.state.analysis}/>
+                            <Card className='m-2'>
+                                <Card.Body>
+                                    <Card.Title>Dataset</Card.Title>
+                                    <Tabs>
+                                        <Tab title="Load Dataset" eventKey="dataset-loader">
+                                            <DataSetSelector
+                                                dataset_changed={this.setDataset}
+                                                analyses={this.props.analyses}
+                                            />
+                                        </Tab>
+                                        <Tab title="Metadata" eventKey="dataset-meta">
+                                            <DataSetMeta
+                                                assemblyID={this.props.assembly_id}
+                                                dataset_id={this.state.dataset_id}
+                                                userID={this.state.userID}
+                                                token={this.state.token}
+                                                metadata={this.state.analysis}/>
+                                        </Tab>
+                                    </Tabs>
+                                </Card.Body>
+                            </Card>
+                            
+                            
                             <SelectionView
                             is_loading={this.state.is_loading}
                             row={this.state.selected_row}
@@ -230,7 +253,8 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                             assemblyID={this.props.assembly_id}
                             analysisID={this.state.dataset_id}
                             userID={this.state.userID}
-                            token={this.state.token}/>
+                            token={this.state.token}
+                            passCustomFields={this.setCustomFields}/>
                         </Tab>
                         <Tab eventKey="Filter" title="Filters">
                             <FilterUI
@@ -288,6 +312,7 @@ class TaxaminerDashboard extends React.Component<Props, State> {
                 token={this.state.token}
                 assemblyID={this.props.assembly_id}
                 row={this.state.selected_row}
+                customFields={this.state.customFields}
                 />
         <br/>
         <br/>

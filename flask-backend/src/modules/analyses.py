@@ -159,17 +159,18 @@ def __generate_analyses_name(assembly_name, analyses_type):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            f"SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_SCHEMA='{DB_NAME}' AND TABLE_NAME='analyses'"
+            "SELECT MAX(id) FROM analyses"
         )
         auto_increment_counter = cursor.fetchone()[0]
+        print(auto_increment_counter)
 
         if not auto_increment_counter:
             next_id = 1
         else:
-            next_id = auto_increment_counter
+            next_id = auto_increment_counter + 1
 
-        cursor.execute("ALTER TABLE analyses AUTO_INCREMENT = %s", (next_id + 1,))
-        connection.commit()
+        # cursor.execute("ALTER TABLE analyses AUTO_INCREMENT = %s", (next_id + 1,))
+        # connection.commit()
     except Exception as err:
         return 0, 0, createNotification(message=str(err))
 

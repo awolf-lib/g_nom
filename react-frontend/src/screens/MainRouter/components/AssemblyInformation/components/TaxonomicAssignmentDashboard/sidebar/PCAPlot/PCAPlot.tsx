@@ -17,7 +17,7 @@ interface Props {
  * Main Scatterplot Component
  */
 class PCAPlot extends Component<Props, any> {
-	constructor(props: any){
+	constructor(props: Props){
 		super(props);
 		this.state ={ 
 			data: [] , // raw JSON data
@@ -36,8 +36,8 @@ class PCAPlot extends Component<Props, any> {
 	 * @param prevState previous State
 	 * @param snapshot snapshot
 	 */
-	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
-		if (prevProps.dataset_id != this.props.dataset_id) {
+	componentDidUpdate(prevProps: Readonly<Props>): void {
+		if (prevProps.dataset_id !== this.props.dataset_id) {
 			fetchTaxaminerPCA(this.props.assemblyID, this.props.dataset_id, this.props.userID, this.props.token)
 			.then(data => this.setState({ data: data}))
 		}
@@ -48,13 +48,13 @@ class PCAPlot extends Component<Props, any> {
 	 * Manually updating the uirevision state blocks plot resets
 	 * @returns True (as required by OnLegendClick() => )
 	 */
-	lock_uirevision(){
+	lock_uirevision(): boolean{
 		this.setState({ ui_revision: "true" })
 		return(true)
 	}
 
-	set_color_palette(key: string){
-		var locked = this.lock_uirevision()
+	set_color_palette(key: string): void{
+		const locked = this.lock_uirevision()
 		this.setState({color_palette: key})
 	}
 
@@ -64,7 +64,7 @@ class PCAPlot extends Component<Props, any> {
 	 * @param data API data
 	 * @returns list of traces
 	 */
-	transformData (data: any[]) {
+	transformData (data: any[]): any[] {
 
 		// Avoid NoneType Exceptions
 		if (data == null) {
@@ -105,12 +105,13 @@ class PCAPlot extends Component<Props, any> {
 						showlegend: true,
 						uirevision: this.state.ui_revision,
 						scene: {camera: this.props.camera},
-						// @ts-ignore
 						// overrides are incomplete here, ignore for now
+						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+						// @ts-ignore
 						legend: {itemsizing: 'constant'},
 						}}
 					useResizeHandler = {true}
-    				style = {{width: "100%", height: "100%"}}
+					style = {{width: "100%", height: "100%"}}
 					onLegendClick={(e: any) => this.lock_uirevision()}
 					config={{scrollZoom: true}}
 				/>
