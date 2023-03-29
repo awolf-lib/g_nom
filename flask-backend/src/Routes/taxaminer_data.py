@@ -1,7 +1,9 @@
 # general imports
+import ast
 from email.mime import base
 import json
 from pathlib import Path
+import sys
 from urllib import response
 from flask import Blueprint, jsonify, request, abort, Response
 from . import file_io
@@ -117,7 +119,8 @@ def main_data():
 
     path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
-
+    if not path:
+        return abort(500)
     json_data = file_io.indexed_data(f"{path}gene_table_taxon_assignment.csv")
 
     # return as json
@@ -145,9 +148,36 @@ def diamond_data():
         return response
 
     try: 
-        json_data = fetchTaxaminerDiamond(assembly_id, analysis_id, qseq_id)
-        return jsonify(json_data)
-    except Exception:
+        DIAMOND_FIELDS = fields = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname', 'assemblyID', 'analysisID']
+        index_data = fetchTaxaminerDiamond(assembly_id, analysis_id, qseq_id)
+        if index_data == []:
+            return jsonify([])
+        total_count = int(index_data['stop']) - int(index_data['start'])
+
+        # get on disk
+        path = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
+        print((index_data, path), file=sys.stderr)
+
+        final_lines = []
+        with open(path + "taxonomic_hits.txt") as f:
+            for i in range(int(index_data['start'])):
+                next(f)
+            counter = 0
+            for line in f:
+                # ensure we stop at the end of the block
+                if counter == total_count:
+                    break
+
+                temp_dict = {}
+                fields = line.split("\t")
+                for i, field in enumerate(fields):
+                    temp_dict[DIAMOND_FIELDS[i]] = field
+                final_lines.append(temp_dict)
+                counter += 1
+
+        return jsonify(final_lines)
+    except Exception as e:
+        print(e, file=sys.stderr)
         return abort(404)
 
 
@@ -237,16 +267,18 @@ def get_config():
         fields = fetchTaxaminerSettings(userID, analysisID)
         # no previous settings
         if not fields:
-            setTaxaminerSettings(userID, analysisID, "[]")
-            return jsonify("[]")
+            setTaxaminerSettings(userID, analysisID, "[]", "[]")
+            return jsonify({"custom_fields": [], "selection": []})
         else:
-            fields_json = json.loads(fields[0])
-            return jsonify(fields_json)
+            data_json = json.loads(fields[0])
+            print(fields, file=sys.stderr)
+            return jsonify({"custom_fields": ast.literal_eval(fields[0]), "selection": ast.literal_eval(fields[1])})
     # store settings in database
     elif request.method == "PUT":
         # TODO: add support for additional settings
         new_fields = request.json['fields']
-        setTaxaminerSettings(userID, analysisID, json.dumps(new_fields))
+        new_seletion = request.json['selection']
+        setTaxaminerSettings(userID, analysisID, json.dumps(new_fields), json.dumps(new_seletion))
         return jsonify(new_fields)
 
 
@@ -272,7 +304,7 @@ def pca_contributions():
     basepath = get_basepath(assembly_id=assembly_id, analysis_id=analysis_id)
 
     if basepath:
-        with open(f"{basepath}pca_loadings.csv", 'r') as file:
+        with open(f"{basepath}contribution_of_variables.csv", 'r') as file:
             lines = file.readlines()
     
         final_lines = []

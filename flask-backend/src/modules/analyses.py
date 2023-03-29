@@ -13,7 +13,7 @@ from .files import scanFiles
 
 import json
 
-DIAMOND_FIELDS = fields = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname', 'assemblyID', 'analysisID']
+DIAMOND_FIELDS = fields = ['assemblyID', 'analysisID', 'qseqid', 'start', 'stop']
 
 ## ============================ IMPORT AND DELETE ============================ ##
 # full import of analyses
@@ -547,38 +547,39 @@ def __importTaxaminer(assemblyID, analysisID, base_path):
         cursor.execute("INSERT INTO analysesTaxaminer (analysisID) VALUES (%s)", (analysisID,))
         connection.commit()
 
-        """
-        # parse diamond
+        # Load taxonomic hits
         diamond_path = base_path + "taxonomic_hits.txt"
+        print(diamond_path)
         if not os.path.isfile(diamond_path):
             return 0, createNotification(message=f"taXaminerImportDBError: Diamond data is missing!")
-        
-        FIELDS = ['qseqid', 'sseqid', 'pident', 'length', 'mismatch', 'gapopen', 'qstart', 'qend', 'sstart', 'send', 'evalue', 'bitscore', 'taxids', 'taxname']
-        TYPES = {'qseqid': str, 'sseqid': str, 'pident': float, 'length': float, 'mismatch': float, 'gapopen': float, 'qstart': float,
-         'qend': float, 'sstart': float, 'send': float, 'evalue': float, 'bitscore': float, 'taxids': str, 'taxname': str}
-        rows = []
+
+        # build data rows
+        # => save assemblyID, analysisID, qseqID together with the row number to index file
+        sql_rows = []
         with open(diamond_path) as file:
-            my_reader = csv.DictReader(file, delimiter='\t', fieldnames=FIELDS)
-            for row in my_reader:
-                # manually set types
-                for field in FIELDS:
-                    if TYPES.get(field) != str:
-                        if TYPES.get(field) == int:
-                            row[field] = int(row[field])
-                        elif TYPES.get(field) == float:
-                            row[field] = float(row[field])
-                # cleared for db insert
-                rows.append((assemblyID, analysisID, row['qseqid'], json.dumps(row)))
-
-        print("Database Inserts look like this:" + str(rows[0]))
-
-        # .executemany() exceeds the 'max_allowed_packet'
-        # if you encounter this error use 'SET SESSION max_allowed_packet=500*1024*1024' or 'SET GLOBAL max_allowed_packet=500*1024*1024'
-        # TLDR: MOOOOOOOOOOREEEEEEE RAM
+            start_index = 0
+            curr_id = ""
+            outer_index = 0
+            for i, line in enumerate(file.readlines()):
+                # primer
+                if i == 0:
+                    curr_id = line.split("\t")[0]
+                
+                # determine new id
+                next_id = line.split("\t")[0]
+                if next_id != curr_id:
+                    # start -> stop
+                    sql_rows.append((assemblyID, analysisID, curr_id, start_index, i-1))
+                    curr_id = next_id
+                    start_index = i
+                outer_index = i
+            
+            # final row
+            sql_rows.append((assemblyID, analysisID, curr_id, start_index, outer_index))
+        
         connection, cursor, error = connect()
-        cursor.executemany("INSERT INTO taxaminerDiamond (assemblyID, analysisID, qseqID, data) VALUES (%s, %s, %s, %s)", rows)
+        cursor.executemany("INSERT INTO taxaminerDiamond (assemblyID, analysisID, qseqID, start, stop) VALUES (%s, %s, %s, %s, %s)", sql_rows)
         connection.commit()
-        """
 
         return 1, []
     except Exception as err:
@@ -707,10 +708,10 @@ def deleteAnalysesByAnalysesID(analyses_id):
     try:
         connection, cursor, error = connect()
         cursor.execute(
-            "SELECT assemblies.id, assemblies.name, analyses.path FROM assemblies, analyses WHERE analyses.id=%s AND analyses.assemblyID=assemblies.id",
+            "SELECT assemblies.id, assemblies.name, analyses.path, analyses.type FROM assemblies, analyses WHERE analyses.id=%s AND analyses.assemblyID=assemblies.id",
             (analyses_id,),
         )
-        assembly_id, assembly_name, analyses_path = cursor.fetchone()
+        assembly_id, assembly_name, analyses_path, analysis_type = cursor.fetchone()
 
         cursor.execute(
             "SELECT taxa.* FROM assemblies, taxa WHERE assemblies.id=%s AND assemblies.taxonID=taxa.id",
@@ -725,7 +726,7 @@ def deleteAnalysesByAnalysesID(analyses_id):
             status, error = __deleteAnalysesEntryByAnalysesID(analyses_id)
 
         if status and taxon and assembly_name and analyses_path:
-            status, error = __deleteAnalysesFile(taxon, assembly_name, analyses_path)
+            status, error = __deleteAnalysesFile(taxon, assembly_name, analyses_path, type=analysis_type)
         else:
             return 0, error
 
@@ -740,7 +741,7 @@ def deleteAnalysesByAnalysesID(analyses_id):
 
 
 # deletes files for annotation
-def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
+def __deleteAnalysesFile(taxon, assembly_name, analyses_path, type=""):
     """
     Deletes data for specific annotation.
     """
@@ -749,6 +750,11 @@ def __deleteAnalysesFile(taxon, assembly_name, analyses_path):
         path = f"{BASE_PATH_TO_STORAGE}taxa/{scientificName}"
 
         run(args=["rm", "-r", analyses_path])
+        if type == "taxaminer":
+            print("Analysis is taXaminer, deleting parent directory as well")
+            # go one folder up
+            taxaminer_folder = "/".join(analyses_path.split("/")[0:-1])
+            run(args=["rm", "-r", taxaminer_folder])
 
         return 1, createNotification("Success", "Successfully deleted analyses", "success")
     except Exception as err:
@@ -759,6 +765,7 @@ def __deleteAnalysesEntryByAnalysesID(id):
     try:
         connection, cursor, error = connect()
         cursor.execute("DELETE FROM analyses WHERE id=%s", (id,))
+        cursor.execute("DELETE FROM taxaminerDiamond WHERE analysisID=%s", (id,))
         connection.commit()
         return 1, []
     except Exception as err:
@@ -1210,18 +1217,20 @@ def fetchRepeatmaskerAnalysesByAssemblyID(assemblyID):
 def fetchTaxaminerDiamond(assemblyID, analysisID, qseqid):
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT * FROM taxaminerDiamond WHERE assemblyID=%s AND analysisID=%s AND qseqID=%s",
+        cursor.execute("SELECT * FROM taxaminerDiamond, analysesTaxaminer WHERE taxaminerDiamond.analysisID=analysesTaxaminer.analysisID AND taxaminerDiamond.assemblyID=%s AND analysesTaxaminer.id=%s AND qseqID=%s",
         (assemblyID, analysisID, qseqid)
         )
-        rows = cursor.fetchall()
-        final_rows = []
-        for row in rows:
-            temp_dict = dict()
-            for i in range(len(row)):
-                temp_dict[DIAMOND_FIELDS[i]] = row[i]
-            final_rows.append(temp_dict)
+        row = cursor.fetchone()
 
-        return final_rows
+        # catch no entries
+        if not row:
+            return []
+        
+        temp_dict = dict()
+        for i in range(0, 5):
+            temp_dict[DIAMOND_FIELDS[i]] = row[i]
+
+        return temp_dict
     except Exception as err:
         return 0, createNotification(message=str(err))
 

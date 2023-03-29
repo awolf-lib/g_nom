@@ -22,11 +22,35 @@ interface Props {
     token: string
 }
 
+interface State {
+    table_data: any[]
+    key: string
+    loading: boolean
+    custom_fields: any[]
+    show_field_modal: boolean
+    active_cols: any[]
+    is_valid: boolean
+}
 
-class Table extends Component<Props, any> {
+class Table extends Component<Props, State> {
     constructor(props: Props){
 		super(props);
-		this.state ={ table_data: [], key: "", loading: false, custom_fields: [], show_field_modal: false}
+		this.state ={ 
+            table_data: [], 
+            key: "",
+            loading: false,
+            custom_fields: [],
+            show_field_modal: false,
+            active_cols: [
+                {
+                    dataField: "sseqid",
+                    text: "ID",
+                    sort: true,
+                    filter: textFilter()
+                }
+            ],
+            is_valid: true
+        }
 	}
 
     /**
@@ -47,8 +71,27 @@ class Table extends Component<Props, any> {
     * Selection passed upwards
     * @param fields JSON
     */
-    handleFieldsChange = (fields: any): void => {
-        this.setState({ custom_fields: fields})
+    handleFieldsChange = (fields: any) => {
+        const new_cols = []
+        // avoid tables with zero columns
+        if (fields.length === 0) {
+            this.setState({is_valid: false})
+        } else {
+            for (const field of fields) {
+                for (const col of this.columns) {
+                    if (col.dataField === field.value) {
+                        new_cols.push(col)
+                    }
+                }
+            }
+            this.setState({ custom_fields: fields})
+            this.setState({active_cols: new_cols})
+
+            // set valid flag if necessary
+            if (!this.state.is_valid) {
+                this.setState({is_valid: true})
+            }
+        }
     }
 
 
@@ -57,13 +100,15 @@ class Table extends Component<Props, any> {
         if (prev_props.row !== this.props.row) {
             this.setState({loading: true})
             // fetch the table data 
-            fetchTaxaminerDiamond(this.props.assembly_id, this.props.dataset_id, this.props.row.g_name, this.props.userID, this.props.token)
+            fetchTaxaminerDiamond(this.props.assembly_id, this.props.dataset_id, this.props.row.protID, this.props.userID, this.props.token)
             .then((data: any) => {
                 this.setState({table_data : data})
                 this.setState({loading: false})
             });
         }
     }
+
+    
     
     // These are preset values
     // TODO: make user selectable
@@ -112,7 +157,7 @@ class Table extends Component<Props, any> {
                     </Modal.Header>
                     <Modal.Body>
                         <ColumnSelector
-                        onFieldsChange={this.handleFieldsChange}
+                        set_fields={this.handleFieldsChange}
                         default_fields={this.state.custom_fields}/>  
                     </Modal.Body>
                     <Modal.Footer>

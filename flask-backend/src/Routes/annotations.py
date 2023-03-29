@@ -13,6 +13,7 @@ from modules.annotations import (
     fetchFeatures,
     import_annotation,
     updateAnnotationLabel,
+    grepFeature
 )
 
 # setup blueprint name
@@ -169,6 +170,31 @@ def annotations_bp_fetchFeatures():
         response.headers.add("Access-Control-Allow-Origin", "*")
 
         return response
+    else:
+        return REQUESTMETHODERROR
+
+
+# FETCH ALL ASSEMBLIES
+@annotations_bp.route("/grepFeatures", methods=["POST"])
+def annotations_bp_grepFeatures():
+    if request.method == "POST":
+        req = request.get_json(force=True)
+        userID = req.get("userID", None)
+        token = req.get("token", None)
+
+        # token still active
+        valid_token, error = validateActiveToken(userID, token, ACCESS_LVL_1)
+        if not valid_token:
+            response = jsonify({"payload": {}, "notification": error})
+            response.headers.add("Access-Control-Allow-Origin", "*")
+            return response
+        
+        # grep input
+        search = req.get("search", None)
+        annotation_id = req.get("annotationID", None)
+
+        coords = grepFeature(search, annotation_id)
+        return jsonify({"coords": coords})
     else:
         return REQUESTMETHODERROR
 

@@ -1742,6 +1742,35 @@ export function fetchTaxaminerDatasets (
   })
 }
 
+
+// ==== Taxaminer Main ==== //
+export function grepFeature (
+  annotationID: number,
+  query: string,
+  userID: number,
+  token: string
+): Promise<any> {
+  // JSON body
+  const my_body = {
+    'userID': userID,
+    'token': token,
+    'annotationID': annotationID,
+    'search': query
+  }
+  return fetch(
+    `${process.env.REACT_APP_API_ADRESS}/grepFeatures`,
+    {
+      method: 'POST',
+      body: JSON.stringify(my_body),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  )
+  .then((request) => request.json())
+  .then((data) => data)
+}
+
 // ==== Taxaminer Main ==== //
 export function fetchTaxaminerMain (
   assembly_id: number, 
@@ -1781,7 +1810,7 @@ export function fetchTaxaminerScatterplot (
   taxaminer_id: number,
   userID: number,
   token: string
-): Promise<IResponse<ITask>> {
+): Promise<any[]> {
   return fetch(
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/scatterplot?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`
   )
@@ -1852,7 +1881,7 @@ export function fetchTaxaminerSettings (
   analysisID: number,
   userID: number,
   token: string
-): Promise<IResponse<ITask>> {
+): Promise<UserSettings> {
   return fetch(
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/userconfig?assemblyID=${assembly_id}&analysisID=${analysisID}&userID=${userID}&token=${token}`
   )
@@ -1868,14 +1897,16 @@ export function fetchTaxaminerSettings (
 export function updateTaxaminerSettings (
   assembly_id: number, 
   taxaminer_id: number,
-  fields: any,
+  fields: any[],
+  selection: string[],
   userID: number,
   token: string
-) {
+): Promise<IResponse<ITask>> {
 
   // JSON body
   const my_body = {
-    'fields': fields 
+    'fields': fields,
+    'selection': selection
   }
   return fetch(
     `${process.env.REACT_APP_API_ADRESS}/taxaminer/userconfig?assemblyID=${assembly_id}&analysisID=${taxaminer_id}&userID=${userID}&token=${token}`,
@@ -1887,10 +1918,8 @@ export function updateTaxaminerSettings (
       }
     }
   )
-  .then((res) => { console.log(res)})
-  .catch((error) => {
-    console.error(error);
-  })
+  .then((request) => request.json())
+  .then((data) => data)
 }
 
 
@@ -1902,7 +1931,7 @@ export function fetchTaxaminerDownload (
   genes: any,
   userID: number,
   token: string
-) {
+): any {
 
   // JSON body
   const my_body = {
@@ -1921,6 +1950,7 @@ export function fetchTaxaminerDownload (
   .then((res) => { return res.blob() })
   .catch((error) => {
     console.error(error);
+    return []
   })
 }
 
@@ -1949,6 +1979,11 @@ export interface Pagination {
   range: number;
   count: number;
   pages: number;
+}
+
+export interface UserSettings {
+  selection: string[]
+  custom_fields: any[]
 }
 
 interface IErrorResponse {

@@ -29,7 +29,20 @@ import "./customstyle.css"
 }
 
 interface Props {
-    col_keys: string
+    col_keys: string[]
+    keys: Set<string>
+    master_data:  { [key: string]: any }
+    passClick: any
+    trackTable: Function
+}
+
+interface State {
+    table_data: any[]
+    key: string
+    loading: boolean
+    custom_fields: any[]
+    show_field_modal: boolean
+    cols: any[]
 }
 
 const rich_cols = {
@@ -38,7 +51,7 @@ const rich_cols = {
     bh_evalue: { dataField: "bh_evalue", text: "Best hit e-value", sort: true, sortFunc: numberSort}
 }
 
-class SelectionTable extends Component<any, any> {
+class SelectionTable extends Component<Props, State> {
     constructor(props: any){
 		super(props);
 		this.state ={ table_data: [], key: "", loading: false, custom_fields: [], show_field_modal: false, cols: Object.values(rich_cols)}
@@ -64,49 +77,56 @@ class SelectionTable extends Component<any, any> {
         this.setState({cols: new_cols})
     }
 
-    /**
+   /**
      * Props of parent element changed (=> selected row)
      * @param prev_props previous selection
      */
-    componentDidUpdate(prev_props: any): void {
-        const new_rows = []
-        const text_cols = ["c_name", "fasta_header", "corrected_lca", "best_hit"]
+    componentDidUpdate(prevProps: Props, prevState: State, snapshot: any) {
+    const new_rows = []
+    const text_cols = ["c_name", "fasta_header", "corrected_lca", "best_hit"]
 
-        if (prev_props !== this.props) {
-            for (const key of this.props.keys) {
-                new_rows.push(this.props.master_data[key])
-            }
-            this.setState({table_data: new_rows})
 
-            // also update table cols
-            const new_cols: any[] = []
-            this.props.col_keys.forEach((element: any) => {
-                // eslint-disable-next-line no-prototype-builtins
-                if (rich_cols.hasOwnProperty(element['value'])) {
-                    new_cols.push((rich_cols as any)[element['value']])
-                } else {
-                    const constructed_col = {
-                        dataField: element.value,
-                        text: element.label,
-                        sort: true,
-                        filter: undefined,
-                        sortFunc: undefined,
-                        isFixed: false
-                    }
-                    // either allow sorting by value or searching by string
-                    if (text_cols.includes(element.value)) {
-                        //@ts-ignore
-                       constructed_col.filter = textFilter()
-                    } else {
-                        //@ts-ignore
-                        constructed_col.sortFunc = numberSort
-                    }
-                    new_cols.push(constructed_col)
-                }
-            });
-            this.setState({cols: new_cols})
+    // Table data has changed
+    if (this.state.table_data.length !== this.props.keys.size) {
+        const my_keys = Array.from(this.props.keys)
+        for (const key of my_keys) {
+            new_rows.push(this.props.master_data[key])
         }
+        this.setState({table_data: new_rows});
+        this.props.trackTable(this.state.cols, new_rows)
     }
+
+    // Table cols have changed
+    if (prevProps.col_keys !== this.props.col_keys) {
+        // also update table cols
+        const new_cols: any[] = []
+        this.props.col_keys.forEach((element: any) => {
+            if (Object.prototype.hasOwnProperty.call(rich_cols, element['value'])) {
+                new_cols.push((rich_cols as any)[element['value']])
+            } else {
+                const constructed_col = {
+                    dataField: element.value,
+                    text: element.label,
+                    sort: true,
+                    filter: undefined,
+                    sortFunc: undefined,
+                    isFixed: false
+                }
+                // either allow sorting by value or searching by string
+                if (text_cols.includes(element.value)) {
+                    // @ts-ignore
+                   constructed_col.filter = textFilter()
+                } else {
+                    // @ts-ignore
+                    constructed_col.sortFunc = numberSort
+                }
+                new_cols.push(constructed_col)
+            }
+        });
+        this.setState({cols: new_cols});
+        this.props.trackTable(new_cols, this.state.table_data)
+    }
+}
 
     // Table events
     rowEvents = {

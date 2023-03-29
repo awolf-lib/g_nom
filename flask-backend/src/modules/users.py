@@ -326,7 +326,7 @@ def removeBookmark(userID, assemblyID):
 def fetchTaxaminerSettings(userID, analysisID):
     try:
         connection, cursor, error = connect()
-        cursor.execute("SELECT custom_fields FROM settingsTaxaminer WHERE analysisID=%s AND userID=%s",
+        cursor.execute("SELECT custom_fields, selection FROM settingsTaxaminer WHERE analysisID=%s AND userID=%s",
         (analysisID, userID)
         )
         settings = cursor.fetchone()
@@ -336,11 +336,11 @@ def fetchTaxaminerSettings(userID, analysisID):
 
 
 """ set taXaminer settings"""
-def setTaxaminerSettings(userID, analysisID, json_string, setting="fields"):
+def setTaxaminerSettings(userID, analysisID, custom_fields_json, selection_json, setting="fields"):
     try:
         connection, cursor, error = connect()
-        cursor.execute("INSERT INTO settingsTaxaminer (userID, analysisID, custom_fields) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE custom_fields=%s;",
-        (userID, analysisID, json_string, json_string)
+        cursor.execute("INSERT INTO settingsTaxaminer (userID, analysisID, custom_fields, selection) VALUES (%s,%s,%s,%s) ON DUPLICATE KEY UPDATE custom_fields=%s, selection=%s;",
+        (userID, analysisID, custom_fields_json, selection_json, custom_fields_json, selection_json)
         )
         connection.commit()
     except Exception as err:

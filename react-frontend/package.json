@@ -10,6 +10,7 @@
     "bcryptjs": "2.4.3",
     "bootstrap": "^5.2.1",
     "bootstrap-icons": "^1.10.3",
+    "chroma-js": "^2.4.2",
     "classnames": "2.3.1",
     "grommet-icons": "4.7.0",
     "node-polyfill-webpack-plugin": "1.1.4",
@@ -17,18 +18,20 @@
     "react": "18.2.0",
     "react-app-polyfill": "3.0.0",
     "react-bootstrap": "^2.5.0",
-    "react-bootstrap-table-next": "^4.0.3",
+    "react-bootstrap-table-next": "https://gitpkg.now.sh/BonnierNews/react-bootstrap-table2/packages/react-bootstrap-table2?v2.0.3",
     "react-bootstrap-table2-filter": "^1.3.3",
     "react-bootstrap-table2-paginator": "^2.1.2",
     "react-d3-tree": "3.2.0",
     "react-dom": "18.2.0",
     "react-plotly.js": "^2.6.0",
     "react-router-dom": "6.2.1",
-    "react-scripts": "5.0.1",
     "react-use-dimensions": "1.2.1",
     "rxjs": "7.5.1",
     "styled-components": "5.3.3",
     "typescript": "4.5.4"
+  },
+  "overrides": {
+    "d3-color": "3.1.0"
   },
   "scripts": {
     "start": "craco --max_old_space_size=4096  start",
@@ -98,6 +101,7 @@
     "@testing-library/jest-dom": "5.16.1",
     "@testing-library/react": "12.1.2",
     "@testing-library/user-event": "13.5.0",
+    "@types/chroma-js": "^2.1.5",
     "@types/jest": "27.0.3",
     "@types/node": "16.11.17",
     "@types/plotly.js": "^1.54.18",
@@ -107,10 +111,12 @@
     "@types/react-bootstrap-table2-paginator": "^2.1.2",
     "@types/react-dom": "17.0.11",
     "@types/react-plotly.js": "^2.5.1",
+    "@types/react-window": "^1.8.5",
     "@types/uuid": "^8.3.3",
     "postcss": "^8.4.6",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",
+    "react-scripts": "5.0.1",
     "tailwindcss": "^3.0.23"
   }
 }

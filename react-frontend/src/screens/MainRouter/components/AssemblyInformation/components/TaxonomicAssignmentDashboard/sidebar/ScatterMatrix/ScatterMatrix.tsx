@@ -1,17 +1,16 @@
 import { Component } from 'react';
 import Plot from 'react-plotly.js';
 import colors from "./colors.json";
+import chroma from 'chroma-js';
 
 interface Props {
-	datasetID: number
-	assemblyID: number
-	sendClick: Function
+	sendClick: any
 	e_value: number
 	show_unassigned: boolean
     scatter_data: any
-	userID: number
-	token: string
-	scatter_points: any
+	scatterPoints: any[]
+	g_searched: string[]
+	c_searched: string[]
 }
 
 /**
@@ -36,10 +35,22 @@ class ScatterMatrix extends Component<Props, any> {
 	}
 
 
+	/**
+	 * Act on Prop updates (=> mainly: load a different dataset)
+	 * @param prevProps previous props
+	 * @param prevState previous state
+	 * @param snapshot previous snapshot
+	 */
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
-		if (prevProps.scatter_points != this.props.scatter_data) {
-			// this.set_auto_size(this.props.scatter_data)
-			this.build_plot()
+		// fetch the new dataset if the ID has changed
+		if (prevProps.scatterPoints !== this.props.scatterPoints) {
+			this.set_auto_size(this.props.scatterPoints);
+			this.setState({data: this.props.scatterPoints}, () => {
+				this.setState( { marker_size: this.state.auto_size_px, auto_size: true})
+				this.setState({my_plot: this.build_plot()})
+			})
+		} else if (prevProps.c_searched !== this.props.c_searched || prevProps.show_unassigned !== this.props.show_unassigned) {
+			this.setState({my_plot: this.build_plot()})
 		}
 	}
 
@@ -105,9 +116,10 @@ class ScatterMatrix extends Component<Props, any> {
 	 */
 	transformData (data: any[], legendonly: any[]) {
 		const legendonly_names: string[] = []
+		const occurrences = {Unassigned: 0}
 
 		legendonly.forEach((dot: any) => {
-			legendonly_names.push(dot.name)
+			legendonly_names.push(dot.text)
 		})
 
 		// Avoid NoneType Exceptions
@@ -115,26 +127,36 @@ class ScatterMatrix extends Component<Props, any> {
 			return []
 		}
 
-        const traces: any[] = []
-        data.map(each => {
+        let traces: any[] = []
+        traces = data.map(each => {
 			const x : string[] = [];
 			const y : string[] = [];
             const z : string[] = [];
             let label = "";
-			let gene_name = "";
-            const my_customdata : any = [];
+            const gene_names : string[] = [];
             const chunk = each;
 
 			// push 3D coordinates in arrays accordingly
-			chunk.map((each: { [x: string]: string; }) => {
+			for(const each of chunk) {
+				// filter by contigs
+				if (this.props.c_searched !== undefined) {
+					if (this.props.c_searched.length !== 0 && !this.props.c_searched.includes(each['c_name'])) {
+						continue
+					}
+				}
+
+				// exclude unassigned
+				if (!this.props.show_unassigned && each['plot_label'] === "Unassigned"){
+					continue
+				}
+				
                 // filter by e-value
 				if(parseFloat(each['bh_evalue']) < this.props.e_value) {
 					x.push(each['Dim.1'])
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
 					label = each['plot_label']
-					gene_name = each['g_name']
-					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
+					gene_names.push(each['g_name'])
 				} 
 				// Include unassigned data points (which usually don't have a e-value)
 				else if(this.props.show_unassigned === true && each['plot_label'] === 'Unassigned') {
@@ -142,11 +164,17 @@ class ScatterMatrix extends Component<Props, any> {
 					y.push(each['Dim.2'])
 					z.push(each['Dim.3'])
 					label = each['plot_label']
-					my_customdata.push([each['plot_label'], each['g_name'], each['best_hit'], each['bh_evalue'], each['taxon_assignment'], each['c_name']])
+					gene_names.push(each['g_name'])
 				} else {
 					//console.log(each['g_name'])
 				}
-			})
+				// increment counters
+				if (occurrences[each['plot_label'] as keyof typeof occurrences] !== undefined) {
+					occurrences[each['plot_label'] as keyof typeof occurrences] = occurrences[each['plot_label'] as keyof typeof occurrences] + 1
+				} else {
+					occurrences[each['plot_label'] as keyof typeof occurrences] = 1
+				}
+			}
 
 			// Setup the plot trace
 			let visible = undefined
@@ -167,28 +195,40 @@ class ScatterMatrix extends Component<Props, any> {
                 name: label,
                 text: label,
 				visible: visible,
+				marker: {
+					size: this.props.scatter_data.marker_size,
+					opacity: this.props.scatter_data.opacity
+				},
 
 				// track the unique gene name
-				customdata: my_customdata,
-				hovertemplate: "%{customdata[0]} <br>%{customdata[1]} <br><extra>Best hit: %{customdata[2]} <br>Best hit e-value: %{customdata[3]} <br> </extra>"
-
+				customdata: gene_names
             }
-            traces.push(trace)
+			return trace
         })
+		traces.sort(function(a, b){return occurrences[b.text as keyof typeof occurrences] - occurrences[a.text as keyof typeof occurrences]})
+
+		const my_scale = chroma.scale('Spectral');
+		if (this.props.scatter_data.colors === "spectrum") {
+			for (let i =0; i < traces.length; i++) {
+				if (traces[i].name === "Search results") {
+					continue
+				}
+				traces[i]['marker']['color'] = my_scale(i/traces.length).saturate(3).hex()
+			}
+		}
 		return traces
 	}
+	
 
 	/**
 	 * Handle Selection events
 	 * @param points plotly points
 	 */
-	handleSelection(points: any): void {
+	handleSelection(points: any) {
 		const selected_ids: string[] = []
-
-		points.map((each: any) => {
-			selected_ids.push(each.customdata[1])
-		})
-
+		for (const point of points) {
+			selected_ids.push(point.customdata)
+		}
 		// pass data up
 		this.props.sendClick(selected_ids)
 	}
@@ -198,11 +238,11 @@ class ScatterMatrix extends Component<Props, any> {
 	 * @returns Plotly Plot as React component
 	 */
 	build_plot() {
-		console.log("Rebuilding Plot")
 		return (
+			// eslint-disable-next-line @typescript-eslint/ban-types
 			<Plot
 				divId='scattermatrix'
-					data = {this.transformData(this.props.scatter_points, this.props.scatter_data.legendonly)}
+					data = {this.transformData(this.props.scatterPoints, this.props.scatter_data.legendonly)}
 					layout = {{
 						autosize: true,
 						showlegend: true,
@@ -220,9 +260,9 @@ class ScatterMatrix extends Component<Props, any> {
                         yaxis4:this.set_axis()},
 						// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 						//@ts-ignore
-						colorway : colors.palettes[this.props.scatter_data.colors]
+						colorway : colors.palettes[this.props.scatterPoints.colors]
 						}}
-                    style = {{width: "100%", height: 700}}
+					style = {{width: "95%", height: "100%", minHeight: 600}}
 
 					// disable legend trace selection (=> slave to main plot)
 					onLegendClick={() => false}

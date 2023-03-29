@@ -40,6 +40,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
             return 0, createNotification(message="Missing user ID!")
 
         assembly_id, error = __get_new_assembly_ID()
+        print(assembly_id, flush=True)
         if not assembly_id:
             return 0, error
 
@@ -51,7 +52,7 @@ def import_assembly(taxon, dataset, userID, taskID=""):
         main_file_path, assembly_name, error = __store_assembly(dataset, taxon, assembly_id)
         if not main_file_path or not exists(main_file_path):
             deleteAssemblyByAssemblyID(assembly_id)
-            print(error)
+            print(error, flush=True)
             return 0, error
 
         fasta_content, error = parseFasta(main_file_path, taskID)
@@ -129,7 +130,7 @@ def __get_new_assembly_ID():
         else:
             next_id = auto_increment_counter
 
-        cursor.execute("ALTER TABLE assemblies AUTO_INCREMENT = %s", (next_id + 1,))
+        # cursor.execute("ALTER TABLE assemblies AUTO_INCREMENT = %s", (next_id + 1,))
         connection.commit()
     except Exception as err:
         return 0, createNotification(message=f"AssemblyCreationError: {str(err)}")

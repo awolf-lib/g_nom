@@ -6,6 +6,7 @@ from os.path import basename, isdir, join, dirname, getsize
 from re import compile
 from sys import argv
 from datetime import datetime
+from .db_connection import connect
 
 from modules.environment import BASE_PATH_TO_IMPORT
 from modules.assemblies import (
@@ -295,8 +296,9 @@ def importDataset(
                 return summary, createNotification(message="Exact one assembly needs to be supplied!")
 
             assembly = assembly[0]
-
             assembly_id, notification = import_assembly(taxon, assembly, userID, taskID)
+
+
             if not assembly_id:
                 return summary, notification
             summary["assemblyID"] = assembly_id

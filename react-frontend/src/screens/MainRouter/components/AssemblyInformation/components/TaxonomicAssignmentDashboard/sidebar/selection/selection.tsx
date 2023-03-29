@@ -23,6 +23,8 @@ interface Props {
   token: string
   is_loading: boolean
   passCustomFields: any
+  setAutoScroll: Function
+  gene_pos_supported: boolean
 }
 
 interface State {
@@ -31,6 +33,8 @@ interface State {
   options: any
   has_loaded: boolean
   grouped_fields: any
+  gene_pos: string
+  coord_type: string
 }
 
 /**
@@ -40,7 +44,7 @@ class SelectionView extends React.Component<Props, State> {
   constructor(props: any){
 		super(props);
     const options = [{ value  :'One', selected:true }, { value: 'Two' }, { value:'Three' }]
-    this.state = { custom_fields: [], show_field_modal: false, options: options, grouped_fields: {}, has_loaded: false}
+    this.state = { custom_fields: [], show_field_modal: false, options: options, grouped_fields: {}, has_loaded: false, gene_pos: "Select a gene to get started", coord_type: "J"}
 	}
 
   /**
@@ -50,17 +54,17 @@ class SelectionView extends React.Component<Props, State> {
    * @param snapshot Snapshot
    */
   componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<any>, snapshot?: any): void {
-    if (prevProps.row != this.props.row) {
+    if (prevProps.row !== this.props.row) {
       this.convertFieldsOptions()
-    } else if(prevProps.analysisID != this.props.analysisID) {
+      this.formatCoord()
+    } else if(prevProps.analysisID !== this.props.analysisID) {
       fetchTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.props.userID, this.props.token)
       .then((data: any) => {
         if (data === undefined) {
           data = []
         }
-        console.log(data)
-        this.setState( {custom_fields: data} )
-        this.props.passCustomFields(data)
+        this.setState( {custom_fields: data['custom_fields']} )
+        this.props.passCustomFields(data['custom_fields'])
       })
     }
   }
@@ -78,7 +82,7 @@ class SelectionView extends React.Component<Props, State> {
         // match against glossary
         for (const field of fields_glossary) {
             // exact match
-            if (each as string == field.value) {
+            if (each as string === field.value) {
               return { label: (field.label), value: each, tooltip: field.tooltip }
             } else {
               // match with suffix (c_cov_...)
@@ -126,7 +130,7 @@ class SelectionView extends React.Component<Props, State> {
     this.setState({ show_field_modal: false });
 
     // Save user settings to API
-    updateTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.state.custom_fields, this.props.userID, this.props.token)
+    // updateTaxaminerSettings(this.props.assemblyID, this.props.analysisID, this.state.custom_fields, this.props.userID, this.props.token)
   };
 
   /**
@@ -149,7 +153,29 @@ class SelectionView extends React.Component<Props, State> {
       }
     }
     this.setState({ custom_fields: Array.from(my_fields)})
-    this.props.passCustomFields(my_fields)
+    this.props.passCustomFields(Array.from(my_fields))
+  }
+
+  /**
+   * Update the genomic coordinates
+   */
+  formatCoord(): void {
+    if (this.props.gene_pos_supported) {
+      const coord_formats = {
+        "J": `${this.props.row.c_name}:${this.props.row.start}..${this.props.row.end}`,
+        "U": `${this.props.row.c_name}:${this.props.row.start}-${this.props.row.end}`
+      }
+      this.setState({gene_pos: coord_formats[this.state.coord_type as keyof typeof coord_formats]})
+    }
+  }
+  
+  /**
+  * Switch to the next supported coordinate format
+  */
+  nextCoordFormat(): void {
+    const coord_formats = ["J", "U"]
+    const now = coord_formats.lastIndexOf(this.state.coord_type)
+    this.setState({coord_type: coord_formats[(now + 1) % coord_formats.length]}, () => this.formatCoord())
   }
 
   render() {
@@ -190,6 +216,7 @@ class SelectionView extends React.Component<Props, State> {
                     value={this.props.row.g_name}
                     onChange={() => false}
                   />
+                  <Button onClick={() => {navigator.clipboard.writeText(this.props.row.g_name)}}><span className='bi bi-clipboard2'/></Button>
               </InputGroup>
             </Col>
             <Col md="auto">
@@ -201,6 +228,7 @@ class SelectionView extends React.Component<Props, State> {
                     value={this.props.row.c_name}
                     onChange={() => false}
                   />
+                  <Button onClick={() => {navigator.clipboard.writeText(this.props.row.c_name)}}><span className='bi bi-clipboard2'/></Button>
                 </InputGroup>
               </Col>
           </Row>
@@ -229,7 +257,7 @@ class SelectionView extends React.Component<Props, State> {
               </Col>
           </Row>
           <Row>
-            <Col md="auto">
+          <Col xs={7}>
               <InputGroup className="m-2">
                   <InputGroup.Text id="ncbi-id">Best hit</InputGroup.Text>
                     <Form.Control
@@ -252,6 +280,21 @@ class SelectionView extends React.Component<Props, State> {
                     target="_blank">
                       <span className="bi bi-box-arrow-up-right"></span>
                     </Button>
+                </InputGroup>
+              </Col>
+              <Col xs={5}>
+                <InputGroup className="m-2">
+                  <InputGroup.Text id="contig">Gene Pos</InputGroup.Text>
+                  <Form.Control
+                    placeholder="Selected a Gene to get started"
+                    contentEditable={false}
+                    value={this.state.gene_pos}
+                    onChange={() => false}
+                    disabled={!this.props.gene_pos_supported}
+                  />
+                  <Button disabled={!this.props.gene_pos_supported} variant='secondary' onClick={() => {this.nextCoordFormat()}}>{this.state.coord_type}</Button>
+                  <Button disabled={!this.props.gene_pos_supported} onClick={() => {navigator.clipboard.writeText(this.state.gene_pos)}}><span className='bi bi-clipboard2'/></Button>
+                  
                 </InputGroup>
               </Col>
             </Row>
@@ -277,6 +320,16 @@ class SelectionView extends React.Component<Props, State> {
             </Row>
             </>
             )}
+          <Row>
+            <Form>
+              <Form.Check 
+                type="switch"
+                label="Automatically jump to genome browser"
+                id="disabled-custom-switch"
+                onChange={() => this.props.setAutoScroll()}
+              />
+            </Form>
+          </Row>
           </Tab>
           <Tab title="Raw JSON" eventKey="json-tab">
               <Row>
@@ -313,6 +366,7 @@ class SelectionView extends React.Component<Props, State> {
                     </Accordion.Body>
                   </Accordion.Item>   
                 </Accordion>
+                <Button className='mt-2' onClick={() => {navigator.clipboard.writeText(this.props.aa_seq)}}><span className='bi bi-clipboard2'/> Copy sequence to clipboard</Button>
               </Col>
             </Row>
             </Tab>

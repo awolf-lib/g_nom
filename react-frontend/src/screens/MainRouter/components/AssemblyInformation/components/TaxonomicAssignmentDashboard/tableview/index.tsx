@@ -24,6 +24,7 @@ interface Props {
     assemblyID: number
     row: any
     customFields: any[]
+    resetSelection: Function
 }
   
 interface State {
@@ -34,6 +35,8 @@ interface State {
     data: any
     col_keys: any[]
     options: any[]
+    child_cols: any[]
+    child_data: any
 }
   
 
@@ -49,18 +52,13 @@ class TableView extends React.Component<Props, State> {
             selected_data: new Set(),
             data: undefined,
             col_keys: [{ label: "ID", value: "g_name"}, { label: "Plot label", value: "plot_label" }, { label: "e-value", value: "bh_evalue" }],
-            options: [{ label: "ID", value: "g_name"}, { label: "Plot label", value: "plot_label" }, { label: "e-value", value: "bh_evalue" }]
+            options: [{ label: "ID", value: "g_name"}, { label: "Plot label", value: "plot_label" }, { label: "e-value", value: "bh_evalue" }],
+            child_cols: [],
+            child_data: []
         }
-	}
-
-    /**
-	 * Call API on component mount to load plot data
-	 */
-	componentDidMount() {
-		fetchTaxaminerMain(1, 1, this.props.userID, this.props.token)
-        .then((data) => {
-            this.setState( {data: data})
-        })
+        // bin to local context
+        this.csvExport = this.csvExport.bind(this);
+        this.trackTable = this.trackTable.bind(this);
 	}
 
     /**
@@ -70,7 +68,7 @@ class TableView extends React.Component<Props, State> {
      * @param snapshot previous snapshot
      */
      componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
-        if (prevProps.row != this.props.row) {
+        if (prevProps.row !== this.props.row) {
             this.convertFieldsOptions()
         }
     }
@@ -116,6 +114,54 @@ class TableView extends React.Component<Props, State> {
         this.setState({options: options})
     }
 
+     /**
+     * Export to .csv file
+     */
+    csvExport() {
+        const fields = this.state.child_cols.map((col: any) => {
+            return col.dataField
+        })
+        const names = this.state.child_cols.map((col: any) => {
+            return col.text
+        })
+        let file_content = ""
+
+        // Table header row
+        for (const name of names) {
+            file_content = file_content.concat(name + ",")
+        }
+        file_content = file_content.concat("\n")
+
+        // print rows
+        for (const row of this.state.child_data) {
+            for (const field of fields) {
+                file_content = file_content.concat(row[field] + ",")
+            }
+            file_content = file_content.concat("\n")
+        }
+
+        const a = document.createElement("a");
+        // create file
+        a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(file_content));
+        // set as download
+        a.setAttribute('download', "selection.csv");
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+      
+        // clean up
+        document.body.removeChild(a);
+    }
+
+ /**
+     * Track table edits
+     * @param cols table columns
+     * @param data table data
+     */
+    trackTable(cols: any, data: any): void {
+        this.setState({child_cols: cols, child_data: data})
+    }
+
     render() {
         return (
             <Container fluid>
@@ -127,6 +173,7 @@ class TableView extends React.Component<Props, State> {
                         // pass table click events up
                         passClick={this.props.passClick}
                         col_keys = {this.state.col_keys}
+                        trackTable = {this.trackTable}
                         />
                     </Col>
                     <Col>
@@ -140,7 +187,10 @@ class TableView extends React.Component<Props, State> {
                             analysisID={this.props.dataset_id}
                             assemblyID={this.props.assemblyID}
                             userID={this.props.userID}
+                            resetSelection = {this.props.resetSelection}
                             token={this.props.token}
+                            main_data = {this.props.data}
+                            passCsvExport = {this.csvExport}
                             />
                         </Row>
                         <Row>

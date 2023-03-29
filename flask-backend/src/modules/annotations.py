@@ -6,6 +6,8 @@ from json import dumps, loads
 from subprocess import run
 from glob import glob
 from operator import contains, is_, is_not, lt, le, eq, ne, ge, gt
+import subprocess
+import sys
 
 from .notifications import createNotification
 from .db_connection import connect, DB_NAME
@@ -869,6 +871,27 @@ def fetchFeatureSeqIDs(assemblyID=0, taxonIDs=[]):
         return featureSeqIDs_list, []
     except Exception as err:
         return [], createNotification(message=f"FeatureTypesFetchingError: {str(err)}")
+
+
+def grepFeature(search, annotation_id):
+    try:
+        connection, cursor, error = connect()
+        cursor.execute("SELECT path FROM genomicAnnotations WHERE id=35;")
+        annotation_path = cursor.fetchone()[0]
+
+        zcat_annot = subprocess.Popen(["zcat", annotation_path], stdout=subprocess.PIPE)
+        grep_feature = subprocess.run(["grep", search], stdin=zcat_annot.stdout, capture_output=True, text=True)
+        my_result = grep_feature.stdout.split("\n")[0]
+        if my_result != "":
+            cols = my_result.split("\t")
+            pos_string = f"{cols[0]}:{cols[3]}..{cols[4]}"
+            return pos_string
+        else:
+            return ""
+
+    except Exception as err:
+        return 0, createNotification(message=str(err))
+
 
 
 # fetches all unique feature types from all features

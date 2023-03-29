@@ -96,6 +96,7 @@ const AssemblyInformation = () => {
 
   const [sequenceHeaderSearch, setSequenceHeaderSearch] = useState<string>("");
 
+  const [scroll, setScroll] = useState<boolean>(false);
   const [location, setLocation] = useState<string>("");
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -151,7 +152,7 @@ const AssemblyInformation = () => {
   }, [assembly?.taxonID]);
 
   useEffect(() => {
-    if (location) {
+    if (location && scroll) {
       setToggleGenomeViewer(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -649,6 +650,8 @@ const AssemblyInformation = () => {
                   <TaxaminerDashboard
                   assembly_id = {parseInt(assemblyID!.replace(":", ""))}
                   analyses = {taxaminerAnalyses}
+                  setLocation={setLocation}
+                  setAutoScroll={setScroll}
                   ></TaxaminerDashboard>
                 </div>
               )}
